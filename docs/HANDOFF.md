@@ -29,11 +29,17 @@ Keep characters lively and regular match screens spacious. Explanations belong i
 | Borrowed Minutes | Planned | Cooperative time-loop heist |
 | Gravity Orchard | Planned | Rotate gravity to guide fruit |
 | Afterglow Market | Planned | Trade and build a night-market stall |
-| The Odd Laws Society | Planned | Change the shared rules |
+| The Odd Laws Society | Planned; expanded specification | Build cities and use sealed bids to change shared laws |
 | The Last Ninety Seconds | Planned | Mystery with clues split across phones |
 | Footprints at Midnight | Planned | Hidden movement and tracking |
 
 Planned games have concept pages but cannot create rooms. They are not implemented games.
+
+### Latest planning direction — 20 November 2026
+
+Jon requested strategy-game depth comparable in weight to Citadels / 7 Wonders. [Odd Laws Society v0.2](games/odd-laws-society.md) replaces the earlier 5×5 movement race with a six-session, four-action city builder: 3×3 boroughs, scarce public building stock, 18 building designs, 12 bounded laws, two active law slots, and simultaneous sealed influence bids. It is a full prototype specification, not implemented or human-playtested. Its private commitments now require Gates B/C as well as A; the old public-only integration advice is obsolete. The [parallel guide](PARALLEL_DEVELOPMENT.md) and session prompt have been updated accordingly.
+
+[DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md) answers the hosting and desktop questions. Pages can serve a static frontend but needs a separate online room backend; either frontend can connect to an external WebSocket service. The current Sites contract does not establish Durable Object provisioning. The LAN host already pushes changes using HTTP commands plus SSE. A proposed Tauri shell would bundle that local host for convenient startup; it is not an established performance improvement. No Pages migration, hosted WebSocket service, or Tauri app has been built or deployed by this planning update. The existing Site and Sofa Kingdoms remain the playable release.
 
 ## Architecture
 

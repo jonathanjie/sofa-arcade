@@ -1,6 +1,6 @@
 # Sofa Arcade — parallel game development
 
-**Status: proposed implementation plan, 19 November 2026.** The six linked games are design drafts, not implemented features or promises of established balance. Sofa Kingdoms remains the only playable game. Use this document to divide work between coding sessions without splitting the collection into separate products.
+**Status: proposed implementation plan, updated 20 November 2026.** The six linked games are design drafts, not implemented features or promises of established balance. Sofa Kingdoms remains the only playable game. Odd Laws Society is now the selected deeper city-building design; its former public-only movement prototype is superseded. Use this document to divide work between coding sessions without splitting the collection into separate products.
 
 Canonical project: **https://github.com/jonathanjie/sofa-arcade**. Read the current `AGENTS.md`, `README.md`, and `docs/HANDOFF.md` before editing. The existing ChatGPT Site remains the deployment destination unless Jon explicitly changes hosting.
 
@@ -10,13 +10,13 @@ Canonical project: **https://github.com/jonathanjie/sofa-arcade**. Read the curr
 | --- | --- | --- | --- |
 | Shared platform | This guide, especially the integration contract | `feature/game-platform` | None; coordinate with every game owner |
 | Gravity Orchard | [PRD](games/gravity-orchard.md) | `feature/gravity-orchard` | Public-game module registration |
-| The Odd Laws Society | [PRD](games/odd-laws-society.md) | `feature/odd-laws-society` | Public-game module registration |
+| The Odd Laws Society | [Full strategy specification](games/odd-laws-society.md) | `feature/odd-laws-society` | Private sealed bids and simultaneous commitments, Gates A/B/C |
 | Borrowed Minutes | [PRD](games/borrowed-minutes.md) | `feature/borrowed-minutes` | Simultaneous commitment contract |
 | Afterglow Market | [PRD](games/afterglow-market.md) | `feature/afterglow-market` | Private submissions and simultaneous resolution |
 | The Last Ninety Seconds | [PRD](games/last-ninety-seconds.md) | `feature/last-ninety-seconds` | Private clues and server-only case answers |
 | Footprints at Midnight | [PRD](games/footprints-at-midnight.md) | `feature/footprints-at-midnight` | Private movement and role-specific projections |
 
-**Recommended first integrations:** Gravity Orchard, then The Odd Laws Society. Their public boards let us validate the common game interface without hiding state. All six engines, fixtures, and isolated views can be developed in parallel while the platform work proceeds. An isolated prototype is not permission to enable its catalog entry.
+**Current priority:** Odd Laws Society's rules prototype and the shared private-state/commitment platform can proceed in parallel, with a frontend working against agreed fixtures. Gravity Orchard remains a simpler public-game integration when useful for Gate A. All six engines and isolated views can proceed in their owned areas. An isolated prototype is not permission to enable its catalog entry.
 
 ## Product constraints for every game
 
@@ -121,7 +121,9 @@ Use one prompt per session. Replace `BASE_COMMIT` with the actual GitHub commit 
 
 ### The Odd Laws Society session
 
-> Continue `jonathanjie/sofa-arcade` from BASE_COMMIT on `feature/odd-laws-society`. Read AGENTS.md, docs/PARALLEL_DEVELOPMENT.md, and docs/games/odd-laws-society.md. Implement the provisional rules-changing board game in its owned subtree. Use bounded prewritten laws and deterministic precedence, never arbitrary executable user rules. Test every permitted movement/scoring combination and guarantee a legal pass. Coordinate shared interfaces; keep catalog planned, do not publish independently, and open a PR with tutorial and two-controller acceptance evidence.
+> Continue `jonathanjie/sofa-arcade` from BASE_COMMIT on `feature/odd-laws-society`. Read AGENTS.md, docs/PARALLEL_DEVELOPMENT.md, and the full v0.2 specification in docs/games/odd-laws-society.md. Implement the six-session city-building rules prototype in its owned subtree: 18 building designs, 12 laws, Build/Work/Lobby/Festival, 3×3 streets, and sealed all-pay council bids. The earlier 5×5 movement game is superseded. Reproduce the worked accounting fixture; test pre-action discounts, the A-B/B-A/A-B Chair schedule, scoring caps, private projections, both commitment orders, and idempotent reveals. Coordinate Gates A/B/C with the platform owner; do not expose bids or deduct them publicly before reveal. Keep the catalog planned until full tutorial, TV/two-phone, online/LAN, and actual playtest gates pass. Do not publish independently. Open a PR with precise implemented scope and remaining balance questions.
+
+For separate sessions on this game's engine and frontend, agree ownership before starting: the engine owner uses `games/odd-laws-society/`; the frontend owner uses `ui/games/odd-laws-society/` and consumes projected fixtures; the platform owner retains the shared files listed above. The PRD's milestones name the corresponding exit criteria. Hosting/WebSocket work and Tauri packaging are separate workstreams described in [DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md).
 
 ### Borrowed Minutes session
 
