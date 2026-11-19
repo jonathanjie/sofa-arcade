@@ -1,0 +1,9 @@
+{
+  "name": "Sofa Arcade",
+  "short_name": "Sofa Arcade",
+  "description": "Jon and Lydia's living-room game collection. One TV, two phones, a whole shelf of possibilities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf4e7",
+  "theme_color": "#fbf4e7"
+}

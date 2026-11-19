@@ -1,0 +1,51 @@
+/* Motion is decoration only: no controls are blocked and no rules live here. */
+.motion-anchor{position:relative}
+.motion-rig{position:absolute;inset:0;display:none;transform-origin:50% 82%;pointer-events:none;animation:sofa-breathe 4.7s ease-in-out infinite;animation-delay:var(--motion-phase,0ms)}
+.generated-art .motion-character>.character-sprite{display:none}
+.generated-art .motion-rig{display:block}
+.motion-cutout{position:absolute;inset:0;background-image:url('/assets/characters.png');background-size:300% 100%;background-position:var(--motion-atlas-x,0%) 50%;background-repeat:no-repeat;pointer-events:none;backface-visibility:hidden}
+.motion-body{clip-path:inset(53% 0 0 0);transform-origin:50% 90%}
+.motion-head{clip-path:inset(0 0 44% 0);transform-origin:50% 55%;animation:sofa-head-look 6.3s ease-in-out infinite;animation-delay:var(--motion-head-phase,0ms)}
+.motion-rig-lala .motion-head{clip-path:polygon(0 0,68% 0,68% 72%,55% 88%,0 88%);transform-origin:44% 76%;animation-name:sofa-cat-look}
+.motion-rig-lala .motion-body{clip-path:polygon(63% 0,100% 0,100% 100%,0 100%,0 83%,52% 83%,63% 70%);transform-origin:73% 84%;animation:sofa-tail-curl 5.7s ease-in-out infinite;animation-delay:var(--motion-tail-phase,0ms)}
+.motion-character.motion-ready .motion-head{animation-name:sofa-ready-look}
+.motion-character.motion-sleepy .motion-rig{animation-duration:6.5s}
+.motion-character.motion-sleepy .motion-head{animation-name:sofa-cat-doze}
+.motion-purr{position:absolute;inset:0;pointer-events:none}
+.motion-purr-line{position:absolute;width:9%;height:15%;top:53%;border:1.5px solid #b58044;border-top-color:transparent;border-bottom-color:transparent;border-radius:50%;opacity:0;animation:sofa-purr 5.7s ease-in-out infinite;animation-delay:var(--motion-tail-phase,0ms)}
+.motion-purr-left{left:2%;border-right-color:transparent;transform:rotate(-18deg)}
+.motion-purr-right{right:2%;border-left-color:transparent;transform:rotate(18deg)}
+.ghost-slot .motion-rig,.ghost-slot .motion-head,.ghost-slot .motion-body{animation:none}
+.motion-board-layer{position:absolute;inset:0;pointer-events:none;z-index:8;overflow:hidden;border-radius:inherit}
+.motion-crumb{position:absolute;width:9px;height:8px;border:1px solid #9b6b31;border-radius:35% 47% 38% 25%;background:#ebc16c;box-shadow:inset -2px -2px 0 #c38c4538;pointer-events:none;z-index:12}
+.motion-crumb::after{content:'';position:absolute;width:2px;height:2px;left:2px;top:2px;background:#af7942;border-radius:50%}
+.motion-bank-crumb{width:10px;height:10px;border-radius:50%;background:#edcd79;box-shadow:inset 0 0 0 2px #f7e2a9;border-color:#b5843b}
+.motion-score-pop{position:absolute;white-space:nowrap;pointer-events:none;z-index:13;font:700 clamp(13px,1.8vw,22px)/1.1 var(--sans,system-ui);color:#fffdf2;background:#5e8780;border:1.5px solid #fff6df;border-radius:16px;padding:4px 8px;box-shadow:0 3px 7px #49362d21}
+.motion-score-pop.lydia{background:#b77368}
+.motion-lala-paw{position:absolute;aspect-ratio:1;pointer-events:none;filter:drop-shadow(0 10px 5px #50372030);transform-origin:50% 50%;z-index:11}
+.motion-lala-paw svg{width:100%;height:100%;overflow:visible}
+.motion-swipe-trail{position:absolute;pointer-events:none;border-color:#fff5dc;border-style:solid;opacity:0;filter:drop-shadow(0 1px 0 #d2aa78);border-radius:50%;z-index:10}
+.motion-swipe-trail.horizontal{width:92%;height:12px;border-width:2px 0;transform:translateY(-50%)}
+.motion-swipe-trail.vertical{height:92%;width:12px;border-width:0 2px;transform:translateX(-50%)}
+.motion-pounce-ring{position:absolute;width:25%;aspect-ratio:1;border:3px solid #f2c77d;border-radius:50%;box-shadow:0 0 0 8px #fff1c234;z-index:9;pointer-events:none}
+.motion-sleep-z{position:absolute;pointer-events:none;font-family:var(--serif,Georgia);font-size:clamp(15px,2vw,23px);font-weight:600;color:#8b744f;z-index:12}
+.motion-confetti-layer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:20;border-radius:inherit}
+.motion-confetti{position:absolute;width:7px;height:12px;border-radius:2px;background:#dcb45e;pointer-events:none}
+.motion-confetti-1{background:#6e9a8d;height:8px;transform:rotate(25deg)}
+.motion-confetti-2{background:#cf8c79;width:10px;height:7px}
+.motion-confetti-3{background:#c6b291;width:6px;height:10px}
+.motion-enabled .pawn .character{overflow:visible}
+.motion-enabled .player-avatar .character{overflow:visible}
+.motion-enabled .forecast-art,.motion-enabled .mini-cat{isolation:isolate}
+.motion-paused .motion-rig,.motion-paused .motion-head,.motion-paused .motion-body,.motion-paused .motion-purr-line{animation-play-state:paused!important}
+.motion-reduced .motion-rig,.motion-reduced .motion-head,.motion-reduced .motion-body,.motion-reduced .motion-purr-line{animation:none!important;transform:none!important}
+.motion-reduced .motion-purr{display:none}
+@keyframes sofa-breathe{0%,100%{transform:translateY(0) scale(1,1)}45%{transform:translateY(-1px) scale(1.008,1.018)}70%{transform:translateY(.5px) scale(1.004,.995)}}
+@keyframes sofa-head-look{0%,18%,100%{transform:rotate(0)}35%,47%{transform:rotate(-1.6deg) translateY(-.5px)}65%,78%{transform:rotate(1.2deg)}}
+@keyframes sofa-ready-look{0%,100%{transform:rotate(-1deg)}40%{transform:rotate(1.7deg) translateY(-1px)}65%{transform:rotate(-1.4deg)}}
+@keyframes sofa-cat-look{0%,18%,100%{transform:rotate(0)}42%,58%{transform:rotate(-1.3deg) translateY(-.6px)}78%{transform:rotate(.7deg)}}
+@keyframes sofa-tail-curl{0%,100%{transform:rotate(0)}45%,62%{transform:rotate(1.8deg) translateY(-.8px)}80%{transform:rotate(-.6deg)}}
+@keyframes sofa-cat-doze{0%,100%{transform:rotate(0) translateY(0)}50%{transform:rotate(1deg) translateY(1.6px)}}
+@keyframes sofa-purr{0%,48%,100%{opacity:0}58%,72%{opacity:.45}82%{opacity:0}}
+@media(max-width:760px){.motion-score-pop{font-size:14px}.motion-crumb{width:7px;height:7px}.motion-sleep-z{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.motion-rig,.motion-head,.motion-body,.motion-purr-line{animation:none!important;transform:none!important}.motion-board-layer,.motion-purr,.motion-confetti-layer,.motion-crumb,.motion-score-pop,.motion-sleep-z{display:none!important}}
