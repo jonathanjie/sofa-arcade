@@ -2,6 +2,8 @@
 
 Status: research and proposed next work, 19 November 2026. This note does not claim that hosted push or WebRTC has been implemented. The existing hosted and local transports described below were inspected in source; no physical home-network latency was measured.
 
+The 20 November [hosting and desktop design note](DEPLOYMENT_OPTIONS.md) expands the GitHub Pages versus Sites decision, distinguishes WebSocket clients from server hosting, and specifies a proposed Tauri wrapper for the existing LAN host.
+
 ## Recommendation
 
 Keep the website and browser controllers. Improve the transport before changing the hosting provider: use a persistent, authenticated room connection with immediate broadcasts instead of periodic room reads. An owned server in Singapore could provide that connection, but moving the current polling code unchanged would retain the polling delay. Cloudflare itself also supports this pattern through Durable Objects and WebSockets [6].
