@@ -136,7 +136,7 @@ test('collection scores share one graph and clock, respect host/phone preference
   await Promise.resolve();
   assert.equal(env.intervals.size, 1);
   audio.setContext({ role: null, view: 'collection' });
-  assert.equal(env.intervals.size, 0, 'returning to the collection stops the score');
+  assert.equal(env.intervals.size, 0, 'a game score cannot leak into the collection; the shell must select its menu score');
   const saved = JSON.parse(env.storage.get('sofa-arcade-audio-v1'));
   assert.deepEqual(saved, { music: true, effects: false, phoneEffects: true, volume: .27 });
 
@@ -261,4 +261,194 @@ test('the delivered WS4 score loads through the collection adapter and plays a c
   audio.setContext({ role: null, view: 'collection' });
   assert.equal(env.intervals.size, 0);
   assert.deepEqual(JSON.parse(env.storage.get('sofa-arcade-audio-v1')), { music: true, effects: false, phoneEffects: true, volume: .27 });
+});
+
+test('the built-in menu score unlocks once, keeps its full composed loop, and switches through one graph and clock', async t => {
+  const menu = await import('../../ui/media/sofa-menu/score.mjs');
+  const sofa = await import('../../ui/score.mjs');
+  const oddScore = await import('../../ui/media/odd-laws-society/score.mjs');
+  const oddEffects = await import('../../ui/media/odd-laws-society/effects.mjs');
+  const odd = { ...oddScore, ...oddEffects };
+  assert.equal(menu.SCORE.title, 'Make Yourself at Home');
+  assert.equal(menu.SCORE.bpm, 92);
+  assert.equal(menu.SCORE.beatsPerBar, 3);
+  assert.equal(menu.SCORE.bars.length, 32);
+
+  const env = audioEnvironment();
+  const originalWindow = globalThis.window, originalDocument = globalThis.document;
+  globalThis.window = env.window;
+  globalThis.document = env.document;
+  let clockStarts = 0;
+  t.mock.method(globalThis, 'setInterval', fn => {
+    clockStarts++;
+    const handle = { fn };
+    env.intervals.add(handle);
+    assert.ok(env.intervals.size <= 1, 'there must never be overlapping soundtrack clocks');
+    return handle;
+  });
+  t.mock.method(globalThis, 'clearInterval', handle => env.intervals.delete(handle));
+  const { audio } = await import(`../../ui/audio.js?integration=menu-${Date.now()}`);
+  t.after(() => {
+    audio.dispose();
+    if (originalWindow === undefined) delete globalThis.window; else globalThis.window = originalWindow;
+    if (originalDocument === undefined) delete globalThis.document; else globalThis.document = originalDocument;
+  });
+  const near = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} ≠ ${expected}`);
+  function checkVoices(voices, events, at, bpm) {
+    let cursor = 0;
+    for (const note of events.filter(event => event.level > 0)) {
+      const voice = voices[cursor++];
+      const onset = at + note.beat * 60 / bpm, duration = note.duration * 60 / bpm;
+      assert.ok(voice, `Missing ${note.instrument} note at beat ${note.beat}`);
+      near(voice.frequency.events[0].value, 440 * 2 ** ((note.pitch - 69) / 12), 'authored pitch');
+      near(voice.starts[0], onset, 'authored beat onset');
+      near(voice.stops[0], onset + duration + .035, 'authored duration with shared release');
+      if (note.instrument === 'bell') {
+        const harmonic = voices[cursor++];
+        assert.ok(harmonic, 'a bell retains the shared quiet upper partial');
+        near(harmonic.frequency.events[0].value, voice.frequency.events[0].value * 2, 'bell upper partial');
+        near(harmonic.starts[0], onset, 'bell onset');
+      }
+    }
+    assert.equal(cursor, voices.length, 'exactly the authored events and existing bell partials are scheduled');
+  }
+
+  audio.setScore('sofa-menu');
+  audio.setContext({ role: null, view: 'collection' });
+  assert.equal(audio.getSettings().trackTitle, menu.SCORE.title);
+  assert.equal(audio.getSettings().canPlayMusic, true);
+  assert.equal(env.contexts.length, 0, 'preparing the collection is silent before a gesture');
+  assert.equal(env.intervals.size, 0);
+  await audio.unlock();
+  const context = env.contexts[0];
+  assert.equal(env.contexts.length, 1);
+  assert.equal(env.intervals.size, 1);
+  checkVoices(context.oscillators, menu.eventsForBar(0), .045, menu.SCORE.bpm);
+  const firstClock = [...env.intervals][0];
+  const firstVoices = context.oscillators.length;
+  for (let render = 0; render < 12; render++) {
+    audio.setScore('sofa-menu');
+    audio.setContext({ role: null, view: 'collection' });
+    audio.setScene('lobby');
+  }
+  assert.equal(clockStarts, 1, 'repeat renders do not restart the musical phrase');
+  assert.equal([...env.intervals][0], firstClock);
+  assert.equal(context.oscillators.length, firstVoices, 'repeat renders do not replay the opening notes');
+
+  const barSeconds = 60 / menu.SCORE.bpm * menu.SCORE.beatsPerBar;
+  for (let bar = 1; bar <= menu.SCORE.bars.length; bar++) {
+    const before = context.oscillators.length;
+    const at = .045 + bar * barSeconds;
+    context.currentTime = at - .1;
+    firstClock.fn();
+    checkVoices(context.oscillators.slice(before), menu.eventsForBar(bar % 32), at, menu.SCORE.bpm);
+  }
+  assert.equal(clockStarts, 1, 'a complete AABA loop and its return keep the same clock');
+
+  const route = (id, module, view, expectedTitle) => {
+    const old = [...context.oscillators];
+    audio.setContext({ role: null, view });
+    audio.setScore(id, module);
+    assert.equal(audio.getSettings().trackTitle, expectedTitle);
+    assert.equal(env.contexts.length, 1, 'navigation reuses the unlocked graph');
+    assert.equal(env.intervals.size, 1, 'only the destination soundtrack has a clock');
+    assert.ok(old.every(voice => voice.stops.length >= 2), 'old scheduled notes are stopped at a score change');
+  };
+  route('sofa-kingdoms', null, 'detail', sofa.SCORE.title);
+  audio.setContext({ role: 'host', view: 'game', phase: 'playing' });
+  route('sofa-menu', null, 'collection', menu.SCORE.title);
+  route('odd-laws-society', odd, 'detail', odd.SCORE.title);
+  audio.setContext({ role: 'host', view: 'game', phase: 'playing' });
+  audio.setScene('council');
+  route('sofa-menu', null, 'collection', menu.SCORE.title);
+
+  // A menu cue is still written in menu beats when a click has just selected
+  // a game with a different tempo. Music remains off throughout this check.
+  audio.setMusic(false);
+  for (const [id, module] of [['sofa-menu', null], ['sofa-kingdoms', null], ['odd-laws-society', odd]]) {
+    audio.setContext({ role: null, view: id === 'sofa-menu' ? 'collection' : 'detail' });
+    audio.setScore(id, module);
+    for (const name of ['menu-select', 'menu-back', 'menu-confirm']) {
+      const before = context.oscillators.length;
+      audio.effect(name);
+      checkVoices(context.oscillators.slice(before), menu.eventsForEffect(name), context.currentTime + .01, menu.SCORE.bpm);
+    }
+    const beforeUnknown = context.oscillators.length;
+    audio.effect('menu-not-a-cue');
+    assert.equal(context.oscillators.length, beforeUnknown, 'an unknown menu effect is silent on every soundtrack');
+    assert.equal(env.intervals.size, 0, 'effects do not start a muted soundtrack');
+  }
+  audio.setScore('sofa-menu');
+  audio.setContext({ role: null, view: 'collection' });
+  const unknown = context.oscillators.length;
+  audio.effect('not-a-real-effect');
+  assert.equal(context.oscillators.length, unknown, 'menu unknown names never fall through to a game effect');
+
+  audio.setEffects(false);
+  const mutedEffects = context.oscillators.length;
+  for (const cue of ['menu-select', 'menu-back', 'menu-confirm']) audio.effect(cue);
+  assert.equal(context.oscillators.length, mutedEffects);
+  audio.setMusic(true);
+  assert.equal(env.intervals.size, 1, 'music runs independently when effects are off');
+  audio.setVolume(0);
+  assert.equal(env.intervals.size, 0, 'zero volume stops scheduling rather than generating inaudible music');
+  audio.setEffects(true);
+  const zeroVolume = context.oscillators.length;
+  audio.effect('menu-confirm');
+  assert.equal(context.oscillators.length, zeroVolume);
+  audio.setVolume(.27);
+  audio.setEffects(false);
+  assert.equal(env.intervals.size, 1);
+
+  env.document.hidden = true;
+  env.document.dispatchEvent(new Event('visibilitychange'));
+  assert.equal(env.intervals.size, 0);
+  assert.equal(context.state, 'suspended');
+  const hiddenVoices = context.oscillators.length;
+  audio.effect('menu-confirm');
+  assert.equal(context.oscillators.length, hiddenVoices);
+  env.document.hidden = false;
+  env.document.dispatchEvent(new Event('visibilitychange'));
+  await Promise.resolve();
+  assert.equal(context.state, 'running');
+  assert.equal(env.intervals.size, 1, 'visibility return restores only one menu clock');
+
+  // The shell retains player intent on Join and on a phone's collection exit.
+  // Even saved music-on never authorizes a soundtrack in that player context.
+  audio.setContext({ role: 'player', view: 'join' });
+  assert.equal(env.intervals.size, 0);
+  assert.equal(audio.getSettings().effects, false);
+  const phoneVoices = context.oscillators.length;
+  await audio.unlock();
+  for (const cue of ['menu-select', 'menu-back', 'menu-confirm']) audio.effect(cue);
+  audio.setContext({ role: 'player', view: 'collection' });
+  audio.setScore('sofa-menu');
+  assert.equal(audio.getSettings().canPlayMusic, false);
+  assert.equal(env.intervals.size, 0);
+  assert.equal(context.oscillators.length, phoneVoices, 'join and phone-menu gestures stay quiet by default');
+  audio.setEffects(true);
+  audio.effect('menu-select');
+  assert.ok(context.oscillators.length > phoneVoices, 'phone effects require a deliberate opt-in');
+  assert.equal(env.intervals.size, 0, 'opting into phone effects never enables menu music');
+  audio.setContext({ role: 'host', view: 'collection' });
+  assert.equal(audio.getSettings().effects, false, 'phone effects do not change the host preference');
+  assert.equal(env.intervals.size, 1);
+  const saved = { music: true, effects: false, phoneEffects: true, volume: .27 };
+  assert.deepEqual(JSON.parse(env.storage.get('sofa-arcade-audio-v1')), saved);
+
+  audio.dispose();
+  assert.equal(env.intervals.size, 0);
+  assert.equal(context.state, 'closed');
+  const restored = (await import(`../../ui/audio.js?integration=menu-reload-${Date.now()}`)).audio;
+  t.after(() => restored.dispose());
+  restored.setScore('sofa-menu');
+  restored.setContext({ role: null, view: 'collection' });
+  assert.equal(env.contexts.length, 1, 'reloading preferences does not create a new graph without a gesture');
+  assert.equal(restored.getSettings().volume, saved.volume);
+  assert.equal(restored.getSettings().music, saved.music);
+  assert.equal(restored.getSettings().effects, saved.effects);
+  assert.equal(restored.getSettings().unlocked, false);
+  restored.setContext({ role: 'player', view: 'collection' });
+  assert.equal(restored.getSettings().effects, saved.phoneEffects);
+  assert.equal(restored.getSettings().canPlayMusic, false);
 });

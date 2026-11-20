@@ -33,6 +33,10 @@ jobs:
           node scripts/check-derived.mjs
       - name: Existing rules, room and controller regressions
         run: npm test
+      - name: Original menu composition, cues and render levels
+        run: |
+          node --test ui/media/sofa-menu/score.test.mjs
+          node ui/media/sofa-menu/audio-preview.mjs --verify
       - name: Integrated protocol, lifecycle and package checks
         run: npm run test:integration
         env:
@@ -68,6 +72,10 @@ jobs:
           SOFA_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
       - name: Real TV and two isolated phone contexts
         run: node tests/integration/browser/sofa-kingdoms.mjs
+        env:
+          SOFA_EVIDENCE_DIR: ${{ runner.temp }}/ws6-browser
+      - name: Menu music, game transitions, cue timing and quiet phones
+        run: node tests/integration/browser/menu-audio.mjs
         env:
           SOFA_EVIDENCE_DIR: ${{ runner.temp }}/ws6-browser
       - name: Identify the pinned Odd Laws browser candidate

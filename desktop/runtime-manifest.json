@@ -104,6 +104,8 @@
     { "path": "ui/games/odd-laws-society/view.css" },
     { "path": "ui/media/odd-laws-society/effects.mjs" },
     { "path": "ui/media/odd-laws-society/score.mjs" },
+    { "path": "ui/media/sofa-menu/effects.mjs" },
+    { "path": "ui/media/sofa-menu/score.mjs" },
     { "path": "ui/room-client.mjs" }
   ]
 }
