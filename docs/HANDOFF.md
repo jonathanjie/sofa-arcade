@@ -9,8 +9,10 @@ WS6 works on `feature/local-integration` from base
 [the frozen component matrix](../tests/integration/components.json),
 [the executed acceptance report](workstreams/integration.md), and
 [local setup/build instructions](LOCAL_RELEASE.md) before continuing.
-All five ready component heads are included by merge ancestry. Final rendered
-and combined native acceptance keep the aggregate PR draft and Odd Laws planned.
+All five ready component heads are included by merge ancestry. The complete
+browser candidate passed at `4695643`; Odd Laws is now enabled. The ordinary
+collection-create rerun and combined native acceptance keep the aggregate PR
+draft until their exact-head gates pass.
 Do not combine moving owner-branch tips or copy unfinished component files.
 
 Shared production and portable inputs now live in `scripts/runtime-files.mjs`.
@@ -50,17 +52,17 @@ Keep characters lively and regular match screens spacious. Explanations belong i
 | Borrowed Minutes | Planned | Cooperative time-loop heist |
 | Gravity Orchard | Planned | Rotate gravity to guide fruit |
 | Afterglow Market | Planned | Trade and build a night-market stall |
-| The Odd Laws Society | Planned pending integrated acceptance | Six-session city builder with sealed bids, finite markets and changing shared laws |
+| The Odd Laws Society | Playable in the local integration candidate | Six-session city builder with sealed bids, finite markets and changing shared laws |
 | The Last Ninety Seconds | Planned | Mystery with clues split across phones |
 | Footprints at Midnight | Planned | Hidden movement and tracking |
 
-A planned catalog entry cannot create rooms. Odd Laws already has integrated engine, private multiplayer, UI and media components; its playable status depends on complete integrated acceptance. The other planned games remain concept specifications.
+A planned catalog entry cannot create rooms. Odd Laws has all five integrated components and passed four real browser matches before catalog enablement. The ordinary enabled-card journey and combined native checks must still pass before the aggregate PR is ready. The other planned games remain concept specifications.
 
 ### Latest planning direction — 20 November 2026
 
-Jon requested strategy-game depth comparable in weight to Citadels / 7 Wonders. [Odd Laws Society v0.2](games/odd-laws-society.md) replaces the earlier 5×5 movement race with a six-session, four-action city builder: 3×3 boroughs, scarce public building stock, 18 building designs, 12 bounded laws, two active law slots, and simultaneous sealed influence bids. Its engine, private platform, UI and media are now integrated at the reviewed heads in the WS6 matrix; automated component and protocol checks are recorded in the integration report. Human balance/playtime validation and the complete rendered/native combination remain distinct gates. Private commitments require per-viewer projection; the old public-only integration advice is obsolete. The [parallel guide](PARALLEL_DEVELOPMENT.md) and session prompt have been updated accordingly.
+Jon requested strategy-game depth comparable in weight to Citadels / 7 Wonders. [Odd Laws Society v0.2](games/odd-laws-society.md) replaces the earlier 5×5 movement race with a six-session, four-action city builder: 3×3 boroughs, scarce public building stock, 18 building designs, 12 bounded laws, two active law slots, and simultaneous sealed influence bids. All five components are integrated at the reviewed heads in the WS6 matrix; automated component, protocol and rendered checks are recorded in the integration report. Human balance/playtime validation and combined native acceptance remain distinct gates. Private commitments require per-viewer projection; the old public-only integration advice is obsolete. The [parallel guide](PARALLEL_DEVELOPMENT.md) and session prompt have been updated accordingly.
 
-[DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md) answers the hosting and desktop questions. Pages can serve a static frontend but needs a separate online room backend; either frontend can connect to an external WebSocket service. The current Sites contract does not establish Durable Object provisioning. The LAN host already pushes changes using HTTP commands plus SSE. A proposed Tauri shell would bundle that local host for convenient startup; it is not an established performance improvement. No Pages migration, hosted WebSocket service, or Tauri app has been built or deployed by this planning update. The existing Site and Sofa Kingdoms remain the playable release.
+[DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md) preserves the hosting and desktop research. The implemented local Tauri shell bundles the HTTP/SSE host, SQLite and assets; its current build and acceptance instructions are in [LOCAL_RELEASE.md](LOCAL_RELEASE.md). This integration does not publish the existing Site, migrate to Pages, introduce a cloud service or claim a measured casting/Wi-Fi improvement.
 
 ## Architecture
 

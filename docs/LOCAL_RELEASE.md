@@ -4,7 +4,10 @@ This guide follows the WS6 integration candidate. Its authoritative dependency
 checkpoint is [`tests/integration/components.json`](../tests/integration/components.json),
 and executed results are in [the integration report](workstreams/integration.md).
 The candidate remains a draft until every essential component and the complete
-automated/native acceptance gates pass. A planned game cannot create a room.
+automated/native acceptance gates pass. All five components are included; Odd
+Laws is enabled after the complete browser candidate passed at `4695643`.
+The enabled collection path and combined native artifacts are being revalidated.
+A planned game cannot create a room.
 
 ## Play from a source checkout or portable ZIP
 

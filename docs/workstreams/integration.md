@@ -5,12 +5,12 @@
 Work is on `feature/local-integration` in a dedicated clone. Base `main` is
 `e34b0015399cb9791b175987adf1fab1b542565a` (20 November 2026).
 
-**Status: all five reviewed components assembled; final release acceptance pending.**
+**Status: all five reviewed components assembled; browser candidate accepted.**
 WS1–WS5 are included at their explicitly ready, tested heads. The complete
-browser game journeys have passed, but inspection found a shared 720p rematch
-control clipping below the viewport; the corrected final geometry gate and
-combined native acceptance remain pending. Odd Laws stays planned until that
-rendered candidate is accepted. No unfinished component branch tip is included.
+browser journeys and corrected 720p results/rematch geometry passed at
+`4695643a89f03b7cf33127b9d9c0f5b054a8cca4`. Odd Laws is now enabled. The ordinary
+collection-create rerun and combined ARM/Intel native acceptance remain pending,
+so the aggregate PR stays draft. No unfinished component branch tip is included.
 
 The machine-readable checkpoint is
 [`tests/integration/components.json`](../../tests/integration/components.json).
@@ -46,6 +46,8 @@ component correction must be identified separately and revalidated.
 ## Acceptance checklist
 
 An unchecked item is a gate still to be exercised, not a passing result.
+Checked browser items refer to the accepted `4695643` candidate; final enabled
+collection and native checks must also pass at the proposed final head.
 
 ### Combination and distribution
 
@@ -53,35 +55,35 @@ An unchecked item is a gate still to be exercised, not a passing result.
 - [x] Inspect frozen contracts, full v0.2 rules and existing delivery scripts.
 - [x] Run baseline regressions: `npm test` — **66 passed, 0 failed** on the base
   source, Linux x64 / Node v24.22.3. This is existing Sofa Kingdoms evidence only.
-- [ ] Review all five PR diffs, tests, owner reports and immutable heads.
-- [ ] Assemble exact reviewed heads without duplicate patches or owner-branch edits.
-- [ ] Align production copies, LAN serving, portable ZIP and desktop staging.
-- [ ] Check transitive runtime imports and manifest assets from a clean package.
-- [ ] Confirm public assets exclude authority modules, private fixtures,
+- [x] Review all five PR diffs, tests, owner reports and immutable heads.
+- [x] Assemble exact reviewed heads without duplicate patches or owner-branch edits.
+- [x] Align production copies, LAN serving, portable ZIP and desktop staging.
+- [x] Check transitive runtime imports and manifest assets from a clean package.
+- [x] Confirm public assets exclude authority modules, private fixtures,
   credentials, databases and development dependencies.
 - [ ] Run full relevant suites, production build and every component workflow at
   the proposed integration head.
 
 ### Odd Laws actual player journey
 
-- [ ] Host TV plus two separate authenticated phone browser contexts.
-- [ ] Complete six sessions with each initial Chair, all four actions, finite
+- [x] Host TV plus two separate authenticated phone browser contexts.
+- [x] Complete six sessions with each initial Chair, all four actions, finite
   market turnover, full city, exhausted stock, final score components and a tie.
-- [ ] Sealed votes in both arrival orders; own lock and public readiness;
+- [x] Sealed votes in both arrival orders; own lock and public readiness;
   different/same choices, winning/losing payment, tied/zero bids.
-- [ ] Inspect serialized HTTP and SSE on first lock, reveal, retry/error and
+- [x] Inspect serialized HTTP and SSE on first lock, reveal, retry/error and
   reconnect; no secret choice, amount, balance change or private history leak.
-- [ ] Refresh, passive disconnect/reconnect and restored own commitment.
-- [ ] Duplicate, changed-content duplicate, stale/future requests and rematch
+- [x] Refresh, passive disconnect/reconnect and restored own commitment.
+- [x] Duplicate, changed-content duplicate, stale/future requests and rematch
   isolation; an old room response never replaces a new match.
-- [ ] Tutorial skip, resume/replay, Help, results and collection navigation.
-- [ ] Gesture unlock, one host soundtrack, quiet phones and persisted independent
+- [x] Tutorial skip, resume/replay, Help, results and collection navigation.
+- [x] Gesture unlock, one host soundtrack, quiet phones and persisted independent
   music/effects/volume settings; no external audio or asset requests.
-- [ ] Reduced motion, readable 1920×1080 / 1280×720 TV and 360×800 / 390×844
+- [x] Reduced motion, readable 1920×1080 / 1280×720 TV and 360×800 / 390×844
   phone layouts with actual rendered screenshot evidence.
-- [ ] Measure action-to-SSE latency with stated local methodology; no Wi-Fi or
+- [x] Measure action-to-SSE latency with stated local methodology; no Wi-Fi or
   casting performance inference from loopback.
-- [ ] Preserve Sofa Kingdoms full game, controller prediction and v1/v2 rooms.
+- [x] Preserve Sofa Kingdoms full game, controller prediction and v1/v2 rooms.
 
 ### Native and hardware
 
@@ -499,3 +501,44 @@ independent artifact inspection passed. The root native workflow adds an
 explicit default-production dependency-graph check using the available standard
 `grep` before building the separate instrumented app. No owner workflow is
 modified; production artifacts still undergo the owner's binary checks.
+
+### All-five browser acceptance and catalog enablement — 4695643
+
+The clean all-five candidate at
+**`4695643a89f03b7cf33127b9d9c0f5b054a8cca4`**, tree
+`42deeb5a2cca904e81eb5869fd4fc2ea57bcd530`, passed the complete
+[rendered browser job](https://github.com/jonathanjie/sofa-arcade/actions/runs/44710085964)
+and independent visual/shared-shell review. The
+[browser artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44710085964/artifacts/14615839487)
+has SHA-256 `e86548ef602319ebed5bbac6be6788cdb5b46abf63a4149403faeb52ab811d69`.
+All 15 Sofa checks and both Odd Laws journeys (12 and 8 checks) passed. Four
+complete Odd Laws games again scored 54–51, 49–46, 4–4 and 31–31; all actual
+commands now also deep-equal their public-policy choices. Each final TV board
+ends at y=657.703125 and its complete 250.75×50 px rematch control occupies
+y=666–716 within 1280×720. The rich and full-city viewport PNGs were inspected.
+There were no page errors, external requests or failed static responses.
+Five of 191 ordinary command observations used the explicitly tagged CDP
+body-cache fallback; the lost-acknowledgment scenario remains separately tested.
+
+The exact-head protocol/package job passed **81 baseline and 52 integration
+tests, with zero skips**. Its
+[five safe JSON reports](https://github.com/jonathanjie/sofa-arcade/actions/runs/44710085964/artifacts/14617610242)
+contain 504 independently recomputed timing observations and clean/stable source
+records. The
+[portable artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44710085964/artifacts/14616991575)
+matches the committed 107-file ZIP byte-for-byte: 7,272,443 bytes, SHA-256
+`4f2b1086683dc82e6f526d4424ad6f45fb0bb87f450e72242a88106abf4b6965`.
+All 106 manifest records, source bytes and executable modes were checked.
+Production delivery contains 96 declared files plus 13 framework files and
+excludes 17 tracked authoring files. The explicit public/private boundary and
+104-entry desktop closure pass. All four component workflows and Game checks
+also passed at this source; the combined desktop workflow is separate evidence.
+
+This accepted candidate justifies enabling the Odd Laws catalog card. The next
+checkpoint regenerates its derived catalog, portable ZIP and desktop stage,
+then runs the ordinary collection-card → host creation → two phones → results
+path without the candidate resolver flag. The root native jobs are unblocked
+only after enablement and must pass on both matching Mac architectures. The
+aggregate PR remains draft until those exact-head gates pass. `main` was checked
+again and is still the recorded base; no owner branch was changed or merged
+into `main`.

@@ -1,6 +1,6 @@
 # Sofa Arcade
 
-A collection of living-room games for Jon and Lydia: one local Mac host, one shared TV, two phone browsers, and one source repository. **Sofa Kingdoms** is the first playable game. Jon and Lydia are tiny mouse adventurers collecting crumbs while Lala rearranges the furniture.
+A collection of living-room games for Jon and Lydia: one local Mac host, one shared TV, two phone browsers, and one source repository. **Sofa Kingdoms** is a crumb-collecting rivalry; **The Odd Laws Society** adds a six-session strategy city builder with sealed councils.
 
 **Canonical source:** [jonathanjie/sofa-arcade](https://github.com/jonathanjie/sofa-arcade). This branch integrates the local Tauri release. See [local setup, builds and acceptance](docs/LOCAL_RELEASE.md), the [exact component checkpoint](tests/integration/components.json), and [integration evidence](docs/workstreams/integration.md). The existing hosted version is a separate delivery path; this work does not publish it.
 
@@ -12,7 +12,7 @@ A collection of living-room games for Jon and Lydia: one local Mac host, one sha
 | Borrowed Minutes | Planned | A cooperative time-loop heist with echoes of earlier attempts |
 | Gravity Orchard | Planned | Rotate gravity to guide falling fruit into your baskets |
 | Afterglow Market | Planned | Build and trade at an unpredictable night market |
-| The Odd Laws Society | Planned pending integrated acceptance | Build a nine-plot borough through six sealed councils, finite markets and changing laws |
+| The Odd Laws Society | Playable in the local integration candidate | Build a nine-plot borough through six sealed councils, finite markets and changing laws |
 | The Last Ninety Seconds | Planned | Reconstruct a mystery from clues split across two phones |
 | Footprints at Midnight | Planned | Hidden movement through a moonlit garden |
 
@@ -20,16 +20,16 @@ Planned entries describe the collection's direction; they do not start dummy mat
 
 ## Play
 
-1. Start the local host on the Mac (see below), open its printed LAN address, select **Sofa Kingdoms**, and host a game.
+1. Start the local host on the Mac (see below), open its printed LAN address, select **Sofa Kingdoms** or **The Odd Laws Society**, and host a game.
 2. Scan the room QR code on each phone, or open the same local address and enter its six-character room code.
 3. Choose Jon on one phone and Lydia on the other.
 4. Start the match from the TV. Use the phones for moves and actions.
 
 The TV can display the Mac's full-screen browser. The Mac and both phones use the same LAN for local play; no cloud account is required. The existing public Site retains its separate server-backed room path.
 
-**Practice** runs in one browser without a room or a second device and lets you control both characters.
+Sofa Kingdoms **Practice** runs in one browser without a room or a second device and lets you control both characters.
 
-**Tutorial** teaches the actions in a separate practice session. It is optional, can be replayed, and remembers completion on each device. The normal match keeps explanations in Help so the TV can emphasize the board and phones can emphasize the controls.
+Each game's optional **Tutorial** teaches its actions separately from the live room, can be replayed, and remembers completion on each device. The normal match keeps explanations in Help so the TV can emphasize the board and phones can emphasize the controls.
 
 ### Play over home Wi-Fi
 
@@ -43,11 +43,19 @@ See [docs/LAN.md](docs/LAN.md) for setup, connection help, and the optional port
 
 **Lala’s Little Waltz** is an original 32-bar composition in G major and 3/4 time at 104 BPM. A rounded woodwind melody repeats in an AABA form over a gentle bass-and-pizzicato accompaniment, with a contrasting middle section, held phrase endings, and written breaths. The menu retains the complete melody with a quieter accompaniment. The score is in `ui/score.mjs`; Web Audio synthesizes it locally without external audio services.
 
+Odd Laws adds **Lala Calls the House**, a 32-bar F-major AABA score in 4/4 at 100 BPM, with arrangements for the council, three terms and results. Both games share one audio lifecycle and the same saved controls; switching games stops the previous score.
+
 Music and effects have separate toggles and a saved volume setting. A direct click or tap unlocks browser audio. Music plays on the TV/host or practice screen; phone controllers start quiet to avoid echoes, with their own optional effects toggle. Background tabs pause their soundtrack.
 
 Characters use the illustrated atlas with layered movement and action effects: idle motion, mouse hops, crumb pickups, banking celebrations, and Lala's swipe, pounce, and nap. The animation system respects the device's reduced-motion preference. This is procedural animation of illustrated characters rather than a full frame-by-frame character atlas.
 
 ## Rules
+
+### The Odd Laws Society
+
+Build a nine-plot borough across six council sessions. Both players secretly choose a proposed law and an influence bid on their own phones; the TV shows readiness until both have sealed. Take Build, Work, Festival or Lobby actions against a finite shared market and the active laws. Final prestige combines buildings, streets, festivals, civic laws and treasury; equal totals share victory. The optional ten-lesson tutorial and in-game Help explain the details. See [the complete rules](docs/games/odd-laws-society.md). The catalog's 35–45 minute duration is a design target awaiting human playtime validation.
+
+### Sofa Kingdoms
 
 - Ten rounds, two actions per player per round. Move one square, collect crumbs, bank at your own burrow, use a toy, or end your turn early.
 - Bags hold five crumbs. Banked crumbs score one point each. **A full five-crumb delivery adds two bonus points.** Carried crumbs do not score.
@@ -73,11 +81,11 @@ New matches use rules version 3. Existing version 2 matches retain Jon as their 
 
 ## Development
 
-**Current integration: Tauri and local play.** The [dispatch pack](docs/DISPATCH_LOCAL.md) and [local implementation contracts](docs/LOCAL_IMPLEMENTATION_CONTRACT.md) define the five components and shared acceptance. The real Odd Laws engine, private multiplayer platform, TV/phone interface and complete media pack are incorporated at reviewed immutable heads. The ready native component is also assembled; complete rendered and combined native acceptance remain gates. The catalog stays planned until the actual journey passes; a draft candidate is not an accepted Mac release.
+**Current integration: Tauri and local play.** The [dispatch pack](docs/DISPATCH_LOCAL.md) and [local implementation contracts](docs/LOCAL_IMPLEMENTATION_CONTRACT.md) define the five components and shared acceptance. All five reviewed immutable heads are assembled. Four complete Odd Laws browser matches and the Sofa regression journey passed at `4695643`; the Odd Laws card is now enabled. The normal collection-create rerun and combined native acceptance remain gates, so the aggregate PR is still draft. See the [acceptance report](docs/workstreams/integration.md) for exact source and evidence.
 
 Start with [AGENTS.md](AGENTS.md) and [docs/HANDOFF.md](docs/HANDOFF.md) to continue the project in another coding session. **GitHub `jonathanjie/sofa-arcade` is the source of truth.** Branch from its latest `main`, keep one game per feature branch, and reconcile upstream changes before merging. Sites keeps a deployment mirror for its publication workflow; it is not a competing development branch. [GitHub workflow](docs/GITHUB_WORKFLOW.md) describes the separate source and deployment checkouts.
 
-For the six planned games, start with the [game design documents](docs/games/README.md) and [parallel development guide](docs/PARALLEL_DEVELOPMENT.md). [Odd Laws Society](docs/games/odd-laws-society.md) now has a full city-building strategy specification with sealed councils, a complete initial catalog, and implementation/playtest milestones. The [networking design note](docs/NETWORKING.md) explains the current latency path, AirConsole evidence, and proposed hosted push/WebRTC work. [Hosting and desktop options](docs/DEPLOYMENT_OPTIONS.md) covers GitHub Pages, WebSocket backends, and a proposed Tauri local app. These are implementation plans; only Sofa Kingdoms is currently playable.
+For game designs and the five remaining planned games, start with the [game design documents](docs/games/README.md) and [parallel development guide](docs/PARALLEL_DEVELOPMENT.md). The [networking design note](docs/NETWORKING.md) and [hosting and desktop options](docs/DEPLOYMENT_OPTIONS.md) preserve the earlier research and alternatives. Current local implementation and acceptance are tracked in [the release guide](docs/LOCAL_RELEASE.md); the existing public Site has not been republished by this integration.
 
 Requires Node.js 22.13 or newer. The application uses the Sites Vinext starter, a Cloudflare Worker and D1 for shared room state. Sofa Kingdoms rules are in the dependency-free `game/engine.mjs`; `server/rooms.mjs` validates multiplayer actions.
 
