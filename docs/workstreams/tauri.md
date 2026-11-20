@@ -12,11 +12,14 @@ The desktop packages the existing Sofa Kingdoms collection and shared LAN host.
 It does not fork game rules or change shared runtime code. Odd Laws will enter
 through the same runtime after the component handoffs and WS6 integration.
 
-**Current checkpoint: implementation and native validation in progress.** This
-report will be updated with executed checks before handoff. No Mac launch,
-signed distribution, physical phone test, or offline hardware test is claimed
-by this checkpoint. The PR records the exact tested head rather than embedding
-this report's future commit hash in itself.
+**Current checkpoint: implementation complete; native macOS validation in
+progress.** [PR #6](https://github.com/jonathanjie/sofa-arcade/pull/6) is draft
+until native launch and WKWebView evidence pass. Portable checks have passed
+locally and in CI. Both native runners have verified their architecture and
+started the production build. No successful Mac launch, signed distribution,
+physical phone test, or offline hardware test is claimed by this checkpoint.
+The PR records the exact tested head rather than embedding this report's future
+commit hash in itself.
 
 ## Architecture and interfaces
 
@@ -29,8 +32,9 @@ this report's future commit hash in itself.
   `port`, `origin`, `urls`, and `close`. SQLite lives in writable application
   data, outside immutable application resources.
 - `desktop/runtime-manifest.json` implements exactly the v1 staging contract:
-  `{ "schemaVersion": 1, "files": [{ "path": "...", "mode": "..." }] }`.
-  Paths are explicit repository-relative files; `mode` is optional. This file
+  `{ "schemaVersion": 1, "files": [{ "path": "..." }] }`.
+  Paths are explicit repository-relative files; optional `mode` uses numeric
+  permission bits (420 for 0644 or 493 for 0755). This file
   is the desktop integration seam for WS6 after the tested handoff.
 - Build-time preparation pins Node 24.22.3 LTS, verifies official archive
   checksums and provenance, and stages the executable independently from
@@ -39,6 +43,60 @@ this report's future commit hash in itself.
 - The parent preserves its saved port/origin so WKWebView storage remains
   accessible. An occupied port is an error requiring a retry after the conflict
   is resolved, not permission to attach to or stop the unrelated process.
+- The private app-data directory is
+  `~/Library/Application Support/com.sofaarcade.desktop`. `config.json` saves
+  the port and a validated public room route; `rooms.sqlite` stores shared room
+  state. Credentials remain in the existing browser storage and are never
+  copied into readiness records, QR URLs, or reports.
+- Duplicate launches focus the existing application before starting a host.
+  Native Quit gracefully closes and reaps only the retained child; abrupt
+  parent death closes its lifetime pipe. A crashed ready host gets one bounded
+  automatic restart. Repeated failure leaves an actionable native Retry view.
+- A network/wake change requests a parent-controlled refresh. The parent
+  destroys the active network document before acknowledging release of its
+  listener, then opens a new document only after same-port readiness. This
+  preserves browser storage without leaving timers or SSE against an unowned
+  listener. A native Connection menu also provides Refresh Network and Retry.
+- Release builds contain no embedded test driver. The separately instrumented
+  `native-e2e` build uses the supported macOS WebDriver plugin for screenshots
+  and real WKWebView interaction. No shell/file capabilities are granted to
+  the game or phone controllers.
+
+## Packaging and provenance
+
+The bundle contains an architecture-matched official Node 24.22.3 executable
+and 25 explicit runtime files from the contract manifest: the two desktop host
+modules; shared server, game, and registry/catalog modules; UI modules and
+styles; artwork, local QR code implementation and its license; favicon/web
+manifest; and SQLite migration. It preserves the repository layout and checks
+relative import closure. The exact paths are authoritative in
+[`desktop/runtime-manifest.json`](../../desktop/runtime-manifest.json).
+
+Preparation rejects traversal, globs, symlinks, credentials, databases, hidden
+checkout state, development dependencies, and stale/unlisted staged files. It
+checks bytes and executable modes. No Node package manager, build dependency,
+generated runtime, or release bundle is committed as authored source.
+
+`desktop/node-runtime.json` pins official per-architecture archive SHA-256
+values and the checksum documents. Preparation downloads only at build time,
+verifies the cached/downloaded bytes, extracts only Node and its license, then
+executes ESM and `node:sqlite` with Node absent from `PATH`. The pinned official
+signed checksum document is retained for independent OpenPGP validation; this
+implementation does not claim to verify that signature. Each build records a
+safe provenance document and file-hash inventory. Third-party notices are
+collected from the locked native Cargo dependency graph, with exact pinned
+fallback license texts where published crates omit their license files.
+
+Tauri re-signs bundled executable sidecars. The native entitlement file grants
+only `com.apple.security.cs.allow-jit` for Node/V8, while retaining hardened
+runtime. It does not copy Node's broader CLI/debugging entitlements. Native
+acceptance inspects the packaged signature and runs the signed Node executable
+directly. CI signatures are ad-hoc and establish no Developer ID identity or
+notarization.
+
+The configured minimum macOS version is **13.5**, matching the bundled Node 24
+runtime. Apple Silicon and Intel are separate native artifacts; no universal
+binary or compatibility with an older macOS version is claimed.
 
 ## Ownership within WS5
 
@@ -49,20 +107,54 @@ this report's future commit hash in itself.
 | Native validation and CI | `.github/workflows/desktop.yml`, `desktop/tests/native/**`, `desktop/wdio*.mjs` |
 | Build dependencies, icons and handoff | `desktop/package*.json`, `desktop/icons/**`, desktop documentation, this report |
 
-## Verified baseline
+## Executed portable checks
 
 Executed in Linux x86-64 using Node 24.22.3:
 
+| Check | Result | What it establishes |
+| --- | --- | --- |
+| Existing repository `npm test` | 66 passed | Unchanged game/room behavior, strict Host/Origin checks, credentials, real SSE and persistence |
+| Desktop `npm test` after staging | 12 passed | Exact runtime allowlist, compatible bundled Node without Node on PATH, both seats and immediate SSE, assets, persistence, cleanup, conflicts, bounded startup failures, refresh handshake and tamper rejection |
+| Nested Cargo tests with `--no-default-features` | 11 passed | Native settings, safe saved routes, bounded readiness validation, fixed child arguments/environment and owned-child cleanup |
+| Rust clippy for portable native modules | Passed with warnings denied | Static diagnostics for the tested non-GUI native modules |
+| Locked macOS dependency/license collection | Passed | Native dependency notices and supplements present before packaging |
+
+These results passed locally. The initial desktop workflow's portable job also
+passed all three test suites. Linux execution does not establish a Mac launch.
+
+## Reproducible commands
+
+From the repository root:
+
 ```sh
 npm test
+cd desktop
+npm ci --ignore-scripts
+npm run stage
+npm test
+node scripts/verify-runtime.mjs
+npm run test:rust
 ```
 
-Result: **66 tests passed, 0 failed**, including real HTTP/SSE updates, both
-controller seats, strict Host/Origin rejection, credential handling, and SQLite
-persistence. This verifies the starting shared runtime; it is not a native Mac
-launch. Desktop test results and artifacts are recorded below once executed.
+On a matching native Apple Silicon Mac:
 
-## Native validation plan and source basis
+```sh
+cd desktop
+npm ci --ignore-scripts
+APPLE_SIGNING_IDENTITY=- npm run build:mac:arm64
+npm run test:native:release -- --app "/absolute/path/to/production/Sofa Arcade.app"
+APPLE_SIGNING_IDENTITY=- npm run build:native:arm64
+SOFA_APP_PATH="/absolute/path/to/instrumented/Sofa Arcade.app" npm run test:native:ui
+```
+
+Use the `:intel` variants on an Intel Mac. Preserve the production bundle
+before the instrumented build. The production harness refuses an existing
+Sofa Arcade profile; use a disposable macOS test account. The workflow provides
+fresh runners and records the exact checked-out source commit, native runner
+and binary architectures, signatures, build hashes, structured test results,
+and screenshots. Generated outputs stay outside authored source control.
+
+## Native validation and source basis
 
 The current [Tauri WebDriver guidance](https://v2.tauri.app/develop/tests/webdriver/)
 recommends WebdriverIO and `@wdio/tauri-service`. Its embedded driver supports
@@ -82,7 +174,6 @@ exercise ESM and `node:sqlite` using the staged executable.
 
 ## Remaining gates at this checkpoint
 
-- Complete implementation, lockfiles, host/package tests, and native build.
 - Obtain an actual macOS package launch, native UI screenshots, and lifecycle
   results from the desktop workflow; repair relevant failures.
 - Developer ID signing and notarization require credentials not provided here.
@@ -103,6 +194,12 @@ with WS5 unless a separate post-handoff fix is identified.
 The existing UI's optional local-play Help still describes the portable Node
 launcher even when it runs inside Tauri. WS6 owns any shared Help-copy update;
 desktop must not fork `ui/app.js` merely to change those instructions.
+
+Phone credentials are scoped to their browser's LAN origin. When the Mac gets
+a different LAN address, the fresh QR can join that new origin, but credentials
+stored under the old phone origin do not transfer automatically. The Mac keeps
+its stable loopback origin and storage. Any cross-origin phone-seat recovery
+belongs in the shared room/UI protocol, without weakening authentication.
 
 ## Handoff state
 

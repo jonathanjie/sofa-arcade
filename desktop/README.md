@@ -49,7 +49,7 @@ From the repository root, on Apple Silicon:
 ```sh
 cd desktop
 npm ci --ignore-scripts
-npm run build:mac:arm64
+APPLE_SIGNING_IDENTITY=- npm run build:mac:arm64
 ```
 
 On Intel use `npm run build:mac:intel`. Build scripts stage the matching official
@@ -63,6 +63,12 @@ pinned official SHA-256 and pinned official checksum documents, executes ESM
 and `node:sqlite` with no Node on `PATH`, and preserves Node's license and
 provenance. The signed checksum document is retained for independent OpenPGP
 verification; the script does not claim to verify that signature itself.
+
+The example uses local ad-hoc signing, as CI does. Hardened runtime remains
+enabled; the sole entitlement permits Node/V8's JIT. Native acceptance verifies
+the actual post-sign entitlements and executes optimized JavaScript, ESM, and
+SQLite using the bundled executable. No broader debugging or library-loading
+exceptions are granted.
 
 ## Reproducible tests
 
@@ -88,7 +94,7 @@ existing Sofa Arcade data:
 
 ```sh
 cd desktop
-npm run build:mac:arm64
+APPLE_SIGNING_IDENTITY=- npm run build:mac:arm64
 npm run test:native:release -- --app "/absolute/path/to/Sofa Arcade.app"
 ```
 
@@ -101,7 +107,7 @@ For native WKWebView interaction and screenshots, preserve the production
 bundle first, then build the separate instrumented application:
 
 ```sh
-npm run build:native:arm64
+APPLE_SIGNING_IDENTITY=- npm run build:native:arm64
 SOFA_APP_PATH="/absolute/path/to/instrumented/Sofa Arcade.app" npm run test:native:ui
 ```
 

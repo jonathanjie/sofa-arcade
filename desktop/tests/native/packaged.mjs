@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { createServer as createTcpServer } from 'node:net';
-import { mkdir, readFile, rm, rename, stat } from 'node:fs/promises';
+import { mkdir, readFile, rm, rename, stat, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import path from 'node:path';
 import { legalActions } from '../../../game/engine.mjs';
+import { listFiles, readManifest } from '../../scripts/runtime-files.mjs';
 import {
   argument, binaryFor, dataDir, desktopDir, evidenceDir, exists, hostStatus,
   identifier, joinBoth, listen, poll, portOpen, repoDir, request,
@@ -94,6 +95,23 @@ async function capture(child, name) {
   }
 }
 
+async function signedEntitlements(filename, label) {
+  const metadata = await runFile('/usr/bin/codesign', ['-d', '--verbose=4', filename], { timeout: 10000 });
+  assert.match(metadata.stderr, /flags=[^\n]*\bruntime\b/, `${label} must retain hardened runtime`);
+  await runFile('/usr/bin/codesign', ['--verify', '--strict', filename], { timeout: 10000 });
+  const displayed = await runFile('/usr/bin/codesign', ['-d', '--entitlements', ':-', filename], { timeout: 10000 });
+  const plistFile = path.join(evidenceDir, `${label}-entitlements.plist`);
+  await writeFile(plistFile, displayed.stdout, { mode: 0o600 });
+  let entitlements;
+  try {
+    entitlements = JSON.parse((await runFile('/usr/bin/plutil', ['-convert', 'json', '-o', '-', plistFile], { timeout: 10000 })).stdout);
+  } finally { await rm(plistFile, { force: true }); }
+  assert.deepEqual(entitlements, { 'com.apple.security.cs.allow-jit': true },
+    `${label} entitlements must contain only the intended JIT allowance`);
+  await saveEvidence(`${label}-entitlements.json`, { hardenedRuntime: true, entitlements });
+  return entitlements;
+}
+
 try {
   await requireFreshProfile();
   profileOwned = true;
@@ -115,29 +133,76 @@ try {
   summary.architecture = { platform: process.platform, runner: nativeArch, node: process.arch,
     target: process.arch === 'arm64' ? 'aarch64-apple-darwin' : 'x86_64-apple-darwin' };
   summary.bundleExecutableSha256 = createHash('sha256').update(await readFile(binary)).digest('hex');
+  summary.signedNodeSha256 = createHash('sha256').update(await readFile(node)).digest('hex');
   check('native runner and both executable architectures match', summary.architecture);
   summary.signing = 'Ad-hoc local build; no Developer ID or notarization claimed';
 
-  const probe = await runFile(node, ['--input-type=module', '-e',
-    'import { DatabaseSync } from "node:sqlite"; const db=new DatabaseSync(":memory:"); console.log(JSON.stringify({version:process.version,arch:process.arch,sqlite:db.prepare("select 42 as value").get().value,esm:import.meta.url.startsWith("file:")})); db.close();'],
-    { env: { PATH: safePath }, timeout: 10000 });
-  const capability = JSON.parse(probe.stdout.trim());
-  assert.equal(capability.arch, process.arch); assert.equal(capability.sqlite, 42); assert.equal(capability.esm, true);
-  check('signed/staged bundled Node executes ESM and node:sqlite without Node on PATH', capability);
+  summary.entitlements = {
+    app: await signedEntitlements(binary, 'app'),
+    node: await signedEntitlements(node, 'node'),
+  };
+  check('post-sign app and Node preserve hardened runtime with only allow-jit');
 
-  const manifest = JSON.parse(await readFile(path.join(desktopDir, 'runtime-manifest.json'), 'utf8'));
+  // The following V8 introspection flags are confined to this test process.
+  // Production startup never enables native syntax or changes JIT/security flags.
+  // Force and execute optimized machine code, rather than assuming a warm loop
+  // used JIT. Node24's pinned V8 GetOptimizationStatus flag16 is kOptimized.
+  const probe = await runFile(node, ['--allow-natives-syntax', '--no-concurrent-recompilation', '--input-type=module', '-e', `
+    import { DatabaseSync } from 'node:sqlite';
+    function workload(value) {
+      let acc = 0;
+      for (let i = 0; i < 1024; i++) acc = (Math.imul(acc ^ (value + i), 1664525) + 1013904223) | 0;
+      return acc;
+    }
+    %PrepareFunctionForOptimization(workload);
+    const expected = workload(42);
+    for (let i = 0; i < 100; i++) workload(i);
+    %OptimizeFunctionOnNextCall(workload);
+    const actual = workload(42);
+    const optimizationStatus = %GetOptimizationStatus(workload);
+    if (actual !== expected || !(optimizationStatus & 16)) throw new Error('V8 did not execute optimized machine code');
+    let checksum = 0;
+    for (let i = 0; i < 20000; i++) checksum ^= workload(i);
+    if (checksum !== -1636767744) throw new Error('JIT stress checksum mismatch');
+    const db = new DatabaseSync(':memory:');
+    console.log(JSON.stringify({ version: process.version, arch: process.arch,
+      sqlite: db.prepare('select 42 as value').get().value, esm: import.meta.url.startsWith('file:'),
+      jit: { optimized: !!(optimizationStatus & 16), optimizationStatus, checksum, iterations: 20000 } }));
+    db.close();
+  `], { env: { PATH: safePath }, timeout: 15000 });
+  const capability = JSON.parse(probe.stdout.trim());
+  const pinnedNode = JSON.parse(await readFile(path.join(desktopDir, 'node-runtime.json'), 'utf8'));
+  assert.equal(capability.version, `v${pinnedNode.version}`);
+  assert.equal(capability.arch, process.arch); assert.equal(capability.sqlite, 42); assert.equal(capability.esm, true);
+  assert.equal(capability.jit.optimized, true);
+  await saveEvidence('signed-node-probe.json', capability);
+  check('post-sign bundled Node executes ESM, node:sqlite and optimized JIT without Node on PATH', capability);
+
+  const manifest = await readManifest(repoDir);
+  assert.deepEqual(await listFiles(runtime), manifest.files.map(entry => entry.path).sort(),
+    'The actual bundle contains stale, unlisted, or non-regular runtime resources');
   for (const entry of manifest.files) {
     const expected = await readFile(path.join(repoDir, entry.path));
     const actual = await readFile(path.join(runtime, entry.path));
     assert.equal(createHash('sha256').update(actual).digest('hex'), createHash('sha256').update(expected).digest('hex'), `Staged runtime differs: ${entry.path}`);
+    const sourceMode = (await stat(path.join(repoDir, entry.path))).mode & 0o777;
+    assert.equal((await stat(path.join(runtime, entry.path))).mode & 0o777, entry.mode ?? sourceMode,
+      `Packaged runtime file mode differs: ${entry.path}`);
   }
   const license = await readFile(path.join(app, 'Contents', 'Resources', 'licenses', 'NODE-LICENSE.txt'), 'utf8');
   assert.match(license, /Node|Copyright/);
+  const rustNotices = await readFile(path.join(app, 'Contents', 'Resources', 'licenses', 'RUST-THIRD-PARTY-NOTICES.txt'), 'utf8');
+  assert.match(rustNotices, /Copyright|Permission|License/);
+  const rustIndex = JSON.parse(await readFile(path.join(app, 'Contents', 'Resources', 'licenses', 'RUST-LICENSE-INDEX.json'), 'utf8'));
+  assert.equal(rustIndex.schemaVersion, 1);
+  assert.equal(rustIndex.target, summary.architecture.target);
+  assert.ok(rustIndex.packages.length > 0, 'The native dependency license index is empty');
   const executableBytes = await readFile(binary);
   for (const marker of ['TAURI_WEBDRIVER_PORT', 'WDIO_EMBEDDED_SERVER', 'tauri_plugin_wdio_webdriver']) {
     assert.equal(executableBytes.includes(Buffer.from(marker)), false, 'A production executable contains the native test driver');
   }
-  check('runtime manifest files and Node license present; no test-driver markers', { files: manifest.files.length });
+  check('exact runtime allowlist and Node/Rust licenses present; no test-driver markers',
+    { files: manifest.files.length, nativeLicensePackages: rustIndex.packages.length });
 
   control = path.join(evidenceDir, 'native-control');
   await runFile('/usr/bin/swiftc', [path.join(desktopDir, 'tests/native/mac-control.swift'), '-o', control], { timeout: 60000 });

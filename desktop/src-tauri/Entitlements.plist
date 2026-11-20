@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <!-- Tauri signs its external Node executable with the hardened runtime.
+       Node's V8 uses MAP_JIT to execute JavaScript. This is the sole runtime
+       exception: do not copy Node's general-purpose debug, DYLD, unsigned-memory,
+       executable-page-protection, or library-validation exceptions here.
+       Tauri applies this plist to both nested executables and the app bundle. -->
+  <key>com.apple.security.cs.allow-jit</key><true/>
+</dict></plist>
