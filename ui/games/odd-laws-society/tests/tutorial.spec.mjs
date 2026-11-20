@@ -1,0 +1,58 @@
+import { test, expect } from '@playwright/test';
+import { openFixture, snapshot, action, expectNoHorizontalOverflow, expectTouchTargets } from './browser-helpers.mjs';
+
+test('guided practice teaches every action, resumes, replays and never dispatches to the match', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await openFixture(page, 'jon', 'actions');
+  const original = await snapshot(page);
+  await action(page, 'open-help').click();
+  await action(page, 'start-tutorial').click();
+  await expect(page.getByRole('dialog')).toContainText('GUIDED PRACTICE');
+  await expect(page.getByRole('dialog')).toContainText('never sends an action');
+  await action(page, 'tutorial-start').click();
+  await expect(action(page, 'tutorial-next')).toBeDisabled();
+  await action(page, 'tutorial-select-build').click();
+  await action(page, 'tutorial-plot', '[data-plot="0"]').click();
+  await expect(page.getByRole('dialog')).toContainText('Your 4 coins became 1');
+  await page.screenshot({ path: testInfo.outputPath('tutorial-360-build.png'), animations: 'disabled' });
+  await action(page, 'tutorial-next').click();
+  await action(page, 'tutorial-skip').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(action(page, 'open-help')).toBeFocused();
+  await action(page, 'open-help').click();
+  await action(page, 'start-tutorial').click();
+  await expect(page.getByRole('dialog')).toContainText('A useful day’s work.');
+  for (const step of ['work', 'street', 'income']) {
+    await action(page, `tutorial-${step}`).click();
+    if (step === 'street') await page.screenshot({ path: testInfo.outputPath('tutorial-360-street.png'), animations: 'disabled' });
+    await action(page, 'tutorial-next').click();
+  }
+  await action(page, 'tutorial-law', '[data-choice-id="diversity-parade"]').click();
+  await expect(page.getByRole('dialog')).toContainText('favours Jon’s three-guild city');
+  await action(page, 'tutorial-next').click();
+  await action(page, 'tutorial-seal').click();
+  await expect(page.getByRole('dialog')).toContainText('Jon pays 1, leaving 2; Lydia pays 2, leaving 1');
+  await page.screenshot({ path: testInfo.outputPath('tutorial-360-council.png'), animations: 'disabled' });
+  await action(page, 'tutorial-next').click();
+  await action(page, 'tutorial-lobby').click();
+  await expect(page.getByRole('dialog')).toContainText('only 1 fits');
+  await action(page, 'tutorial-next').click();
+  await action(page, 'tutorial-festival').click();
+  await expect(page.getByRole('dialog')).toContainText('secured 4 prestige');
+  await action(page, 'tutorial-next').click();
+  await action(page, 'tutorial-score', '[data-score-id="treasury"]').click();
+  await expect(page.getByRole('dialog')).toContainText('11 coins ÷ 3');
+  await expectTouchTargets(page, '[role="dialog"] button');
+  await expectNoHorizontalOverflow(page);
+  await action(page, 'tutorial-finish').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(await snapshot(page)).toEqual(original);
+  expect(await page.evaluate(() => window.fixture.commands)).toEqual([]);
+  await action(page, 'open-help').click();
+  await action(page, 'start-tutorial').click();
+  await action(page, 'tutorial-replay').click();
+  await expect(action(page, 'tutorial-start')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(action(page, 'open-help')).toBeFocused();
+});

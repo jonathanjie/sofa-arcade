@@ -1,0 +1,17 @@
+{
+  "name": "@sofa-arcade/odd-laws-ui-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated WS3 fixture and rendered-browser checks; no production dependencies.",
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs tutorial.test.mjs tv.test.mjs",
+    "test:browser": "playwright test",
+    "test:browser:local": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium playwright test",
+    "harness": "node harness/server.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.57.0"
+  }
+}
