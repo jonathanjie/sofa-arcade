@@ -142,14 +142,45 @@ The browser runner covers setup, permissions, touch/tilt, all six game phases, n
 
 The owned workflow checks out the exact PR head, installs the nested locked dependencies, runs the Node/browser suites and uploads evidence named `go3-phone-<head SHA>`. Existing `npm test` does not discover the new phone subtree; the dedicated workflow is required.
 
-### Current evidence checkpoint
+### Tested implementation and evidence
 
-- Existing root suite: **81/81 passed** on the implementation worktree.
-- New Node suite: **35/35 passed** (33 sensor/input checks and two closure/fixture checks).
-- JavaScript syntax and `git diff --check`: passed.
-- Browser verification: **pending CI** at this initial draft checkpoint. The local command sandbox denied Chromium's Unix socket creation; elevated launch was rejected by the environment approval policy. The supported shared browser could not reach the isolated command's loopback server. No local browser or physical-phone pass is claimed.
+The complete runtime and test implementation was tested at **`adf261d6f3af17cdb34eb004d5cd5efb10be3894`**, with a clean checkout. [GO3 CI run 44777390436](https://github.com/jonathanjie/sofa-arcade/actions/runs/44777390436) passed both the controller/browser job and production build. [Game checks](https://github.com/jonathanjie/sofa-arcade/actions/runs/44777390443) also passed at that source. The later handoff commit adds only this report and copied evidence; its exact PR head is checked again by the same workflow. The [PR](https://github.com/jonathanjie/sofa-arcade/pull/11) records that final tested head.
 
-The PR remains draft until its real browser checks and screenshot inspection complete. Final CI heads, reviewed screenshots and build evidence will be added after the run.
+| Verification | Result |
+| --- | --- |
+| Existing root `npm test` | **81/81 passed** locally; Game checks passed in CI |
+| New Node suite | **35/35 passed**: 33 sensor/input checks and two runtime-closure/fixture checks |
+| Real rendered Chromium suite | **14/14 passed**; Chromium **151.0.7922.34**, Node **v22.23.5** |
+| Existing collection production build | **Passed** in the owned CI workflow |
+| JavaScript syntax, whitespace and owned-path review | **Passed** |
+| Physical iOS Safari / Android Chrome sensors and trust | **Unverified**; exact checklist below |
+
+The 14 browser cases cover Jon at 360px; Lydia at 390px with real independent touch pointers; pointer cancel/epoch fencing; Help focus and no automatic resume; permission/fallback states; tilt calibration, stationary hold and recenter; all four screen orientations; hidden/resume/disposal; authoritative phases and connection states; narrow/landscape reduced motion; unready boundaries and command failure; countdown/Help/readiness races; no-prompt permission and invalid late readings; and the graphical diagnostic fixture.
+
+The first rendered run found a real resume-order bug: a synchronous sensor-status callback could resume inside a public-view boundary before that boundary's final safe input write. `update()` now settles nested updates atomically before synchronizing controls. Existing resume/readiness assertions caught it and now pass. The multi-touch helper also initially released the wrong pointer ID; it was repaired, and explicit DOM release-identity assertions now verify independent Brake and joystick release. No safety assertions were removed. Final screenshot review removed visible steering/Brake instructions during live play while retaining accessible descriptions and setup/Help guidance.
+
+The local command environment denied Chromium's Unix socket creation, and its approval policy rejected an elevated launch. The supported shared browser could not reach the isolated command's loopback fixture. Rendered verification therefore ran in GitHub Actions; the downloaded screenshots were inspected directly. There is no claimed local-browser or physical-phone pass.
+
+### Reviewed screenshots and normalized controls
+
+The selected captures below are copied without alteration from that successful run. [Evidence metadata](../../ui/games/gravity-orchard/phone/screenshots/evidence.json) records the exact tested SHA, clean status, browser version, runtime SHA256 hashes, all case results, measured targets, pointer-release identities, artifact provenance and screenshot hashes. [Normalized controls](../../ui/games/gravity-orchard/phone/screenshots/normalized-controls.json) retain only synthetic fixture output/status/command evidence, not raw phone sensor recordings.
+
+| Capture | Review |
+| --- | --- |
+| [360px insecure setup](../../ui/games/gravity-orchard/phone/screenshots/360-insecure-setup.png) | Readable identity/status, wrapped setup copy and prominent complete touch fallback |
+| [360px touch play](../../ui/games/gravity-orchard/phone/screenshots/360-touch-playing.png) | Joystick, large Brake and both utility controls visible together; no live instructional captions |
+| [390px tilt play](../../ui/games/gravity-orchard/phone/screenshots/390-tilt-playing.png) | Compact relative-tilt gauge and generous Brake |
+| [390px simultaneous touch and Brake](../../ui/games/gravity-orchard/phone/screenshots/390-touch-brake-combination.png) | Lydia's identity, directional feedback and held Brake are clear |
+| [800×360 landscape / reduced motion](../../ui/games/gravity-orchard/phone/screenshots/800x360-reduced-touch.png) | All active controls remain visible in the two-column layout |
+| [390px Help](../../ui/games/gravity-orchard/phone/screenshots/390-help-paused.png) | Legible guidance, focus-managed dialog and explicit shared-readiness requirement |
+| [800×360 Help](../../ui/games/gravity-orchard/phone/screenshots/800x360-help.png) | Title and close control remain visible; later options use intentional panel scrolling |
+| [390px no sensor samples](../../ui/games/gravity-orchard/phone/screenshots/390-setup-no-samples.png) | Distinguishes missing readings from transport connection and offers recenter/touch |
+| [390px results](../../ui/games/gravity-orchard/phone/screenshots/390-phase-finished.png) | Quiet shared totals and TV-directed next action |
+| [Graphical fixture](../../ui/games/gravity-orchard/phone/screenshots/diagnostic-fixture.png) | Actual mounted phone, normalized-vector diagnostic and explicit synthetic-data limitations |
+
+Measured active-control layouts are **360×800**, **390×844**, **800×360** and **844×390** CSS pixels. Each has five active targets, a minimum of **48×48 CSS pixels**, and document width equal to viewport width. The portrait Brake is 122px high; portrait touch surfaces are 214px high. Focus trapping/restoration, keyboard controls, scrolling and reduced-motion assertions passed. CSS uses safe-area insets; real notches, browser chrome and physical comfort remain hardware checks.
+
+The full CI artifact contains **38 screenshots**, per-case Playwright traces, normalized controls and the source/hash summary. Its name is `go3-phone-adf261d6f3af17cdb34eb004d5cd5efb10be3894`, artifact ID `14649044190`, ZIP SHA256 `daeec60a98dc6174eb9e075295b279612c74c294e7190c8864e2cd142ce0898e`. CI retains full artifacts for 14 days; the selected images and compact evidence above remain tracked. All evidence stays outside the five-file production inventory.
 
 ## Physical-device checklist — unverified
 
