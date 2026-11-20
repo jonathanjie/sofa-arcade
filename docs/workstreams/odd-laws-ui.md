@@ -5,7 +5,7 @@
 - Branch: `feature/odd-laws-ui`.
 - Base: `e34b0015399cb9791b175987adf1fab1b542565a` from fetched GitHub `main`.
 - Ownership: `ui/games/odd-laws-society/**`, `.github/workflows/ws3-ui.yml`, and this report only.
-- Component status: implemented; 33 focused Node tests and 61 actual Chromium checks pass. Rendered evidence was captured from `e1aab1a2492da1a4c00e94f583fbb08c387a2c78`; the PR records the final tested head after the documentation/evidence commit.
+- Component status: implemented; 33 focused Node tests and 61 actual Chromium checks pass. Rendered evidence was captured from `e1aab1a2492da1a4c00e94f583fbb08c387a2c78`, with construction/street tutorial captures from `30a7f076d0b7202fb2d530f71ab010369f81f2cf`; the PR records the final tested head after the documentation/evidence commit.
 - No registration, shared shell change, engine/platform import, final-media generation, merge, deployment, or Site publication.
 
 The interface implements the v0.2 city builder, not the obsolete movement prototype. It consumes only the contract's projected room envelope and injected public helpers. Fixtures are explicitly labelled local simulation; they do not establish real-room, LAN, native Tauri, or physical-device acceptance.

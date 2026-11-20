@@ -2,8 +2,9 @@
 
 These unmodified PNGs came from actual headless Chromium, using the labelled standalone fixture harness. They are not design mockups or integrated multiplayer screenshots.
 
-- Capture commit: `e1aab1a2492da1a4c00e94f583fbb08c387a2c78`.
+- Main capture commit: `e1aab1a2492da1a4c00e94f583fbb08c387a2c78`.
 - [Successful CI run: 33 Node tests and 61 browser checks](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701879120).
+- The two additional construction/street tutorial captures come from `30a7f076d0b7202fb2d530f71ab010369f81f2cf` ([successful run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44702674506)).
 - Browser: locked Playwright 1.57.0 Chromium, Ubuntu 24.04.
 - The final evidence/report commit leaves production runtime code unchanged; its exact tested SHA is in the PR.
 - [evidence.json](evidence.json) records the original artifact, paths, dimensions, and SHA-256 hashes.
@@ -23,6 +24,9 @@ These unmodified PNGs came from actual headless Chromium, using the labelled sta
 | [phone-jon-360-full.png](phone-jon-360-full.png) | 360×800 | Full city with remaining legal actions |
 | [phone-offline-fallback.png](phone-offline-fallback.png) | 1280×720 | Failed media with network offline |
 | [tutorial-360-council.png](tutorial-360-council.png) | 360×800 | Optional isolated all-pay lesson |
+
+| [tutorial-360-build.png](tutorial-360-build.png) | 360×800 | Optional isolated construction lesson |
+| [tutorial-360-street.png](tutorial-360-street.png) | 360×800 | Optional isolated street-completion lesson |
 
 The CI artifact contains all 40 size/state layout captures, plus interaction/tutorial screenshots. TV boards fit the requested viewports. Phones permit vertical scrolling for inspection, Build detail, and the complete result ledger. The harness banner remains visible as evidence of fixture mode; production mounting does not include that banner.
 

@@ -96,6 +96,30 @@
       "height": 800,
       "sha256": "fd372fdb9abc99b0fdff4afbdc44a1883251d9a4355395abcb1d98be7b2e6eca",
       "source": "tutorial-guided-practice-t-41d22-ver-dispatches-to-the-match/tutorial-360-council.png"
+    },
+    {
+      "file": "tutorial-360-build.png",
+      "width": 360,
+      "height": 800,
+      "sha256": "4b6f173f954e1131d52922e89e7c84ad0b2c46a6eaa4ae475537df762e2eb543",
+      "source": "tutorial-guided-practice-t-41d22-ver-dispatches-to-the-match/tutorial-360-build.png",
+      "captureCommit": "30a7f076d0b7202fb2d530f71ab010369f81f2cf"
+    },
+    {
+      "file": "tutorial-360-street.png",
+      "width": 360,
+      "height": 800,
+      "sha256": "65d263ed7812c73b09bb921f7b33fbb4cff7bfe990fa56a4c23c4c3ca00ac6b4",
+      "source": "tutorial-guided-practice-t-41d22-ver-dispatches-to-the-match/tutorial-360-street.png",
+      "captureCommit": "30a7f076d0b7202fb2d530f71ab010369f81f2cf"
+    }
+  ],
+  "additionalCaptureRuns": [
+    {
+      "captureCommit": "30a7f076d0b7202fb2d530f71ab010369f81f2cf",
+      "workflowRun": "https://github.com/jonathanjie/sofa-arcade/actions/runs/44702674506",
+      "artifactId": 14614085341,
+      "artifactSha256": "79a51affc97a73f7700c3cf6da2667a638081e26931beb9d23c412fbe9a2d074"
     }
   ]
 }
