@@ -136,7 +136,7 @@ native code and certificate capabilities remain excluded.
 
 ## Automated acceptance and current checkpoint
 
-| Gate | Initial integrated working-tree result |
+| Gate | Verified checkpoint so far |
 | --- | --- |
 | GO7 protocol/UI/native host/package suites | 31 passed, zero skipped at the first published candidate |
 | Existing root rules/rooms/LAN/controller/music | 81 passed |
@@ -144,7 +144,9 @@ native code and certificate capabilities remain excluded.
 | Production build and public inventory | Passed; 182 declared public files |
 | Rust non-GUI protocol/configuration/Quit | 20 passed |
 | Rendered collection TV + two phone contexts | CI gate; local Chromium blocked before page load by AF_UNIX restrictions |
-| Actual packaged macOS ARM64 and Intel | Separate CI gates; Linux is not native evidence |
+| Actual packaged macOS ARM64 | GO7 full three-process WKWebView acceptance passed at `400514d`, job 136631856038 |
+| Actual packaged macOS Intel | Separate running CI gate; ARM and Linux do not establish Intel acceptance |
+| GO1–GO6 assembled component suites | 280 tests passed at `400514d`; fixture regeneration also passed |
 
 The first clean committed real-rate CI campaign passed at
 `64e417d9dc4b18a3b3e9def6a3232a06d7010134` in
@@ -181,11 +183,17 @@ unchanged game snapshots to cause genuine backpressure, checks one latest pendin
 snapshot per connection, and verifies slow-reader removal. It then sends a real
 200-frame authenticated input burst, verifies rate-limited closure, both-ready
 recovery with cleared steering, and zero coordinator timers after owned shutdown.
-The development run observed 42 coalesced snapshots and removal after 53.53 s,
-2,122 accepted inputs versus 10 checkpoints, and zero host/tick overruns. Those
-are labelled dirty-source feasibility results; CI publishes a new exact-head
-`stress.json`. No bufferedAmount override, payload inflation or fake latency is
-used.
+The clean committed run at `400514d002321c099a3019581ae6f6e55005342b`
+([artifact 14679305747](https://github.com/jonathanjie/sofa-arcade/actions/runs/44835724262/artifacts/14679305747))
+observed 42 coalesced snapshots and slow-reader removal after 39.55 s, with at most
+one pending snapshot and 4,625 observed buffered bytes. Healthy traffic sustained
+59.996 simulation Hz / 19.999 snapshot Hz, 1,571 accepted inputs versus seven
+checkpoints, no host/tick overruns, and ACK RTT p95 47.24 / 48.04 ms. The real
+200-frame burst closed with code 4429 in 21.88 ms; eight total room inputs were
+accepted during that interval, including any healthy player traffic. Recovery
+required both-ready and cleared steering; shutdown retained zero sockets, pending
+authorization calls or coordinator timers. No bufferedAmount override, payload
+inflation or fake latency is used.
 
 Protocol tests also exercise shared verified TLS/WS/WSS, wrong credentials and
 origins, stale observed ticks/epochs, controller replacement, lost command ACK,
@@ -233,6 +241,37 @@ verified normal Mac Quit, both owned processes exiting and supervisor `stopped`.
 This partial run is not recorded as full GO7 native acceptance. The inherited
 Desktop ARM production build/startup/persistence/relaunch gate passed separately
 at `64e417d9` (workflow 44834486614, job 136627492193).
+
+The next full Apple Silicon GO7 run passed at
+`400514d002321c099a3019581ae6f6e55005342b`,
+[job 136631856038](https://github.com/jonathanjie/sofa-arcade/actions/runs/44835724262/job/136631856038),
+including the three real owned app processes on macOS 15.8.2 ARM64.
+[Artifact 14678966462](https://github.com/jonathanjie/sofa-arcade/actions/runs/44835724262/artifacts/14678966462)
+contains the exact head, eight inspected screenshots and lifecycle reports.
+The campaign completed 12 orders and nine stars in 145.129 seconds, with one
+composted fruit and transfers in both directions. Each authenticated Node phone
+client sent 2,795 inputs and received 2,903 snapshots without dropped/invalid
+frames or callback errors. The actual WKWebView decoded 49 final images and made
+no external runtime asset request. These phone clients are not rendered browsers
+or physical devices; the separate browser and hardware gates remain explicit.
+
+Native setup and denied generic permissions, same-seed rematch, paused checkpoint,
+fresh-process restore with a newer epoch, persisted WKWebView state and root
+certificate, explicit exit, stale-URL non-resume and persisted secure disable all
+passed. Each of the three normal Mac Quit reports confirms parent and child
+exited, listener closed and supervisor stopped. The production graph excludes
+WDIO. Intel remains separately tracked.
+
+On that candidate, the rendered test passed joining, touch fallback, active-play
+layout, host-only audio, recenter, lost ACK retry, stale epochs, Help and socket
+reconnect. Playwright's foreground capture made its CDP freeze stimulus
+ineffective. The repaired harness uses real `about:blank` navigation and browser
+Back, preserves trusted `pagehide` observer evidence, and retains neutral pause,
+fresh-epoch and both-ready assertions. It explicitly describes navigation/pagehide
+and saved-seat return; physical phone background/lock stays a manual gate.
+The 720p/1080p TV and 360/390 phone images were visually inspected, with intact
+active-play bounds and final local artwork. This partial browser run is not
+claimed as campaign, basket or recovery acceptance.
 
 Independent native review also corrected a status-mutex/UI-thread lock inversion
 before publication. Rejoin disposal and loopback QR selection corrections are

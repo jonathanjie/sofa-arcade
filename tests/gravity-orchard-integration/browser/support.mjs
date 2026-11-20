@@ -55,8 +55,12 @@ export async function createSession(){
 /** Installed before app scripts. It never stores the first auth message or credentials. */
 function installProbe({permission}){
  const NativeSocket=window.WebSocket;
- const sockets=[],receivedInputs=new Map(),seenEvents=new Set(),events=[],commands=[],lifecycle=[];
- const observeLifecycle=event=>{lifecycle.push({type:event.type,trusted:event.isTrusted,visibility:document.visibilityState,at:performance.now()});if(lifecycle.length>256)lifecycle.shift();};
+ const sockets=[],receivedInputs=new Map(),seenEvents=new Set(),events=[],commands=[];
+ // Keep only observer evidence across an actual document navigation. Never
+ // alter saved game credentials, document visibility or browser events.
+ const lifecycleKey='sofa-go7-lifecycle-proof';let lifecycle=[];
+ try{lifecycle=JSON.parse(sessionStorage.getItem(lifecycleKey)||'[]');}catch{}
+ const observeLifecycle=event=>{lifecycle.push({type:event.type,trusted:event.isTrusted,visibility:document.visibilityState,at:performance.now()});if(lifecycle.length>256)lifecycle.shift();if(event.type==='pagehide')try{sessionStorage.setItem(lifecycleKey,JSON.stringify(lifecycle));}catch{}};
  for(const type of ['visibilitychange','freeze','resume'])document.addEventListener(type,observeLifecycle);
  for(const type of ['pagehide','pageshow','blur','focus'])window.addEventListener(type,observeLifecycle);
  let view=null,presence=null,lastInput=null,dropKind=null,dropId=null,drops=0,frames=0,inputs=0,connections=0,serverSeq=-1;
@@ -150,5 +154,6 @@ export async function touchDriver(page){
   },
   async release(){await up(1);await up(2);steering=brake=false;},
   async close(){await this.release();await session.detach();},
+  async abandonAfterNavigation(){points.clear();steering=brake=false;await session.detach();},
  };
 }

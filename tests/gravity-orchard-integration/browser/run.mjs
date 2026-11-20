@@ -93,36 +93,29 @@ try{
  await readyBoth();
 
  await drivers.jon.apply({x:.65,y:0,brake:false});
- await until(async()=>{const current=await view(tv);return current.players.jon.input.x>.4;},'Held steering before actual browser backgrounding');
+ await until(async()=>{const current=await view(tv);return current.players.jon.input.x>.4;},'Held steering before actual browser pagehide');
  const beforeBackground=await view(tv),lifecycleStart=await phones.jon.evaluate(()=>window.__go7Probe.lifecycle().length);
- const lifecycleSession=await phones.jon.context().newCDPSession(phones.jon);let backgroundPause;
- try{
-  // Chromium's browser handler calls WasHidden and SetPageFrozen here. Do not
-  // override document.hidden or dispatch synthetic visibility/pagehide events.
-  // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/content/browser/devtools/protocol/page_handler.cc
-  await lifecycleSession.send('Page.setWebLifecycleState',{state:'frozen'});
-  backgroundPause=await waitPhase(tv,'paused',10000);
-  assert.ok(['requested','network'].includes(backgroundPause.pauseReason));
-  assert.ok(backgroundPause.runEpoch>beforeBackground.runEpoch);
-  for(const id of IDS)assert.deepEqual(backgroundPause.players[id].input,{x:0,y:0,brake:true});
-  await sleep(350);assert.equal((await view(tv)).tick,backgroundPause.tick,'Shared simulation remains stopped while a phone is frozen');
- }finally{
-  await lifecycleSession.send('Page.setWebLifecycleState',{state:'active'});
-  await phones.jon.bringToFront();await lifecycleSession.detach();
- }
- await phones.jon.waitForFunction(()=>document.visibilityState==='visible');
+ // Playwright's own foreground capture prevents a CDP freeze from genuinely
+ // hiding this document. A real navigation reliably exercises trusted pagehide
+ // and socket loss without forging document.hidden or a lifecycle event.
+ await phones.jon.goto('about:blank');await drivers.jon.abandonAfterNavigation();delete drivers.jon;
+ const backgroundPause=await waitPhase(tv,'paused',10000);
+ assert.ok(['requested','network'].includes(backgroundPause.pauseReason));
+ assert.ok(backgroundPause.runEpoch>beforeBackground.runEpoch);
+ for(const id of IDS)assert.deepEqual(backgroundPause.players[id].input,{x:0,y:0,brake:true});
+ await sleep(350);assert.equal((await view(tv)).tick,backgroundPause.tick,'Shared simulation remains stopped while the phone document is absent');
+ await phones.jon.goBack();await phones.jon.locator(phoneSelector('phone')).waitFor();await roomCredential(run,phones.jon,code,'jon');
  const lifecycle=await phones.jon.evaluate(start=>window.__go7Probe.lifecycle().slice(start),lifecycleStart);
- assert.ok(lifecycle.some(event=>event.type==='freeze'&&event.trusted),'Chromium delivered a real freeze event');
- assert.ok(lifecycle.some(event=>event.visibility==='hidden'&&event.trusted),'Chromium delivered a real hidden lifecycle transition');
- await waitPhase(phones.jon,'paused');await releaseAll();
- assert.equal((await view(tv)).phase,'paused','Foregrounding never silently resumes the authority');
+ assert.ok(lifecycle.some(event=>event.type==='pagehide'&&event.trusted),'Chromium delivered an actual pagehide event');
+ await waitPhase(phones.jon,'paused');await chooseTouch(phones.jon);drivers.jon=await touchDriver(phones.jon);await releaseAll();
+ assert.equal((await view(tv)).phase,'paused','Returning to the saved phone page never silently resumes the authority');
  assert.deepEqual((await view(tv)).ready,{jon:false,lydia:false});
- await run.screenshot(phones.jon,'360-returned-from-background');
+ await run.screenshot(phones.jon,'360-returned-after-pagehide');
  await phones.jon.locator(phoneSelector('ready')).click();
  await until(async()=>{const current=await view(tv);return current.ready.jon;},'Returned gardener explicitly readies');
  await sleep(300);assert.equal((await view(tv)).phase,'paused','One gardener cannot resume the run alone');
  await readyBoth();
- run.check('Actual Chromium background/freeze clears held steering and resumes only after both gardeners ready',{method:'CDP browser lifecycle frozen/active and foregrounding, with trusted lifecycle events observed. No synthetic document visibility or engine state mutation. This does not establish physical phone lock/background behavior.',pauseReason:backgroundPause.pauseReason,fromEpoch:beforeBackground.runEpoch,pausedEpoch:backgroundPause.runEpoch,lifecycle});
+ run.check('Actual pagehide navigation clears held steering; the saved seat returns paused and requires both gardeners ready',{method:'Real navigation to about:blank and browser Back. A test-only sessionStorage key retains trusted pagehide observer records across document replacement; no saved credentials, visibility properties or game state are rewritten. Playwright foreground emulation made CDP freeze ineffective, so this verifies navigation/pagehide and socket loss, not physical phone background/lock behavior.',pauseReason:backgroundPause.pauseReason,fromEpoch:beforeBackground.runEpoch,pausedEpoch:backgroundPause.runEpoch,lifecycle});
 
  const pilot=createPilot(),started=performance.now(),captured=new Set();let complete=null,lastPhase='playing';const loopDurations=[];let lastNote=0;
  while(performance.now()-started<420000){
