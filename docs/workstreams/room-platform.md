@@ -10,7 +10,7 @@
 
 ## Handoff status
 
-Implementation, local protocol verification, the production build, and the actual browser runtime gate are complete. The final macOS matrix check is being obtained after replacing an unsupported runner label. [PR #7](https://github.com/jonathanjie/sofa-arcade/pull/7) identifies the exact tested head and current CI results; this report intentionally does not contain its own future commit hash.
+Ready for WS6 handoff. Implementation, local protocol verification, the production build, the actual browser runtime gate, and all three platform CI matrix jobs have passed. [PR #7](https://github.com/jonathanjie/sofa-arcade/pull/7) identifies the exact tested head and current CI results; this report intentionally does not contain its own future commit hash.
 
 The component uses an injected fixture to complete independent platform work. Actual Odd Laws registration, its real engine/view combination, and whole-product acceptance belong to WS6. Nothing here enables a planned game or publishes a deployment.
 
@@ -97,6 +97,8 @@ client.dispose();
 
 `submit(action): Promise<RoomEnvelope>`, `receive(room)`, and `dispose()` implement the frozen contract. Additive `reconnect()` resolves an uncertain already-sent command with its original identity before fetching the current authenticated snapshot. If `initialRoom` is omitted, the client fetches it with its bearer header.
 
+The module also exports `RoomClientError`, with a fixed safe `message`, a bounded public `code`, and an optional HTTP `status`. Unknown server codes map to a generic rejection rather than reflecting server text. Existing transport exports `readTransportConfig` and `createEventDecoder`, and authority constants `ROOM_TTL_MS` and `MAX_BODY_BYTES`, remain available.
+
 Commands are copied and serialized per seat. IDs use Web Crypto `getRandomValues`, which works on ordinary HTTP phone origins without `randomUUID`. Retries preserve the original ID, revision, action and phase. Lost, malformed or otherwise unverifiable successful responses retain that identity. After bounded retry exhaustion, another distinct command is blocked until the uncertain command resolves; resubmitting the same action or calling `reconnect()` resumes it.
 
 Snapshots are copied; lower revisions, foreign rooms/games, retired matches, and equal-revision phase regressions are ignored. A queued city command is fenced again immediately before first send. Once sent, its duplicate acknowledgment can still be recovered after a newer SSE state arrives. Disposal aborts requests, cancels readers/timers, rejects waiters, and suppresses late callbacks. Responses are bounded to 1 MiB. Neither this client nor its tests import a private game engine for prediction. `ui/action-queue.mjs` remains Sofa Kingdoms' separate optimistic path.
@@ -159,13 +161,13 @@ SOFA_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
 
 That browser test uses three isolated Chromium contexts on a non-loopback HTTP origin, checks the real insecure-context crypto APIs, imports the actual served client/transport modules, exercises locked reconnect and a complete fixture match, loses/retries the final acknowledgment, and rejects an old command after rematch. An optional `SOFA_CHROMIUM_EXECUTABLE` selects an installed Chromium. The local managed workspace denies interface enumeration and Chromium's required socket operation, so this gate was obtained from the dedicated CI job; no local browser pass is claimed.
 
-Initial remote evidence at the first proposed source head: both Linux protocol/regression matrix jobs passed, the existing Game checks workflow passed, and [the actual Chromium job](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700710523/job/136168117335) passed **1/1** browser scenario with Chrome 151.0.7922.34 and Node v24.22.3. The final head's CI links are in the PR. `npm run build` also passed all five Vinext/Vite production build stages in a separate checkout with matching package and lockfile hashes; generated copies were not committed from this component branch.
+Verified remote evidence at the implementation checkpoint: [all four owned CI jobs passed](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701040516), as did [the existing Game checks workflow](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701040624). Both Linux versions passed **79/79** focused tests and **81/81** legacy tests. [The macOS job](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701040516/job/136169213900) recorded `{"node":"v24.22.3","platform":"darwin","arch":"arm64"}` and passed the same two commands. [The actual Chromium job](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701040516/job/136169213558) passed **1/1** browser scenario; the installed browser was Chrome 151.0.7922.34. The final head's repeated CI links are in the PR. `npm run build` also passed all five Vinext/Vite production build stages in a separate checkout with matching package and lockfile hashes; generated copies were not committed from this component branch.
 
 Evidence is reproducible in the named test files and the PR's linked workflow jobs. Protocol tests are loopback/same-machine evidence, and the browser suite is a same-machine browser test. Neither establishes physical home Wi-Fi latency, TV casting, audio behavior, packaged Tauri execution, or a complete production Odd Laws match.
 
 ## Remaining gates and dependency requests
 
-- Before component handoff: confirm the corrected macOS job and all owned checks are green at the final proposed head; keep the PR draft while any essential component gate is missing.
+- No independent WS2 component gate remains. Any later runtime or contract change requires its affected tests and owned CI to be revalidated at the new head.
 - WS6: connect the real WS1 engine and WS3 views, apply the exact preparation/package entries above, register only after acceptance, and rerun the combined games/desktop tests.
 - WS5/WS6: validate the packaged Mac lifecycle and explicit runtime manifest with this host API.
 - Hardware acceptance: two actual phone browsers on Jon's Wi-Fi, TV/casting, real disconnect/resume behavior, and audio. These remain separate from protocol CI.
