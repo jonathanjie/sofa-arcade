@@ -17,6 +17,9 @@ export const BROWSER_FILES = Object.freeze([
   { url: '/collection-load.mjs', source: 'ui/collection-load.mjs' },
   { url: '/engine.mjs', source: 'game/engine.mjs' },
   { url: '/games/catalog.mjs', source: 'games/catalog.mjs' },
+  { url: '/games/odd-laws-society/catalog.mjs', source: 'games/odd-laws-society/catalog.mjs' },
+  { url: '/games/odd-laws-society/preview.mjs', source: 'games/odd-laws-society/preview.mjs' },
+  { url: '/games/odd-laws-society/errors.mjs', source: 'games/odd-laws-society/errors.mjs' },
 ].map(Object.freeze));
 
 export const SERVER_FILES = Object.freeze([
@@ -25,6 +28,8 @@ export const SERVER_FILES = Object.freeze([
   'game/engine.mjs',
   'games/catalog.mjs',
   'games/registry.mjs',
+  'games/odd-laws-society/engine.mjs',
+  'games/odd-laws-society/projection.mjs',
   'drizzle/0000_green_thunderbolts.sql',
 ]);
 

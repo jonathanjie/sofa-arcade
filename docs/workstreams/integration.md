@@ -5,10 +5,11 @@
 Work is on `feature/local-integration` in a dedicated clone. Base `main` is
 `e34b0015399cb9791b175987adf1fab1b542565a` (20 November 2026).
 
-**Status: preparing acceptance; not a complete local release.** The initial
-GitHub inspection found no WS1–WS5 PRs or component branches. No component code
-has been copied from an unfinished working tree. The collection keeps Odd Laws
-Society planned until real end-to-end acceptance passes.
+**Status: assembling reviewed components; not a complete local release.** WS1
+is included at its explicitly ready, tested head. WS2, WS3 and WS5 have draft
+PRs with outstanding owner CI gates; WS4 has not published a handoff. No component
+code is copied from an unfinished working tree. Odd Laws Society remains planned
+until real end-to-end acceptance passes.
 
 The machine-readable checkpoint is
 [`tests/integration/components.json`](../../tests/integration/components.json).
@@ -17,11 +18,11 @@ immutable head. A later head is a new candidate requiring affected checks again.
 
 | Component | Expected branch | PR / immutable head | Integration state |
 | --- | --- | --- | --- |
-| WS1 engine | `feature/odd-laws-engine` | Not published at initial inspection | Awaiting tested handoff |
-| WS2 private platform | `feature/local-platform` | Not published at initial inspection | Awaiting tested handoff |
-| WS3 TV/phone UI | `feature/odd-laws-ui` | Not published at initial inspection | Awaiting tested handoff |
+| WS1 engine | `feature/odd-laws-engine` | #4 — `a9d55b76c3c7d1da43836c350a0f7ce63820cecb` | Included; ready handoff and owned CI verified |
+| WS2 private platform | `feature/local-platform` | #7 — observed `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Draft; not incorporated |
+| WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — observed `777bb73055e8c1b3214a7e94dd949886c2fde625` | Draft; not incorporated |
 | WS4 media/music | `feature/odd-laws-media` | Not published at initial inspection | Awaiting tested handoff |
-| WS5 Tauri | `feature/tauri-local` | Not published at initial inspection | Awaiting tested handoff |
+| WS5 Tauri | `feature/tauri-local` | #6 — observed `d989530000828f1132388e487950f99cfd62190d` | Draft; not incorporated |
 
 Preferred review/merge order: WS1, WS2, WS3, WS4, WS5, then WS6. An aggregate WS6
 candidate depends on all included component PRs. This session does not merge
@@ -168,3 +169,27 @@ and six public-policy completions successfully. Its report explicitly says final
 simulation/review and workflow are pending. It is therefore recorded as observed
 only and **not incorporated**. Public helper closure includes `errors.mjs` in
 addition to `catalog.mjs` and `preview.mjs`; authority requires a fresh match ID.
+
+### WS1 reviewed handoff and second browser diagnostic
+
+WS1 PR #4 is explicitly ready at `a9d55b76c3c7d1da43836c350a0f7ce63820cecb`.
+Its production engine is unchanged from the independently reviewed checkpoint;
+the final delta adds simulation evidence, review tests and its dedicated workflow.
+On the assembled candidate, WS6 reran all **95 engine tests**, fixture consistency
+(**seven scenarios/eight files**), and the **64-match / 3,072-transition** smoke sweep.
+All passed. [Owned Node 22/24 CI](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700753729)
+and [legacy CI](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700753722)
+were inspected and passed. The component is merged by ancestry, without cherry-picking
+or altering its owner branch. The registry contains the real engine, while the
+catalog's planned status still blocks public room creation. Only its three public
+helper modules enter browser copies; authority/projection stay server-side.
+
+At `123519032e49bfe0f92d5071376c42f095cf25ab`, the next
+[rendered run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700690114)
+passed four viewport checks, seven primary phone target measurements (minimum
+55 CSS pixels), reduced motion, gesture audio/preferences, all eight Sofa tutorial
+lessons with skip/replay, phone refresh, and passive disconnect/reconnect. It then
+failed at final results because the TV could restore before its rules module
+loaded (`roundStarter` on null). This is a real shared-shell defect, with a fix
+being revalidated; it is **not** a completed browser acceptance.
+[Diagnostic screenshots and report](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700690114/artifacts/14612378717).

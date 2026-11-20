@@ -11,15 +11,26 @@
       "id": "WS1",
       "branch": "feature/odd-laws-engine",
       "report": "docs/workstreams/odd-laws-engine.md",
-      "pr": null,
-      "head": null,
-      "status": "awaiting-handoff",
-      "observedCheckpoint": {
-        "head": "9f630f26844351ad1b23c525585f91a2a5915d4a",
-        "reason": "Owner explicitly marks this as a non-final checkpoint; simulation and owned CI workflow pending. Reviewed separately, not incorporated."
-      },
-      "protectedPaths": ["games/odd-laws-society", ".github/workflows/ws1-engine.yml"],
-      "postHandoffCorrections": []
+      "pr": 4,
+      "head": "a9d55b76c3c7d1da43836c350a0f7ce63820cecb",
+      "status": "included",
+      "protectedPaths": [
+        "games/odd-laws-society",
+        ".github/workflows/ws1-engine.yml"
+      ],
+      "postHandoffCorrections": [],
+      "review": {
+        "handoff": "PR #4 marked ready; owner report declares engine complete",
+        "localChecks": [
+          "95 engine tests passed",
+          "7 projected scenarios / 8 fixture files verified",
+          "64 smoke matches / 3072 transitions audited"
+        ],
+        "ciRuns": [
+          44700753729,
+          44700753722
+        ]
+      }
     },
     {
       "id": "WS2",
@@ -28,8 +39,24 @@
       "pr": null,
       "head": null,
       "status": "awaiting-handoff",
-      "protectedPaths": ["server/rooms.mjs", "server/rooms.test.mjs", "server/lan.mjs", "server/lan.test.mjs", "server/room-*.mjs", "ui/transport.mjs", "ui/transport.test.mjs", "ui/room-client.mjs", "ui/room-client.test.mjs", ".github/workflows/ws2-platform.yml"],
-      "postHandoffCorrections": []
+      "protectedPaths": [
+        "server/rooms.mjs",
+        "server/rooms.test.mjs",
+        "server/lan.mjs",
+        "server/lan.test.mjs",
+        "server/room-*.mjs",
+        "ui/transport.mjs",
+        "ui/transport.test.mjs",
+        "ui/room-client.mjs",
+        "ui/room-client.test.mjs",
+        ".github/workflows/ws2-platform.yml"
+      ],
+      "postHandoffCorrections": [],
+      "observedCheckpoint": {
+        "pr": 7,
+        "head": "adeefd5bd019e459f3f7a3fc4a921073cce3ec46",
+        "reason": "Draft; owned platform/browser CI pending."
+      }
     },
     {
       "id": "WS3",
@@ -38,8 +65,16 @@
       "pr": null,
       "head": null,
       "status": "awaiting-handoff",
-      "protectedPaths": ["ui/games/odd-laws-society", ".github/workflows/ws3-ui.yml"],
-      "postHandoffCorrections": []
+      "protectedPaths": [
+        "ui/games/odd-laws-society",
+        ".github/workflows/ws3-ui.yml"
+      ],
+      "postHandoffCorrections": [],
+      "observedCheckpoint": {
+        "pr": 5,
+        "head": "777bb73055e8c1b3214a7e94dd949886c2fde625",
+        "reason": "Draft; rendered component CI failed, owner repair pending."
+      }
     },
     {
       "id": "WS4",
@@ -48,7 +83,11 @@
       "pr": null,
       "head": null,
       "status": "awaiting-handoff",
-      "protectedPaths": ["public/assets/odd-laws-society", "ui/media/odd-laws-society", ".github/workflows/ws4-media.yml"],
+      "protectedPaths": [
+        "public/assets/odd-laws-society",
+        "ui/media/odd-laws-society",
+        ".github/workflows/ws4-media.yml"
+      ],
       "postHandoffCorrections": []
     },
     {
@@ -58,8 +97,16 @@
       "pr": null,
       "head": null,
       "status": "awaiting-handoff",
-      "protectedPaths": ["desktop", ".github/workflows/desktop.yml"],
-      "postHandoffCorrections": []
+      "protectedPaths": [
+        "desktop",
+        ".github/workflows/desktop.yml"
+      ],
+      "postHandoffCorrections": [],
+      "observedCheckpoint": {
+        "pr": 6,
+        "head": "d989530000828f1132388e487950f99cfd62190d",
+        "reason": "Draft; native macOS CI pending."
+      }
     }
   ]
 }
