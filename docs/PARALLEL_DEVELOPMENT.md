@@ -4,6 +4,8 @@
 
 Canonical project: **https://github.com/jonathanjie/sofa-arcade**. Read the current `AGENTS.md`, `README.md`, and `docs/HANDOFF.md` before editing. The existing ChatGPT Site remains the deployment destination unless Jon explicitly changes hosting.
 
+**Current local-release assignment:** Jon has selected Tauri/local play. Use [DISPATCH_LOCAL.md](DISPATCH_LOCAL.md) for six self-contained session prompts and exact disjoint ownership, together with [LOCAL_IMPLEMENTATION_CONTRACT.md](LOCAL_IMPLEMENTATION_CONTRACT.md). That more specific assignment supersedes this document's broad shared-platform/game ownership for WS1–WS6. The general rules and other game PRDs below remain useful; no cloud deployment is included in the local assignments.
+
 ## Pick a workstream
 
 | Workstream | PRD | Suggested branch | Main dependency |

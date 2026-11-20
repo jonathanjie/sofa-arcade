@@ -2,6 +2,8 @@
 
 Status: proposed architecture, 20 November 2026. The existing Site and Node LAN host are implemented. A GitHub Pages build, a separate hosted push service, and a Tauri app are not implemented by this document. GitHub remains the canonical source for every delivery mode.
 
+**Selected direction:** Jon chose Tauri and local play after reviewing these options. The active implementation is the [six-workstream local dispatch plan](DISPATCH_LOCAL.md), with [shared contracts](LOCAL_IMPLEMENTATION_CONTRACT.md). Desktop packaging starts immediately using the existing Sofa Kingdoms while Odd Laws engine, UI, media, and private multiplayer work proceed in parallel. Pages and hosted push remain future alternatives, not active deployment tasks.
+
 ## Decision
 
 ChatGPT Sites is convenient hosting, not a requirement of the game design. GitHub Pages can serve the collection, artwork, music, TV interface, and phone interface. It cannot execute the present room API or host its database: Pages serves static HTML/CSS/JavaScript [1, 2]. Online multiplayer therefore still needs a separate authoritative room service, or a larger change to browser-hosted authority with a pairing/signaling mechanism.
@@ -10,7 +12,7 @@ A Tauri Mac app is a good future packaging option for local play. Its main benef
 
 Both a Sites page and a Pages page can be WebSocket clients connecting to an authorized `wss://` room service. That is distinct from the host supplying the WebSocket server and shared room coordinator. Pages supplies neither; the inspected Sites configuration exposes Worker/D1 but does not establish support for provisioning the required coordinator. See the explicit distinction below.
 
-Recommended order: build and balance the next game against the shared engine/protocol; keep the functioning hosted and LAN paths; add hosted push when improving the public URL's latency; package the proven local host into Tauri when installation convenience becomes the priority. Keep game implementation independent of these delivery choices.
+Current priority: package the existing local host into Tauri and develop the deeper game against the shared engine/protocol in parallel, then integrate and verify the combined local collection. Keep the functioning hosted and browser/LAN paths compatible. Hosting independence and online latency work can follow separately; game rules stay independent of the delivery adapter.
 
 ## What exists today
 
@@ -108,12 +110,12 @@ Verify a fresh Mac installation without separately installed Node, with internet
 
 ## Delivery plan
 
-1. **Now:** maintain one GitHub source, shared rules and adapters, current Site, and portable LAN mode. Build the deeper game without introducing a desktop-only dependency.
-2. **Online latency:** implement and measure a persistent room connection using the plan in [NETWORKING.md](NETWORKING.md). Choose a supported coordinator deployment; do not invent Sites bindings.
-3. **Hosting independence:** add the static export and configurable backend endpoint. Deploy Pages plus the selected backend only after compatibility verification. This can reuse the same push service.
-4. **Mac convenience:** add the Tauri shell and bundled local host as another release artifact. The browser remains a supported way to play and the phones require no app installation.
+1. **Local app now:** add the Tauri shell and bundled host, using Sofa Kingdoms for immediate packaging/native validation. The browser remains supported and phones need no app.
+2. **Deeper game in parallel:** implement Odd Laws rules, private multiplayer, interface, and media in their separate workstreams, using fixtures where dependencies are not yet integrated.
+3. **Combined acceptance:** integrate reviewed PR heads, verify TV/two-phone gameplay and native lifecycle, and produce a tested local artifact plus a final integration PR.
+4. **Later online options:** if requested separately, add the persistent hosted room service and/or Pages static export described above and in [NETWORKING.md](NETWORKING.md). Do not let those tasks block the selected local release.
 
-These stages are independent enough to prioritize packaging before hosted migration if Jon prefers local play. None requires splitting the collection into multiple repositories or duplicating game engines.
+This plan keeps one repository and shared game engines. No Tauri build is created merely by documenting this decision; track implementation evidence in the workstream PRs.
 
 ## Sources
 

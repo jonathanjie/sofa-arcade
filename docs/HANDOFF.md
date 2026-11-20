@@ -19,6 +19,8 @@ The URL, package, and folder retain the earlier `sofa-kingdoms` name. Preserve t
 
 ## Product intent and playable scope
 
+**Current execution plan:** Jon chose Tauri/local play and requested independent, long-running implementation sessions, each ending in a tested GitHub PR. Start with [DISPATCH_LOCAL.md](DISPATCH_LOCAL.md) and the versioned [local implementation contracts](LOCAL_IMPLEMENTATION_CONTRACT.md). WS1–WS5 can work in parallel (engine, private room platform, UI, media, desktop); WS6 owns final shared wiring and acceptance. Each has a separate branch, exclusive write set, and workstream report. Tauri can package Sofa Kingdoms immediately while the new game is built. No hosted migration/deployment is authorized by those task scopes, and no Tauri application has yet been implemented by this documentation update.
+
 The TV displays the shared board, normally from a Mac browser cast to the living-room TV. Each phone owns one controller seat. Jon and Lydia are illustrated tiny mouse adventurers; their orange cat Lala rearranges the sofa kingdom. Generated game art is in `public/assets/`; original character sheets are not committed.
 
 Keep characters lively and regular match screens spacious. Explanations belong in the optional tutorial, Help, and contextual dialogs. The latest feedback concerned unclear pounce effects and forecast targets, confusing consecutive turns across Lala, noticeable input delay, and a desire for deeper strategy. Those prompted the current update.
