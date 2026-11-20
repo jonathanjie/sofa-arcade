@@ -198,9 +198,20 @@ try {
     }
     await page.setViewportSize({ width: 390, height: 844 }); await load('missing-trust');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
-    await page.getByRole('button', { name: 'Play with touch for now' }).focus();
+    const touchBounds = await page.getByRole('button', { name: 'Play with touch for now' }).boundingBox();
+    assert.ok(touchBounds.y >= 0 && touchBounds.y + touchBounds.height <= 844, 'Touch fallback is visible without scrolling on a 390x844 viewport.');
+    assert.equal(await page.locator('.go6-main > .go6-action-card').count(), 1);
+    await page.locator('[data-action=provision]').focus();
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'touch');
     assert.notEqual(await page.getByRole('button', { name: 'Play with touch for now' }).evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
     await page.screenshot({ path: join(evidence, 'missing-trust-390.png'), fullPage: true });
+    await page.setViewportSize({ width: 1280, height: 1080 });
+    await page.waitForFunction(() => document.querySelector('.go6-controls > .go6-action-card'));
+    assert.equal(await page.locator('.go6-action-card').count(), 1);
+    await page.evaluate(() => window.__go6Fixture.view.dispose());
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await page.locator('.go6-setup').count(), 0);
     await page.goto(`${base}/secure-lan/diagnostic`);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await page.screenshot({ path: join(evidence, 'diagnostic-http-390.png'), fullPage: true });

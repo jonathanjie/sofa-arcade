@@ -200,6 +200,17 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
   section.append(header, content, confirmation, footer);
   root.replaceChildren(section);
 
+  // Keep touch/setup actions in the first narrow viewport, without duplicating
+  // controls or making keyboard/screen-reader order disagree with the layout.
+  const narrowLayout = view.matchMedia('(max-width: 780px)');
+  function positionActions() {
+    if (disposed) return;
+    if (narrowLayout.matches) main.insertBefore(actions, diagram);
+    else aside.prepend(actions);
+  }
+  narrowLayout.addEventListener('change', positionActions);
+  positionActions();
+
   function button(label, className, callback) {
     const btn = element(doc, 'button', className, label); btn.type = 'button'; btn.addEventListener('click', callback); return btn;
   }
@@ -317,6 +328,7 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
     if (disposed) return;
     disposed = true; epoch++;
     section.removeEventListener('keydown', onKey);
+    narrowLayout.removeEventListener('change', positionActions);
     if (downloadURL) view.URL.revokeObjectURL(downloadURL);
     section.remove();
     if (mounted.get(root) === api) mounted.delete(root);
