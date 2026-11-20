@@ -105,3 +105,42 @@ Commands, exact tested source, artifact manifest and remote CI links will be
 recorded here as checks complete. A browser/loopback run does not establish native
 Mac or physical-device acceptance. Missing essential components or native gates
 keep the final PR in draft with the precise next step.
+
+### Preparation checkpoint
+
+Draft PR: <https://github.com/jonathanjie/sofa-arcade/pull/3>. The initial checklist
+commit `79ab7468b2b241966d8076ba9c14eb3c9377d507` passed the existing remote Game
+checks: <https://github.com/jonathanjie/sofa-arcade/actions/runs/44699480561>.
+
+Shared integration code now supplies a lazy collection/view/client bridge, one
+audio graph/score scheduler with saved preferences, and a LAN-only active-session
+pointer for native launches at `/`. The pointer contains no bearer token and is
+cleared by explicit collection navigation. Component imports remain lazy and Odd
+Laws stays planned while handoffs are unavailable.
+
+Preparation checks on the working candidate:
+
+| Command | Observed result | Scope |
+| --- | --- | --- |
+| `npm test` | 66 passed | Existing rules, rooms, transport, controllers, score |
+| `npm run build` | Passed | Production framework build on Linux, not deployment |
+| `node --test tests/integration/protocol/*.test.mjs` | 4 passed; 8 explicit dependency skips | Full Sofa HTTP/SSE match, retries, v1/v2 compatibility, restart; Odd Laws awaits WS1/WS2 |
+| Shell/audio integration tests | 9 passed | Mount/teardown, projected status flow, stale snapshots, host-only scheduler/preferences |
+| `npm run test:integration` after prepare/package | 16 passed; 1 failed; 9 dependency skips | The failing closure check is `/collection-game.mjs` returning 404 from the pre-handoff LAN allowlist |
+| Portable packager | Repeated ZIP bytes identical; private-neighbour exclusion passed | Explicit files, modes, SHA-256 member manifest, canary database/secret/test files excluded |
+
+The combined browser graph failure is intentionally visible until WS2 hands off
+serving entries; WS6 has not edited that owner's unfinished file. The committed
+portable ZIP will be refreshed with the accepted final combination; CI also
+generates an auditable candidate ZIP as an artifact.
+
+Local Chromium could not launch (`socket() failed: Operation not permitted`).
+Automatic approval review rejected the supported sandbox escalation request, and
+the shared-browser fallback could not reach the isolated server. No screenshots
+or browser success are inferred from that attempt. The `rendered-browser` CI job
+runs the actual three-context driver and uploads evidence on both success and
+failure. Its result remains a gate.
+
+`npm run verify:components` and `npm run verify:local-release` fail explicitly
+while an essential handoff is missing. Preparatory skips do not satisfy those
+release checks.

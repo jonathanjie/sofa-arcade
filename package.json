@@ -16,7 +16,10 @@
     "prebuild": "node scripts/prepare-game.mjs",
     "test": "node --test game/engine.test.mjs server/rooms.test.mjs server/lan.test.mjs ui/score.test.mjs ui/action-queue.test.mjs ui/transport.test.mjs",
     "lan": "node scripts/lan-server.mjs",
-    "package:lan": "node scripts/package-lan.mjs"
+    "package:lan": "node scripts/package-lan.mjs",
+    "test:integration": "node tests/integration/run.mjs",
+    "verify:local-release": "node tests/integration/run.mjs --require-complete",
+    "verify:components": "node tests/integration/component-lock.mjs --require-complete"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -58,6 +61,7 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.4",
     "json-rpc-2.0": "1.7.1",
+    "playwright": "1.62.1",
     "raw-body": "3.0.2",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",

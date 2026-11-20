@@ -1,17 +1,26 @@
 import { readFile, writeFile, mkdir, copyFile, unlink } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { BROWSER_FILES, checkedRuntimePath } from "./runtime-files.mjs";
 
-const root = process.cwd();
+const root = fileURLToPath(new URL('../', import.meta.url));
 const source = path.join(root, "ui");
 const target = path.join(root, "public");
 await mkdir(path.join(target, "assets"), { recursive: true });
-for (const name of ["app.js", "styles.css", "audio.js", "score.mjs", "motion.js", "motion.css", "board-view.mjs", "board-view.css", "action-queue.mjs", "transport.mjs"]) {
-  await copyFile(path.join(source, name), path.join(target, name));
+for (const entry of BROWSER_FILES) {
+  const filename = await checkedRuntimePath(root, entry.source);
+  const destination = path.join(target, entry.url.slice(1));
+  await mkdir(path.dirname(destination), { recursive: true });
+  await copyFile(filename, destination);
 }
-await copyFile(path.join(root, "game", "engine.mjs"), path.join(target, "engine.mjs"));
-await mkdir(path.join(target, "games"), { recursive: true });
-await copyFile(path.join(root, "games", "catalog.mjs"), path.join(target, "games", "catalog.mjs"));
-await copyFile(path.join(root, "node_modules", "qrcode-generator", "dist", "qrcode.js"), path.join(target, "assets", "qrcode.js"));
+// The QR dependency and its MIT license are vendored for dependency-free local
+// play. A framework install may refresh that source from its locked package.
+await copyFile(path.join(root, "node_modules", "qrcode-generator", "dist", "qrcode.js"), path.join(target, "assets", "qrcode.js"))
+  .catch(async error => {
+    if (error.code !== 'ENOENT') throw error;
+    await checkedRuntimePath(root, 'public/assets/qrcode.js');
+    await checkedRuntimePath(root, 'public/assets/qrcode-LICENSE.txt');
+  });
 const html = await readFile(path.join(source, "index.html"), "utf8");
 await writeFile(path.join(root, "app", "route.ts"), [
   "// Generated from ui/index.html by scripts/prepare-game.mjs.",

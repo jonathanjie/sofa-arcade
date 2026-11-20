@@ -1,0 +1,92 @@
+name: Local integration acceptance
+
+on:
+  pull_request:
+  push:
+    branches: [main, feature/local-integration]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-integration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  protocol-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Generate production assets and auditable portable ZIP
+        run: |
+          node scripts/prepare-game.mjs
+          npm run package:lan
+      - name: Existing rules, room and controller regressions
+        run: npm test
+      - name: Integrated protocol, lifecycle and package checks
+        run: npm run test:integration
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-portable-${{ github.event.pull_request.head.sha || github.sha }}
+          path: public/downloads/sofa-arcade-local.zip
+
+  rendered-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm run install:ci
+      - run: npx playwright install --with-deps chromium
+      - name: Real TV and two isolated phone contexts
+        run: node tests/integration/browser/sofa-kingdoms.mjs
+        env:
+          SOFA_EVIDENCE_DIR: tests/integration/evidence/ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-browser-${{ github.event.pull_request.head.sha || github.sha }}
+          path: tests/integration/evidence/ci/
+          if-no-files-found: warn
+
+  production-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm run install:ci
+      - run: npm run build
+
+  component-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: All five tested handoffs must be included before release readiness
+        run: npm run verify:components
