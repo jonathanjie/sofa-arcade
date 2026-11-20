@@ -107,7 +107,8 @@ test('missing and malformed data retain a safe waiting surface and never draw Na
   for (const value of [null, {}, { gameId: 'gravity-orchard', schemaVersion: 1, fruits: [{ x: 'bad' }] }]) await page.evaluate(value => window.fixture.update(value), value);
   await expect(page.locator('[data-fruit-id]')).toHaveCount(0);
   await page.evaluate(() => window.fixture.show('playing'));
-  const count = await page.locator('[data-fruit-id]').count();
+  const count = await page.evaluate(() => window.fixture.view().fruits.length);
+  await expect(page.locator('[data-fruit-id]')).toHaveCount(count);
   await page.evaluate(() => { const view = window.fixture.view(); view.fruits[0].x = Infinity; window.fixture.update(view); });
   await expect(page.locator('[data-fruit-id]')).toHaveCount(count);
   expect(await tv(page).innerHTML()).not.toMatch(/NaN|Infinity/); expect(errors).toEqual([]);

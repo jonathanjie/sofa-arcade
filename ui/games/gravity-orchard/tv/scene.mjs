@@ -597,7 +597,7 @@ export function mountScene(root, { geometry, assets, reducedMotion = false } = {
       const short = name === 'forecast' && state.closureDeferred ? 'Waiting'
         : name === 'forecast' ? 'Closing' : name === 'closed' ? 'Closed' : name === 'open' ? 'Open' : '?';
       item.message.textContent = item.symbolOnly ? ({ forecast: '!', closed: '×', open: '✓' }[name] ?? '?')
-        : item.compact ? short : name === 'forecast' && state.closureDeferred ? 'Gate waiting'
+        : item.compact ? short : name === 'forecast' && state.closureDeferred ? 'Waiting'
           : name === 'forecast' ? `Closes in ${Math.ceil(numeric(state.ticksToChange) / 60)}s`
             : name === 'closed' ? `Closed · ${Math.ceil(numeric(state.ticksToChange) / 60)}s`
               : name === 'open' ? 'Gate open' : 'Gate unknown';
