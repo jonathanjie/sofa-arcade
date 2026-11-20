@@ -5,7 +5,7 @@
 - Branch: `feature/odd-laws-ui`.
 - Base: `e34b0015399cb9791b175987adf1fab1b542565a` from fetched GitHub `main`.
 - Ownership: `ui/games/odd-laws-society/**`, `.github/workflows/ws3-ui.yml`, and this report only.
-- Component status: implemented; rendered visual gate in progress. The PR is draft until browser evidence is inspected. The exact tested head belongs in the PR, not in this report's own future commit.
+- Component status: implemented; 33 focused Node tests and 61 actual Chromium checks pass. Rendered evidence was captured from `e1aab1a2492da1a4c00e94f583fbb08c387a2c78`; the PR records the final tested head after the documentation/evidence commit.
 - No registration, shared shell change, engine/platform import, final-media generation, merge, deployment, or Site publication.
 
 The interface implements the v0.2 city builder, not the obsolete movement prototype. It consumes only the contract's projected room envelope and injected public helpers. Fixtures are explicitly labelled local simulation; they do not establish real-room, LAN, native Tauri, or physical-device acceptance.
@@ -34,7 +34,7 @@ game.setConnection({ state: 'connected' });
 game.dispose();
 ```
 
-The shell must create a new mount for another room or authenticated viewer. `update` ignores equal/older revisions, other room codes, retired match IDs, and invalid schema/game IDs. Phase changes discard old build/bid drafts. Same-phase public readiness updates preserve an unsealed local draft. Async acknowledgements after disposal or a newer phase cannot change detached/new UI.
+Wire WS2 `onRoom` to `update` and `onStatus` to `setConnection`, including passive SSE connection loss. The shell must create a new mount for another room or authenticated viewer. Assets and motion preferences are mount inputs; remount after an explicit preference change so procedural animation uses the new value. `update` ignores equal/older revisions, other room codes, retired match IDs, and invalid schema/game IDs. Phase changes discard old build/bid drafts. Same-phase public readiness updates preserve an unsealed local draft. Async acknowledgements after disposal or a newer phase cannot change detached/new UI. On navigation, the shell must also dispose the WS2 client/SSE subscription and choose the next shared sound scene: view disposal does not own transport or global audio.
 
 `dispatch` receives only `type`, `matchId`, `phaseId`, and the action's normalized additional fields. It never receives a claimed actor or a room credential. `sound.unlock()` is called synchronously within the click/keyboard-generated click before dispatch is awaited. Transport retry identity remains WS2's responsibility.
 
@@ -63,7 +63,7 @@ tutorial.css
 
 ### Media and sound
 
-WS4 supplies the manifest. `manifestUrl` must be the complete absolute manifest URL, not an assets directory. Each image uses `new URL(entry.src, manifestUrl)`. Building and character entries are optional: missing, invalid, or failed images retain code-native SVG fallbacks. No rules, costs, names, or scores are baked into graphics. Character states and all required scene/effect names match the contract; the shared shell owns preferences and audio scheduling. No AudioContext is created here.
+WS4 supplies the manifest. `manifestUrl` must be the complete absolute manifest URL, not an assets directory. Each image uses `new URL(entry.src, manifestUrl)`. The renderer consumes building entries and `characters.*.states`; law, guild, and prop graphics remain code-native icons. Building and character entries are optional: missing, invalid, or failed images retain code-native SVG fallbacks. No rules, costs, names, or scores are baked into graphics. Character states and all required scene/effect names match the contract; the shared shell owns preferences and audio scheduling. No AudioContext is created here.
 
 Motion derives from committed public snapshot changes: district instance IDs, resource deltas, newly evaluated streets, readiness, simultaneous revealed envelopes, the law stamp, turn changes, and results. Repeated revisions do not render or replay effects. The first snapshot, a new match, and the first snapshot after reconnect establish a baseline without replaying rewards. A pending first council vote never drives resource animation. Reduced motion uses brief opacity cues; legal input never waits for animations.
 
@@ -71,7 +71,7 @@ Motion derives from committed public snapshot changes: district instance IDs, re
 
 - TV: both 3×3 boroughs, six-stack market, exact prices/stock/prestige/abilities, current laws, session/Chair/turn, public proposals/readiness, simultaneous reveal, complete final/tied score breakdown.
 - Phones: local law and bid drafts, explicit all-pay Seal, own locked commitment, waiting, four actions, market inspection, exact-cost district/plot confirmation, full-city/exhausted-stock reasons, income/turn updates, errors/reconnect, final scores, and exit cleanup.
-- Optional drawers: complete six-session public agenda, 18-card term catalog, score ledger, and Help. They trap focus and return focus on close.
+- Optional drawers: complete six-session public agenda, 18-card term catalog, score ledger, and Help. They trap focus and return focus on close. Nested card inspection supports Back/Escape and restores both catalog scroll and the selected card; phone panel changes preserve visible keyboard focus. A persistent live region announces turns, simultaneous reveal, and income.
 - Guided practice: isolated ten-position interactive tutorial for construction, Work, streets, income, shared law comparison, sealed all-pay voting, Lobby, Festival, and score. Skip/Resume/Replay persist only tutorial progress. It never dispatches a match command or changes the real room.
 - Quiet fixture sound adapter records events; composed music audition awaits the shared WS4/WS6 audio integration.
 
@@ -108,9 +108,28 @@ npm run test:browser --prefix ui/games/odd-laws-society
 npm run test:browser:local --prefix ui/games/odd-laws-society
 ```
 
-At the initial implementation checkpoint, **33 Node tests pass**, including complete catalog/schema fixtures, exact quotes/placement, the PRD worked opening, six councils and 36 city actions, final accounting, projection privacy, stale-action rejection, distinct building instances, TV private-state invariance, local phone drafts, tutorial isolation, media URL resolution/fallback, motion deduplication, and reduced-motion timing.
+### Observed results
 
-Local rendered testing is blocked by the command environment's Unix-socket restriction; Chromium fails before opening a page. The Cloud browser also cannot reach the sandboxed loopback server. The normal escalation request was rejected because sandbox approvals are disabled. No policy or security setting was changed. `.github/workflows/ws3-ui.yml` runs the same locked test suite and headless Chromium checks on GitHub Actions and retains screenshots/traces for inspection. Browser results and screenshot paths will be recorded after that gate completes.
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Owned Node tests | **33/33 pass** | Catalog/schema, exact quotes/placement, PRD worked opening, six councils/36 actions/final accounting, private drafts, stale actions, instance identity, tutorial isolation, manifest URLs/fallbacks, motion deduplication and reduced-motion timing |
+| Headless Chromium | **61/61 pass** | [WS3 Actions run 44701879120](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701879120); 29.3 seconds; locked Playwright 1.57.0 |
+| Existing game checks | **Pass** | [Game checks run 44701879171](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701879171) |
+| Existing repository tests | **66/66 pass** | `npm test` in the isolated checkout |
+| Existing application build | **Pass** | `npm run install:ci` followed by `npm run build`; no root lockfile or generated tracked file changes |
+| Ownership/patch hygiene | **Pass** | `git diff --check`; only the three requested ownership paths |
+
+The rendered matrix covers TV **1920×1080 and 1280×720**, and both Jon/Lydia controllers at **360×800 and 390×844**. All 12 TV state/size checks fit within the viewport. Ordinary phone controls fit within the viewport; inspection, Build detail, and complete results intentionally support vertical scrolling. Touch-target checks require at least 44×44 CSS pixels.
+
+Interaction checks exercise private local choice/bid drafts, normalized Seal dispatch and synchronous sound unlock, locked/waiting/reveal, unchanged public balances after the first Seal, exact-cost Build/plot confirmation, Work/Lobby/Festival, full cities, exhausted market, capped influence, failed command retry, offline/reconnect, stale/repeated snapshots, pending-response disposal/remount, keyboard dialog/panel focus, persistent live announcements, failed images with network-offline assets, and reduced motion without input delay. A rendered fixture completes all six councils, 18 Jon phone actions plus 18 simulated Lydia actions, income transitions, and a tied result. The entire guided practice is exercised for skip/resume/replay and zero real-match dispatches.
+
+The first rendered run caught TV overflow and an independently observed fallback-art sizing defect. Fixes shorten TV plots without removing live rule text, keep both reveal choices/bids visible at 720p, and give phone/tutorial illustrations their intended containers. A privacy assertion was corrected to compare persistent numeric balances instead of including a transient reward label. The subsequent run passed all 61 checks. Independent reviews covered TV layout, phone/tutorial readability, lifecycle/privacy, and the integration contract.
+
+Local Chromium could not launch because this command environment disallows its Unix socket; the Cloud browser could not reach its isolated loopback server. A normal escalation request was automatically rejected because sandbox approvals are disabled. Rendered verification therefore ran on the owned GitHub Actions workflow with actual headless Chromium. No sandbox/security setting was changed. These are **observed browser fixture tests**, not native or integrated multiplayer tests.
+
+### Rendered evidence
+
+Representative, unmodified Chromium PNGs are kept in [`ui/games/odd-laws-society/screenshots/`](../../ui/games/odd-laws-society/screenshots/). Its evidence index identifies the capture commit and viewport for each image. CI additionally retains every layout screenshot and any failure trace in `ws3-ui-browser-evidence` for 14 days. `WS3_CAPTURE_SCREENSHOTS=1 npm run test:browser --prefix ui/games/odd-laws-society` can refresh the selected layout captures locally when Chromium is available; interaction/tutorial captures are in `test-results/`.
 
 ## Remaining integration acceptance
 

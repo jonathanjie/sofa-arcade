@@ -14,6 +14,7 @@ test('guided practice teaches every action, resumes, replays and never dispatche
   await action(page, 'tutorial-select-build').click();
   await action(page, 'tutorial-plot', '[data-plot="0"]').click();
   await expect(page.getByRole('dialog')).toContainText('Your 4 coins became 1');
+  await page.screenshot({ path: testInfo.outputPath('tutorial-360-build.png'), animations: 'disabled' });
   await action(page, 'tutorial-next').click();
   await action(page, 'tutorial-skip').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -23,6 +24,7 @@ test('guided practice teaches every action, resumes, replays and never dispatche
   await expect(page.getByRole('dialog')).toContainText('A useful day’s work.');
   for (const step of ['work', 'street', 'income']) {
     await action(page, `tutorial-${step}`).click();
+    if (step === 'street') await page.screenshot({ path: testInfo.outputPath('tutorial-360-street.png'), animations: 'disabled' });
     await action(page, 'tutorial-next').click();
   }
   await action(page, 'tutorial-law', '[data-choice-id="diversity-parade"]').click();
