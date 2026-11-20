@@ -2,13 +2,13 @@ use crate::{
     config::{self, Config},
     process::{self, Paths},
     protocol::{self, Record},
+    termination::{Completion, Coordinator, Request},
 };
 use serde::Serialize;
 use std::{
     io::BufReader,
     process::Child,
     sync::{
-        atomic::{AtomicBool, Ordering},
         mpsc::{self, Receiver, Sender},
         Arc, Mutex,
     },
@@ -55,12 +55,12 @@ impl Default for Status {
 enum Control {
     Retry,
     Refresh,
-    Shutdown(Sender<()>),
+    Shutdown(Sender<Result<(), &'static str>>),
 }
 struct Desktop {
     control: Sender<Control>,
     status: Arc<Mutex<Status>>,
-    quitting: Arc<AtomicBool>,
+    termination: Mutex<Coordinator>,
 }
 
 fn message_for(code: &str) -> &'static str {
@@ -73,6 +73,7 @@ fn message_for(code: &str) -> &'static str {
         "child_crashed" => "The local host stopped unexpectedly. Your last confirmed actions remain saved. Choose Retry Local Host to reconnect.",
         "invalid_protocol" => "The local host returned an invalid readiness record. Reinstall the complete Sofa Arcade application, then retry.",
         "settings_write" => "Sofa Arcade cannot save local settings. Check that Application Support is writable, then retry.",
+        "shutdown_failed" => "Sofa Arcade could not finish closing safely. Your saved rooms have not been reset.",
         _ => "The local host could not start. Your saved rooms have not been reset. Choose Retry Local Host to try again.",
     }
 }
@@ -157,6 +158,7 @@ fn reveal_game(app: &tauri::AppHandle, config: &Config) {
     let _ = app.run_on_main_thread(move || {
         {
             let desktop = on_main.state::<Desktop>();
+            if !desktop.termination.lock().expect("termination mutex poisoned").is_running() { return; }
             let status = desktop.status.lock().expect("status mutex poisoned");
             if status.state != "ready" || status.generation != generation { return; }
         }
@@ -183,6 +185,7 @@ fn reveal_game(app: &tauri::AppHandle, config: &Config) {
             .on_page_load(move |webview, payload| {
                 if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
                     let desktop = on_loaded.state::<Desktop>();
+                    if !desktop.termination.lock().expect("termination mutex poisoned").is_running() { return; }
                     let status = desktop.status.lock().expect("status mutex poisoned");
                     if status.state != "ready" || status.generation != generation { return; }
                     drop(status);
@@ -291,11 +294,17 @@ fn supervisor(
                     remember_location(&app, cfg, &paths);
                 }
                 retire_game(&app);
-                if let Some(mut owned) = host.take() {
-                    let _ = process::stop(&mut owned.child, STOP_TIMEOUT);
+                let stopped = if let Some(mut owned) = host.take() {
+                    process::stop(&mut owned.child, STOP_TIMEOUT).map_err(|_| "shutdown_failed")
+                } else {
+                    Ok(())
+                };
+                if stopped.is_ok() {
+                    set_status(&app, &shared, &paths, "stopped", None, None);
+                } else {
+                    set_status(&app, &shared, &paths, "error", Some("shutdown_failed"), None);
                 }
-                set_status(&app, &shared, &paths, "stopped", None, None);
-                let _ = done.send(());
+                let _ = done.send(stopped);
                 break;
             }
             Ok(Control::Retry) => {
@@ -455,20 +464,70 @@ fn supervisor(
     }
 }
 
-fn begin_quit(app: &tauri::AppHandle) {
-    let state = app.state::<Desktop>();
-    if state.quitting.swap(true, Ordering::SeqCst) {
-        return;
+fn show_quit_failure(app: &tauri::AppHandle) {
+    eprintln!("Sofa Arcade could not complete controlled native shutdown");
+    if let Some(startup) = app.get_webview_window("startup") {
+        let _ = startup.eval("window.setSofaStatus?.({state:'error',message:'Sofa Arcade could not finish closing safely. Your saved rooms have not been reset.'})");
+        let _ = startup.show();
+    }
+}
+
+// Called only on the main thread, including completion dispatched back from
+// the worker. AppKit's NSTerminateLater modal loop keeps Tao's common-mode
+// event source/observers running, so retire_game can destroy the webview there.
+fn finish_quit(app: &tauri::AppHandle, succeeded: bool) {
+    let completion = app.state::<Desktop>().termination.lock()
+        .expect("termination mutex poisoned").complete(succeeded);
+    match completion {
+        Completion::Exit => app.exit(0),
+        Completion::ReplyToAppKit(proceed) => {
+            #[cfg(target_os = "macos")]
+            crate::termination::macos::reply(proceed);
+            if !proceed { show_quit_failure(app); }
+        }
+        Completion::Failed => show_quit_failure(app),
+        Completion::None => {}
+    }
+}
+
+pub(crate) fn request_quit(app: &tauri::AppHandle, from_appkit: bool) -> Request {
+    // This also runs inside the Objective-C delegate callback: refuse missing
+    // state or a poisoned lock before promising a deferred AppKit reply.
+    // Tauri's state lookup itself locks an internal mutex with unwrap(). Catch
+    // that failure before touching our coordinator, so no unreturned Later
+    // promise can leave behind a pending native reply.
+    let state = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| app.try_state::<Desktop>())) {
+        Ok(Some(state)) => state,
+        _ => return Request::Refuse,
+    };
+    let request = match state.termination.lock() {
+        Ok(mut coordinator) => coordinator.request(from_appkit),
+        Err(_) => return Request::Refuse,
+    };
+    if request != Request::Start {
+        return request;
     }
     let control = state.control.clone();
-    let app = app.clone();
-    thread::spawn(move || {
+    let worker_app = app.clone();
+    let worker = thread::Builder::new().name("sofa-native-quit".into()).spawn(move || {
         let (done, wait) = mpsc::channel();
-        if control.send(Control::Shutdown(done)).is_ok() {
-            let _ = wait.recv_timeout(Duration::from_secs(10));
+        let succeeded = control.send(Control::Shutdown(done)).is_ok()
+            && matches!(wait.recv_timeout(Duration::from_secs(10)), Ok(Ok(())));
+        let completion_app = worker_app.clone();
+        if worker_app.run_on_main_thread(move || finish_quit(&completion_app, succeeded)).is_err() {
+            eprintln!("The native event loop closed before controlled shutdown could reply");
         }
-        app.exit(0);
     });
+    if worker.is_err() {
+        state.termination.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).could_not_start();
+        // No NSTerminateLater has been returned yet, so do not send an AppKit
+        // reply or call fallible UI code from the delegate on this path.
+        use std::io::Write as _;
+        let _ = writeln!(std::io::stderr(), "Sofa Arcade could not start controlled native shutdown");
+        Request::Refuse
+    } else {
+        request
+    }
 }
 
 pub fn run() {
@@ -501,8 +560,10 @@ pub fn run() {
             app.manage(Desktop {
                 control: send.clone(),
                 status: status.clone(),
-                quitting: Arc::new(AtomicBool::new(false)),
+                termination: Mutex::new(Coordinator::default()),
             });
+            #[cfg(target_os = "macos")]
+            crate::termination::macos::install(app.handle().clone())?;
             let startup_control = send.clone();
             let startup_state = status.clone();
             WebviewWindowBuilder::new(app, "startup", WebviewUrl::App("index.html".into()))
@@ -586,9 +647,9 @@ pub fn run() {
         .expect("Sofa Arcade could not initialize its native window");
     app.run(|app, event| match event {
         RunEvent::ExitRequested { api, .. } => {
-            if !app.state::<Desktop>().quitting.load(Ordering::SeqCst) {
+            if !app.state::<Desktop>().termination.lock().expect("termination mutex poisoned").is_complete() {
                 api.prevent_exit();
-                begin_quit(app);
+                request_quit(app, false);
             }
         }
         RunEvent::WindowEvent {
@@ -596,11 +657,15 @@ pub fn run() {
             ..
         } => {
             api.prevent_close();
-            begin_quit(app);
+            if request_quit(app, false) == Request::Complete {
+                app.exit(0);
+            }
         }
         RunEvent::Resumed => {
             if let Some(state) = app.try_state::<Desktop>() {
-                let _ = state.control.send(Control::Refresh);
+                if state.termination.lock().expect("termination mutex poisoned").is_running() {
+                    let _ = state.control.send(Control::Refresh);
+                }
             }
         }
         _ => {}

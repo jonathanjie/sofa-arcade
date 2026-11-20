@@ -79,6 +79,7 @@ export const config = {
     const lastStatus = JSON.parse(await readFile(statusPath, 'utf8'));
     assert.equal(lastStatus.parentPid, running.parentPid, 'Native shutdown status belongs to a different process');
     assert.equal(lastStatus.port, running.port, 'Native shutdown changed the saved origin');
+    assert.equal(lastStatus.state, 'stopped', 'Native Quit bypassed the owned supervisor shutdown');
     await saveEvidence(`native-quit-${process.env.SOFA_NATIVE_PHASE}.json`, {
       schemaVersion: 1, kind: 'native-macos-graceful-quit', commit: process.env.SOFA_TEST_COMMIT || null,
       passed: true, method: 'NSRunningApplication.terminate', nativeQuitRequested: true,

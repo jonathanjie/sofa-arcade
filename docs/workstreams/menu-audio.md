@@ -104,6 +104,42 @@ Browser checks require the existing locked Playwright installation and its
 Chromium binary. The current managed local browser could not be used in this
 session; actual rendered acceptance runs in the existing CI environment.
 
+## Native Quit correction found during acceptance
+
+The first published menu candidate,
+`c384d4523bdb2ad52913ada10555b6dedec9adf7`, passed all ten new real-browser menu
+scenarios, the existing browser journeys, integrated Intel acceptance and both
+production Mac builds. Its integrated Apple Silicon run restored the saved room,
+host credential and exact state, but lost the test's final localStorage marker
+after quitting. The saved Quit evidence showed `lastSupervisorState: "ready"`,
+even though the normal AppKit Quit request ran and both processes exited.
+
+Inspection of the pinned Tao 0.37.3 and tauri-runtime-wry 2.12.5 sources showed
+that `applicationWillTerminate:` reaches `RunEvent::Exit` directly. The existing
+app began its controlled shutdown only on `ExitRequested` or `CloseRequested`.
+This was a pre-existing path that could bypass document retirement and the
+owned-host shutdown; a passing rerun would not correct it.
+
+`desktop/src-tauri/src/termination.rs` now adds the absent public
+`applicationShouldTerminate:` callback to the existing Tao delegate. It keeps
+that delegate and all its other callbacks, verifies the method encoding, and
+refreshes AppKit's optional-selector cache. It uses Apple's documented
+[deferred termination callback](https://developer.apple.com/documentation/appkit/nsapplicationdelegate/applicationshouldterminate(_:)?language=objc)
+and [completion reply](https://developer.apple.com/documentation/appkit/nsapplication/reply(toapplicationshouldterminate:)?language=objc).
+The existing main run loop remains available while the supervisor retires the
+game document, stops its retained child and records `stopped`. Only successful
+completion permits termination. Duplicate native/window Quit requests share
+one operation; queued window creation is refused once shutdown starts.
+
+The platform-independent coordinator is included in the existing Rust test
+suite: 17 tests pass, including six new ordering/failure cases. The bridge uses
+the already-locked objc2 0.6.5 and objc2-app-kit 0.3.2 packages; no package version
+is upgraded. The existing native test now also requires the final supervisor
+state to be `stopped`. All immediate-marker, saved-credential, sound-preference,
+root-restore, explicit-exit and forced-crash assertions remain unchanged. No
+post-write sleep or test-data rewrite is added. The exact corrected head must
+pass both native architectures before merge; the PR records those results.
+
 ## Audio evidence and limits
 
 The complete MP3 theme is
