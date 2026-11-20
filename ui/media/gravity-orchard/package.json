@@ -1,0 +1,18 @@
+{
+  "name": "gravity-orchard-media",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "assemble": "node sources/assemble.mjs",
+    "test": "node --test manifest.test.mjs score.test.mjs",
+    "validate": "node sources/validate-assets.mjs",
+    "preview": "node sources/preview-server.mjs",
+    "test:browser": "node sources/browser-check.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "sharp": "0.35.5"
+  }
+}

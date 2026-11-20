@@ -1,0 +1,71 @@
+{
+  "runtimeSize": [
+    1280,
+    720
+  ],
+  "pixelChecks": [
+    {
+      "id": "cover",
+      "runtimeFile": "public/assets/gravity-orchard/cover.webp",
+      "bytes": 309204,
+      "width": 1280,
+      "height": 720,
+      "format": "WEBP",
+      "mode": "RGB",
+      "sha256": "a90cea830f542d708baa195099028cb7b37458f42fa729e9766f95067b1eda72",
+      "rawSha256": "81593dc95d412a19d0dfcc50145e1af5a1bd8f2db380203c13275ecb3e93d5f3",
+      "alphaRequired": false,
+      "decoded": true,
+      "centerLumaMean": 176.248,
+      "centerLumaStddev": 58.533
+    },
+    {
+      "id": "morning-delivery",
+      "runtimeFile": "public/assets/gravity-orchard/environments/morning-delivery.webp",
+      "bytes": 35722,
+      "width": 1280,
+      "height": 720,
+      "format": "WEBP",
+      "mode": "RGB",
+      "sha256": "775c9a6b1f7487be6d647b2ae09e41b53c9cc2bb430afbb98b88339841f8e57f",
+      "rawSha256": "34d2f78f46da8c3f7f1bf903df31384337d29428780295a19a8f8f7ed7164519",
+      "alphaRequired": false,
+      "decoded": true,
+      "centerLumaMean": 229.728,
+      "centerLumaStddev": 3.892
+    },
+    {
+      "id": "switchback-grove",
+      "runtimeFile": "public/assets/gravity-orchard/environments/switchback-grove.webp",
+      "bytes": 53824,
+      "width": 1280,
+      "height": 720,
+      "format": "WEBP",
+      "mode": "RGB",
+      "sha256": "6b929721e1ca4b17d00f12f0ba12e4dcb8f15c640a43aad7d0dc19316b81b710",
+      "rawSha256": "7a29fedf3c07ebf58e3a88a733b08a4b24e019aa99e8fe0200eed940daefe271",
+      "alphaRequired": false,
+      "decoded": true,
+      "centerLumaMean": 207.853,
+      "centerLumaStddev": 4.327
+    },
+    {
+      "id": "moonlight-picnic",
+      "runtimeFile": "public/assets/gravity-orchard/environments/moonlight-picnic.webp",
+      "bytes": 40382,
+      "width": 1280,
+      "height": 720,
+      "format": "WEBP",
+      "mode": "RGB",
+      "sha256": "12d7185a886525f097028127c91c0e8555117c960f4cd0dc0a0c0ea7c294a0b0",
+      "rawSha256": "5e1c4c7edfe13b0c90278d178bac5939e9a53a6674682fa0d27078cfd5a344a9",
+      "alphaRequired": false,
+      "decoded": true,
+      "centerLumaMean": 123.408,
+      "centerLumaStddev": 6.37
+    }
+  ],
+  "totalRuntimeBytes": 439132,
+  "visualInspection": "See REVIEW.md; numerical checks do not replace rendered review.",
+  "sourcesShipped": false
+}

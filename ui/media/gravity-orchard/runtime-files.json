@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "gameId": "gravity-orchard",
+  "runtimeFiles": [
+    "public/assets/gravity-orchard/baskets/apple-accepting.svg",
+    "public/assets/gravity-orchard/baskets/apple-full.svg",
+    "public/assets/gravity-orchard/baskets/apple-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/apple-rejecting.svg",
+    "public/assets/gravity-orchard/baskets/pear-accepting.svg",
+    "public/assets/gravity-orchard/baskets/pear-full.svg",
+    "public/assets/gravity-orchard/baskets/pear-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/pear-rejecting.svg",
+    "public/assets/gravity-orchard/baskets/plum-accepting.svg",
+    "public/assets/gravity-orchard/baskets/plum-full.svg",
+    "public/assets/gravity-orchard/baskets/plum-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/plum-rejecting.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-accepting.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-full.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-rejecting.svg",
+    "public/assets/gravity-orchard/characters/jon-atlas.webp",
+    "public/assets/gravity-orchard/characters/lala-atlas.webp",
+    "public/assets/gravity-orchard/characters/lydia-atlas.webp",
+    "public/assets/gravity-orchard/cover.webp",
+    "public/assets/gravity-orchard/cues/compost.svg",
+    "public/assets/gravity-orchard/cues/gate-closed.svg",
+    "public/assets/gravity-orchard/cues/gate-forecast.svg",
+    "public/assets/gravity-orchard/cues/gate-open.svg",
+    "public/assets/gravity-orchard/cues/gust-active.svg",
+    "public/assets/gravity-orchard/cues/gust-forecast.svg",
+    "public/assets/gravity-orchard/effects/capture.svg",
+    "public/assets/gravity-orchard/effects/compost.svg",
+    "public/assets/gravity-orchard/effects/impact.svg",
+    "public/assets/gravity-orchard/effects/order.svg",
+    "public/assets/gravity-orchard/environments/moonlight-picnic.webp",
+    "public/assets/gravity-orchard/environments/morning-delivery.webp",
+    "public/assets/gravity-orchard/environments/switchback-grove.webp",
+    "public/assets/gravity-orchard/fruit/apple.svg",
+    "public/assets/gravity-orchard/fruit/pear.svg",
+    "public/assets/gravity-orchard/fruit/plum.svg",
+    "public/assets/gravity-orchard/fruit/starfruit.svg",
+    "public/assets/gravity-orchard/manifest.json",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-bridge.svg",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-bumper.svg",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-hedge.svg",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-tray.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-bridge.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-bumper.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-hedge.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-tray.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-bridge.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-bumper.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-hedge.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-tray.svg",
+    "ui/media/gravity-orchard/events.mjs",
+    "ui/media/gravity-orchard/fallbacks.mjs",
+    "ui/media/gravity-orchard/manifest-data.mjs",
+    "ui/media/gravity-orchard/manifest.mjs",
+    "ui/media/gravity-orchard/score.mjs"
+  ],
+  "files": [
+    {
+      "path": "public/assets/gravity-orchard/baskets/apple-accepting.svg",
+      "bytes": 1651,
+      "sha256": "2b63d15df1a4eef38567fb8f23d8a5262d97ff1a8797e9038701aa9cbc568796"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/apple-full.svg",
+      "bytes": 1756,
+      "sha256": "6355fd86b5ccda231de53401cb4fa5f2919722ad4bf4c40217ad6d48a0ed8b3e"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/apple-ordinary.svg",
+      "bytes": 1449,
+      "sha256": "404656497b841bc1b6daf9c5e1ba13e43e19d379880c0f34e88fee7aeb8c0a2b"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/apple-rejecting.svg",
+      "bytes": 1684,
+      "sha256": "1d5e9080205bf58cf2d7e8ab1871b32ffffd49dd850ae9eb888e1e7a15db4517"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/pear-accepting.svg",
+      "bytes": 1837,
+      "sha256": "ff67befbaad0ca00a5e69ecf1bd0bd54c1f400e830352f5cbeb16b1461e6de42"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/pear-full.svg",
+      "bytes": 1942,
+      "sha256": "fd1abb4f82cb87eadb160a081f6bef7d0d103efcaef1b95df4ed50387bd770b8"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/pear-ordinary.svg",
+      "bytes": 1635,
+      "sha256": "07468bddd2d016e34a04e0a6699d583ade4bfb51464701398de9752b2dd927a6"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/pear-rejecting.svg",
+      "bytes": 1870,
+      "sha256": "93782f0ce1304312cc6346fc381dd7adcdf400be6b09eb24137c4c2496dfc71d"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/plum-accepting.svg",
+      "bytes": 1740,
+      "sha256": "92b64eb60580aa6666898d2197c0ee3224b1e6acac300ab5d93d9d2f7e2e07ad"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/plum-full.svg",
+      "bytes": 1845,
+      "sha256": "38c68bb6bf25143b007420ac7cb9a93174449bbface8555c4d2f73b8d581194a"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/plum-ordinary.svg",
+      "bytes": 1538,
+      "sha256": "f68287127d9b6acb8dbec4a82619a003a2d6cc2f572c26957cbdeb6afcb3b745"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/plum-rejecting.svg",
+      "bytes": 1773,
+      "sha256": "719be49c22929a2d9e170a9c30ff8b96b177aaaf34921a48e9763b8b628703bd"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/starfruit-accepting.svg",
+      "bytes": 1728,
+      "sha256": "3f6d20e468430f831670a0cc5f00d73359a5966a88668e0958596ca1020dd668"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/starfruit-full.svg",
+      "bytes": 1833,
+      "sha256": "d191094bb145c8305027c3b1d7fb6f05a33b7b607113065b913d4958c3b5e3a3"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/starfruit-ordinary.svg",
+      "bytes": 1526,
+      "sha256": "07578502a725dec8ba3dffc8c8f45e13bb60af98f6282c0f0562d94f03901196"
+    },
+    {
+      "path": "public/assets/gravity-orchard/baskets/starfruit-rejecting.svg",
+      "bytes": 1761,
+      "sha256": "39668ee3b8a81d411d28dbc82e710580b089e91245f6e8a6ebcbeee8cf4128b2"
+    },
+    {
+      "path": "public/assets/gravity-orchard/characters/jon-atlas.webp",
+      "bytes": 149564,
+      "sha256": "69df4bd6186318e42d27bec365499f19a01fcbe38231c40c7f789611b9a51113"
+    },
+    {
+      "path": "public/assets/gravity-orchard/characters/lala-atlas.webp",
+      "bytes": 113602,
+      "sha256": "cb117f9da6552356e77eda63fbf3a26bd61697a90a084b78afda514af9bdadf3"
+    },
+    {
+      "path": "public/assets/gravity-orchard/characters/lydia-atlas.webp",
+      "bytes": 160890,
+      "sha256": "55137cd290fa1b2adf0d7fdaabdc44eb09f7b9ff6ccf118d7d3e3e172c858f0d"
+    },
+    {
+      "path": "public/assets/gravity-orchard/cover.webp",
+      "bytes": 309204,
+      "sha256": "a90cea830f542d708baa195099028cb7b37458f42fa729e9766f95067b1eda72"
+    },
+    {
+      "path": "public/assets/gravity-orchard/cues/compost.svg",
+      "bytes": 643,
+      "sha256": "a02000edaa73baa09d5024fe4f15824f9e48389e06909af0ecc3572ee0885e78"
+    },
+    {
+      "path": "public/assets/gravity-orchard/cues/gate-closed.svg",
+      "bytes": 763,
+      "sha256": "a769f1970f26f89bec5da69197e59d3765bcf7a9311ca2177d42501a21ef486f"
+    },
+    {
+      "path": "public/assets/gravity-orchard/cues/gate-forecast.svg",
+      "bytes": 799,
+      "sha256": "e17bc52ecd6a4311f6041c2f572e8d5bd48a44cb331fb69f665d39e4a81cb8b9"
+    },
+    {
+      "path": "public/assets/gravity-orchard/cues/gate-open.svg",
+      "bytes": 783,
+      "sha256": "ee79895ec694bcf1da49a13010c9db6167cba183b2ea6171de624ea63bbacab2"
+    },
+    {
+      "path": "public/assets/gravity-orchard/cues/gust-active.svg",
+      "bytes": 631,
+      "sha256": "cf271ea4d5ac1405f9a1b7dde7793a8b7f386b3b7b8a743788181700404a67ed"
+    },
+    {
+      "path": "public/assets/gravity-orchard/cues/gust-forecast.svg",
+      "bytes": 624,
+      "sha256": "c4ae9121aa08594e7add24b0f0cb4e0d00c83e549eb467741115255ed85425ff"
+    },
+    {
+      "path": "public/assets/gravity-orchard/effects/capture.svg",
+      "bytes": 449,
+      "sha256": "93bd86b8c702ee89e47fdf970de1bd03f52b7ae8c69ad383a4eb5de6c1b6ee0e"
+    },
+    {
+      "path": "public/assets/gravity-orchard/effects/compost.svg",
+      "bytes": 473,
+      "sha256": "980a903a3ffe2a1c2c47570d41b0c0cf5954a4e28c7557cb12b243bb765862ec"
+    },
+    {
+      "path": "public/assets/gravity-orchard/effects/impact.svg",
+      "bytes": 395,
+      "sha256": "b2aa4edca163fcf61bf07cdd5b672cfbd5349ce764734f854200ec4f821df4a1"
+    },
+    {
+      "path": "public/assets/gravity-orchard/effects/order.svg",
+      "bytes": 423,
+      "sha256": "905d3e41683441117277214bcbaf94d9af1b957d13c731df3119b453a7ce2402"
+    },
+    {
+      "path": "public/assets/gravity-orchard/environments/moonlight-picnic.webp",
+      "bytes": 40382,
+      "sha256": "12d7185a886525f097028127c91c0e8555117c960f4cd0dc0a0c0ea7c294a0b0"
+    },
+    {
+      "path": "public/assets/gravity-orchard/environments/morning-delivery.webp",
+      "bytes": 35722,
+      "sha256": "775c9a6b1f7487be6d647b2ae09e41b53c9cc2bb430afbb98b88339841f8e57f"
+    },
+    {
+      "path": "public/assets/gravity-orchard/environments/switchback-grove.webp",
+      "bytes": 53824,
+      "sha256": "6b929721e1ca4b17d00f12f0ba12e4dcb8f15c640a43aad7d0dc19316b81b710"
+    },
+    {
+      "path": "public/assets/gravity-orchard/fruit/apple.svg",
+      "bytes": 720,
+      "sha256": "9e589d973ad1013fe2f5960087af1294ef24fccf7f039c4351959662eb31c03e"
+    },
+    {
+      "path": "public/assets/gravity-orchard/fruit/pear.svg",
+      "bytes": 906,
+      "sha256": "49ed808afa485a443c22b6f2753bc4e73f820f228a65d698eaaa247424b0fdb9"
+    },
+    {
+      "path": "public/assets/gravity-orchard/fruit/plum.svg",
+      "bytes": 809,
+      "sha256": "003121a614b6cb6e79ebf0374b8eea8a71b814fcf112cd20f4da8c07062eebda"
+    },
+    {
+      "path": "public/assets/gravity-orchard/fruit/starfruit.svg",
+      "bytes": 797,
+      "sha256": "cf2411739f8db03464c2ccb52979890c9469618bd088c64c6631147db342ed82"
+    },
+    {
+      "path": "public/assets/gravity-orchard/manifest.json",
+      "bytes": 29318,
+      "sha256": "9957d65cc0c373890a61592101913e021eb42dbf1dc9549aae0d3782f3a51cbb"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/moonlight-picnic-bridge.svg",
+      "bytes": 1772,
+      "sha256": "9bda560f41f70330649f6094be62297bc1cd801553a6372cc197d56e2bd528f4"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/moonlight-picnic-bumper.svg",
+      "bytes": 751,
+      "sha256": "122055f5528d6185af18743216c15d26683a77249a1b27b3c885e109639577ca"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/moonlight-picnic-hedge.svg",
+      "bytes": 2000,
+      "sha256": "973aeca94239e40df9e2e6694a8ec34fb007dbcd5f07828eed8c915699d2680b"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/moonlight-picnic-tray.svg",
+      "bytes": 1959,
+      "sha256": "5b2d1e4d75fa34ec02c6bd68f5e7e55a3ac7ce8bc9d1d995c37a9e2c4fc0cdfd"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/morning-delivery-bridge.svg",
+      "bytes": 1772,
+      "sha256": "15008cf430599ca84f92153e7d076eca1e8774486b0316b00a258e596ddf087b"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/morning-delivery-bumper.svg",
+      "bytes": 751,
+      "sha256": "3f7602d3b6a59fc948c6e6470d5d9869b2d2218f2f8e903cf88d87ab958e1429"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/morning-delivery-hedge.svg",
+      "bytes": 2000,
+      "sha256": "e9bf93ae4af6e6364beaff57bd59756b3871db581cec56e4902e211c5e03add5"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/morning-delivery-tray.svg",
+      "bytes": 1959,
+      "sha256": "6adafb4035d2fefd9be9de795a8046a3854f6834a9568b2dd538dad36057c55a"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/switchback-grove-bridge.svg",
+      "bytes": 1772,
+      "sha256": "eb804ff1008618e0a0b7ebc9fff75d5ef1038d75810651ecff73ec671096bfc8"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/switchback-grove-bumper.svg",
+      "bytes": 751,
+      "sha256": "0a055e0fa2b644259977d74459e5b6f579b34c2406e7462ffb3a42b973a7369d"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/switchback-grove-hedge.svg",
+      "bytes": 2000,
+      "sha256": "6dea234a206050cd51efe774c7a55a8b10820dd87928ed58c1775d9aeced5e01"
+    },
+    {
+      "path": "public/assets/gravity-orchard/terrain/switchback-grove-tray.svg",
+      "bytes": 1959,
+      "sha256": "7a28ba8af120926e45a97b0588ff786c28f3eb5a35dc082d0969d5a780a222d9"
+    },
+    {
+      "path": "ui/media/gravity-orchard/events.mjs",
+      "bytes": 3299,
+      "sha256": "3438a0e8240f1d5ac864b0f886afa1a43ff4c30dec4fc04b7b129a4007b793a6"
+    },
+    {
+      "path": "ui/media/gravity-orchard/fallbacks.mjs",
+      "bytes": 1320,
+      "sha256": "ecf7660ce6b5f9fd762d0bae79eeb5154a33b952c57cfb34ecd7f4a646dadcec"
+    },
+    {
+      "path": "ui/media/gravity-orchard/manifest-data.mjs",
+      "bytes": 29417,
+      "sha256": "455c7daf84c0e6918bff348c83c5309a45601d9e1499392e6ededcd97fafb876"
+    },
+    {
+      "path": "ui/media/gravity-orchard/manifest.mjs",
+      "bytes": 6737,
+      "sha256": "5e005812dd5118a21bcb6c81e7d1429b6041de9a250e69066f3b72ce5ee8df3e"
+    },
+    {
+      "path": "ui/media/gravity-orchard/score.mjs",
+      "bytes": 6584,
+      "sha256": "0da5c26f5e4bbbdeccbea304d41ec81c447aaf2d330e96137ba6db750687dbe6"
+    }
+  ],
+  "totalBytes": 996092,
+  "productionDependencies": [],
+  "excludedAuthoring": [
+    "ui/media/gravity-orchard/sources/**",
+    "ui/media/gravity-orchard/*.test.mjs",
+    "ui/media/gravity-orchard/package.json",
+    "ui/media/gravity-orchard/package-lock.json",
+    "ui/media/gravity-orchard/audio-preview.mjs",
+    "ui/media/gravity-orchard/runtime-files.json"
+  ]
+}

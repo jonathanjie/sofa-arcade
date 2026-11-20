@@ -1,0 +1,435 @@
+{
+  "assets": {
+    "character-jon": {
+      "src": "/assets/gravity-orchard/characters/jon-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "kind": "atlas",
+      "frames": {
+        "idle-1": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 1800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-1": {
+          "x": 256,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-1": {
+          "x": 512,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-1": {
+          "x": 768,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "idle-2": {
+          "x": 0,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 180,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-2": {
+          "x": 256,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-2": {
+          "x": 512,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-2": {
+          "x": 768,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        }
+      },
+      "label": "Jon",
+      "transparent": true,
+      "pivot": {
+        "x": 128,
+        "y": 240
+      },
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "alt": "Jon: idle, lean, brace, cheer orchard poses"
+    },
+    "character-lydia": {
+      "src": "/assets/gravity-orchard/characters/lydia-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "kind": "atlas",
+      "frames": {
+        "idle-1": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 1800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-1": {
+          "x": 256,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-1": {
+          "x": 512,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-1": {
+          "x": 768,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "idle-2": {
+          "x": 0,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 180,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-2": {
+          "x": 256,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-2": {
+          "x": 512,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-2": {
+          "x": 768,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        }
+      },
+      "label": "Lydia",
+      "transparent": true,
+      "pivot": {
+        "x": 128,
+        "y": 240
+      },
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "alt": "Lydia: idle, lean, brace, cheer orchard poses"
+    },
+    "character-lala": {
+      "src": "/assets/gravity-orchard/characters/lala-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "kind": "atlas",
+      "frames": {
+        "idle-1": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 1800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "forecast-1": {
+          "x": 256,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 650,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "gust-1": {
+          "x": 512,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 240,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "pleased-1": {
+          "x": 768,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "idle-2": {
+          "x": 0,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 180,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "forecast-2": {
+          "x": 256,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 450,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "gust-2": {
+          "x": 512,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 240,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "pleased-2": {
+          "x": 768,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        }
+      },
+      "label": "Lala",
+      "transparent": true,
+      "pivot": {
+        "x": 128,
+        "y": 240
+      },
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "alt": "Lala: idle, forecast, gust, pleased orchard poses"
+    }
+  },
+  "characterStates": {
+    "jon": {
+      "idle": {
+        "asset": "character-jon",
+        "frames": [
+          "idle-1",
+          "idle-2"
+        ],
+        "reducedMotionFrame": "idle-1",
+        "loop": true
+      },
+      "lean": {
+        "asset": "character-jon",
+        "frames": [
+          "lean-1",
+          "lean-2"
+        ],
+        "reducedMotionFrame": "lean-1",
+        "loop": true
+      },
+      "brace": {
+        "asset": "character-jon",
+        "frames": [
+          "brace-1",
+          "brace-2"
+        ],
+        "reducedMotionFrame": "brace-1",
+        "loop": true
+      },
+      "cheer": {
+        "asset": "character-jon",
+        "frames": [
+          "cheer-1",
+          "cheer-2"
+        ],
+        "reducedMotionFrame": "cheer-1",
+        "loop": true
+      }
+    },
+    "lydia": {
+      "idle": {
+        "asset": "character-lydia",
+        "frames": [
+          "idle-1",
+          "idle-2"
+        ],
+        "reducedMotionFrame": "idle-1",
+        "loop": true
+      },
+      "lean": {
+        "asset": "character-lydia",
+        "frames": [
+          "lean-1",
+          "lean-2"
+        ],
+        "reducedMotionFrame": "lean-1",
+        "loop": true
+      },
+      "brace": {
+        "asset": "character-lydia",
+        "frames": [
+          "brace-1",
+          "brace-2"
+        ],
+        "reducedMotionFrame": "brace-1",
+        "loop": true
+      },
+      "cheer": {
+        "asset": "character-lydia",
+        "frames": [
+          "cheer-1",
+          "cheer-2"
+        ],
+        "reducedMotionFrame": "cheer-1",
+        "loop": true
+      }
+    },
+    "lala": {
+      "idle": {
+        "asset": "character-lala",
+        "frames": [
+          "idle-1",
+          "idle-2"
+        ],
+        "reducedMotionFrame": "idle-1",
+        "loop": true
+      },
+      "forecast": {
+        "asset": "character-lala",
+        "frames": [
+          "forecast-1",
+          "forecast-2"
+        ],
+        "reducedMotionFrame": "forecast-1",
+        "loop": true
+      },
+      "gust": {
+        "asset": "character-lala",
+        "frames": [
+          "gust-1",
+          "gust-2"
+        ],
+        "reducedMotionFrame": "gust-1",
+        "loop": true
+      },
+      "pleased": {
+        "asset": "character-lala",
+        "frames": [
+          "pleased-1",
+          "pleased-2"
+        ],
+        "reducedMotionFrame": "pleased-1",
+        "loop": true
+      }
+    }
+  }
+}
