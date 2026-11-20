@@ -7,3 +7,20 @@
 /* Illustration media keeps its viewBox scale; control icons remain 20px. */
 .ols-phone .ols-media .ols-fallback>svg{width:100%;height:100%}.ols-phone-plot>.ols-building-art{width:100%;height:63px;min-height:0}
 .ols-phone .ols-phone-locked-envelope .ols-icon{width:60px;height:60px}
+
+/* Readable guild badges and card families, including narrow controller screens. */
+.ols .ols-phone-market-card[data-guild]{background:linear-gradient(160deg,var(--guild-tint),#fffdf4 85%);border-color:var(--guild-edge);border-top-width:4px}
+.ols .ols-phone-market-art{background:radial-gradient(ellipse at 50% 80%,#fffdf4 0,var(--guild-tint) 75%)}
+.ols .ols-phone-market-copy>.ols-guild{font-size:11px;padding:3px 5px;gap:5px}
+.ols .ols-phone-market-copy>.ols-guild .ols-icon{width:24px;height:24px}
+.ols .ols-phone-card-info{min-height:48px;background:#fffaf05c;border-color:var(--guild-edge)}
+.ols .ols-phone-market-card.unavailable .ols-phone-market-art{filter:saturate(.6)}
+.ols .ols-phone-placement-card{grid-template-columns:68px minmax(0,1fr) 48px;gap:7px}
+.ols .ols-phone-placement-card .ols-guild{font-size:11px;padding:3px 5px;gap:5px}
+.ols .ols-phone-details{width:48px;height:48px}
+.ols .ols-phone-plot.occupied[data-guild]{background:linear-gradient(150deg,var(--guild-tint),#fffaf0);border-color:var(--guild-edge);border-bottom-width:4px}
+.ols .ols-phone-plot .ols-plot-guild{padding:2px;right:3px;top:3px}
+.ols .ols-phone-plot .ols-plot-guild .ols-icon{width:18px;height:18px}
+.ols .ols-phone-city-preview .ols-plot{min-height:48px}
+.ols .ols-phone-city-preview .ols-plot-guild{display:block;padding:1px;right:2px;top:2px;border-radius:5px}
+.ols .ols-phone-city-preview .ols-plot-guild .ols-icon{width:16px;height:16px}

@@ -54,9 +54,9 @@
       "postHandoffCorrections": [
         {
           "path": "server/lan.mjs",
-          "blob": "272239f01e0539b1ad4701e687a9aa655b85c80b",
+          "blob": "e6c2d872a32179fddfe46e0c6d90f340249147cb",
           "mode": "100644",
-          "reason": "Extend only explicit serving entries for shared adapters, reviewed public game/UI/media files and exact static assets; the menu-audio follow-up adds exactly /media/sofa-menu/score.mjs and effects.mjs. Canonicalization, Host/Origin/API/SSE logic remain as reviewed.",
+          "reason": "Extend only explicit serving entries for shared adapters, reviewed public game/UI/media files and exact static assets; the menu-audio follow-up adds exactly /media/sofa-menu/score.mjs and effects.mjs. Canonicalization, Host/Origin/API/SSE logic remain as reviewed. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9.",
           "verification": "Existing 81-test root suite passes. Focused real-LAN/portable checks verify exact menu source bytes and 404 for existing adjacent authoring/evidence canaries. Full package, shared-audio lifecycle and browser/native acceptance run at the PR head."
         }
       ],
@@ -82,7 +82,78 @@
         "ui/games/odd-laws-society",
         ".github/workflows/ws3-ui.yml"
       ],
-      "postHandoffCorrections": [],
+      "postHandoffCorrections": [
+        {
+          "path": "ui/games/odd-laws-society/drawers.mjs",
+          "blob": "de152efa5a60f07520ed9443446326c0f2d5d97a",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/index.mjs",
+          "blob": "44cb54c4964d1dee1c07935657baec5b09e9a3c4",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/phone.css",
+          "blob": "600504053a0793c19b9aeeaa03a5d487b0c3360f",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/phone.mjs",
+          "blob": "a9f9c28d7330b4c1ab2d42a77eb535e20c526753",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/shared.mjs",
+          "blob": "dfe94641d9e25fac71a0b2e70488a3e468340f01",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/tests/city-inspection.spec.mjs",
+          "blob": "de4efc0c949339747467f65de12d6d280a25c002",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/tests/city-inspection.test.mjs",
+          "blob": "6c508e16305e6671cd68209e936659ee04fceac8",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/tv.css",
+          "blob": "3d00a4e4d62e1615369291db14f9acca2eebbc9f",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/tv.mjs",
+          "blob": "9264124b5043ea93e8ab725f268c37cb4bfda40a",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        },
+        {
+          "path": "ui/games/odd-laws-society/view.css",
+          "blob": "5f250912c0b51db778c0539e161b1d6b5d9caa5c",
+          "mode": "100644",
+          "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
+        }
+      ],
       "review": {
         "handoff": "PR #5 marked ready; runtime byte-identical to independently reviewed30a7f07",
         "localChecks": [
@@ -135,9 +206,9 @@
       "postHandoffCorrections": [
         {
           "path": "desktop/runtime-manifest.json",
-          "blob": "5ef4f6c8a80a4a949d7e0ada220cbac61868853a",
+          "blob": "47cd486095958433960b20c09aae15348000c11b",
           "mode": "100644",
-          "reason": "Retain the 79 reviewed integration entries added to the original25-file manifest and append exactly two pure menu audio modules. The separate normal Mac Quit correction is recorded under its precise native source, dependency and test paths below.",
+          "reason": "Retain the 79 reviewed integration entries added to the original25-file manifest and append exactly two pure menu audio modules. The separate normal Mac Quit correction is recorded under its precise native source, dependency and test paths below. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9.",
           "verification": "Independent browser/Tauri closure and reproducible extracted-ZIP serving tests pass with exactly106 runtime entries. Shared lifecycle and real-browser menu playback tests accompany the change; existing combined macOS acceptance remains required before merge."
         },
         {
