@@ -39,7 +39,22 @@
         "ui/realtime/gravity-orchard",
         ".github/workflows/go2-realtime.yml"
       ],
-      "postHandoffCorrections": [],
+      "postHandoffCorrections": [
+        {
+          "path": "server/realtime/gravity-orchard/index.mjs",
+          "blob": "9e028ab76bb864da7f225a6ba182badad738926c",
+          "mode": "100644",
+          "reason": "Integrated rendered recovery and a real same-client restart reproduced permanent disconnect: global shutdown used room-terminal 4410. Use reconnectable 1012 only for coordinator shutdown; explicit room closure and credential/protocol terminal codes are unchanged.",
+          "verification": "GO2 protocol/client 80/80; GO7 integrated protocol 11/11 against the regenerated private bundle, including same three client objects/credentials through same-port host restart, fresh paused epoch, neutral inputs, HTTP agreement and both-ready resume."
+        },
+        {
+          "path": "server/realtime/gravity-orchard/tests/coordinator.test.mjs",
+          "blob": "4b333de3433bbc998f7fcf701bcb000799ca4b2a",
+          "mode": "100644",
+          "reason": "Add focused coverage distinguishing reconnectable whole-host shutdown from permanent explicit room closure, retaining timer cleanup.",
+          "verification": "GO2 protocol/client 80/80; global close asserts 1012, closeRoom asserts 4410 and coordinator timers are cleared."
+        }
+      ],
       "review": {
         "componentCI": [
           {
@@ -88,7 +103,29 @@
         "ui/games/gravity-orchard/tutorial",
         ".github/workflows/go4-tv.yml"
       ],
-      "postHandoffCorrections": [],
+      "postHandoffCorrections": [
+        {
+          "path": "ui/games/gravity-orchard/tv/scene.mjs",
+          "blob": "097f44d2299fb10ba4e81d05afc6cb970fbd3eb8",
+          "mode": "100644",
+          "reason": "Integrated campaign screenshots exposed fallback-art flashes when pose subsets shared one decoded final atlas, and overlapping final-order/stage captions. Reuse same-source/same-dimension loaded images and show one priority completion caption at its shared anchor without changing event identities or sound.",
+          "verification": "GO4 Node 19/19 and GO7 bridge 12/12 pass. Focused rendered cases exercise pose/frame changes without fallback flashes and simultaneous completion captions with unchanged sound IDs/dedup; required in GO4 browser CI."
+        },
+        {
+          "path": "ui/games/gravity-orchard/tv/index.mjs",
+          "blob": "ba0f1d33bfc4eb9c19f947a7ccb9785adf926bfb",
+          "mode": "100644",
+          "reason": "The actual 1024x684 WKWebView recovery screenshot showed duplicated phone-reconnect guidance overlapping Lydia\u2019s badge. Suppress only the duplicate banner while the paused dialog already shows each disconnected phone; preserve host/data warnings and per-seat status.",
+          "verification": "GO4 Node 19/19 and GO7 bridge 12/12 pass. Focused browser coverage checks paused reconnect guidance at 1024x684, 720p and 1080p, all actions within bounds, and retained host-reconnecting warning."
+        },
+        {
+          "path": "ui/games/gravity-orchard/tv/tests/rendered.spec.mjs",
+          "blob": "eba4e08a8d63af90cd3b40fea9a496126103a45d",
+          "mode": "100644",
+          "reason": "Add three focused rendered regressions for the screenshot-confirmed atlas, completion-caption and reconnect-banner corrections.",
+          "verification": "Pinned Playwright discovers 23 GO4 rendered tests; local syntax and Node tests pass. Actual Chromium execution and final integrated screenshots remain required CI gates."
+        }
+      ],
       "review": {
         "componentCI": [
           {

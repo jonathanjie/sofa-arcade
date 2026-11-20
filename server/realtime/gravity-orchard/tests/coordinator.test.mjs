@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { once } from 'node:events';
 import { createRealtimeCoordinator, readCoordinatorDiagnostics } from '../index.mjs';
 import { migrateCheckpoint } from '../lib/checkpoint.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
@@ -230,4 +231,25 @@ test('disposal removes every timer, socket and public room reference', async () 
   assert.equal(h.clock.count(), 0);
   assert.equal(h.coordinator.getPublicView('UNIT'), null);
   await h.coordinator.close();
+});
+
+test('whole-coordinator shutdown uses a reconnectable close code for persisted rooms', async t => {
+  const h = await harness(); t.after(() => h.close());
+  const viewer = await h.connect('host');
+  const closed = once(viewer.ws, 'close');
+  await h.coordinator.close();
+  const [code] = await closed;
+  assert.equal(code, 1012);
+  assert.equal(readCoordinatorDiagnostics(h.coordinator).sockets, 0);
+  assert.equal(h.clock.count(), 0);
+});
+
+test('explicit room closure remains terminal rather than repeatedly reconnecting', async t => {
+  const h = await harness(); t.after(() => h.close());
+  const viewer = await h.connect('host');
+  const closed = once(viewer.ws, 'close');
+  await h.coordinator.closeRoom('UNIT');
+  const [code] = await closed;
+  assert.equal(code, 4410);
+  assert.equal(h.coordinator.getPublicView('UNIT'), null);
 });

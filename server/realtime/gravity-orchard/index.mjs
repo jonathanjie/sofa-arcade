@@ -639,7 +639,9 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
     if (closing) return closing;
     closed = true;
     closing = (async () => {
-      for (const conn of [...connections]) disconnect(conn, 4410, 'coordinator_closed');
+      // Stopping the host does not revoke its persisted rooms. Keep mounted
+      // clients retrying so a restarted listener can restore a paused epoch.
+      for (const conn of [...connections]) disconnect(conn, 1012, 'coordinator_closed');
       await Promise.allSettled([...rooms.keys()].map((code) => closeRoom(code)));
       await Promise.allSettled([...starting.values()]);
       for (const conn of [...draining]) { conn.ws.terminate(); finishDisconnect(conn); }

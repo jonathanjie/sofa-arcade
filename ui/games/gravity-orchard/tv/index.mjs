@@ -141,7 +141,11 @@ export function mountTV(root, { assets = {}, geometry, onCommand, onExit, sound 
     else if (lost.length) text = `${lost.join(' & ')} · reconnect ${lost.length === 1 ? 'phone' : 'phones'}`;
     else if (neutral.length && view.phase === 'playing') text = `${neutral.join(' & ')} · safe Brake while controls reconnect`;
     if (text !== statusText) { statusNode.textContent = text; statusText = text; }
-    statusNode.hidden = !text;
+    // A paused dialog already names each disconnected phone. Avoid covering
+    // character badges with the same message; retain other host/data warnings.
+    const reconnectInPanel = view?.phase === 'paused' && !panelNode.hidden
+      && state === 'connected' && !invalidData && lost.length > 0;
+    statusNode.hidden = !text || reconnectInPanel;
     container.dataset.goStale = String(Boolean(stale || freshRequired || invalidData));
     writeHTML(presenceNode, presenceMarkup(stale));
   }

@@ -18,6 +18,25 @@ const result = await build({
   target: 'node22',
   // ws optional native accelerators are not a startup or packaging dependency.
   external: ['bufferutil', 'utf-8-validate'],
+  plugins: [{
+    name: 'root-production-dependencies',
+    setup(builder) {
+      // Component suites install their own development dependencies. Resolve
+      // imports from our sources against the root production lock regardless
+      // of those optional local installs; package-internal resolution remains
+      // standard so the root lock can still contain nested package versions.
+      builder.onResolve({ filter: /^[^./]/ }, args => {
+        if (args.pluginData?.rootProductionResolution || args.importer.includes(`${path.sep}node_modules${path.sep}`)) return;
+        return builder.resolve(args.path, {
+          kind: args.kind,
+          importer: args.importer,
+          namespace: args.namespace,
+          resolveDir: root,
+          pluginData: { rootProductionResolution: true },
+        });
+      });
+    },
+  }],
   write: false,
   metafile: true,
   legalComments: 'inline',
@@ -37,12 +56,16 @@ for (const source of Object.keys(result.metafile.inputs).sort()) {
   const packageRoot = prefix + suffix.slice(0, suffix[0].startsWith('@') ? 2 : 1).join('/');
   if (packages.has(packageRoot)) continue;
   const metadata = JSON.parse(await readFile(path.join(root, packageRoot, 'package.json'), 'utf8'));
+  const locked = lock.packages[packageRoot];
+  if (!locked?.integrity || locked.version !== metadata.version) {
+    throw new Error(`Bundled dependency is not pinned by the root lock: ${packageRoot}`);
+  }
   const licenses = (await readdir(path.join(root, packageRoot))).filter(name => /^(?:licen[cs]e|copyright|notice)(?:[.-]|$)/i.test(name)).sort();
   if (!licenses.length) throw new Error(`Missing bundled dependency license: ${metadata.name}`);
   const texts = [];
   for (const license of licenses) texts.push(await readFile(path.join(root, packageRoot, license), 'utf8'));
   packages.set(packageRoot, { name: metadata.name, version: metadata.version, license: metadata.license,
-    integrity: lock.packages[packageRoot]?.integrity, texts });
+    integrity: locked.integrity, texts });
 }
 const dependencies = [...packages.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'));
 const notices = dependencies.map(item => `${item.name}@${item.version} (${item.license})\n${item.texts.join('\n')}`).join('\n\n');

@@ -219,7 +219,12 @@ function mediaSlot(document, parent, assets, initialKeys, box, fallback) {
     if (dead) return;
     const next = findMedia(assets, keys);
     if (next === entry) return;
-    detach();
+    // Pose records may select different frames of the same decoded atlas.
+    // Keep that image visible while switching frames instead of flashing the
+    // diagnostic fallback and waiting for another SVG image load event.
+    const retainImage = loaded && image && viewport && next && entry
+      && next.src === entry.src && next.width === entry.width && next.height === entry.height;
+    if (!retainImage) detach();
     entry = next;
     frames = [];
     if (!entry) return;
@@ -227,6 +232,10 @@ function mediaSlot(document, parent, assets, initialKeys, box, fallback) {
     frames = candidates.filter(frame => validRect(frame) && frame.x >= 0 && frame.y >= 0
       && frame.x + frame.width <= entry.width && frame.y + frame.height <= entry.height)
       .map(frame => ({ ...frame, durationMs: clamp(numeric(frame.durationMs, 120), 16, 5000) })).slice(0, 128);
+    if (retainImage) {
+      if (!frames.length) same(viewport, 'viewBox', `0 0 ${entry.width} ${entry.height}`);
+      return;
+    }
     viewport = node(document, 'svg', { ...box, viewBox: `0 0 ${entry.width} ${entry.height}`, preserveAspectRatio: 'xMidYMid meet', overflow: 'hidden', 'aria-hidden': 'true' }, group);
     image = node(document, 'image', { x: 0, y: 0, width: entry.width, height: entry.height, href: entry.src, preserveAspectRatio: 'none', visibility: 'hidden' }, viewport);
     const currentImage = image;
@@ -520,12 +529,20 @@ export function mountScene(root, { geometry, assets, reducedMotion = false } = {
           : { x: world.x + world.width / 2, y: world.y + world.height - 45 };
       const x = clamp(anchor.x, world.x + 50, world.x + world.width - 50);
       const y = clamp(anchor.y, world.y + 30, world.y + world.height - 25);
+      if (event.kind === 'order-complete' || event.kind === 'stage-complete') {
+        // The final order and stage often finish in one tick. Keep one caption
+        // at their shared anchor; event identity and sound remain independent.
+        const prior = [...effects].filter(([, effect]) => effect.x === x && effect.y === y
+          && ['order-complete', 'stage-complete'].includes(effect.kind));
+        if (event.kind === 'order-complete' && prior.some(([, effect]) => effect.kind === 'stage-complete' && effect.end > time)) continue;
+        for (const [id, effect] of prior) { effect.g.remove(); effects.delete(id); }
+      }
       const g = node(document, 'g', { 'data-effect-id': cap(event.id), 'data-effect-kind': event.kind }, layers.effects);
       const stroke = event.kind === 'reject' || event.kind === 'compost' ? '#a4563c' : '#397658';
       const ring = node(document, 'circle', { cx: x, cy: y, r: 24, fill: 'none', stroke, 'stroke-width': 3 }, g);
       const message = { transfer: 'Handoff', catch: '✓', reject: '↩', compost: 'Compost', 'order-complete': 'Order filled!', 'stage-complete': 'Stage complete' }[event.kind];
       const caption = label(document, g, message, x, y - 31, 'go-scene-label', { 'text-anchor': 'middle', fill: stroke, stroke: '#fff5d9', 'stroke-width': 4, 'font-size': message.length > 2 ? 21 : 30 });
-      effects.set(event.id, { g, ring, caption, start: time, end: time + EVENT_LIFETIME, x, y });
+      effects.set(event.id, { g, ring, caption, kind: event.kind, start: time, end: time + EVENT_LIFETIME, x, y });
       if (effects.size > 32) {
         const oldest = effects.keys().next().value;
         effects.get(oldest).g.remove(); effects.delete(oldest);

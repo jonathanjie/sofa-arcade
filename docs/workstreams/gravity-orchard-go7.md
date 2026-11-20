@@ -37,6 +37,32 @@ correction array while preserving the original WS5 head and verifier. Shared
 server/native changes also have exact path/blob/mode/reason/verification records
 in `tests/integration/components.json`; the legacy gate is not bypassed.
 
+### Reviewed component corrections after handoff
+
+The original component PRs and tested heads remain intact. The exact GO7 lock
+records the following necessary corrections by path, blob, mode, reason and
+verification; no broad path exemption is used.
+
+- **GO2 host recovery:** the complete rendered campaign at `8de00c8` reached live
+  host recovery, where the original clients stopped reconnecting. Whole-host
+  shutdown sent the same terminal `4410` code as explicit room closure. A real
+  same-port restart with the same three client instances and credentials first
+  reproduced that failure. Global coordinator shutdown now sends reconnectable
+  `1012`; explicit `closeRoom()` remains `4410`, and expired, revoked or replaced
+  credentials remain terminal. Two focused GO2 tests and the GO7 restart
+  regression pass: GO2 80/80 and integrated protocol 11/11. Recovery retains the
+  match, fences the old epoch, clears steering and readiness, agrees with HTTP,
+  and requires both players to ready again.
+- **GO4 screenshot corrections:** final atlas poses now retain an already decoded
+  image when only its frame subset changes; simultaneous final-order/stage events
+  use one caption at their shared anchor while retaining their sound identities.
+  The paused dialog's per-player reconnect guidance suppresses the duplicate
+  banner that overlapped Lydia's badge in the actual 1024×684 WKWebView. Host
+  reconnect/data warnings remain visible. Three focused rendered cases cover
+  these fixes, bringing GO4's browser suite to 23 tests. Its 19 Node tests and
+  the 12 GO7 bridge tests pass locally; Chromium execution and corrected final
+  screenshots remain required CI gates.
+
 ## Integrated authority and lifecycle
 
 `server/gravity-orchard-host.mjs` composes the actual GO1 simulation and GO2
@@ -119,6 +145,13 @@ required at runtime. Optional `ws` native accelerators are not shipped or needed
 There is no startup download/npm install, external OpenSSL/mkcert or private key
 inside the delivered application.
 
+The builder resolves source imports against the root production lock even when
+a developer has installed a component's separate test dependencies. Package-internal
+resolution remains standard, and every bundled package must match a root-lock
+version and integrity entry. Regeneration was verified byte-identical with and
+without GO6's component-local dependency directory present. Verified TLS/WSS,
+same-client host recovery and the locked-source inventory pass against that bundle.
+
 The common explicit map in `server/gravity-orchard-delivery.mjs` declares 33 new
 browser files, 50 final media assets and the private host closure. It feeds the
 LAN and generated/portable inventories. `desktop/runtime-manifest.json` contains
@@ -138,13 +171,13 @@ native code and certificate capabilities remain excluded.
 
 | Gate | Verified checkpoint so far |
 | --- | --- |
-| GO7 protocol/UI/native host/package suites | 31 passed, zero skipped at the first published candidate |
+| GO7 protocol/UI/native host/package suites | 32 passed, zero skipped after the same-client restart regression and regenerated runtime |
 | Existing root rules/rooms/LAN/controller/music | 81 passed |
 | Existing portable delivery/source closure | 5 passed |
 | Production build and public inventory | Passed; 182 declared public files |
 | Rust non-GUI protocol/configuration/Quit | 20 passed |
 | Rendered collection TV + two phone contexts | CI gate; local Chromium blocked before page load by AF_UNIX restrictions |
-| Actual packaged macOS ARM64 | GO7 full three-process WKWebView acceptance passed at `400514d`, job 136631856038 |
+| Actual packaged macOS ARM64 | GO7 full three-process WKWebView acceptance passed at `400514d` and `8de00c8`; latest job 136636195772 |
 | Actual packaged macOS Intel | Separate running CI gate; ARM and Linux do not establish Intel acceptance |
 | GO1–GO6 assembled component suites | 280 tests passed at `400514d`; fixture regeneration also passed |
 
@@ -273,10 +306,33 @@ The 720p/1080p TV and 360/390 phone images were visually inspected, with intact
 active-play bounds and final local artwork. This partial browser run is not
 claimed as campaign, basket or recovery acceptance.
 
+The subsequent rendered run at `8de00c8227954aaec74a79cd63a73da8f388d885`
+([artifact 14678338963](https://github.com/jonathanjie/sofa-arcade/actions/runs/44836968385/artifacts/14678338963))
+completed all three stages with 12 orders, nine stars, zero compost and nine
+transfers in each direction in 129.38 seconds. It passed genuine pagehide/Back
+recovery, lost-ACK replay, stale-epoch fencing, retry/rematches, phone reload,
+and the rendered full/wrong-basket exercise. Its 5,963 accepted inputs required
+55 checkpoints; ACK RTT p95 was 50.3 / 48.3 ms, with no host stalls or tick
+overruns during the campaign. Visible TV frame-callback p95 was 16.7 ms, explicitly
+not a GPU/paint or casting-latency measurement. The run then failed live host
+restart and exposed the GO2 terminal-close defect documented above. It is partial
+browser acceptance, not a full pass. Its 25 screenshots also exposed the three
+bounded GO4 visual corrections.
+
+The same head passed the complete Apple Silicon GO7 native gate
+([job 136636195772](https://github.com/jonathanjie/sofa-arcade/actions/runs/44836968385/job/136636195772),
+[artifact 14679043236](https://github.com/jonathanjie/sofa-arcade/actions/runs/44836968385/artifacts/14679043236)),
+including three real app processes, trusted setup, 12 orders/nine stars, all
+49 decoded final images, zero external runtime requests, persisted state/certificate,
+recovery and all normal Quit checks. Inherited production desktop and old-game
+WKWebView acceptance passed separately on both Apple Silicon and Intel. New
+runtime and visual corrections require another complete exact-head rerun.
+
 Independent native review also corrected a status-mutex/UI-thread lock inversion
 before publication. Rejoin disposal and loopback QR selection corrections are
-covered by focused bridge/transport checks. All changes are in shared integration
-paths; GO1–GO6 exclusive source stays identical to the recorded heads.
+covered by focused bridge/transport checks. Later integrated acceptance exposed
+the GO2 recovery correction recorded above; the strict lock enumerates every
+component-source exception while preserving all original handoff heads.
 
 ### Reproduce
 

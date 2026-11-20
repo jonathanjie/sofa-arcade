@@ -202,6 +202,113 @@ test('missing injected image assets fall back to legible diagnostic shapes', asy
   await capture(page, 'tv-1280-missing-assets', testInfo);
 });
 
+test('loaded atlas poses keep their artwork visible while selecting a new frame', async ({ page }) => {
+  await page.route('**/assets/go4-pose-atlas.svg', route => route.fulfill({
+    contentType: 'image/svg+xml',
+    body: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100"><path fill="#36765c" d="M0 0h100v100H0z"/><path fill="#c36b4f" d="M100 0h100v100H100z"/><path fill="#e3b54a" d="M200 0h100v100H200z"/><path fill="#8074a1" d="M300 0h100v100H300z"/></svg>',
+  }));
+  await openFixture(page);
+  await page.evaluate(() => {
+    const states = ['idle', 'lean', 'brace', 'cheer'];
+    const assets = Object.fromEntries(states.map((pose, index) => [pose, {
+      src: '/assets/go4-pose-atlas.svg', width: 400, height: 100,
+      frames: [{ x: index * 100, y: 0, width: 100, height: 100 }],
+    }]));
+    window.fixture.remount({ assets: { assets, characterStates: { jon: Object.fromEntries(states.map(pose => [pose, pose])) } }, reducedMotion: true });
+    const view = window.fixture.view(); view.tick++; view.players.jon.input = { x: 0, y: 0, brake: false };
+    window.fixture.update(view);
+  });
+  const actor = page.locator('[data-character="jon"]');
+  await expect(actor).toHaveAttribute('data-pose', 'idle');
+  await expect(actor.locator('[data-go-media-fallback]')).toHaveAttribute('visibility', 'hidden');
+  await page.evaluate(() => {
+    const actor = document.querySelector('[data-character="jon"]');
+    const proof = window.__go4PoseProof = { image: actor.querySelector('image'), flashes: 0 };
+    proof.observer = new MutationObserver(() => {
+      if (actor.querySelector('[data-go-media-fallback]').getAttribute('visibility') !== 'hidden') proof.flashes++;
+    });
+    proof.observer.observe(actor, { attributes: true, childList: true, subtree: true });
+  });
+  for (const [pose, frameX] of [['lean', 100], ['brace', 200], ['idle', 0], ['cheer', 300]]) {
+    await page.evaluate(pose => {
+      window.fixture.advance(200);
+      const view = window.fixture.view(); view.tick += 12;
+      view.players.jon.input = { x: pose === 'lean' ? .7 : 0, y: 0, brake: pose === 'brace' };
+      view.events = pose === 'cheer' ? [{ id: 'atlas-cheer', kind: 'order-complete', tick: view.tick }] : [];
+      window.fixture.update(view);
+    }, pose);
+    await renderTurn(page);
+    await expect(actor).toHaveAttribute('data-pose', pose);
+    await expect(actor.locator('image').locator('..')).toHaveAttribute('viewBox', `${frameX} 0 100 100`);
+    await expect(actor.locator('[data-go-media-fallback]')).toHaveAttribute('visibility', 'hidden');
+  }
+  expect(await page.evaluate(() => {
+    const proof = window.__go4PoseProof; proof.observer.disconnect();
+    return { sameDecodedImage: document.querySelector('[data-character="jon"] image') === proof.image, fallbackFlashes: proof.flashes };
+  })).toEqual({ sameDecodedImage: true, fallbackFlashes: 0 });
+});
+
+test('simultaneous final order and stage use one completion caption without losing sound identities', async ({ page }) => {
+  await openFixture(page);
+  await page.evaluate(() => {
+    const view = window.fixture.view(); view.tick++;
+    view.events = [{ id: 'earlier-order', kind: 'order-complete', tick: view.tick }];
+    window.fixture.update(view);
+  });
+  await renderTurn(page);
+  await expect(page.locator('[data-effect-kind="order-complete"]')).toHaveCount(1);
+  await page.evaluate(() => {
+    window.fixture.advance(200);
+    const previous = window.fixture.view();
+    const view = window.fixture.makeFixture('interlude', { matchId: previous.matchId });
+    view.runEpoch = previous.runEpoch;
+    view.events = [
+      { id: 'final-order', kind: 'order-complete', tick: view.tick },
+      { id: 'final-stage', kind: 'stage-complete', tick: view.tick },
+    ];
+    window.fixture.update(view);
+  });
+  await renderTurn(page);
+  await expect(page.locator('[data-effect-kind="order-complete"]')).toHaveCount(0);
+  await expect(page.locator('[data-effect-kind="stage-complete"]')).toHaveCount(1);
+  await expect(page.locator('[data-effect-id="final-stage"]')).toContainText('Stage complete');
+  expect(await page.evaluate(() => window.fixture.sounds.filter(entry => entry.detail?.id).map(entry => ({ name: entry.name, id: entry.detail.id })))).toEqual([
+    { name: 'order', id: 'earlier-order' }, { name: 'order', id: 'final-order' }, { name: 'finish', id: 'final-stage' },
+  ]);
+  await page.evaluate(() => { const view = window.fixture.view(); window.fixture.update(view); window.fixture.update(view); });
+  await renderTurn(page);
+  await expect(page.locator('[data-effect-kind="stage-complete"]')).toHaveCount(1);
+  expect(await page.evaluate(() => window.fixture.sounds.filter(entry => entry.detail?.id).length)).toBe(3);
+});
+
+test('paused reconnect guidance stays in the dialog without covering character badges', async ({ page }, testInfo) => {
+  await openFixture(page, 'paused');
+  await page.evaluate(() => {
+    const view = window.fixture.view(); view.pauseReason = 'recovery'; view.ready = { jon: false, lydia: false };
+    window.fixture.setConnection({ state: 'connected', presence: { jon: { connected: false, inputFresh: false }, lydia: { connected: false, inputFresh: false } } });
+    window.fixture.update(view);
+  });
+  for (const viewport of [{ width: 1024, height: 684 }, { width: 1280, height: 720 }, { width: 1920, height: 1080 }]) {
+    await page.setViewportSize(viewport);
+    // Reserve the integrated shell's observed margins, including the smaller
+    // native content area, while keeping this component fixture isolated.
+    await page.evaluate(width => { document.body.style.padding = width === 1024 ? '58px 12px 36px' : '58px 12px 8px'; }, viewport.width);
+    await renderTurn(page);
+    await expect(page.locator('[data-go-panel]')).toBeVisible();
+    await expect(page.locator('[data-go-panel]')).toContainText('Your saved garden is ready to continue.');
+    await expect(page.locator('[data-go-status]')).toBeHidden();
+    for (const id of ['jon', 'lydia']) {
+      await expect(page.locator(`[data-ready-player="${id}"]`)).toContainText('Reconnect phone');
+      await expect(page.locator(`[data-player-presence="${id}"]`)).toContainText('Reconnect');
+    }
+    await noOverflow(page); await visibleActionsFit(page);
+    await capture(page, `tv-${viewport.width}-paused-reconnect`, testInfo);
+  }
+  await page.evaluate(() => window.fixture.setConnection({ state: 'reconnecting' }));
+  await expect(page.locator('[data-go-status]')).toBeVisible();
+  await expect(page.locator('[data-go-status]')).toContainText('Reconnecting');
+});
+
 test('dispose clears the scene and late command settlement cannot reopen it; remount creates one view', async ({ page }) => {
   await openFixture(page);
   await page.evaluate(() => { window.fixture.setAutoApply(false); window.fixture.holdNext(); });

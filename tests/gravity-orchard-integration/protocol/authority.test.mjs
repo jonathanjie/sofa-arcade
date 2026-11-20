@@ -8,6 +8,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { WebSocket } from 'ws';
 import { startLanServer } from '../../../server/lan.mjs';
 import { createEventDecoder } from '../../../ui/transport.mjs';
+import { createRealtimeClient } from '../../../ui/realtime/gravity-orchard/index.mjs';
 import { api, createRoom, harness, manualClock, connectPeer, NEUTRAL, flush, until } from './helpers.mjs';
 
 test('planned game requires explicit local candidate capability and valid practice options', async t => {
@@ -169,6 +170,63 @@ test('host stalls pause instead of catching up and restart restores a durable pa
     assert.equal(coarse.state.phase, 'paused');
     assert.equal(checkpoint.engine.state.phase, 'paused');
   } finally { raw.close(); }
+});
+
+test('graceful whole-host restart reconnects the same clients and credentials to paused recovery', { timeout: 20000 }, async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-live-restart-'));
+  const databasePath = path.join(directory, 'rooms.sqlite');
+  let host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath, enableGravityOrchard: true });
+  const origin = host.origin, port = host.port;
+  const room = await createRoom(host, { mode: 'practice' });
+  const clients = {}, snapshots = {}, states = {}, connections = { host: 0, jon: 0, lydia: 0 };
+  t.after(async () => {
+    for (const client of Object.values(clients)) client.dispose();
+    await host.close(); await rm(directory, { recursive: true, force: true });
+  });
+  class LocalSocket extends WebSocket { constructor(url) { super(url, { origin }); } }
+  for (const seat of ['host', 'jon', 'lydia']) {
+    clients[seat] = createRealtimeClient({ url: origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
+      roomCode: room.code, token: room.tokens[seat], WebSocketImpl: LocalSocket,
+      onSnapshot: snapshot => { snapshots[seat] = snapshot; },
+      onStatus: status => { states[seat] = status.state; if (status.state === 'connected') connections[seat]++; },
+    });
+    clients[seat].connect();
+  }
+  const ready = seat => clients[seat].sendCommand({ id: crypto.randomUUID(), kind: 'ready', payload: { value: true } });
+  await until(() => snapshots.host?.presence.jon.inputFresh && snapshots.host?.presence.lydia.inputFresh);
+  assert.equal((await ready('jon')).accepted, true);
+  assert.equal((await ready('lydia')).accepted, true);
+  await until(() => snapshots.host?.view.phase === 'playing');
+  clients.jon.setInput({ x: 0.5, y: -0.25, brake: false });
+  await until(() => snapshots.host?.view.players.jon.input.x === 0.5);
+  const before = snapshots.host.view;
+  await host.close();
+  // Keep all original clients mounted. A host restart must not require a page
+  // reload, a new credential, or a replacement realtime client object.
+  host = await startLanServer({ host: '127.0.0.1', port, databasePath, enableGravityOrchard: true });
+  await until(() => Object.keys(clients).every(seat => connections[seat] >= 2 && states[seat] === 'connected'
+    && snapshots[seat]?.view.pauseReason === 'recovery' && snapshots[seat]?.view.runEpoch > before.runEpoch),
+  'Same TV and phone client instances must reconnect after a graceful host restart.');
+  const recovered = snapshots.host.view;
+  assert.equal(recovered.matchId, before.matchId);
+  assert.equal(recovered.phase, 'paused');
+  assert.deepEqual(recovered.ready, { jon: false, lydia: false });
+  assert.deepEqual(recovered.players.jon.input, NEUTRAL);
+  assert.deepEqual(recovered.players.lydia.input, NEUTRAL);
+  assert.equal(host.realtimeDiagnostics(room.code).coordinator.sockets, 3);
+  const read = await api(host, `/api/rooms/${room.code}`, { token: room.tokens.host });
+  assert.equal(read.status, 200); assert.equal(read.value.state.runEpoch, recovered.runEpoch);
+  await until(() => snapshots.host.presence.jon.inputFresh && snapshots.host.presence.lydia.inputFresh);
+  assert.equal((await ready('jon')).accepted, true);
+  assert.equal(snapshots.host.view.phase, 'paused', 'One returning controller cannot resume alone.');
+  assert.equal((await ready('lydia')).accepted, true);
+  await until(() => snapshots.host.view.phase === 'playing');
+  assert.ok(snapshots.host.view.runEpoch > recovered.runEpoch);
+  assert.deepEqual(snapshots.host.view.players.jon.input, NEUTRAL, 'Old held steering stays cleared after recovery.');
+  for (const client of Object.values(clients)) {
+    assert.ok(client.getStats().reconnects >= 1);
+    assert.equal(client.getStats().invalidMessages, 0);
+  }
 });
 
 test('expiry in the original room database revokes already authenticated sockets and HTTP views', async t => {
