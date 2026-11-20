@@ -34,6 +34,7 @@ const SOURCES = new Map([
 // Only declared delivery assets are public; authoring sources remain in the checkout.
 const ASSETS = new Set([
   '/assets/sofa-room.png',
+  '/assets/odd-laws-cover.webp',
   '/assets/characters.png',
   '/assets/qrcode.js',
   '/assets/qrcode-LICENSE.txt',

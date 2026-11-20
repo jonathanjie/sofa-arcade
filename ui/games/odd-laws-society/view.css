@@ -11,3 +11,73 @@
 @media(max-width:700px){.ols-game-shell{padding:6px 14px 18px}.ols-shell-phone{max-width:520px}.ols-toolbar{gap:0;margin-bottom:4px}.ols-toolbar button{padding:6px 7px;font-size:11px;gap:4px}.ols-toolbar .ols-icon{width:15px;height:15px}.ols-toolbar>div{gap:0}.ols-toolbar>button>span{display:none}.ols-toolbar>button{min-width:44px}.ols-toolbar>div>button{min-width:60px}.ols-modal-backdrop{padding:12px;align-items:flex-end}.ols-drawer{max-height:calc(100svh - 24px);border-radius:21px}.ols-drawer>header{padding:14px 18px;gap:10px}.ols-drawer h2{font-size:23px}.ols-drawer-body{padding:18px}.ols-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ols-catalog-card{padding:9px}.ols-catalog-card>strong{font-size:17px}.ols-catalog-card .ols-building-art{height:95px}.ols-agenda li>div+div{grid-template-columns:1fr;gap:0}.ols-agenda-label{flex-direction:column;gap:3px}.ols-help dl{grid-template-columns:1fr;gap:6px}.ols-help dd{margin-bottom:10px}.ols-inspect-quotes{gap:8px}.ols-inspect-quotes article{padding:12px}.ols-inspect-values{font-size:14px;gap:13px}.ols-score-table th,.ols-score-table td{padding:12px 6px;font-size:14px}.ols-connection,.ols-error{font-size:12px;padding:8px 10px}}
 
 .ols-drawer-back{display:flex;align-items:center;justify-content:center;gap:5px;border:0;background:transparent;min-width:60px;min-height:44px;padding:8px;border-radius:9px}.ols-drawer-back:hover{background:#e9eddc}
+
+/* Guild identity belongs to districts, never to the separate law categories. */
+.ols [data-guild="civic"]{--guild-ink:#245e60;--guild-tint:#dcefeb;--guild-edge:#508b84}
+.ols [data-guild="craft"]{--guild-ink:#8f432d;--guild-tint:#f7e1d5;--guild-edge:#b7775f}
+.ols [data-guild="commerce"]{--guild-ink:#795011;--guild-tint:#f5e8bb;--guild-edge:#af8731}
+.ols [data-guild="culture"]{--guild-ink:#70416e;--guild-tint:#ecddef;--guild-edge:#9c73a0}
+.ols .ols-guild{gap:6px;min-height:32px;padding:3px 7px;border:1px solid var(--guild-edge);border-radius:8px;background:var(--guild-tint);color:var(--guild-ink);font-size:12px;line-height:1.1;font-weight:750;white-space:nowrap}
+.ols .ols-guild .ols-icon{width:24px;height:24px}
+.ols .ols-catalog-card[data-guild]{background:linear-gradient(165deg,var(--guild-tint),#fffaf0 80%);border-color:var(--guild-edge);border-top-width:4px}
+.ols .ols-plot-built[data-guild]{background:linear-gradient(150deg,var(--guild-tint),#fffaf0);border-color:var(--guild-edge);border-bottom:4px solid var(--guild-edge)}
+.ols .ols-plot-built[data-guild]:hover{box-shadow:0 0 0 2px var(--guild-edge)}
+.ols .ols-plot-guild{color:var(--guild-ink);background:var(--guild-tint);border:1px solid var(--guild-edge);border-radius:7px;padding:3px;right:4px;top:4px}
+.ols .ols-plot-guild .ols-icon{width:20px;height:20px}
+
+/* Inspection is available independently of the current command panel. */
+.ols .ols-shell-phone .ols-toolbar{height:48px}
+.ols .ols-shell-phone .ols-toolbar button{min-height:48px}
+.ols .ols-my-city{min-height:48px;min-width:48px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #84947c;border-radius:10px;background:#e4ebda;color:#304f3f;font-size:13px;font-weight:700;padding:8px 12px}
+.ols .ols-toolbar .ols-my-city{background:#e1e9d5;border:1px solid #a0b18e}
+.ols .ols-drawer>header{flex-shrink:0}
+.ols .ols-drawer h2{min-width:0}
+.ols .ols-close{min-width:48px;min-height:48px;flex-shrink:0}
+.ols .ols-drawer-back{min-height:48px;flex-shrink:0}
+.ols .ols-drawer-context{padding:8px 24px;border-bottom:1px solid var(--ols-line);display:flex;justify-content:flex-end;flex-shrink:0}
+.ols .ols-drawer-context .ols-my-city{width:100%;justify-content:flex-start;background:#edf0e3;border-color:#c4cfb7}
+.ols .ols-drawer-context .ols-my-city>.ols-icon:last-child{margin-left:auto;width:17px;height:17px}
+.ols .ols-city-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;font-size:14px}
+.ols .ols-city-summary>span{display:grid;gap:3px}
+.ols .ols-city-summary small{font-size:11px;color:var(--ols-muted)}
+.ols .ols-city-summary>b{font-size:12px;white-space:nowrap}
+.ols .ols-city-inspection-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
+.ols .ols-city-districts{min-width:0}
+.ols .ols-city-inspection .ols-city-grid{gap:8px}
+.ols .ols-city-inspection .ols-street{gap:8px}
+.ols .ols-city-inspection .ols-plot{min-height:72px;aspect-ratio:1;padding:6px}
+.ols .ols-city-inspection .ols-plot-label{font-size:11px;line-height:1.2}
+.ols .ols-city-guild-counts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.ols .ols-city-guild-counts>span{display:flex;align-items:center;justify-content:space-between;gap:4px;border-radius:9px;background:var(--guild-tint);border:1px solid var(--guild-edge);padding:4px 9px 4px 3px;color:var(--guild-ink)}
+.ols .ols-city-guild-counts .ols-guild{padding:3px;border:0;font-size:12px}
+.ols .ols-city-guild-counts>span>strong{font-size:19px;font-variant-numeric:tabular-nums}
+.ols .ols-city-law-panel{min-width:0;display:grid;gap:17px}
+.ols .ols-city-law-panel h3{font-size:20px;margin:0 0 12px}
+.ols .ols-city-law-panel p{font-size:13px;line-height:1.5;margin:8px 0}
+.ols .ols-city-eyebrow{font-size:11px;color:#617058;display:block;margin-bottom:7px}
+.ols .ols-city-policy{padding:15px;border:1px solid #9aab88;border-radius:13px;background:#edf0e0}
+.ols .ols-city-policy h3{margin-bottom:6px}
+.ols .ols-city-current-laws article{padding:14px 0;border-top:1px solid var(--ols-line)}
+.ols .ols-city-law-heading{display:flex;align-items:center;gap:10px}
+.ols .ols-city-law-heading>.ols-icon{width:24px;height:24px;color:#5d6a51}
+.ols .ols-city-law-heading small{display:block;font-size:10px;color:#617058;margin-bottom:3px}
+.ols .ols-city-law-heading strong{font-size:14px}
+.ols .ols-city-award{display:flex;align-items:center;gap:6px;font-size:12px;color:#405638;line-height:1.4}
+.ols .ols-city-award .ols-icon{width:17px;height:17px}
+@media(max-width:700px){
+ .ols .ols-shell-phone .ols-toolbar{gap:2px}
+ .ols .ols-shell-phone .ols-toolbar>button{min-width:48px;padding-inline:8px}
+ .ols .ols-shell-phone .ols-toolbar>div{gap:0}
+ .ols .ols-shell-phone .ols-toolbar>div>button{min-width:58px;padding-inline:6px;gap:3px;font-size:10px}
+ .ols .ols-shell-phone .ols-toolbar .ols-my-city{padding-inline:7px}
+ .ols .ols-drawer-context{padding:7px 18px}
+ .ols .ols-drawer>header{gap:8px}
+ .ols .ols-drawer-back{min-width:48px;padding:5px;font-size:12px}
+ .ols .ols-drawer h2{font-size:21px}
+ .ols .ols-city-inspection-layout{grid-template-columns:1fr;gap:22px}
+ .ols .ols-city-inspection .ols-plot-label{font-size:10px}
+ .ols .ols-city-inspection .ols-plot-guild .ols-icon{width:20px;height:20px}
+ .ols .ols-city-inspection .ols-plot-guild{padding:2px}
+ .ols .ols-city-guild-counts .ols-guild{font-size:11px}
+ .ols .ols-city-guild-counts>span{padding-right:8px}
+}

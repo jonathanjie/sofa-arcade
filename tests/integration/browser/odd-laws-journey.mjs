@@ -151,7 +151,21 @@ export async function openOddLaws(run, { candidate = false } = {}) {
     await tv.evaluate(({ code, token }) => localStorage.setItem('sofa-room:' + code, JSON.stringify({ hostToken: token, playerTokens: {} })), { code, token: room.hostToken });
     await tv.goto(`${run.origin}/?room=${code}`);
   } else {
+    const shelfCover = tv.locator('[data-action="open-game"][data-game="odd-laws-society"] .game-cover img');
+    await shelfCover.scrollIntoViewIfNeeded();
+    const shelfSize = await shelfCover.evaluate(async image => {
+      await image.decode();
+      return [image.naturalWidth, image.naturalHeight];
+    });
+    assert.deepEqual(shelfSize, [1586, 992], 'The actual Odd Laws collection cover decodes');
+    await run.screenshot(tv, 'odd-laws-collection-cover', { fullPage: true });
     await tv.locator('[data-action="open-game"][data-game="odd-laws-society"]').click();
+    const detailCover = tv.locator('.odd-laws-detail .game-cover img');
+    await detailCover.waitFor();
+    assert.equal(await detailCover.evaluate(async image => { await image.decode(); return image.naturalWidth; }), 1586);
+    assert.ok(await detailCover.getAttribute('alt'), 'The standalone cover has descriptive alternate text');
+    await run.screenshot(tv, 'odd-laws-detail-cover');
+    run.check('Original Odd Laws cover loads on the collection shelf and detail page');
     await tv.locator('.odd-laws-detail [data-action="create"]').click();
   }
   await tv.locator('.room-code').waitFor();
@@ -315,7 +329,7 @@ export async function verifyOddTutorial(run, live) {
     await phone.locator('[data-action="start-tutorial"]').click();
     await phone.locator('.ols-tutorial-dialog').waitFor();
   };
-  for (const action of ['open-agenda', 'open-catalog']) {
+  for (const action of ['open-agenda', 'open-catalog', 'open-city']) {
     await phone.locator(`[data-action="${action}"]`).click();
     await phone.locator('.ols-drawer').waitFor();
     await noHorizontalOverflow(phone);

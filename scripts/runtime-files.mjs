@@ -47,6 +47,7 @@ export const SERVER_FILES = Object.freeze([
 
 export const ASSET_FILES = Object.freeze([
   'public/assets/sofa-room.png',
+  'public/assets/odd-laws-cover.webp',
   'public/assets/characters.png',
   'public/assets/qrcode.js',
   'public/assets/qrcode-LICENSE.txt',

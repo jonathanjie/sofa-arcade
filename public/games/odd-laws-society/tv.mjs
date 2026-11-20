@@ -66,7 +66,7 @@ function marketCard(ctx, stack) {
   const price = samePrice
     ? `<span class="ols-tv-live-price">${icon('coin')}<strong>${jon.cost}</strong><span>each</span></span>`
     : `<span class="ols-tv-split-price" aria-label="Jon pays ${jon.cost} coins; Lydia pays ${lydia.cost} coins">${icon('coin')}<span>J <strong>${jon.cost}</strong></span><span>L <strong>${lydia.cost}</strong></span></span>`;
-  return `<button type="button" class="ols-tv-market-card guild-${esc(building.guild)}${stack.remaining === 0 ? ' is-exhausted' : ''}" data-action="inspect-building" data-design-id="${esc(building.id)}" aria-label="${esc(building.name)}, ${stack.remaining} remaining. ${esc(building.guild)}. Jon pays ${jon.cost} coins; Lydia pays ${lydia.cost} coins. ${building.prestige} prestige. ${esc(building.abilityDescription || 'No ability')}"${stack.remaining === 0 ? ' data-exhausted="true"' : ''}>
+  return `<button type="button" class="ols-tv-market-card guild-${esc(building.guild)}${stack.remaining === 0 ? ' is-exhausted' : ''}" data-guild="${esc(building.guild)}" data-action="inspect-building" data-design-id="${esc(building.id)}" aria-label="${esc(building.name)}, ${stack.remaining} remaining. ${esc(building.guild)}. Jon pays ${jon.cost} coins; Lydia pays ${lydia.cost} coins. ${building.prestige} prestige. ${esc(building.abilityDescription || 'No ability')}"${stack.remaining === 0 ? ' data-exhausted="true"' : ''}>
     <span class="ols-tv-card-top">${guildLabel(building.guild, rules)}<span class="ols-tv-stock">${stack.remaining === 0 ? 'Sold out' : `${stack.remaining} left`}</span></span>
     <span class="ols-tv-building-art">${buildingArt(building, ctx)}</span>
     <strong class="ols-tv-building-name">${esc(building.name)}</strong>

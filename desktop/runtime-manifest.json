@@ -21,6 +21,7 @@
     { "path": "ui/transport.mjs" },
     { "path": "public/assets/characters.png" },
     { "path": "public/assets/sofa-room.png" },
+    { "path": "public/assets/odd-laws-cover.webp" },
     { "path": "public/assets/qrcode.js" },
     { "path": "public/assets/qrcode-LICENSE.txt" },
     { "path": "public/favicon.svg" },
