@@ -21,7 +21,7 @@ async function within(promise, message, milliseconds = 5000) {
   } finally { clearTimeout(timer); }
 }
 
-test('Odd Laws: shell transport recovery resolves an uncertain real command before permitting the next turn', async t => {
+test('Odd Laws: preference remount retains the uncertain real command until transport recovery resolves it', async t => {
   const components = await oddComponents(t);
   if (!components) return;
   const { createRoomClient } = await import('../../../ui/room-client.mjs');
@@ -49,13 +49,19 @@ test('Odd Laws: shell transport recovery resolves an uncertain real command befo
   let recovering = false;
   let recoveryFinished = false;
   let unlocks = 0;
+  let clientCreations = 0;
+  let disposedViews = 0;
+  const mountedPreferences = [];
 
   bridge = createCollectionGame({
     root: {}, viewer: { role: 'player', playerId: 'jon' },
     code: live.code, token: live.tokens.jon, initialRoom: initial.value,
     // The real client is used. Zero retries deterministically reaches its
     // exhausted-acknowledgment recovery path without a multi-second backoff.
-    createRoomClient: options => createRoomClient({ ...options, retryMs: 0, maxRetries: 0 }),
+    createRoomClient: options => {
+      clientCreations++;
+      return createRoomClient({ ...options, retryMs: 0, maxRetries: 0 });
+    },
     fetcher: async (url, options) => {
       if (options.method === 'POST') {
         posts.push(options.body);
@@ -76,11 +82,12 @@ test('Odd Laws: shell transport recovery resolves an uncertain real command befo
     },
     sound: { unlock() { unlocks++; } },
     mount(_root, injected) {
+      mountedPreferences.push(injected.preferences);
       dispatch = injected.dispatch;
       return {
         update(room) { updates.push(room); },
         setConnection(status) { statuses.push(status); },
-        dispose() {},
+        dispose() { disposedViews++; },
       };
     },
     onStatus(status) {
@@ -106,6 +113,20 @@ test('Odd Laws: shell transport recovery resolves an uncertain real command befo
   bridge.receive(visible.jon.value);
   assert.equal(updates.at(-1).state.activePlayer, 'jon');
   assert.equal(posts.length, 1, 'ordinary room delivery does not start an uncontrolled retry loop');
+
+  // Changing a mount-time presentation preference replaces only the view. The
+  // authenticated client still owns its unresolved original command identity.
+  const previousDispatch = dispatch;
+  assert.equal(bridge.setPreferences({ reducedMotion: true }), true);
+  assert.equal(clientCreations, 1, 'preference changes cannot replace the authenticated client');
+  assert.equal(mountedPreferences.length, 2);
+  assert.equal(disposedViews, 1);
+  assert.equal(mountedPreferences.at(-1).reducedMotion, true);
+  assert.equal(updates.at(-1).revision, revealed.value.revision);
+  assert.equal(statuses.at(-1).state, 'offline', 'the new view retains unresolved-command status');
+  await assert.rejects(previousDispatch(phaseAction(updates.at(-1).state, 'work')), /controller has closed/);
+  assert.equal(posts.length, 1, 'the retired view cannot submit through the retained client');
+  assert.equal(unlocks, 1, 'the retired view cannot manufacture another audio gesture');
 
   // A fresh transport connection must recover the original request identity,
   // even though SSE has already moved the UI past the original council.

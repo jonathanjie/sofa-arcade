@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "medium": "original SVG",
+  "renderedPreviewPixels": [
+    80,
+    32
+  ],
+  "checks": [
+    {
+      "id": "small-shop-supremacy",
+      "width": 256,
+      "height": 256,
+      "bytes": 1357,
+      "sha256": "4925f86444f969b30abf7bb417dd9c81a08f55ddba5cd36c0a29344eb89653bb",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22863,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "workshop-week",
+      "width": 256,
+      "height": 256,
+      "bytes": 1200,
+      "sha256": "9b75d047d5e4a78f92aeca772a5a9b43cf320c4ab387cfaad517a3a65214904d",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22863,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "public-grants",
+      "width": 256,
+      "height": 256,
+      "bytes": 1292,
+      "sha256": "7c7f24f0b2d6edbec64b78370407e412b83f094e51fa8997e008da1df553f46d",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22863,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "everything-is-art",
+      "width": 256,
+      "height": 256,
+      "bytes": 1438,
+      "sha256": "d6141b48ccfa8b78fb3ceabcd2605e3e830747b88366fd71970c753aaa7a0f11",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22761,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "open-tender",
+      "width": 256,
+      "height": 256,
+      "bytes": 1265,
+      "sha256": "d2986e28a67f72fc628a232995537d416f289d15e398e124466f424afb180e00",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22391,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "honest-wages",
+      "width": 256,
+      "height": 256,
+      "bytes": 1268,
+      "sha256": "89ee47d02d817c36fc8bb7fdd83186b4ca34813e225f61a672be47689d68f2e8",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22690,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "shop-local",
+      "width": 256,
+      "height": 256,
+      "bytes": 1960,
+      "sha256": "f1b09b507d75a483e52871b36a8f228c9017b904b103c07ed0de1efd7ce0c6fd",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22747,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "industrial-pride",
+      "width": 256,
+      "height": 256,
+      "bytes": 1538,
+      "sha256": "91431c86f1d06a22cfd4baef4fbe52758ab564f762f377106b3b6e2176d21b7a",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22863,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "public-service-day",
+      "width": 256,
+      "height": 256,
+      "bytes": 1259,
+      "sha256": "e99970065a2c934741e23da2eaba58e35c3635e89bd9bfe4b24e3e4e58834f81",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22806,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "mandatory-applause",
+      "width": 256,
+      "height": 256,
+      "bytes": 1489,
+      "sha256": "c0461f3ca9e05a0d4d71e0db0d73d8e56a07653369dfb9e3d1e93f9aa9687200",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22863,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "fashionable-streets",
+      "width": 256,
+      "height": 256,
+      "bytes": 1746,
+      "sha256": "847f5b20fa7016d0b53a01eb41eba8cc29993f5093598d5c13a2d8b85c8cc282",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22523,
+      "visibleEdgePixels": 0
+    },
+    {
+      "id": "diversity-parade",
+      "width": 256,
+      "height": 256,
+      "bytes": 1462,
+      "sha256": "0edf12c51e4f8f3cc64ce7addd03a85c1934989a1be7e36688369e02e8fe8d48",
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentPixels": 22863,
+      "visibleEdgePixels": 0
+    }
+  ]
+}

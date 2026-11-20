@@ -1,0 +1,98 @@
+{
+  "small-shop-supremacy": {
+    "src": "laws/small-shop-supremacy.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "An amber corner shop beneath a crown, the emblem for Small-Shop Supremacy.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "workshop-week": {
+    "src": "laws/workshop-week.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "A coral workshop hammer on a blank calendar, the emblem for Workshop Week.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "public-grants": {
+    "src": "laws/public-grants.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "An amber grant coin above an open teal civic book, the emblem for Public Grants.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "everything-is-art": {
+    "src": "laws/everything-is-art.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "A plum painter’s palette with a broad brush, the emblem for Everything Is Art.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "open-tender": {
+    "src": "laws/open-tender.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "An unrolled cream construction plan with an open doorway, the emblem for Open Tender.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "honest-wages": {
+    "src": "laws/honest-wages.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "A coral-sleeved open hand receiving a sprout coin, the emblem for Honest Wages.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "shop-local": {
+    "src": "laws/shop-local.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Two amber neighborhood shops under a warm heart, the emblem for Shop Local.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "industrial-pride": {
+    "src": "laws/industrial-pride.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "A coral gear and hammer on a pride ribbon, the emblem for Industrial Pride.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "public-service-day": {
+    "src": "laws/public-service-day.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "A teal civic pennant bearing an open book and a laurel, the emblem for Public Service Day.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "mandatory-applause": {
+    "src": "laws/mandatory-applause.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Two cream clapping paws with plum cuffs and golden rays, the emblem for Mandatory Applause.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "fashionable-streets": {
+    "src": "laws/fashionable-streets.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Three distinct buildings joined by a golden street beneath a spark, the emblem for Fashionable Streets.",
+    "status": "final",
+    "medium": "original SVG"
+  },
+  "diversity-parade": {
+    "src": "laws/diversity-parade.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Four differently shaped amber, coral, teal and plum parade pennants on one standard, the emblem for Diversity Parade.",
+    "status": "final",
+    "medium": "original SVG"
+  }
+}

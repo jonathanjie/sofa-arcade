@@ -1,0 +1,19 @@
+{
+  "name": "odd-laws-media-checks",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated validation and offline previews for the WS4 media pack",
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "assemble": "node assemble-manifest.mjs",
+    "validate": "node validate-manifest.mjs",
+    "test": "node --test manifest.test.mjs score.test.mjs",
+    "preview": "node preview-server.mjs",
+    "test:browser": "node browser-check.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "sharp": "0.35.5"
+  }
+}

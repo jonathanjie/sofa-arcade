@@ -12,7 +12,7 @@ import { BROWSER_FILES, runtimeFiles } from '../../../scripts/runtime-files.mjs'
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const prefix = 'sofa-arcade-local/';
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
-const forbidden = /(^|\/)(?:\.git|\.sofa-lan|\.env[^/]*|node_modules|fixtures|harness|tests?|__tests__|evidence)(?:\/|$)|\.(?:sqlite|sqlite3|db)(?:-wal|-shm)?$|\.test\.[cm]?js$|\.pem$/i;
+const forbidden = /(^|\/)(?:\.git|\.sofa-lan|\.env[^/]*|node_modules|fixtures|harness|tests?|__tests__|evidence|audio-evidence|sources|fragments)(?:\/|$)|\.(?:sqlite|sqlite3|db)(?:-wal|-shm)?$|\.test\.[cm]?js$|\.pem$/i;
 
 test('portable packager is reproducible and ignores adjacent private/development files', async () => {
   const temp = await mkdtemp(path.join(tmpdir(), 'sofa-package-determinism-'));
@@ -23,7 +23,15 @@ test('portable packager is reproducible and ignores adjacent private/development
       await copyFile(path.join(root, name), path.join(temp, name));
     }
     const canary = 'SOFA_ACCEPTANCE_FAKE_SECRET_MUST_NEVER_BE_PACKAGED';
-    for (const name of ['.env.test', '.sofa-lan/rooms.sqlite', '.git/config', 'games/odd-laws-society/fixtures/private.json', 'ui/never-ship.test.mjs', 'ui/games/odd-laws-society/harness/private-state.json']) {
+    for (const name of [
+      '.env.test', '.sofa-lan/rooms.sqlite', '.git/config',
+      'games/odd-laws-society/fixtures/private.json', 'ui/never-ship.test.mjs',
+      'ui/games/odd-laws-society/harness/private-state.json',
+      'public/assets/odd-laws-society/sources/private-generation.json',
+      'public/assets/odd-laws-society/evidence/private-review.json',
+      'ui/media/odd-laws-society/audio-evidence/private-review.mp3',
+      'ui/media/odd-laws-society/fragments/private-artwork.json',
+    ]) {
       await mkdir(path.dirname(path.join(temp, name)), { recursive: true });
       await writeFile(path.join(temp, name), canary);
     }
@@ -152,6 +160,11 @@ test('isolated ZIP runs its host and serves the complete local browser graph wit
       '/server/rooms.mjs', '/server/lan.mjs', '/games/registry.mjs',
       '/games/odd-laws-society/engine.mjs', '/games/odd-laws-society/projection.mjs', '/games/odd-laws-society/fixtures/private.json',
       '/games/odd-laws-society/harness/private-state.json',
+      '/assets/odd-laws-society/sources/characters/generation-prompts.json',
+      '/assets/odd-laws-society/sources/buildings/generation-log.json',
+      '/media/odd-laws-society/audio-evidence/lala-calls-the-house-play.mp3',
+      '/media/odd-laws-society/runtime-files.json', '/media/odd-laws-society/contract.mjs',
+      '/media/odd-laws-society/gallery.mjs', '/media/odd-laws-society/score.test.mjs',
       '/tests/integration/fixtures/secrets.json', '/desktop/runtime-manifest.json',
       '/.sofa-lan/rooms.sqlite', '/.env', '/.git/config',
       '/assets/../.env', '/assets/%2e%2e/%2e%2e/server/rooms.mjs',

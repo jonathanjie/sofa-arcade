@@ -54,10 +54,10 @@
       "postHandoffCorrections": [
         {
           "path": "server/lan.mjs",
-          "blob": "6926e85b8c8cf4e58c454a5807f4350c765dc4ff",
+          "blob": "96bb9f34662649a83663d7c7003486f73ca7a28a",
           "mode": "100644",
-          "reason": "Extend only explicit serving entries for shared collection adapters, WS1 public catalog/preview/errors, and the12 declared WS3 UI/CSS runtime files; no authority/private fixtures are served.",
-          "verification": "79 WS2 suites pass; integration package browser-graph/privacy checks and final composed acceptance required."
+          "reason": "Extend only explicit serving entries for shared adapters, three WS1 public helpers, twelve WS3 UI/CSS files, two WS4 score modules and the exact declared static assets; replace broad asset-directory membership with an explicit serving list while retaining canonicalization, Host/Origin/API/SSE logic.",
+          "verification": "79 focused WS2 tests and 4 public-delivery boundary tests pass; actual extracted ZIP browser-graph and privacy checks pass; exact-head component/browser acceptance runs in root CI."
         }
       ],
       "review": {
@@ -99,19 +99,26 @@
       "id": "WS4",
       "branch": "feature/odd-laws-media",
       "report": "docs/workstreams/odd-laws-media.md",
-      "pr": null,
-      "head": null,
-      "status": "awaiting-handoff",
+      "pr": 8,
+      "head": "be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85",
+      "status": "included",
       "protectedPaths": [
         "public/assets/odd-laws-society",
         "ui/media/odd-laws-society",
         ".github/workflows/ws4-media.yml"
       ],
       "postHandoffCorrections": [],
-      "observedCheckpoint": {
-        "pr": 8,
-        "head": "be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85",
-        "reason": "Ready report; final tested ready-PR handoff pending."
+      "review": {
+        "handoff": "PR #8 marked ready; final owner report and both exact-head workflows passed",
+        "localChecks": [
+          "16 media tests passed; all 57 inventory hashes and bytes independently verified",
+          "54 final images decoded/parsed and actual catalog/character sheets inspected",
+          "7 arrangements and 10 effects verified numerically; physical listening remains a hardware gate"
+        ],
+        "ciRuns": [
+          44704211495,
+          44704211519
+        ]
       }
     },
     {
@@ -128,8 +135,8 @@
       "postHandoffCorrections": [],
       "observedCheckpoint": {
         "pr": 6,
-        "head": "792b52cc9cd1826a8c23c810baf576ecd89e122a",
-        "reason": "Both native production build/runtime checks passed; native WKWebView room-create gate failed, owner handoff pending."
+        "head": "3a2bd4e0bc498042ed54581cef88e544855626af",
+        "reason": "Draft. Apple Silicon production and WKWebView checks pass; Intel final UI gate and ready handoff pending."
       }
     }
   ]

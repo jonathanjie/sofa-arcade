@@ -1,0 +1,106 @@
+{
+  "envelope-sealed": {
+    "src": "props/envelope-sealed.svg",
+    "width": 256,
+    "height": 192,
+    "alt": "A closed cream council envelope sealed with a coral paw-print wax seal.",
+    "status": "final",
+    "medium": "original SVG",
+    "anchors": {
+      "center": [
+        0.5,
+        0.5
+      ],
+      "seal": [
+        0.5,
+        0.61
+      ]
+    }
+  },
+  "envelope-open": {
+    "src": "props/envelope-open.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "An opened cream council envelope with a blank paper rising from it.",
+    "status": "final",
+    "medium": "original SVG",
+    "anchors": {
+      "center": [
+        0.5,
+        0.58
+      ],
+      "paper": [
+        0.5,
+        0.32
+      ]
+    }
+  },
+  "stamp": {
+    "src": "props/stamp.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Lala’s wooden council stamp with a broad plum rubber base and a brass paw medallion.",
+    "status": "final",
+    "medium": "original SVG",
+    "anchors": {
+      "handle": [
+        0.5,
+        0.3
+      ],
+      "impact": [
+        0.5,
+        0.89
+      ]
+    }
+  },
+  "coin": {
+    "src": "props/coin.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "A round amber coin embossed with a sprouting leaf, without a numeric denomination.",
+    "status": "final",
+    "medium": "original SVG",
+    "anchors": {
+      "center": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "influence": {
+    "src": "props/influence.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "A plum hexagonal influence seal with a cream quill, distinct from the round coin.",
+    "status": "final",
+    "medium": "original SVG",
+    "anchors": {
+      "center": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "street-glow": {
+    "src": "props/street-glow.svg",
+    "width": 640,
+    "height": 160,
+    "alt": "A golden horizontal glow connecting three street plots, with three small celebratory sparks.",
+    "status": "final",
+    "medium": "original SVG",
+    "anchors": {
+      "center": [
+        0.5,
+        0.5
+      ],
+      "left": [
+        0.08,
+        0.5
+      ],
+      "right": [
+        0.92,
+        0.5
+      ]
+    }
+  }
+}

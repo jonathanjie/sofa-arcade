@@ -24,27 +24,29 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '22'
+          # Match the release packager's pinned compression/runtime version.
+          node-version: '24.22.3'
       - name: Generate production assets and auditable portable ZIP
         run: |
           node scripts/prepare-game.mjs
           npm run package:lan
+          node scripts/check-derived.mjs
       - name: Existing rules, room and controller regressions
         run: npm test
       - name: Integrated protocol, lifecycle and package checks
         run: npm run test:integration
         env:
-          SOFA_EVIDENCE_DIR: tests/integration/evidence/ci
-      - uses: actions/upload-artifact@v4
+          SOFA_EVIDENCE_DIR: ${{ runner.temp }}/ws6-protocol
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: local-portable-${{ github.event.pull_request.head.sha || github.sha }}
           path: public/downloads/sofa-arcade-local.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: local-protocol-${{ github.event.pull_request.head.sha || github.sha }}
-          path: tests/integration/evidence/ci/
+          path: ${{ runner.temp }}/ws6-protocol/
           if-no-files-found: ignore
 
   rendered-browser:
@@ -60,10 +62,14 @@ jobs:
           cache: npm
       - run: npm run install:ci
       - run: npx playwright install --with-deps chromium
+      - name: WS2 real insecure-HTTP browser suite at the exact head
+        run: node --test server/room-browser.test.mjs
+        env:
+          SOFA_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
       - name: Real TV and two isolated phone contexts
         run: node tests/integration/browser/sofa-kingdoms.mjs
         env:
-          SOFA_EVIDENCE_DIR: tests/integration/evidence/ci
+          SOFA_EVIDENCE_DIR: ${{ runner.temp }}/ws6-browser
       - name: Identify the pinned Odd Laws browser candidate
         id: odd-laws
         run: |
@@ -81,12 +87,12 @@ jobs:
         run: node tests/integration/browser/odd-laws.mjs
         env:
           SOFA_ACCEPTANCE_CANDIDATE: ${{ steps.odd-laws.outputs.candidate }}
-          SOFA_EVIDENCE_DIR: tests/integration/evidence/ci
-      - uses: actions/upload-artifact@v4
+          SOFA_EVIDENCE_DIR: ${{ runner.temp }}/ws6-browser
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: local-browser-${{ github.event.pull_request.head.sha || github.sha }}
-          path: tests/integration/evidence/ci/
+          path: ${{ runner.temp }}/ws6-browser/
           if-no-files-found: warn
 
   production-build:
@@ -102,6 +108,94 @@ jobs:
           cache: npm
       - run: npm run install:ci
       - run: npm run build
+      - name: Inspect the actual built public delivery boundary
+        run: node tests/integration/package/production.mjs
+      - name: Production preparation must not silently repair committed assets
+        run: node scripts/check-derived.mjs
+
+  component-suites-at-head:
+    name: Owned component suites at exact head (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ matrix.node }}
+      - name: WS1 rules, public helpers, fixtures and audited smoke matches
+        run: |
+          node --test games/odd-laws-society/tests/*.test.mjs
+          node games/odd-laws-society/tests/generate-fixtures.mjs --check
+          node games/odd-laws-society/simulation/sweep.mjs --smoke
+      - name: WS2 exact focused private platform suites
+        run: |
+          node --test server/rooms.test.mjs server/lan.test.mjs \
+            server/room-platform.test.mjs server/room-lan-integration.test.mjs \
+            ui/transport.test.mjs ui/room-client.test.mjs
+      - name: WS3 component schema, tutorial and renderer suites
+        run: npm test --prefix ui/games/odd-laws-society
+
+  component-ui-at-head:
+    name: WS3 rendered component suite at exact head
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ui/games/odd-laws-society
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/games/odd-laws-society/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: local-ws3-fixture-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ui/games/odd-laws-society/test-results/
+          if-no-files-found: warn
+
+  component-media-at-head:
+    name: WS4 media, offline score and rendered gallery at exact head
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/media/odd-laws-society/package-lock.json
+      - run: npm ci --prefix ui/media/odd-laws-society --no-audit --no-fund
+      - name: Exact manifest assembly, decoded artwork, score and effect checks
+        run: |
+          node ui/media/odd-laws-society/assemble-manifest.mjs
+          git diff --exit-code -- public/assets/odd-laws-society/manifest.json ui/media/odd-laws-society/runtime-files.json
+          npm test --prefix ui/media/odd-laws-society
+          node ui/media/odd-laws-society/audio-preview.mjs --verify
+      - run: node ui/media/odd-laws-society/node_modules/playwright/cli.js install --with-deps chromium
+      - run: node ui/media/odd-laws-society/browser-check.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: local-ws4-media-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ui/media/odd-laws-society/evidence/latest/
+            ui/media/odd-laws-society/audio-evidence/render-report.json
+          if-no-files-found: warn
 
   component-readiness:
     runs-on: ubuntu-latest
@@ -171,7 +265,7 @@ jobs:
         run: node tests/integration/native/run.mjs
         env:
           SOFA_APP_PATH: ${{ github.workspace }}/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/Sofa Arcade.app
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: local-native-${{ matrix.target }}-${{ github.event.pull_request.head.sha || github.sha }}

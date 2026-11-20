@@ -182,7 +182,7 @@ function tone(pitch, at, duration, level, instrument = 'bell', kind = 'music') {
   if (kind === 'music' && isLead) envelope.connect(delaySend);
   attach(source, envelope, [filter], kind, at, duration + .035);
 
-  // The sparkle is reserved for short gameplay effects, never the soundtrack.
+  // A quiet upper partial gives authored bell notes their short sparkle.
   if (instrument === 'bell') {
     const harmonic = context.createOscillator();
     const gain = context.createGain();

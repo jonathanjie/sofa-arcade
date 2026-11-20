@@ -99,15 +99,25 @@ node --test tests/integration/protocol/*.test.mjs
 
 Build and inspect the browser/portable deliverables before release acceptance:
 
+Use Node **24.22.3** for committed ZIP regeneration, matching release CI. The
+playable host still supports the wider runtime range above; pinning the packager
+also pins compression output for byte-for-byte archive checks.
+
 ```sh
 npm run install:ci
 node scripts/prepare-game.mjs
 npm run package:lan
+node scripts/check-derived.mjs
 npm run test:integration
 npm run build
 npm run verify:components
 npm run verify:local-release
 ```
+
+`check-derived.mjs` requires regenerated browser assets and the ZIP to match
+the committed checkout, including newly introduced public files. When authoring
+a change, review and commit those derived files before running that clean-tree
+gate. CI must not silently repair a stale committed download.
 
 The strict verification commands fail when a component is missing or its
 recorded head is absent from the candidate's ancestry. Preparatory dependency
@@ -174,3 +184,13 @@ app Gatekeeper behavior. Report Apple Silicon and Intel results separately.
 Developer ID signing and notarization require a separate distribution step.
 
 No merge, deployment, or release publication is part of this integration task.
+
+### Public delivery boundary
+
+`BROWSER_FILES` and `ASSET_FILES` in `scripts/runtime-files.mjs` name every
+shipped browser module and static asset. The framework copies only those files
+and the named portable ZIP into its generated public directory. LAN serving
+uses the same explicit paths. Authoring `sources/`, preview recordings,
+fixtures, galleries, credentials, databases and engine authority modules are
+not public delivery inputs. The Odd Laws media inventory remains the owner's
+57 runtime files, plus its distribution provenance notice.

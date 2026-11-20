@@ -22,6 +22,9 @@ export const BROWSER_FILES = Object.freeze([
   { url: '/games/odd-laws-society/catalog.mjs', source: 'games/odd-laws-society/catalog.mjs' },
   { url: '/games/odd-laws-society/preview.mjs', source: 'games/odd-laws-society/preview.mjs' },
   { url: '/games/odd-laws-society/errors.mjs', source: 'games/odd-laws-society/errors.mjs' },
+  ...['score.mjs', 'effects.mjs'].map(file => ({
+    url: `/media/odd-laws-society/${file}`, source: `ui/media/odd-laws-society/${file}`,
+  })),
   ...[
     'index.mjs', 'shared.mjs', 'graphics.mjs', 'motion.mjs', 'drawers.mjs',
     'tv.mjs', 'phone.mjs', 'tutorial.mjs', 'view.css', 'tv.css', 'phone.css', 'tutorial.css',
@@ -46,6 +49,63 @@ export const ASSET_FILES = Object.freeze([
   'public/assets/qrcode-LICENSE.txt',
   'public/favicon.svg',
   'public/manifest.webmanifest',
+  // Exact WS4 runtime image closure, plus its retained distribution notice.
+  'public/assets/odd-laws-society/buildings/button-workshop.webp',
+  'public/assets/odd-laws-society/buildings/clockwork-studio.webp',
+  'public/assets/odd-laws-society/buildings/community-garden.webp',
+  'public/assets/odd-laws-society/buildings/concert-pavilion.webp',
+  'public/assets/odd-laws-society/buildings/corner-shop.webp',
+  'public/assets/odd-laws-society/buildings/debate-hall.webp',
+  'public/assets/odd-laws-society/buildings/grand-bazaar.webp',
+  'public/assets/odd-laws-society/buildings/grand-clock.webp',
+  'public/assets/odd-laws-society/buildings/high-court.webp',
+  'public/assets/odd-laws-society/buildings/lala-monument.webp',
+  'public/assets/odd-laws-society/buildings/night-market.webp',
+  'public/assets/odd-laws-society/buildings/observatory.webp',
+  'public/assets/odd-laws-society/buildings/opera-house.webp',
+  'public/assets/odd-laws-society/buildings/petition-kiosk.webp',
+  'public/assets/odd-laws-society/buildings/pocket-theatre.webp',
+  'public/assets/odd-laws-society/buildings/public-library.webp',
+  'public/assets/odd-laws-society/buildings/quilt-bridge.webp',
+  'public/assets/odd-laws-society/buildings/tea-stall.webp',
+  'public/assets/odd-laws-society/characters/jon-acting.webp',
+  'public/assets/odd-laws-society/characters/jon-celebrate.webp',
+  'public/assets/odd-laws-society/characters/jon-disappointed.webp',
+  'public/assets/odd-laws-society/characters/jon-idle.webp',
+  'public/assets/odd-laws-society/characters/jon-thinking.webp',
+  'public/assets/odd-laws-society/characters/lala-celebrate.webp',
+  'public/assets/odd-laws-society/characters/lala-idle.webp',
+  'public/assets/odd-laws-society/characters/lala-stamp.webp',
+  'public/assets/odd-laws-society/characters/lala-thinking.webp',
+  'public/assets/odd-laws-society/characters/lydia-acting.webp',
+  'public/assets/odd-laws-society/characters/lydia-celebrate.webp',
+  'public/assets/odd-laws-society/characters/lydia-disappointed.webp',
+  'public/assets/odd-laws-society/characters/lydia-idle.webp',
+  'public/assets/odd-laws-society/characters/lydia-thinking.webp',
+  'public/assets/odd-laws-society/guilds/civic.svg',
+  'public/assets/odd-laws-society/guilds/commerce.svg',
+  'public/assets/odd-laws-society/guilds/craft.svg',
+  'public/assets/odd-laws-society/guilds/culture.svg',
+  'public/assets/odd-laws-society/laws/diversity-parade.svg',
+  'public/assets/odd-laws-society/laws/everything-is-art.svg',
+  'public/assets/odd-laws-society/laws/fashionable-streets.svg',
+  'public/assets/odd-laws-society/laws/honest-wages.svg',
+  'public/assets/odd-laws-society/laws/industrial-pride.svg',
+  'public/assets/odd-laws-society/laws/mandatory-applause.svg',
+  'public/assets/odd-laws-society/laws/open-tender.svg',
+  'public/assets/odd-laws-society/laws/public-grants.svg',
+  'public/assets/odd-laws-society/laws/public-service-day.svg',
+  'public/assets/odd-laws-society/laws/shop-local.svg',
+  'public/assets/odd-laws-society/laws/small-shop-supremacy.svg',
+  'public/assets/odd-laws-society/laws/workshop-week.svg',
+  'public/assets/odd-laws-society/manifest.json',
+  'public/assets/odd-laws-society/props/coin.svg',
+  'public/assets/odd-laws-society/props/envelope-open.svg',
+  'public/assets/odd-laws-society/props/envelope-sealed.svg',
+  'public/assets/odd-laws-society/props/influence.svg',
+  'public/assets/odd-laws-society/props/stamp.svg',
+  'public/assets/odd-laws-society/props/street-glow.svg',
+  'public/assets/odd-laws-society/LICENSE-NOTES.md',
 ]);
 
 /** No directory walk: adding a source/test beside a runtime file never ships it. */
@@ -62,7 +122,7 @@ export async function runtimeFiles(root) {
 export async function checkedRuntimePath(root, relative) {
   if (typeof relative !== 'string' || !relative || relative.includes('\\') ||
       path.posix.isAbsolute(relative) || relative.split('/').some(part => !part || part === '.' || part === '..') ||
-      /(^|\/)(?:\.git|\.env[^/]*|\.sofa-lan|node_modules|fixtures|tests?|evidence)(?:\/|$)/i.test(relative) ||
+      /(^|\/)(?:\.git|\.env[^/]*|\.sofa-lan|node_modules|fixtures|tests?|evidence|sources|fragments|audio-evidence)(?:\/|$)/i.test(relative) ||
       /(?:\.test\.[cm]?js|\.(?:sqlite|sqlite3|db)(?:-wal|-shm)?|\.pem)$/i.test(relative)) {
     throw new Error(`Unsafe runtime entry: ${relative}`);
   }

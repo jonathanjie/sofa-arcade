@@ -47,7 +47,8 @@ command, drops four responses, holds its recovery response while live SSE moves
 to the next phase, and requires the controller to wait for that acknowledgment
 before another action. It completes all ten guided lessons,
 skip/resume/replay, Help/agenda/almanac, host-only default music, persisted audio
-controls, reduced-motion animation properties and collection exit. Screenshots
+controls, reduced-motion animation properties, live OS motion-preference changes
+without losing the room/role/state, and collection exit. Screenshots
 show councils, private seals, Build previews, unavailable purchases and results.
 
 Before the collection is enabled, run the candidate gate with:

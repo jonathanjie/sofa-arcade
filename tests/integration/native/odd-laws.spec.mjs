@@ -134,6 +134,65 @@ async function verifyNativeModulesAndMedia(room) {
   return result;
 }
 
+async function nativeAudioSettings() {
+  return browser.execute(() => ({
+    music: document.querySelector('[data-action="toggle-music"]')?.checked,
+    effects: document.querySelector('[data-action="toggle-effects"]')?.checked,
+    volume: document.querySelector('#volume-slider')?.value,
+    status: document.querySelector('.audio-live-status')?.textContent,
+    track: document.querySelector('[data-action="toggle-music"]')?.closest('label')?.querySelector('small')?.textContent,
+  }));
+}
+
+async function verifyNativeAudio({ relaunch = false } = {}) {
+  await waitRendered('[data-action="audio"]');
+  // Native WebDriver clicks are real input gestures in the actual WKWebView.
+  // The app reports "Playing" only when its real AudioContext is running.
+  await $('[data-action="audio"]').click();
+  await waitRendered('#volume-slider');
+  if (relaunch) {
+    const saved = await nativeAudioSettings();
+    assert.equal(saved.music, false, 'Native relaunch preserves the saved music preference');
+    assert.equal(saved.effects, false, 'Native relaunch preserves the independent effects preference');
+    assert.equal(saved.volume, '27', 'Native relaunch preserves the saved volume');
+    assert.match(saved.status, /Background music is off/);
+    await $('[data-action="toggle-music"]').click();
+  }
+  await browser.waitUntil(async () => /Playing on this screen/.test((await nativeAudioSettings()).status || ''), {
+    timeout: 10_000, timeoutMsg: 'A native host gesture did not start the real WKWebView AudioContext',
+  });
+  const playing = await nativeAudioSettings();
+  assert.equal(playing.music, true);
+  assert.match(playing.track, /Lala Calls the House/);
+  if (relaunch) {
+    assert.equal(playing.effects, false, 'Enabling music does not silently enable effects');
+    await $('[data-action="toggle-effects"]').click();
+    assert.equal((await nativeAudioSettings()).effects, true);
+  }
+  await screenshot(relaunch ? 'audio-relaunch-playing' : 'audio-gesture-playing');
+  await $('[data-action="toggle-music"]').click();
+  assert.equal((await nativeAudioSettings()).effects, true, 'Disabling music leaves the effects control independent');
+  await $('[data-action="toggle-effects"]').click();
+  if (!relaunch) {
+    await $('#volume-slider').click();
+    // Separate key sequences release each arrow. WDIO's array form holds all
+    // keys down before releasing, which is unsuitable for repeated increments.
+    await browser.keys('Home');
+    for (let index = 0; index < 27; index++) await browser.keys('ArrowRight');
+  }
+  const saved = await nativeAudioSettings();
+  assert.deepEqual({ music: saved.music, effects: saved.effects, volume: saved.volume }, { music: false, effects: false, volume: '27' });
+  assert.match(saved.status, /Background music is off/);
+  await $('[data-action="close-modal"]').click();
+  await waitRendered('.ols-tv');
+  return {
+    actualNativeGesture: true, runningAudioContextReported: true,
+    track: playing.track, music: saved.music, effects: saved.effects,
+    volumePercent: Number(saved.volume), preferencesRestoredAcrossNativeProcess: relaunch,
+    limitation: 'Observed the real WebAudio running state and controls; speaker output/listening quality is not established.',
+  };
+}
+
 describe(`WS6 integrated real WKWebView (${phase})`, () => {
   afterEach(async function () {
     if (this.currentTest?.state !== 'failed') return;
@@ -191,12 +250,14 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
       assert.deepEqual(room.state, saved.room.state);
       assert.equal(await browser.execute(() => localStorage.getItem('sofa-native-integration-marker')), saved.marker);
       await screenshot('root-restored-odd-laws');
+      const audio = await verifyNativeAudio({ relaunch: true });
+      assert.deepEqual((await nativeRoom(saved.code)).state, room.state, 'Native sound preferences do not mutate the game');
       await $('.ols-toolbar [data-action="exit"]').click();
       await waitRendered('.arcade-home');
       assert.equal(await browser.execute(() => JSON.parse(localStorage.getItem('sofa-last-local-session-v1') || 'null')), null);
       assert.equal(await browser.execute(() => document.querySelectorAll('link[data-odd-laws-style]').length), 0);
       await writeFile(fixture, JSON.stringify({ ...saved, relaunchParentPid: status.parentPid }, null, 2) + '\n', { mode: 0o600 });
-      await saveEvidence('integration-native-relaunch.json', { passed: true, nativePidChanged: true, stableOrigin: true, bareRootRestoredHostRole: true, savedCredentialReusedInWKWebView: true, sqliteStateRestored: true, explicitExitDisposesView: true });
+      await saveEvidence('integration-native-relaunch.json', { passed: true, nativePidChanged: true, stableOrigin: true, bareRootRestoredHostRole: true, savedCredentialReusedInWKWebView: true, sqliteStateRestored: true, explicitExitDisposesView: true, audio });
       return;
     }
     assert.equal(phase, 'first');
@@ -221,6 +282,8 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
     assert.equal(room.state.council.ownCommitment, null);
     const media = await verifyNativeModulesAndMedia(room);
     await screenshot('odd-laws-council');
+    const audio = await verifyNativeAudio();
+    assert.deepEqual((await nativeRoom(code)).state, room.state, 'Native sound preferences do not mutate the game');
     const initial = room;
     for (const id of ['jon', 'lydia']) {
       const vote = phaseAction(initial.state, 'commitCouncil', { choiceId: initial.state.council.optionIds[id === 'jon' ? 0 : 1], bid: id === 'jon' ? 1 : 0 });
@@ -254,7 +317,7 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
     await saveEvidence('integration-native-first.json', {
       passed: true, collectionCreateThroughNativeUI: true, authenticatedHttpPhoneSeats: 2,
       actualOddLawsCouncilAndBuildRendered: true, nativeHostSealedProjectionPrivate: true,
-      publicHelpersAndInspector: true, media,
+      publicHelpersAndInspector: true, media, audio,
     });
   });
 });

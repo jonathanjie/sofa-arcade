@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-component-review",
+  "component": "WS4",
+  "pullRequest": 8,
+  "head": "be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85",
+  "base": "e34b0015399cb9791b175987adf1fab1b542565a",
+  "reviewDate": "2026-11-20",
+  "readOnlyDetachedReview": true,
+  "result": "passed",
+  "runtime": {
+    "files": 57,
+    "bytes": 2013494,
+    "finalImages": 54,
+    "uniqueImages": 54,
+    "decodedWebP": 32,
+    "selfContainedSvg": 22,
+    "inventoryHashes": "All byte counts and SHA-256 values independently match files.",
+    "closure": "Exactly the manifest, its 54 image leaves, score.mjs and effects.mjs.",
+    "dimensions": "All manifest dimensions match decoded WebP dimensions or parsed SVG width/height; WebP cutouts have transparent margins.",
+    "catalogCompatibility": "Exact 18 building, 12 law and four guild IDs match the actual delivered WS1 catalog.",
+    "reproducibility": "Manifest is byte-identical to assembly of all five authored fragments."
+  },
+  "commands": [
+    {
+      "command": "npm ci --prefix ui/media/odd-laws-society --no-audit --no-fund",
+      "result": "passed"
+    },
+    {
+      "command": "npm test --prefix ui/media/odd-laws-society",
+      "result": "passed",
+      "tests": 16
+    },
+    {
+      "command": "node ui/media/odd-laws-society/audio-preview.mjs --verify",
+      "result": "passed",
+      "arrangements": 7,
+      "effects": 10,
+      "maximumSourcePeakDbfs": -12.73529123,
+      "clippedOrNonfiniteSamples": 0
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "tests": 66
+    }
+  ],
+  "scoreContract": {
+    "title": "Lala Calls the House",
+    "bpm": 100,
+    "beatsPerBar": 4,
+    "bars": 32,
+    "form": "AABA",
+    "phraseBars": 4,
+    "moduleImports": [],
+    "runtimeSideEffects": "None: no DOM, clock, timers, network, storage or AudioContext.",
+    "events": "Fresh deterministic beat-based events using woodwind, bass, pizzicato and bell.",
+    "scenes": ["lobby", "council", "term1", "term2", "term3", "celebrate"],
+    "effectNames": ["build", "coin", "influence", "street", "seal", "reveal", "stamp", "festival", "win", "tie"]
+  },
+  "visualReview": {
+    "evidenceDirectory": "ui/media/odd-laws-society/evidence/review",
+    "sourceCommit": "e4767f14b666a244057ad4c69d39ee3ebc64941b",
+    "sourceWorkflowRun": 44703645565,
+    "runtimeAndReviewCodeUnchangedAtReviewedHead": true,
+    "retainedEvidenceHashesChecked": 11,
+    "inspectedImages": ["catalog-144px.png", "character-states.png", "symbols.png", "board-1280.png"],
+    "finding": "Cohesive distinctive building and character art, readable guild/law silhouettes, no material clipping or missing assets in inspected images."
+  },
+  "limitations": [
+    "No browser was launched locally; rendered evidence is the retained component CI artifact.",
+    "The 1280px board fixture is full-page and taller than 720px. It does not establish that the integrated game fits a 1280x720 TV viewport.",
+    "Numeric synthesis does not establish audible output or speaker/listening quality in the integrated shared audio engine.",
+    "No physical phone, TV, home Wi-Fi, macOS WKWebView or signing acceptance is implied.",
+    "Public asset source/evidence folders and encoded listening previews are development material; delivery must use the explicit 57-file inventory."
+  ]
+}

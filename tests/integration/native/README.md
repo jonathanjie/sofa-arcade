@@ -15,11 +15,15 @@ The three distinct native application processes verify:
    and composed score. WKWebView resolves and decodes every final manifest image
    from its local host with exact declared dimensions and no external resource
    requests recorded. The native inspector uses the injected quote helpers.
+   Actual native button gestures start the shared WebAudio context with the
+   Odd Laws score. Music and effects remain independent, and keyboard input
+   sets the saved volume to 27 percent through the real slider.
 2. After a real native process exit, an explicit navigation to the bare local
    `/` restores the saved host role, credential, room revision and city without
    supplying a room query or bearer to the new document. The process ID changes
-   and the local origin remains stable. Exiting through the component returns
-   to the collection and disposes its styles.
+   and the local origin remains stable. Saved music/effects/volume controls
+   retain their values, and a fresh native gesture starts music again. Exiting
+   through the component returns to the collection and disposes its styles.
 3. After another native process exit, the collection remains open and a fresh
    bare-root document does not resurrect the exited game.
 
@@ -57,7 +61,7 @@ internet-disconnected hardware, device audio, sleep/wake, TV casting, Developer
 ID/notarization and downloaded-app Gatekeeper behavior remain separately reported.
 
 Current preparation was source-reviewed against WS5 draft
-`8d9f91c7b551856e8b66016720faf31eecf56877`, including its fresh-DOM visibility
+`3a2bd4e0bc498042ed54581cef88e544855626af`, including its fresh-DOM visibility
 wait correction; syntax checks pass. A prepared test is
 not a native pass. Recheck the delivered WS5 setup contract and run this suite
 at the proposed final integration commit before counting acceptance.

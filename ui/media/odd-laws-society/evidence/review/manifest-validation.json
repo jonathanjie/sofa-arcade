@@ -1,0 +1,773 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "entries": 54,
+  "uniqueImages": 54,
+  "catalog": {
+    "buildings": 18,
+    "laws": 12,
+    "guilds": 4,
+    "characterStates": 14,
+    "props": 6
+  },
+  "placeholders": 0,
+  "runtimeImageBytes": 1981769,
+  "assets": [
+    {
+      "src": "buildings/corner-shop.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 70702,
+      "alphaBounds": [
+        56,
+        40,
+        459,
+        477
+      ],
+      "transparentFraction": 0.4756,
+      "sha256": "f48fc05e69d77524beeeb4c88d8b04934353ca912c4def1975ed2105c7a91790"
+    },
+    {
+      "src": "buildings/tea-stall.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 59520,
+      "alphaBounds": [
+        42,
+        69,
+        475,
+        465
+      ],
+      "transparentFraction": 0.5046,
+      "sha256": "ab437cc56fa84b1481c1f350543e14f4c0202568e1e6bd251ba51c353e149e8d"
+    },
+    {
+      "src": "buildings/button-workshop.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 66834,
+      "alphaBounds": [
+        58,
+        32,
+        455,
+        479
+      ],
+      "transparentFraction": 0.4705,
+      "sha256": "e47cac54fe77a66bd8cb8d819f4166bc28c2fa7fb9101ab95d270e610bf48011"
+    },
+    {
+      "src": "buildings/petition-kiosk.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 58040,
+      "alphaBounds": [
+        51,
+        31,
+        460,
+        479
+      ],
+      "transparentFraction": 0.5205,
+      "sha256": "5e93efec678a20995c271bc9dbc4afc57164a5f153edd2b0f4877d6d0bb9694e"
+    },
+    {
+      "src": "buildings/pocket-theatre.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 58408,
+      "alphaBounds": [
+        39,
+        78,
+        475,
+        451
+      ],
+      "transparentFraction": 0.5217,
+      "sha256": "52254893f8e6de0ca0e45660d97e97043a4aae0613fe37b7accdd852e65ea93a"
+    },
+    {
+      "src": "buildings/community-garden.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 81818,
+      "alphaBounds": [
+        30,
+        64,
+        478,
+        451
+      ],
+      "transparentFraction": 0.5536,
+      "sha256": "ed83cd5971dd6bde8a28f35604bc42f1ce18c42271b56bf1c20a49fb19d2213b"
+    },
+    {
+      "src": "buildings/night-market.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 81262,
+      "alphaBounds": [
+        37,
+        36,
+        475,
+        478
+      ],
+      "transparentFraction": 0.5381,
+      "sha256": "323ec33291c726b592ae32a7a141430c7ff2c18eda16673002392d561a1d68ae"
+    },
+    {
+      "src": "buildings/clockwork-studio.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 71914,
+      "alphaBounds": [
+        47,
+        33,
+        468,
+        475
+      ],
+      "transparentFraction": 0.4721,
+      "sha256": "416811564c6f9bf05c2eb21f2e0a1779c0166a19c6c439b46869cc3be73149c8"
+    },
+    {
+      "src": "buildings/public-library.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 66412,
+      "alphaBounds": [
+        53,
+        36,
+        458,
+        478
+      ],
+      "transparentFraction": 0.4728,
+      "sha256": "acb7a89b9051f479e5cc1c6e4f7bd5045bbdc17d7ba736b3f2dd7e32ed40d8f1"
+    },
+    {
+      "src": "buildings/debate-hall.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 66400,
+      "alphaBounds": [
+        56,
+        30,
+        464,
+        483
+      ],
+      "transparentFraction": 0.5119,
+      "sha256": "e7a4e8657eb12fb1ec3e14cd3cedb917633eed72e200cb9095c80f44d30b7380"
+    },
+    {
+      "src": "buildings/concert-pavilion.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 78364,
+      "alphaBounds": [
+        46,
+        34,
+        466,
+        477
+      ],
+      "transparentFraction": 0.5403,
+      "sha256": "f47c3eb6608aaa4d9fe37787b1671c47a34d687e92cb7fccc60f89164abd3cd0"
+    },
+    {
+      "src": "buildings/quilt-bridge.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 52342,
+      "alphaBounds": [
+        38,
+        108,
+        474,
+        441
+      ],
+      "transparentFraction": 0.6289,
+      "sha256": "43e7b7b97fc9aeae3731ced9af2314d8b14c0dd3308effb84ec6bcc02402f1d2"
+    },
+    {
+      "src": "buildings/grand-bazaar.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 76144,
+      "alphaBounds": [
+        36,
+        31,
+        477,
+        477
+      ],
+      "transparentFraction": 0.4535,
+      "sha256": "fd8e1ec6dc5b6205f656d19d275c10fe67c98840d9a0da0961c6a46810015add"
+    },
+    {
+      "src": "buildings/grand-clock.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 54386,
+      "alphaBounds": [
+        94,
+        27,
+        412,
+        481
+      ],
+      "transparentFraction": 0.6437,
+      "sha256": "d79644870645fce2af2c7d59a62a097b0649f9c88e11dc72e7c75372ebea759f"
+    },
+    {
+      "src": "buildings/high-court.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 69686,
+      "alphaBounds": [
+        38,
+        38,
+        475,
+        479
+      ],
+      "transparentFraction": 0.5221,
+      "sha256": "e7d94cb4d0327c800b2a5cb4cc8a2105bfc3842e2ab51c4ad0955c7cca806ed0"
+    },
+    {
+      "src": "buildings/observatory.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 60300,
+      "alphaBounds": [
+        67,
+        30,
+        444,
+        476
+      ],
+      "transparentFraction": 0.5737,
+      "sha256": "9dfdd80b26a66bb0d8a6437d36fa1c49d7225f833d7194dd941b9728883bd787"
+    },
+    {
+      "src": "buildings/opera-house.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 73276,
+      "alphaBounds": [
+        45,
+        32,
+        467,
+        480
+      ],
+      "transparentFraction": 0.4745,
+      "sha256": "1206a1b60049e341f69042f44f8603600e9fbb3e8e63e2ec442a7d72d24ca883"
+    },
+    {
+      "src": "buildings/lala-monument.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 52010,
+      "alphaBounds": [
+        60,
+        43,
+        450,
+        479
+      ],
+      "transparentFraction": 0.604,
+      "sha256": "41297375e1c08a479ee74f979e6030f91f021858e6cad7bf252c702b0480fa3f"
+    },
+    {
+      "src": "laws/small-shop-supremacy.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1357,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3489,
+      "sha256": "4925f86444f969b30abf7bb417dd9c81a08f55ddba5cd36c0a29344eb89653bb"
+    },
+    {
+      "src": "laws/workshop-week.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1200,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3489,
+      "sha256": "9b75d047d5e4a78f92aeca772a5a9b43cf320c4ab387cfaad517a3a65214904d"
+    },
+    {
+      "src": "laws/public-grants.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1292,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3489,
+      "sha256": "7c7f24f0b2d6edbec64b78370407e412b83f094e51fa8997e008da1df553f46d"
+    },
+    {
+      "src": "laws/everything-is-art.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1438,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3473,
+      "sha256": "d6141b48ccfa8b78fb3ceabcd2605e3e830747b88366fd71970c753aaa7a0f11"
+    },
+    {
+      "src": "laws/open-tender.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1265,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3417,
+      "sha256": "d2986e28a67f72fc628a232995537d416f289d15e398e124466f424afb180e00"
+    },
+    {
+      "src": "laws/honest-wages.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1268,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3462,
+      "sha256": "89ee47d02d817c36fc8bb7fdd83186b4ca34813e225f61a672be47689d68f2e8"
+    },
+    {
+      "src": "laws/shop-local.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1960,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3471,
+      "sha256": "f1b09b507d75a483e52871b36a8f228c9017b904b103c07ed0de1efd7ce0c6fd"
+    },
+    {
+      "src": "laws/industrial-pride.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1538,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3489,
+      "sha256": "91431c86f1d06a22cfd4baef4fbe52758ab564f762f377106b3b6e2176d21b7a"
+    },
+    {
+      "src": "laws/public-service-day.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1259,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.348,
+      "sha256": "e99970065a2c934741e23da2eaba58e35c3635e89bd9bfe4b24e3e4e58834f81"
+    },
+    {
+      "src": "laws/mandatory-applause.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1489,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3489,
+      "sha256": "c0461f3ca9e05a0d4d71e0db0d73d8e56a07653369dfb9e3d1e93f9aa9687200"
+    },
+    {
+      "src": "laws/fashionable-streets.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1746,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3437,
+      "sha256": "847f5b20fa7016d0b53a01eb41eba8cc29993f5093598d5c13a2d8b85c8cc282"
+    },
+    {
+      "src": "laws/diversity-parade.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1462,
+      "alphaBounds": [
+        12,
+        12,
+        244,
+        244
+      ],
+      "transparentFraction": 0.3489,
+      "sha256": "0edf12c51e4f8f3cc64ce7addd03a85c1934989a1be7e36688369e02e8fe8d48"
+    },
+    {
+      "src": "guilds/commerce.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1083,
+      "alphaBounds": [
+        21,
+        37,
+        235,
+        224
+      ],
+      "transparentFraction": 0.4708,
+      "sha256": "d04406c7f558a316e54634092be34d09c9281fad771464c64c48d571838e1282"
+    },
+    {
+      "src": "guilds/craft.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 967,
+      "alphaBounds": [
+        17,
+        17,
+        237,
+        233
+      ],
+      "transparentFraction": 0.5767,
+      "sha256": "ec838a379481bd69494f874ddd8437d296dd3834bbcd28d1f188a20bae9ea6ed"
+    },
+    {
+      "src": "guilds/civic.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1093,
+      "alphaBounds": [
+        24,
+        40,
+        232,
+        237
+      ],
+      "transparentFraction": 0.4752,
+      "sha256": "92b5c01c2d095e99c219c391f98121626403072f3a252eb44fd506e14b501529"
+    },
+    {
+      "src": "guilds/culture.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 806,
+      "alphaBounds": [
+        14,
+        23,
+        242,
+        235
+      ],
+      "transparentFraction": 0.5096,
+      "sha256": "a9e6463a90428caeddf2eb9b362c1639a0441edf4cc0d76481b50d8ab8cd9a8b"
+    },
+    {
+      "src": "characters/jon-idle.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 48318,
+      "alphaBounds": [
+        104,
+        28,
+        380,
+        479
+      ],
+      "transparentFraction": 0.6935,
+      "sha256": "e444de2e8b4ef6381777b2c719b44ec31e1016b57192531a1922317a7bf3d733"
+    },
+    {
+      "src": "characters/jon-thinking.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 53646,
+      "alphaBounds": [
+        95,
+        24,
+        393,
+        472
+      ],
+      "transparentFraction": 0.6639,
+      "sha256": "f334893a5d13a771eb9a241682a049f24099aa18be1a77c785948ee11aabcfcc"
+    },
+    {
+      "src": "characters/jon-acting.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 53440,
+      "alphaBounds": [
+        76,
+        27,
+        432,
+        478
+      ],
+      "transparentFraction": 0.6806,
+      "sha256": "c4c89e37cc4f4874f12273f27ae932dd23280d5d39f4873c9c97a54092ac2796"
+    },
+    {
+      "src": "characters/jon-celebrate.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 46338,
+      "alphaBounds": [
+        112,
+        25,
+        379,
+        481
+      ],
+      "transparentFraction": 0.7016,
+      "sha256": "ccff78475da816c2109b8a887755c1f8ba79596afc976684f03b86fd54f00722"
+    },
+    {
+      "src": "characters/jon-disappointed.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 41926,
+      "alphaBounds": [
+        107,
+        28,
+        379,
+        479
+      ],
+      "transparentFraction": 0.7314,
+      "sha256": "f5820757416b686892c142f2c06b03c8b3734cadb7173f0c28939043b7d5a18b"
+    },
+    {
+      "src": "characters/lydia-idle.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 60878,
+      "alphaBounds": [
+        92,
+        23,
+        400,
+        483
+      ],
+      "transparentFraction": 0.6037,
+      "sha256": "7882bf16b2b99cd1e7603039f336c84520bb893bcc128739f19e17c9e480a6ff"
+    },
+    {
+      "src": "characters/lydia-thinking.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 55300,
+      "alphaBounds": [
+        94,
+        22,
+        396,
+        484
+      ],
+      "transparentFraction": 0.618,
+      "sha256": "b34281b86de8d2d592060419c43d85eb15abb39d0a5d708a88d0ea5382fed40f"
+    },
+    {
+      "src": "characters/lydia-acting.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 60432,
+      "alphaBounds": [
+        88,
+        22,
+        443,
+        484
+      ],
+      "transparentFraction": 0.6074,
+      "sha256": "751b672f1c4b0bf4b63feba777a49afba4e47759fcae724bfd042177530b4cb5"
+    },
+    {
+      "src": "characters/lydia-celebrate.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 55318,
+      "alphaBounds": [
+        94,
+        24,
+        405,
+        484
+      ],
+      "transparentFraction": 0.6189,
+      "sha256": "f46d3354293fc75d82424f33c0177c335b94bc4e330109f0612ffdc6e4b94912"
+    },
+    {
+      "src": "characters/lydia-disappointed.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 57992,
+      "alphaBounds": [
+        94,
+        27,
+        387,
+        483
+      ],
+      "transparentFraction": 0.6274,
+      "sha256": "4d9822f14cdfed18f15f51e826f07a76bb971e0da06d654f25ca73f4e086cfd7"
+    },
+    {
+      "src": "characters/lala-idle.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 56784,
+      "alphaBounds": [
+        63,
+        48,
+        444,
+        474
+      ],
+      "transparentFraction": 0.5748,
+      "sha256": "ba4ddd2f699c06ee5550fa13444de15e920de3bcec87e6567809aa5fe210e753"
+    },
+    {
+      "src": "characters/lala-thinking.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 51130,
+      "alphaBounds": [
+        64,
+        42,
+        443,
+        474
+      ],
+      "transparentFraction": 0.5701,
+      "sha256": "729dc2b2c4c10391a936a6fc080fa54d7d8a897462177c9ad2b67c7a0083b5f0"
+    },
+    {
+      "src": "characters/lala-stamp.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 58384,
+      "alphaBounds": [
+        40,
+        41,
+        480,
+        481
+      ],
+      "transparentFraction": 0.5395,
+      "sha256": "b200909f202e15254297a6576c17be4d60c44a385599e39fbec80e2674884978"
+    },
+    {
+      "src": "characters/lala-celebrate.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 56478,
+      "alphaBounds": [
+        67,
+        44,
+        450,
+        470
+      ],
+      "transparentFraction": 0.5641,
+      "sha256": "7386272e132026a66502fcebbfe50c69d114d5bc3a303bf065a7502b61a3365c"
+    },
+    {
+      "src": "props/envelope-sealed.svg",
+      "width": 256,
+      "height": 192,
+      "bytes": 1189,
+      "alphaBounds": [
+        14,
+        22,
+        242,
+        174
+      ],
+      "transparentFraction": 0.2995,
+      "sha256": "1dd001549481797ec943fbcc8050f227aeac806eab4b48a8d35c51db6fd1ce2d"
+    },
+    {
+      "src": "props/envelope-open.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 918,
+      "alphaBounds": [
+        14,
+        14,
+        242,
+        234
+      ],
+      "transparentFraction": 0.3728,
+      "sha256": "f155bb02a8a1bda1dfdd035a11e4cf0a4398b6a886d97f40b76e4f91e9066648"
+    },
+    {
+      "src": "props/stamp.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 1377,
+      "alphaBounds": [
+        43,
+        12,
+        213,
+        234
+      ],
+      "transparentFraction": 0.5961,
+      "sha256": "903b454dea2afaa7e24e60b10950c1f355fbddc0ba4984eab8b08ec5b7688219"
+    },
+    {
+      "src": "props/coin.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 912,
+      "alphaBounds": [
+        14,
+        17,
+        242,
+        245
+      ],
+      "transparentFraction": 0.371,
+      "sha256": "71a98f2c460a66e7355555dde8dede15a1ce8e21c3ed950a74acbc9bb9c0cf2f"
+    },
+    {
+      "src": "props/influence.svg",
+      "width": 256,
+      "height": 256,
+      "bytes": 819,
+      "alphaBounds": [
+        28,
+        13,
+        228,
+        243
+      ],
+      "transparentFraction": 0.4634,
+      "sha256": "e923d7d3b7a3c166d1db497be353c51e47b75cddd63fbed49d51a5683b557ba7"
+    },
+    {
+      "src": "props/street-glow.svg",
+      "width": 640,
+      "height": 160,
+      "bytes": 1149,
+      "alphaBounds": [
+        10,
+        9,
+        630,
+        139
+      ],
+      "transparentFraction": 0.3144,
+      "sha256": "8f804797cd1c44e8ccb21b3210d284d13f2c92e6cee9007f97811d440fc12f33"
+    }
+  ]
+}

@@ -5,9 +5,9 @@
 Work is on `feature/local-integration` in a dedicated clone. Base `main` is
 `e34b0015399cb9791b175987adf1fab1b542565a` (20 November 2026).
 
-**Status: assembling reviewed components; not a complete local release.** WS1, WS2 and WS3
+**Status: assembling reviewed components; not a complete local release.** WS1–WS4
 are included at their explicitly ready, tested heads. WS5 has a draft PR with
-an outstanding native UI gate; WS4 has not published a handoff. No component
+an outstanding final native gate and handoff. No component
 code is copied from an unfinished working tree. Odd Laws Society remains planned
 until real end-to-end acceptance passes.
 
@@ -21,8 +21,8 @@ immutable head. A later head is a new candidate requiring affected checks again.
 | WS1 engine | `feature/odd-laws-engine` | #4 — `a9d55b76c3c7d1da43836c350a0f7ce63820cecb` | Included; ready handoff and owned CI verified |
 | WS2 private platform | `feature/local-platform` | #7 — `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Included; ready handoff and owned CI verified |
 | WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — `87693dd61af1b6a011a26da814fc884f85bca809` | Included; ready handoff and owned CI verified |
-| WS4 media/music | `feature/odd-laws-media` | Not published at initial inspection | Awaiting tested handoff |
-| WS5 Tauri | `feature/tauri-local` | #6 — observed `792b52cc9cd1826a8c23c810baf576ecd89e122a` | Draft; not incorporated |
+| WS4 media/music | `feature/odd-laws-media` | #8 — `be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85` | Included; ready handoff and owned CI verified |
+| WS5 Tauri | `feature/tauri-local` | #6 — observed `3a2bd4e0bc498042ed54581cef88e544855626af` | Draft; not incorporated |
 
 Preferred review/merge order: WS1, WS2, WS3, WS4, WS5, then WS6. An aggregate WS6
 candidate depends on all included component PRs. This session does not merge
@@ -327,3 +327,37 @@ post-handoff correction, checks base/head ancestry and owner reports, and reject
 protected working-tree changes. Six temporary-repository tests exercise valid
 assembly, unknown bases/heads, report drift, correction drift and uncommitted
 changes. No whole-path wildcard exemption remains.
+
+### WS4 reviewed handoff and explicit public delivery
+
+WS4 PR #8 is ready at `be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85`.
+[Media CI](https://github.com/jonathanjie/sofa-arcade/actions/runs/44704211495) and
+[Game checks](https://github.com/jonathanjie/sofa-arcade/actions/runs/44704211519)
+passed at that head. Independent WS6 review recomputed every inventory digest,
+decoded 32 transparent 512px WebPs, parsed 22 self-contained SVGs, matched the
+actual WS1 catalog IDs, and inspected the retained rendered art/state sheets.
+All 16 media tests, seven numeric arrangements and ten effects passed. The exact
+57-file component runtime is 2,013,494 bytes; its provenance notice is retained
+as one additional distribution file. See
+`tests/integration/evidence/ws4-be49b175-review.json`. Numeric render checks do
+not establish listening quality or physical speaker behavior.
+
+The complete WS1–WS4 portable package now passes the source/manifest/permission,
+determinism/canary, generated-copy and actual extracted HTTP asset-graph checks.
+The fifth package gate explicitly skips pending WS5. The exact 54 media images,
+manifest and two pure score/effect modules enter the browser, LAN and ZIP lists.
+Owner authoring sources, galleries, review recordings and tests remain outside
+those lists. LAN serving replaces its broad asset-directory entry with explicit
+asset entries while retaining canonicalization, Host/Origin, API and SSE code.
+The framework uses a separately staged allowlisted public directory; no authored
+files are deleted or moved. These serving-list changes are the permitted WS2
+post-handoff correction and are pinned by blob in the component checkpoint.
+
+The next CI checkpoint runs the first complete real Odd Laws browser candidate.
+The catalog remains planned until it passes. CI now runs each component suite at
+the exact proposed head, and fails if browser/HTML/portable regeneration changes
+committed delivery files. Portable compression is reproduced with Node 24.22.3.
+At prior integration head `46f2292e5dcdad2ebe836a9aeb242b389dd5dff9`,
+[Sofa rendered acceptance and production build](https://github.com/jonathanjie/sofa-arcade/actions/runs/44704790064),
+WS1, WS2, WS3 and legacy workflows passed; the missing media/package and
+all-components readiness gates correctly remained blocked.

@@ -1,0 +1,42 @@
+{
+  "commerce": {
+    "src": "guilds/commerce.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Commerce guild: an amber shop with a striped awning and open doorway.",
+    "status": "final",
+    "medium": "original SVG",
+    "color": "#bb7a26",
+    "silhouette": "shop with striped awning"
+  },
+  "craft": {
+    "src": "guilds/craft.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Craft guild: a coral hammer crossed with a broad spanner.",
+    "status": "final",
+    "medium": "original SVG",
+    "color": "#be614b",
+    "silhouette": "crossed hammer and spanner"
+  },
+  "civic": {
+    "src": "guilds/civic.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Civic guild: a teal open book with a round seal and ribbon.",
+    "status": "final",
+    "medium": "original SVG",
+    "color": "#387d76",
+    "silhouette": "open book with civic seal"
+  },
+  "culture": {
+    "src": "guilds/culture.svg",
+    "width": 256,
+    "height": 256,
+    "alt": "Culture guild: a plum theatre mask with a broad smile and ribbon.",
+    "status": "final",
+    "medium": "original SVG",
+    "color": "#82536e",
+    "silhouette": "smiling theatre mask"
+  }
+}

@@ -204,6 +204,28 @@ export async function verifyOddPresentation(run, live) {
   }
   run.check('Real council layouts at 1920×1080/1280×720 and 360×800/390×844; all eight primary voting targets meet 44px minimum');
 
+  // A live OS preference change remounts presentation without replacing the
+  // authenticated room/client. No action is submitted during this transition.
+  const motionRoom = await run.room(live.code, live.tokens.host);
+  for (const [page, role] of [[live.tv, 'host'], [live.phones.jon, 'jon']]) {
+    const token = await credentials(page, live.code, role);
+    assert.equal(await page.locator('.ols.ols-reduced-motion').count(), 1);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await waitUntil(() => page.evaluate(() => {
+      const root = document.querySelector('.ols');
+      return !!root && !root.classList.contains('ols-reduced-motion');
+    }), `${role} responds to a live motion preference change`);
+    await waitForRendered(page, motionRoom, role === 'host' ? null : role);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await waitUntil(() => page.evaluate(() => document.querySelector('.ols')?.classList.contains('ols-reduced-motion')), `${role} restores reduced motion without navigation`);
+    await waitForRendered(page, motionRoom, role === 'host' ? null : role);
+    assert.ok((await credentials(page, live.code, role)) === token, 'Changing presentation keeps the same authenticated credential');
+  }
+  const afterMotion = await run.room(live.code, live.tokens.host);
+  assert.equal(afterMotion.revision, motionRoom.revision);
+  assert.deepEqual(afterMotion.state, motionRoom.state, 'Changing motion preferences never mutates the real game');
+  run.check('Live reduced-motion changes update the TV and phone presentation while preserving the acknowledged game and authenticated roles');
+
   // Shared settings still govern the newly injected score and gesture lifecycle.
   await live.phones.jon.locator('[data-action="audio"]').click();
   assert.equal(await live.phones.jon.getByRole('switch', { name: 'Background music', exact: true }).isDisabled(), true);

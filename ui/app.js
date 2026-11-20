@@ -336,7 +336,7 @@ function modal() {
   } else if(state.modal==='audio') {
     const a=audio.getSettings(),phone=isPhoneAudio();
     const status=audioStatus();
-    content=`<div class="modal-header"><div><span class="eyebrow">Set the mood</span><h2>Music & sound</h2></div>${close}</div><p class="audio-live-status" role="status">${status}</p><label class="audio-setting"><span><strong>Background music</strong><small>${esc(a.trackTitle)}</small></span><input type="checkbox" role="switch" aria-label="Background music" data-action="toggle-music" ${a.music?'checked':''} ${phone||!a.supported?'disabled':''}></label><label class="audio-setting"><span><strong>Sound effects</strong><small>${phone?'On this phone':'Steps, crumbs, and cat-sized trouble.'}</small></span><input type="checkbox" role="switch" aria-label="Sound effects" data-action="toggle-effects" ${a.effects?'checked':''} ${!a.supported?'disabled':''}></label><label class="audio-volume"><span>Volume <output id="volume-value">${Math.round(a.volume*100)}%</output></span><input type="range" min="0" max="100" value="${Math.round(a.volume*100)}" step="1" id="volume-slider" aria-label="Audio volume" ${!a.supported?'disabled':''}></label>${!a.unlocked&&a.supported?'<button class="button full" data-action="unlock-audio">Enable audio</button>':''}<button class="button secondary full" data-action="close-modal">Done</button>`;
+    content=`<div class="modal-header"><div><span class="eyebrow">Set the mood</span><h2>Music & sound</h2></div>${close}</div><p class="audio-live-status" role="status">${status}</p><label class="audio-setting"><span><strong>Background music</strong><small>${esc(a.trackTitle)}</small></span><input type="checkbox" role="switch" aria-label="Background music" data-action="toggle-music" ${a.music?'checked':''} ${phone||!a.supported?'disabled':''}></label><label class="audio-setting"><span><strong>Sound effects</strong><small>${phone?'On this phone':state.gameId===ODD_LAWS_GAME_ID?'Buildings, coins, and council decisions.':'Steps, crumbs, and cat-sized trouble.'}</small></span><input type="checkbox" role="switch" aria-label="Sound effects" data-action="toggle-effects" ${a.effects?'checked':''} ${!a.supported?'disabled':''}></label><label class="audio-volume"><span>Volume <output id="volume-value">${Math.round(a.volume*100)}%</output></span><input type="range" min="0" max="100" value="${Math.round(a.volume*100)}" step="1" id="volume-slider" aria-label="Audio volume" ${!a.supported?'disabled':''}></label>${!a.unlocked&&a.supported?'<button class="button full" data-action="unlock-audio">Enable audio</button>':''}<button class="button secondary full" data-action="close-modal">Done</button>`;
   } else if(state.modal==='lure') {
     const g=game(),f=g.forecast,advanced=g.version>=2&&state.mode!=='tutorial';
     const draft=advanced?(state.lureDraft||f):f;
@@ -787,7 +787,7 @@ app.addEventListener('click', async event=>{
   if(a==='audio')openModal('audio');
   if(a==='unlock-audio'){audio.unlock();render();}
   if(a==='toggle-music'){audio.setMusic(button.checked);render();}
-  if(a==='toggle-effects'){audio.setEffects(button.checked);if(button.checked)audio.effect('move');render();}
+  if(a==='toggle-effects'){audio.setEffects(button.checked);if(button.checked)audio.effect(state.gameId===ODD_LAWS_GAME_ID?'coin':'move');render();}
   if(a==='tutorial'||a==='tutorial-restart')await startTutorial();
   if(a==='tutorial-exit')exitTutorial();
   if(a==='tutorial-continue')tutorialContinue();
