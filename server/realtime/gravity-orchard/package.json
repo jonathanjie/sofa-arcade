@@ -1,0 +1,14 @@
+{
+  "name": "sofa-gravity-orchard-realtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "test:browser": "node tests/run.mjs --browser",
+    "fixture": "node fixture/server.mjs"
+  },
+  "dependencies": { "ws": "8.23.0" },
+  "devDependencies": { "playwright": "1.62.1" }
+}
