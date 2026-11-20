@@ -41,11 +41,13 @@ See [docs/LAN.md](docs/LAN.md) for setup, connection help, and the optional port
 
 ## Sound and motion
 
-**Lala’s Little Waltz** is an original 32-bar composition in G major and 3/4 time at 104 BPM. A rounded woodwind melody repeats in an AABA form over a gentle bass-and-pizzicato accompaniment, with a contrasting middle section, held phrase endings, and written breaths. The menu retains the complete melody with a quieter accompaniment. The score is in `ui/score.mjs`; Web Audio synthesizes it locally without external audio services.
+The collection menu welcomes you with **Make Yourself at Home**, an original 32-bar G-major waltz at 92 BPM. A recurring woodwind invitation returns around a contrasting E-minor middle section, with gentle plucked accompaniment and written breaths. Selecting a game and returning to the shelf have brief matching sound cues. The pure score and cue data are in `ui/media/sofa-menu/`.
+
+Sofa Kingdoms has **Lala’s Little Waltz**, an original 32-bar composition in G major and 3/4 time at 104 BPM. A rounded woodwind melody repeats in an AABA form over a gentle bass-and-pizzicato accompaniment, with a contrasting middle section, held phrase endings, and written breaths. Its game detail screen retains the melody with a quieter accompaniment. The score is in `ui/score.mjs`; Web Audio synthesizes it locally without external audio services.
 
 Odd Laws adds **Lala Calls the House**, a 32-bar F-major AABA score in 4/4 at 100 BPM, with arrangements for the council, three terms and results. Both games share one audio lifecycle and the same saved controls; switching games stops the previous score.
 
-Music and effects have separate toggles and a saved volume setting. A direct click or tap unlocks browser audio. Music plays on the TV/host or practice screen; phone controllers start quiet to avoid echoes, with their own optional effects toggle. Background tabs pause their soundtrack.
+Music and effects have separate toggles and a saved volume setting. A direct click, tap, or Enter/Space interaction unlocks menu audio. Music follows the collection, TV/host, or practice screen through one audio engine; phone controllers start quiet, with their own optional effects toggle. Leaving a controller or Join screen keeps that session's menu quiet until explicitly hosting or starting practice. Background tabs pause their soundtrack.
 
 Characters use the illustrated atlas with layered movement and action effects: idle motion, mouse hops, crumb pickups, banking celebrations, and Lala's swipe, pounce, and nap. The animation system respects the device's reduced-motion preference. This is procedural animation of illustrated characters rather than a full frame-by-frame character atlas.
 

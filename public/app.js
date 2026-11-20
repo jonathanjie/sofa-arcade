@@ -1,5 +1,5 @@
 import { GAME_CATALOG, SOFA_GAME_ID, ODD_LAWS_GAME_ID } from '/games/catalog.mjs?v=3';
-import { audio } from '/audio.js?v=4';
+import { audio } from '/audio.js?v=5';
 import { enhanceMotion } from '/motion.js?v=2';
 import { forecastOverlay, axisLabels, turnOrder, forecastLookahead } from '/board-view.mjs?v=5';
 import { createActionQueue } from '/action-queue.mjs?v=4';
@@ -51,6 +51,7 @@ const state = {
   lastEventKey: '', eventToast: '', resultDismissed: false, mapOpen: false,
   pendingActions: 0, lureDraft: null, turnToast: '',
   tutorial: null, tutorialDone: stored('sofa-tutorial-v2', false), tutorialSeen: stored('sofa-tutorial-seen-v2', false),
+  quietMenu: false,
 };
 const NAMES = { jon: 'Jon', lydia: 'Lydia' };
 const KEYS = { ArrowUp: 'up', ArrowRight: 'right', ArrowDown: 'down', ArrowLeft: 'left' };
@@ -193,7 +194,9 @@ function forecastCard(g) {
   return `<section class="forecast-card compact-forecast"><div class="forecast-art">${character('lala')}</div><div class="forecast-top"><span class="eyebrow">${g.phase==='finished'?'That’s a wrap':'After both turns'}</span></div><h2>${g.forecast?.type==='swipe'?`${g.forecast.axis==='row'?'Row '+(g.forecast.index+1):'Column '+String.fromCharCode(65+g.forecast.index)} · ${g.forecast.axis==='row'?(g.forecast.direction>0?'Right':'Left'):(g.forecast.direction>0?'Down':'Up')}`:pounce?`Pounce · ${String.fromCharCode(65+g.forecast.col)}${g.forecast.row+1}`:'Catnap'}</h2>${pounce?'<p class="pounce-consequence">Drop bag · return home</p>':''}${g.phase==='finished'?'':`<button class="preview-button" data-action="preview" aria-label="${esc(f.detail)} Preview landing squares" aria-pressed="${state.preview}">${icon('eye')} ${state.preview ? 'Hide preview' : 'Preview'}</button>${forecastLookahead(g,engine?.upcomingForecasts(g)||[],icon)}`}</section>`;
 }
 function isLocal(){return state.mode==='practice'||state.mode==='tutorial';}
-function isPhoneAudio(){return state.role==='player'||(state.mode==='tutorial'&&tutorialReturn?.context?.role==='player');}
+function isPhoneAudio(){const origin=tutorialReturn?.context;return state.role==='player'||(!state.role&&state.quietMenu)||(state.mode==='tutorial'&&(origin?.role==='player'||(!origin?.role&&origin?.quietMenu)));}
+function usesMenuScore(){return state.view==='collection'||(state.view==='detail'&&gameById(state.gameId).status!=='playable');}
+function playMenuEffect(name){const epoch=roomEpoch;void audio.unlock().then(ready=>{if(ready&&epoch===roomEpoch)audio.effect(name);});}
 function legal(g, id) {try{const commands=engine?.legalActions(g,id)||[];if(state.mode!=='tutorial')return commands;const expected=TUTORIAL_STEPS[state.tutorial?.step]?.action;if(!expected)return [];return commands.filter(c=>c.type===expected.type&&(!expected.direction||c.direction===expected.direction)&&(expected.index===undefined||c.index===expected.index)&&(c.type!=='lure'||((!c.axis||c.axis===g.forecast.axis)&&(!c.direction||c.direction===g.forecast.direction))));}catch{return [];}}
 function controllerControls(g, id, practice=false) {
   const commands = legal(g,id);
@@ -314,7 +317,7 @@ function exitTutorial(destination=null){
     history.replaceState({},'', '/?game='+SOFA_GAME_ID);render();
   }
 }
-function audioStatus(){const a=audio.getSettings();return !a.supported?'Audio isn’t available in this browser.':isPhoneAudio()?'Music plays on the TV.':a.music&&a.unlocked&&a.canPlayMusic&&a.volume>0?'Playing on this screen':a.music&&!a.unlocked?'Tap Enable audio to start':a.music&&a.volume===0?'Volume is muted':a.music?'Music starts when you open a game':'Background music is off';}
+function audioStatus(){const a=audio.getSettings();return !a.supported?'Audio isn’t available in this browser.':isPhoneAudio()?'Music plays on the TV.':a.music&&a.unlocked&&a.canPlayMusic&&a.volume>0?'Playing on this screen':a.music&&!a.unlocked?'Tap Enable audio to start':a.music&&a.volume===0?'Volume is muted':a.music?'Music is paused on this screen':'Background music is off';}
 function modal() {
   if (!state.modal) return '';
   let content='';
@@ -337,7 +340,7 @@ function modal() {
   } else if(state.modal==='audio') {
     const a=audio.getSettings(),phone=isPhoneAudio();
     const status=audioStatus();
-    content=`<div class="modal-header"><div><span class="eyebrow">Set the mood</span><h2>Music & sound</h2></div>${close}</div><p class="audio-live-status" role="status">${status}</p><label class="audio-setting"><span><strong>Background music</strong><small>${esc(a.trackTitle)}</small></span><input type="checkbox" role="switch" aria-label="Background music" data-action="toggle-music" ${a.music?'checked':''} ${phone||!a.supported?'disabled':''}></label><label class="audio-setting"><span><strong>Sound effects</strong><small>${phone?'On this phone':state.gameId===ODD_LAWS_GAME_ID?'Buildings, coins, and council decisions.':'Steps, crumbs, and cat-sized trouble.'}</small></span><input type="checkbox" role="switch" aria-label="Sound effects" data-action="toggle-effects" ${a.effects?'checked':''} ${!a.supported?'disabled':''}></label><label class="audio-volume"><span>Volume <output id="volume-value">${Math.round(a.volume*100)}%</output></span><input type="range" min="0" max="100" value="${Math.round(a.volume*100)}" step="1" id="volume-slider" aria-label="Audio volume" ${!a.supported?'disabled':''}></label>${!a.unlocked&&a.supported?'<button class="button full" data-action="unlock-audio">Enable audio</button>':''}<button class="button secondary full" data-action="close-modal">Done</button>`;
+    content=`<div class="modal-header"><div><span class="eyebrow">Set the mood</span><h2>Music & sound</h2></div>${close}</div><p class="audio-live-status" role="status">${status}</p><label class="audio-setting"><span><strong>Background music</strong><small>${esc(a.trackTitle)}</small></span><input type="checkbox" role="switch" aria-label="Background music" data-action="toggle-music" ${a.music?'checked':''} ${phone||!a.supported?'disabled':''}></label><label class="audio-setting"><span><strong>Sound effects</strong><small>${phone?'On this phone':usesMenuScore()?'Game choices and a warm welcome.':state.gameId===ODD_LAWS_GAME_ID?'Buildings, coins, and council decisions.':'Steps, crumbs, and cat-sized trouble.'}</small></span><input type="checkbox" role="switch" aria-label="Sound effects" data-action="toggle-effects" ${a.effects?'checked':''} ${!a.supported?'disabled':''}></label><label class="audio-volume"><span>Volume <output id="volume-value">${Math.round(a.volume*100)}%</output></span><input type="range" min="0" max="100" value="${Math.round(a.volume*100)}" step="1" id="volume-slider" aria-label="Audio volume" ${!a.supported?'disabled':''}></label>${!a.unlocked&&a.supported?'<button class="button full" data-action="unlock-audio">Enable audio</button>':''}<button class="button secondary full" data-action="close-modal">Done</button>`;
   } else if(state.modal==='lure') {
     const g=game(),f=g.forecast,advanced=g.version>=2&&state.mode!=='tutorial';
     const draft=advanced?(state.lureDraft||f):f;
@@ -468,10 +471,12 @@ function sofaLoadingView() {
 function render() {
   const current=game();
   const odd=state.gameId===ODD_LAWS_GAME_ID;
-  if(!odd)audio.setScore(SOFA_GAME_ID);
+  const menu=usesMenuScore();
+  if(menu)audio.setScore('sofa-menu');
+  else if(!odd)audio.setScore(SOFA_GAME_ID);
   else if(collectionModules){audio.setScore(ODD_LAWS_GAME_ID,collectionModules.score);if(state.view!=='game')audio.setScene('lobby');}
   else if(gameById(state.gameId).status==='playable')prepareCollectionModules();
-  audio.setContext({role:isPhoneAudio()?'player':state.role,view:odd&&!collectionModules?'collection':state.view,phase:current?.phase,forecastType:current?.forecast?.type,round:current?.round,maxRounds:current?.maxRounds});
+  audio.setContext({role:isPhoneAudio()?'player':state.role,view:odd&&!collectionModules&&!menu?'loading':state.view,phase:current?.phase,forecastType:current?.forecast?.type,round:current?.round,maxRounds:current?.maxRounds});
   if(odd&&state.view==='game'&&current){renderCollectionMatch();return;}
   if(collectionGame||collectionIdentity)releaseCollectionGame();
   const focused = document.activeElement;
@@ -777,29 +782,34 @@ async function drawQr() {
   }catch{}
 }
 function goHome() {
+  state.quietMenu=isPhoneAudio();
   persist(LAST_SESSION_KEY,null);
   stopPolling();clearTimeout(eventTimer);tutorialReturn=null;clearTutorialReturn();state.view='collection';state.role=null;state.mode='network';state.code='';state.room=null;state.hostToken=null;state.playerToken=null;state.playerId=null;state.error='';state.notice='';state.modal=null;state.preview=false;state.eventToast='';state.turnToast='';state.resultDismissed=false;state.tutorial=null;history.replaceState({},'', '/');render();
 }
 function openGame(id){persist(LAST_SESSION_KEY,null);stopPolling();clearTimeout(eventTimer);state.eventToast='';state.turnToast='';state.gameId=gameById(id).id;state.view='detail';state.mode='network';state.role=null;state.code='';state.room=null;state.playerToken=null;state.hostToken=null;state.playerId=null;state.modal=null;state.error='';history.replaceState({},'', '/?game='+encodeURIComponent(state.gameId));render();window.scrollTo({top:0,behavior:'instant'});}
+// A welcoming theme starts on an intentional interaction, never on page load.
+// Leaving a phone controller retains its quiet role while browsing the shelf.
+app.addEventListener('pointerdown',event=>{if(event.button===0&&event.isPrimary!==false&&usesMenuScore()&&!isPhoneAudio())audio.unlock();});
+app.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)&&usesMenuScore()&&!isPhoneAudio())audio.unlock();});
 app.addEventListener('click', async event=>{
   const button=event.target.closest('[data-action]');if(!button||button.disabled)return;
   const a=button.dataset.action;
   if(button.closest('#collection-game-root')&&collectionGame)return;
   if(['open-game','create','start','practice','tutorial','tutorial-restart','tutorial-host','tutorial-practice','audio','unlock-audio','toggle-music','toggle-effects','game-action','choose-lure','claim','rematch','tutorial-continue','tutorial-preview'].includes(a))audio.unlock();
   if(a==='backdrop'){if(event.target===button)closeModal();return;}
-  if(a==='home'){if(state.mode==='tutorial')exitTutorial();else if(state.room)openModal('leave');else goHome();}
-  if(a==='open-game')openGame(button.dataset.game);
-  if(a==='leave')goHome();
+  if(a==='home'){if(state.mode==='tutorial')exitTutorial();else if(state.room)openModal('leave');else{goHome();playMenuEffect('menu-back');}}
+  if(a==='open-game'){openGame(button.dataset.game);playMenuEffect('menu-select');}
+  if(a==='leave'){goHome();playMenuEffect('menu-back');}
   if(a==='rules')openModal(state.gameId===ODD_LAWS_GAME_ID?'odd-rules':'rules');
   if(a==='odd-tutorial')await openOddTutorial({replay:button.dataset.replay==='true'});
-  if(a==='close-modal')closeModal();
+  if(a==='close-modal'){const confirm=usesMenuScore()&&state.modal==='audio';closeModal();if(confirm)playMenuEffect('menu-confirm');}
   if(a==='reload-view'){location.reload();return;}
   if(a==='retry-collection'){collectionLoadError='';render();}
   if(a==='dismiss-notice'){state.error='';state.notice='';render();}
   if(a==='audio')openModal('audio');
   if(a==='unlock-audio'){audio.unlock();render();}
   if(a==='toggle-music'){audio.setMusic(button.checked);render();}
-  if(a==='toggle-effects'){audio.setEffects(button.checked);if(button.checked)audio.effect(state.gameId===ODD_LAWS_GAME_ID?'coin':'move');render();}
+  if(a==='toggle-effects'){audio.setEffects(button.checked);if(button.checked){if(usesMenuScore())playMenuEffect('menu-confirm');else audio.effect(state.gameId===ODD_LAWS_GAME_ID?'coin':'move');}render();}
   if(a==='tutorial'||a==='tutorial-restart')await startTutorial();
   if(a==='tutorial-exit')exitTutorial();
   if(a==='tutorial-continue')tutorialContinue();

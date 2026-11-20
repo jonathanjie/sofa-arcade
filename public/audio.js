@@ -4,8 +4,10 @@
  * A short look-ahead scheduler keeps the musical clock independent of rendering.
  */
 import { SCORE, eventsForBar } from './score.mjs?v=3';
+import * as menuMusic from './media/sofa-menu/score.mjs';
 
 const defaultSoundtrack = Object.freeze({ id: 'sofa-kingdoms', score: SCORE, eventsForBar, eventsForEffect: null });
+const menuSoundtrack = Object.freeze({ id: 'sofa-menu', score: menuMusic.SCORE, eventsForBar: menuMusic.eventsForBar, eventsForEffect: menuMusic.eventsForEffect });
 let soundtrack = defaultSoundtrack;
 
 const STORAGE_KEY = 'sofa-arcade-audio-v1';
@@ -47,7 +49,8 @@ const barSeconds = () => beatSeconds() * soundtrack.score.beatsPerBar;
 const musicViews = new Set(['detail', 'lobby', 'game', 'tutorial', 'practice']);
 const midi = pitch => 440 * Math.pow(2, (pitch - 69) / 12);
 const phone = () => scene.role === 'player';
-const canPlayMusic = () => !phone() && musicViews.has(scene.view);
+const canPlayMusic = () => !phone() && (musicViews.has(scene.view) ||
+  (scene.view === 'collection' && soundtrack.id === menuSoundtrack.id));
 const effectsEnabled = () => phone() ? preferences.phoneEffects : preferences.effects;
 const musicEnabled = () => preferences.music && preferences.volume > 0 && canPlayMusic() && !page?.hidden;
 const running = () => context?.state === 'running' && unlocked && !disposed;
@@ -291,9 +294,13 @@ function resume() {
 function effect(type = 'move') {
   if (!running() || !effectsEnabled() || preferences.volume <= 0 || page?.hidden) return;
   const at = context.currentTime + 0.01;
-  if (soundtrack.eventsForEffect) {
-    for (const note of soundtrack.eventsForEffect(type)) {
-      tone(note.pitch, at + note.beat * beatSeconds(), note.duration * beatSeconds(), note.level, note.instrument, 'effect');
+  // Navigation cues keep the menu's rhythm even when their click has just
+  // selected a game with a different tempo. They still use this one graph.
+  const cue = typeof type === 'string' && type.startsWith('menu-') ? menuSoundtrack : soundtrack;
+  if (cue.eventsForEffect) {
+    const cueBeatSeconds = 60 / cue.score.bpm;
+    for (const note of cue.eventsForEffect(type)) {
+      tone(note.pitch, at + note.beat * cueBeatSeconds, note.duration * cueBeatSeconds, note.level, note.instrument, 'effect');
     }
     return;
   }
@@ -338,7 +345,8 @@ export const audio = Object.freeze({
   /** Switch the score on the existing graph/clock; never open another audio context. */
   setScore(id, module = null) {
     let next = defaultSoundtrack;
-    if (id !== 'sofa-kingdoms') {
+    if (id === menuSoundtrack.id) next = menuSoundtrack;
+    else if (id !== 'sofa-kingdoms') {
       const score = module?.SCORE;
       if (typeof id !== 'string' || !score || !Number.isFinite(score.bpm) || score.bpm <= 0 ||
           !Number.isFinite(score.beatsPerBar) || score.beatsPerBar <= 0 || !Array.isArray(score.bars) ||

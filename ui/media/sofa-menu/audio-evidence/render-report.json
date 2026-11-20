@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "title": "Make Yourself at Home",
+  "key": "G major",
+  "bpm": 92,
+  "beatsPerBar": 3,
+  "scoreSeconds": 62.608695652173914,
+  "releaseTailSeconds": 0.6,
+  "sampleRate": 32000,
+  "channels": 1,
+  "pcmBits": 16,
+  "previewVolume": 1,
+  "defaultSharedVolume": 0.45,
+  "musicBusGain": 0.7,
+  "effectsBusGain": 0.75,
+  "methodology": "Deterministic oscillator, envelope, lowpass and room-reflection approximation of ui/audio.js. No compressor, limiter or normalization. The one menu arrangement is rendered once; its lobby/menu/unknown aliases are checked event-for-event.",
+  "sourceSha256": {
+    "score.mjs": "1b7cab86dc7be5fb77d8511ca97e53d2a7488a4ad999909ff5b4eebe9b72a6ea",
+    "effects.mjs": "226973566e897ad8a6f505fa46963f772ceb85782e155f43bc0241a21df7e101",
+    "offline-render.mjs": "9602e7ba297ad9333185e351734629a66a3859ad893a698de924629a8cfd479e",
+    "audio-preview.mjs": "e45720c96c2c0f2fb386641909c3996e92cfad43b66dea843d26b27a8c9ec8e9"
+  },
+  "music": {
+    "eventCount": 262,
+    "verifiedModeAliases": [
+      "play",
+      "menu",
+      "lobby",
+      "unknown"
+    ],
+    "sourceMix": {
+      "peak": 0.19400528,
+      "peakDbFS": -14.24372879,
+      "rms": 0.06503917,
+      "rmsDbFS": -23.73649963,
+      "dcOffset": 0.00002174,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "volume100": {
+      "peak": 0.1358037,
+      "peakDbFS": -17.34176799,
+      "rms": 0.04552742,
+      "rmsDbFS": -26.83453883,
+      "dcOffset": 0.00001522,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "defaultVolume45": {
+      "peak": 0.06111166,
+      "peakDbFS": -24.27751772,
+      "rms": 0.02048734,
+      "rmsDbFS": -33.77028856,
+      "dcOffset": 0.00000685,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    }
+  },
+  "effects": {
+    "menu-select": {
+      "atSecondsInPreview": 0.5,
+      "eventCount": 2,
+      "sourceMix": {
+        "peak": 0.04067285,
+        "peakDbFS": -27.81390868,
+        "rms": 0.00404478,
+        "rmsDbFS": -47.86210546,
+        "dcOffset": -1.5e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.03050463,
+        "peakDbFS": -30.31268341,
+        "rms": 0.00303358,
+        "rmsDbFS": -50.36088019,
+        "dcOffset": -1.2e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.01372709,
+        "peakDbFS": -37.24843313,
+        "rms": 0.00136511,
+        "rmsDbFS": -57.29662992,
+        "dcOffset": -5e-8,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "menu-back": {
+      "atSecondsInPreview": 1.8804347826086958,
+      "eventCount": 2,
+      "sourceMix": {
+        "peak": 0.0428351,
+        "peakDbFS": -27.36400362,
+        "rms": 0.00483272,
+        "rmsDbFS": -46.31615972,
+        "dcOffset": -5.7e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.03212633,
+        "peakDbFS": -29.86277835,
+        "rms": 0.00362454,
+        "rmsDbFS": -48.81493445,
+        "dcOffset": -4.3e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.01445685,
+        "peakDbFS": -36.79852808,
+        "rms": 0.00163104,
+        "rmsDbFS": -55.75068418,
+        "dcOffset": -1.9e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "menu-confirm": {
+      "atSecondsInPreview": 3.4695652173913043,
+      "eventCount": 4,
+      "sourceMix": {
+        "peak": 0.07284922,
+        "peakDbFS": -22.75150138,
+        "rms": 0.02496487,
+        "rmsDbFS": -32.05341337,
+        "dcOffset": -0.00000161,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.05463692,
+        "peakDbFS": -25.25027611,
+        "rms": 0.01872365,
+        "rmsDbFS": -34.5521881,
+        "dcOffset": -0.00000121,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.02458661,
+        "peakDbFS": -32.18602583,
+        "rms": 0.00842564,
+        "rmsDbFS": -41.48793783,
+        "dcOffset": -5.4e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    }
+  },
+  "auditoryEvaluation": "No human audition performed. Numeric signal checks, encoded-file decoding and browser playback tests do not establish listening quality on physical speakers.",
+  "effectsPreview": {
+    "durationSeconds": 6.14784375,
+    "sourceMix": {
+      "peak": 0.07284922,
+      "peakDbFS": -22.75150138,
+      "rms": 0.01290274,
+      "rmsDbFS": -37.7863615,
+      "dcOffset": -5.4e-7,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "volume100": {
+      "peak": 0.05463692,
+      "peakDbFS": -25.25027611,
+      "rms": 0.00967705,
+      "rmsDbFS": -40.28513623,
+      "dcOffset": -4e-7,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "defaultVolume45": {
+      "peak": 0.02458661,
+      "peakDbFS": -32.18602583,
+      "rms": 0.00435467,
+      "rmsDbFS": -47.22088595,
+      "dcOffset": -1.8e-7,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    }
+  },
+  "previews": {
+    "make-yourself-at-home": {
+      "pcmWavSha256": "eb4ff765b6a3904a8c7a2b6b8e33e234878b009d28d9b9473b6fe8e582f3a871",
+      "decodedSeconds": 63.20871875,
+      "file": "make-yourself-at-home.mp3",
+      "bytes": 632924,
+      "sha256": "7191abddb3330ce9f88da894f3098eed949174ba6f0cd8776fe701281ce3de88",
+      "decodedMeasurements": {
+        "peak": 0.12895352,
+        "peakDbFS": -17.79133621,
+        "rms": 0.04324983,
+        "rmsDbFS": -27.28031106,
+        "dcOffset": 0.00001443,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "menu-effects": {
+      "pcmWavSha256": "f65373c17d9084982b27cb9608bb495edd5ed48a9b058994736efe912fa9c55e",
+      "decodedSeconds": 6.14784375,
+      "file": "menu-effects.mp3",
+      "bytes": 62324,
+      "sha256": "0c328b2b112512745f1d1ddfaf62d19478035b972c9f547b90ab3031025d3f07",
+      "decodedMeasurements": {
+        "peak": 0.05187389,
+        "peakDbFS": -25.70102324,
+        "rms": 0.00919385,
+        "rmsDbFS": -40.73005536,
+        "dcOffset": -3.8e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    }
+  },
+  "encoder": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers"
+}

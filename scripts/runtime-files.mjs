@@ -23,6 +23,9 @@ export const BROWSER_FILES = Object.freeze([
   { url: '/games/odd-laws-society/preview.mjs', source: 'games/odd-laws-society/preview.mjs' },
   { url: '/games/odd-laws-society/errors.mjs', source: 'games/odd-laws-society/errors.mjs' },
   ...['score.mjs', 'effects.mjs'].map(file => ({
+    url: `/media/sofa-menu/${file}`, source: `ui/media/sofa-menu/${file}`,
+  })),
+  ...['score.mjs', 'effects.mjs'].map(file => ({
     url: `/media/odd-laws-society/${file}`, source: `ui/media/odd-laws-society/${file}`,
   })),
   ...[

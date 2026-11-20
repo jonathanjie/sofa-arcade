@@ -54,10 +54,10 @@
       "postHandoffCorrections": [
         {
           "path": "server/lan.mjs",
-          "blob": "96bb9f34662649a83663d7c7003486f73ca7a28a",
+          "blob": "272239f01e0539b1ad4701e687a9aa655b85c80b",
           "mode": "100644",
-          "reason": "Extend only explicit serving entries for shared adapters, three WS1 public helpers, twelve WS3 UI/CSS files, two WS4 score modules and the exact declared static assets; replace broad asset-directory membership with an explicit serving list while retaining canonicalization, Host/Origin/API/SSE logic.",
-          "verification": "79 focused WS2 tests and 4 public-delivery boundary tests pass; actual extracted ZIP browser-graph and privacy checks pass; exact-head component/browser acceptance runs in root CI."
+          "reason": "Extend only explicit serving entries for shared adapters, reviewed public game/UI/media files and exact static assets; the menu-audio follow-up adds exactly /media/sofa-menu/score.mjs and effects.mjs. Canonicalization, Host/Origin/API/SSE logic remain as reviewed.",
+          "verification": "Existing 81-test root suite passes. Focused real-LAN/portable checks verify exact menu source bytes and 404 for existing adjacent authoring/evidence canaries. Full package, shared-audio lifecycle and browser/native acceptance run at the PR head."
         }
       ],
       "review": {
@@ -135,24 +135,52 @@
       "postHandoffCorrections": [
         {
           "path": "desktop/runtime-manifest.json",
-          "blob": "ebd5dcc48d90b4639ab916095cc0e17ce12f3a02",
+          "blob": "5ef4f6c8a80a4a949d7e0ada220cbac61868853a",
           "mode": "100644",
-          "reason": "Append exactly79 reviewed game/client/UI/media runtime entries to the existing25-file manifest. No native code, build settings, owned tests, or workflow changes.",
-          "verification": "104-file Linux stage and independent manifest closure pass; bundled Node24.22.3 executes ESM/SQLite with no Node on PATH;12 desktop tests pass. Final combined macOS workflows remain required."
+          "reason": "Retain the 79 reviewed integration entries added to the original25-file manifest and append exactly two pure menu audio modules. The separate normal Mac Quit correction is recorded under its precise native source, dependency and test paths below.",
+          "verification": "Independent browser/Tauri closure and reproducible extracted-ZIP serving tests pass with exactly106 runtime entries. Shared lifecycle and real-browser menu playback tests accompany the change; existing combined macOS acceptance remains required before merge."
         },
         {
           "path": "desktop/src-tauri/src/native.rs",
-          "blob": "e25b0c5aee1d3742e76b704d5b4b2b387d336fb7",
+          "blob": "d0570b371baed28f2c4215efbfb7e159ad07f6c6",
           "mode": "100644",
-          "reason": "Open recreated native game windows at the stable bare loopback root so the shared shell saved-session pointer, including explicit Exit, owns resume. A sampled legacy room URL must not override a cleared session.",
-          "verification": "The prior exact-head ARM three-process regression exposed the real stale-room restore; the existing regression now deliberately seeds a stale native lastPath before the final launch. Both combined architecture/native workflows must pass on this correction before merge."
+          "reason": "Preserve the stable bare-root resume correction and route normal AppKit Quit through the same acknowledged document-retirement and owned-child shutdown. Distinguish draining from complete, prevent queued window recreation during quit, and report failed shutdown truthfully.",
+          "verification": "The existing exact-head ARM relaunch lost its newest storage marker and recorded ready after Quit. Pinned Tao/AppKit termination was independently traced. Seventeen Rust tests pass; all unchanged recent-write, credential, audio-preference and explicit-exit checks must pass with stopped-state evidence on both native architectures."
         },
         {
           "path": "desktop/wdio.native.mjs",
-          "blob": "96cc0a20064202091e278f78bfa82d3a7dd060ce",
+          "blob": "47e1b1907228e0e87730b2a3d27577b5fd7818a8",
           "mode": "100644",
-          "reason": "Use the existing PID-specific native Quit helper before the pinned WebDriver service sends SIGTERM. Validate launcher/app/sidecar ownership and require actual parent, child and listener closure; preserve all recent-write, explicit-exit and crash assertions.",
-          "verification": "Pinned WDIO 9.33.1 hook order and service 1.5.1 signal cleanup independently inspected; syntax and failure/control-flow checks pass. Exact-head combined ARM/Intel native and production desktop workflows remain required before merge."
+          "reason": "Retain the PID-specific normal Mac Quit helper, executable/parent/sidecar ownership checks and closure waits; additionally require final supervisor state stopped before recording successful native shutdown.",
+          "verification": "Syntax and independent lifecycle review pass. The assertion gates both desktop acceptance and the integrated three-process suite. No sleeps, marker relocation, credential changes or relaxed assertions are introduced; corrected exact-head Mac CI is required."
+        },
+        {
+          "path": "desktop/src-tauri/src/termination.rs",
+          "blob": "0136cd910c366ac9d93339334e575392bb8e603f",
+          "mode": "100644",
+          "reason": "Add a focused public AppKit applicationShouldTerminate callback to the existing Tao delegate without replacing callbacks or private API. A platform-independent coordinator prevents duplicate/racing Quit requests from exiting during cleanup; only successful completion permits a main-thread termination reply.",
+          "verification": "Six new coordinator ordering/failure tests are exercised by the existing Rust no-default-features suite, 17 passing overall. Same-delegate registration, typed Objective-C ABI, failure paths and common-mode dispatch independently reviewed. Both actual macOS architecture gates remain required."
+        },
+        {
+          "path": "desktop/src-tauri/src/lib.rs",
+          "blob": "cfe72c61666711fce9cdf1ff395966a583ede192",
+          "mode": "100644",
+          "reason": "Expose the focused termination coordinator for native builds and tests so the existing platform-independent Rust CI executes its ordering/failure cases.",
+          "verification": "Existing no-default-features Rust suite passes all 17 tests, including six coordinator regressions; production compilation remains a real Mac CI gate."
+        },
+        {
+          "path": "desktop/src-tauri/Cargo.toml",
+          "blob": "22191a91a3fbf4b88bfc9133d8f474ba6bb40f1f",
+          "mode": "100644",
+          "reason": "Declare exact already-locked objc2 0.6.5 and objc2-app-kit 0.3.2 as optional macOS native dependencies for the public pre-termination delegate hook. No root dependency or crate version is changed.",
+          "verification": "Locked dependency graph reviewed; the lockfile delta adds only two existing packages to this application dependency list. Existing Linux runtime/Rust and both production Mac builds must pass."
+        },
+        {
+          "path": "desktop/src-tauri/Cargo.lock",
+          "blob": "e6ddb64eec024acf02dcf7540707f9674dca3be8",
+          "mode": "100644",
+          "reason": "Record only the application dependency edges to the already-locked objc2 and objc2-app-kit packages used by the normal Mac Quit correction; preserve every resolved package version and checksum.",
+          "verification": "Diff inspection confirms exactly two dependency-list lines and no package/version/checksum changes. Locked Rust suite passes; native feature graphs/builds remain CI gates."
         }
       ],
       "review": {

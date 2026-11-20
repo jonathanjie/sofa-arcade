@@ -11,11 +11,13 @@ import { BROWSER_FILES, runtimeFiles } from '../../../scripts/runtime-files.mjs'
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const prefix = 'sofa-arcade-local/';
+const menuModules = ['effects.mjs', 'score.mjs'];
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const forbidden = /(^|\/)(?:\.git|\.sofa-lan|\.env[^/]*|node_modules|fixtures|harness|tests?|__tests__|evidence|audio-evidence|sources|fragments)(?:\/|$)|\.(?:sqlite|sqlite3|db)(?:-wal|-shm)?$|\.test\.[cm]?js$|\.pem$/i;
 
 test('portable packager is reproducible and ignores adjacent private/development files', async () => {
   const temp = await mkdtemp(path.join(tmpdir(), 'sofa-package-determinism-'));
+  let server;
   try {
     const files = [...new Set([...(await runtimeFiles(root)), 'scripts/package-lan.mjs', 'scripts/runtime-files.mjs'])];
     for (const name of files) {
@@ -31,6 +33,10 @@ test('portable packager is reproducible and ignores adjacent private/development
       'public/assets/odd-laws-society/evidence/private-review.json',
       'ui/media/odd-laws-society/audio-evidence/private-review.mp3',
       'ui/media/odd-laws-society/fragments/private-artwork.json',
+      'ui/media/sofa-menu/composition.md',
+      'ui/media/sofa-menu/score.test.mjs',
+      'ui/media/sofa-menu/render-preview.mjs',
+      'ui/media/sofa-menu/audio-evidence/preview.mp3',
     ]) {
       await mkdir(path.dirname(path.join(temp, name)), { recursive: true });
       await writeFile(path.join(temp, name), canary);
@@ -45,7 +51,29 @@ test('portable packager is reproducible and ignores adjacent private/development
       assert.ok(!forbidden.test(name), `No adjacent private entry ${name}`);
       assert.ok(!entry.data.includes(Buffer.from(canary)), `No secret canary in ${name}`);
     }
+    const shippedMenuFiles = [...readZip(first).keys()].filter(name =>
+      name.startsWith(prefix + 'ui/media/sofa-menu/') && !name.endsWith('/')).sort();
+    assert.deepEqual(shippedMenuFiles, menuModules.map(file => prefix + 'ui/media/sofa-menu/' + file),
+      'Only the composed score and effect data enter the portable runtime');
+
+    // Test the real LAN serving boundary with authoring/evidence files that
+    // actually exist beside the runtime modules in this isolated checkout.
+    const { startLanServer } = await import(pathToFileURL(path.join(temp, 'server/lan.mjs')).href);
+    server = await startLanServer({ root: temp, databasePath: ':memory:', host: '127.0.0.1', port: 0 });
+    for (const file of menuModules) {
+      const response = await fetch(server.origin + '/media/sofa-menu/' + file);
+      assert.equal(response.status, 200, `Menu audio must load over LAN: ${file}`);
+      assert.match(response.headers.get('content-type'), /javascript/);
+      assert.ok(Buffer.from(await response.arrayBuffer()).equals(await readFile(path.join(temp, 'ui/media/sofa-menu', file))),
+        `LAN serves the exact authored menu module: ${file}`);
+    }
+    for (const file of ['composition.md', 'score.test.mjs', 'render-preview.mjs', 'audio-evidence/preview.mp3']) {
+      const response = await fetch(server.origin + '/media/sofa-menu/' + file);
+      assert.equal(response.status, 404, `Adjacent menu authoring file must stay private: ${file}`);
+      await response.arrayBuffer();
+    }
   } finally {
+    await server?.close();
     await rm(temp, { recursive: true, force: true });
   }
 });
@@ -80,6 +108,8 @@ test('portable ZIP is an exact source snapshot with a verifiable manifest and ex
 });
 
 test('generated production browser modules and root HTML match authored sources', async () => {
+  assert.deepEqual(BROWSER_FILES.filter(file => file.url.startsWith('/media/sofa-menu/')).map(file => file.url).sort(),
+    menuModules.map(file => '/media/sofa-menu/' + file), 'Only pure menu audio modules are declared for browser delivery');
   for (const { url, source } of BROWSER_FILES) {
     assert.ok(!forbidden.test(url), `Browser path must not expose test/fixture state: ${url}`);
     assert.ok(!source.startsWith('server/') && !source.startsWith('desktop/'));
@@ -165,6 +195,8 @@ test('isolated ZIP runs its host and serves the complete local browser graph wit
       '/media/odd-laws-society/audio-evidence/lala-calls-the-house-play.mp3',
       '/media/odd-laws-society/runtime-files.json', '/media/odd-laws-society/contract.mjs',
       '/media/odd-laws-society/gallery.mjs', '/media/odd-laws-society/score.test.mjs',
+      '/media/sofa-menu/composition.md', '/media/sofa-menu/score.test.mjs',
+      '/media/sofa-menu/render-preview.mjs', '/media/sofa-menu/audio-evidence/preview.mp3',
       '/tests/integration/fixtures/secrets.json', '/desktop/runtime-manifest.json',
       '/.sofa-lan/rooms.sqlite', '/.env', '/.git/config',
       '/assets/../.env', '/assets/%2e%2e/%2e%2e/server/rooms.mjs',
@@ -192,6 +224,8 @@ test('desktop staging manifest stays explicit and contains the combined runtime 
   assert.ok(Array.isArray(manifest.files));
   const paths = manifest.files.map(entry => entry.path);
   assert.equal(new Set(paths).size, paths.length);
+  assert.deepEqual(paths.filter(file => file.startsWith('ui/media/sofa-menu/')).sort(),
+    menuModules.map(file => 'ui/media/sofa-menu/' + file), 'Tauri stages only the pure menu score and effects');
   for (const file of paths) {
     assert.ok(typeof file === 'string' && file && !path.posix.isAbsolute(file) && !file.includes('\\') && !file.split('/').some(part => ['.', '..', ''].includes(part)));
     assert.ok(!forbidden.test(file), `No private/development staged file: ${file}`);
