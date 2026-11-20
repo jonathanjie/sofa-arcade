@@ -57,8 +57,10 @@ test('reveal shows both committed votes and both paid bids in one render', () =>
   assert.match(html, /2 paid/);
   assert.match(html, /data-envelope="jon"/);
   assert.match(html, /data-envelope="lydia"/);
+  assert.match(html, /data-character="lala" data-character-state="stamp"/);
   ctx.view.actionIndex = 1;
   assert.doesNotMatch(renderTV(ctx), /data-reveal-phase/);
+  assert.doesNotMatch(renderTV(ctx), /data-character-state="stamp"/);
 });
 
 test('final ties show both authoritative totals and every score category', () => {

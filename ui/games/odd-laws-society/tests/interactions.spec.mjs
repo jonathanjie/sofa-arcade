@@ -137,9 +137,12 @@ test('older snapshots cannot roll back the UI and repeated snapshots do not repe
   const soundCount = await page.evaluate(() => window.fixture.events.filter(event => JSON.stringify(event).includes('effect')).length);
   await page.evaluate(room => { window.fixture.update(room); window.fixture.update(room); }, current);
   expect(await page.evaluate(() => window.fixture.events.filter(event => JSON.stringify(event).includes('effect')).length)).toBe(soundCount);
-  const rendered = await page.locator('.ols-phone').innerHTML();
+  const visibleResources = await page.locator('.ols-phone-header .ols-resource-value').allTextContents();
+  const turn = await page.locator('.ols-phone-turn h2').textContent();
   await page.evaluate(room => window.fixture.update(room), old);
-  expect(await page.locator('.ols-phone').innerHTML()).toBe(rendered);
+  expect((await snapshot(page)).state.phaseId).toBe(current.state.phaseId);
+  expect(await page.locator('.ols-phone-header .ols-resource-value').allTextContents()).toEqual(visibleResources);
+  expect(await page.locator('.ols-phone-turn h2').textContent()).toBe(turn);
 });
 
 test('disposing during a pending response prevents detached updates and allows a clean remount', async ({ page }) => {

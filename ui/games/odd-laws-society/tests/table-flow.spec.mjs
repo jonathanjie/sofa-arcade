@@ -12,14 +12,14 @@ test('three iframe contexts synchronize the public actor and project the two pri
   await page.getByLabel('Fixture scene', { exact: true }).selectOption('council');
   await expect(jon.locator('.ols-phone-council')).toBeVisible();
   await expect(lydia.locator('.ols-phone-council')).toBeVisible();
-  const publicBefore = await host.locator('.ols-tv-purse').allTextContents();
+  const publicBefore = await host.locator('.ols-tv-purse [data-resource] strong').allTextContents();
   await jon.locator('[data-action="phone-law"][data-choice-id="small-shop-supremacy"]').click();
   await jon.locator('[data-action="phone-bid"][data-bid="1"]').click();
   await expect(host.locator('[data-envelope="jon"]')).toContainText('Choosing privately');
   await jon.locator('[data-action="phone-seal"]').click();
   await expect(jon.locator('.ols-phone-locked')).toContainText('Small-Shop Supremacy');
   await expect(host.locator('[data-envelope="jon"]')).toContainText('Sealed');
-  expect(await host.locator('.ols-tv-purse').allTextContents()).toEqual(publicBefore);
+  expect(await host.locator('.ols-tv-purse [data-resource] strong').allTextContents()).toEqual(publicBefore);
   const lydiaFrame = page.frames().find(frame => frame.url().includes('viewer=lydia'));
   expect(await lydiaFrame.evaluate(() => window.fixture.snapshot().state.council.ownCommitment)).toBeNull();
   await lydia.locator('[data-action="phone-law"][data-choice-id="honest-wages"]').click();

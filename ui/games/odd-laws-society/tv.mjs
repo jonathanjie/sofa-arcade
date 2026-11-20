@@ -112,6 +112,7 @@ function revealedCouncil(ctx) {
   const last = view.lastCouncil;
   if (!last || last.session !== view.session || view.stage !== 'actions' || (view.actionIndex !== 0 && !ui?.showCouncilReveal)) return '';
   return `<aside class="ols-tv-reveal" data-reveal-phase="${esc(last.phaseId)}" aria-label="Both council votes revealed">
+    <div class="ols-tv-reveal-lala">${character('lala', 'stamp', ctx)}</div>
     <div class="ols-tv-reveal-heading">${icon('stamp')} <strong>${esc(lawName(last.adoptedLawId, rules))}</strong><span>adopted</span></div>
     <div class="ols-tv-revealed-votes">${['jon', 'lydia'].map(playerId => `<span data-envelope="${playerId}">${icon('envelope')}<strong>${NAMES[playerId]}</strong><span>${last.choices[playerId].choiceId === 'keep' ? 'Keep current' : esc(lawName(last.choices[playerId].choiceId, rules))}</span><b>${last.choices[playerId].bid} paid</b></span>`).join('')}</div>
   </aside>`;
@@ -140,7 +141,7 @@ export function renderTV(ctx) {
   const councilStage = view.stage === 'council';
   const stateLabel = finished ? 'Society adjourned' : councilStage ? 'Council · sealed voting' : `${NAMES[view.activePlayer]}'s turn`;
   const reveal = revealedCouncil(ctx);
-  return `<div class="ols-tv${councilStage ? ' is-council' : ''}${finished ? ' is-finished' : ''}">
+  return `<div class="ols-tv${councilStage ? ' is-council' : ''}${finished ? ' is-finished' : ''}${reveal ? ' has-public-reveal' : ''}">
     <header class="ols-tv-masthead${reveal ? ' has-reveal' : ''}"><div class="ols-tv-wordmark"><span class="ols-tv-brand-seal" aria-hidden="true">${icon('civic')}</span><div><span class="ols-tv-kicker">Sofa Arcade presents</span><h1>The Odd Laws <em>Society</em></h1></div></div>${reveal}<div class="ols-tv-session"><span class="ols-tv-session-number">${view.session}<small>/ 6</small></span><div><span class="ols-tv-kicker">Session · Term ${ROMAN[view.term - 1]}</span><strong>${stateLabel}</strong></div></div></header>
     <div class="ols-tv-board">${borough(ctx, 'jon')}<div class="ols-tv-center">${finished ? results(ctx) : councilStage ? council(ctx) : market(ctx)}</div>${borough(ctx, 'lydia')}</div>
     ${finished ? '' : activeLaws(ctx)}

@@ -38,7 +38,8 @@
 .ols .ols-tv-city-wrap { border-radius: 14px; overflow: hidden; }
 .ols .ols-tv .ols-city-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(7px, .6vw, 12px); }
 .ols .ols-tv .ols-street { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(7px, .6vw, 12px); }
-.ols .ols-tv .ols-plot { min-width: 0; min-height: 0; aspect-ratio: 1.05; }
+.ols .ols-tv .ols-plot { min-width: 0; min-height: 0; aspect-ratio: 1.3; }
+.ols .ols-tv .ols-plot-label { font-size: clamp(10px, .72vw, 14px); }
 .ols .ols-tv .ols-plot svg, .ols .ols-tv .ols-plot img { max-width: 100%; }
 .ols .ols-tv-borough-foot { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin-top: 14px; min-height: 22px; color: var(--tv-muted); font-size: clamp(11px, .78vw, 15px); }
 .ols .ols-tv-pips { display: flex; gap: 5px; }
@@ -106,7 +107,10 @@
 .ols .ols-tv-ballot.is-sealed { border-style: solid; border-color: #8d9b79; background: #e2e7d3; }
 .ols .ols-tv-ballot.is-sealed .ols-tv-envelope { color: #6d8057; }
 .ols .ols-tv-council-note { margin-top: 12px !important; font-size: clamp(12px, .83vw, 16px); text-align: center; color: #626f5c; }
-.ols .ols-tv-reveal { padding: 11px 13px; background: #e7eddc; border: 1px solid #b4c39a; border-radius: 13px; }
+.ols .ols-tv-reveal { display: grid; grid-template-columns: 64px minmax(0, 1fr); column-gap: 12px; align-items: center; padding: 11px 13px; background: #e7eddc; border: 1px solid #b4c39a; border-radius: 13px; }
+.ols .ols-tv-reveal-lala { grid-column: 1; grid-row: 1 / 3; width: 64px; height: 64px; }
+.ols .ols-tv-reveal-lala > *, .ols .ols-tv-reveal-lala svg, .ols .ols-tv-reveal-lala img { width: 100%; height: 100%; object-fit: contain; }
+.ols .ols-tv-reveal .ols-tv-reveal-heading, .ols .ols-tv-reveal .ols-tv-revealed-votes { grid-column: 2; }
 .ols .ols-tv-masthead.has-reveal .ols-tv-reveal { flex: 1; }
 .ols .ols-tv-masthead.has-reveal .ols-tv-wordmark { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .ols .ols-tv-masthead.has-reveal .ols-tv-session { flex: 0 0 auto; }
@@ -144,7 +148,8 @@
   .ols .ols-tv-building-name { font-size: 14px; }
   .ols .ols-tv-ability { font-size: 10px; min-height: 25px; }
   .ols .ols-tv-section-heading { min-height: 40px; margin-bottom: 9px; }
-  .ols .ols-tv-reveal { padding: 8px 10px; }
+  .ols .ols-tv-reveal { padding: 8px 10px; grid-template-columns: 54px minmax(0, 1fr); column-gap: 8px; }
+  .ols .ols-tv-reveal-lala { width: 54px; height: 54px; }
   .ols .ols-tv-revealed-votes { margin-top: 5px; }
   .ols .ols-tv-center { gap: 8px; }
   .ols .ols-tv-council { padding-top: 0; }
@@ -166,6 +171,15 @@
   .ols .ols-tv-purse { padding: 6px 0 8px; margin-bottom: 8px; gap: 2px 15px; }
   .ols .ols-tv-city-wrap { max-width: 320px; margin-inline: auto; }
   .ols .ols-tv .ols-plot { aspect-ratio: 1.23; }
+  /* A revealed council replaces the wordmark without taking another board row.
+     Keep both full choices/bids visible; compact only their arrangement. */
+  .ols .ols-tv.has-public-reveal { gap: 10px; }
+  .ols .ols-tv-masthead.has-reveal .ols-tv-reveal { grid-template-columns: 40px minmax(0, 1fr); padding: 4px 10px; }
+  .ols .ols-tv-masthead.has-reveal .ols-tv-reveal-lala { width: 40px; height: 40px; }
+  .ols .ols-tv-masthead.has-reveal .ols-tv-revealed-votes { margin-top: 2px; }
+  .ols .ols-tv-masthead.has-reveal .ols-tv-revealed-votes > span { display: flex; gap: 5px; white-space: nowrap; }
+  .ols .ols-tv-masthead.has-reveal .ols-tv-revealed-votes > span > span { flex: 1; }
+  .ols .ols-tv-masthead.has-reveal .ols-tv-revealed-votes b { flex: 0 0 auto; }
   .ols .ols-tv-proposal { padding: 10px 12px; }
   .ols .ols-tv-proposals { gap: 8px; }
   .ols .ols-tv-results { padding-top: 0; }
