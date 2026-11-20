@@ -15,14 +15,15 @@ The three distinct native application processes verify:
    and composed score. WKWebView resolves and decodes every final manifest image
    from its local host with exact declared dimensions and no external resource
    requests recorded. The native inspector uses the injected quote helpers.
-   Actual native button gestures start the shared WebAudio context with the
-   Odd Laws score. Music and effects remain independent, and keyboard input
-   sets the saved volume to 27 percent through the real slider.
+   Driver-mediated button clicks must start the actual WKWebView WebAudio
+   context with the Odd Laws score. Music and effects remain independent, and
+   supported range value input sets the saved volume to 27 percent through
+   the real slider's input/change handling.
 2. After a real native process exit, an explicit navigation to the bare local
    `/` restores the saved host role, credential, room revision and city without
    supplying a room query or bearer to the new document. The process ID changes
    and the local origin remains stable. Saved music/effects/volume controls
-   retain their values, and a fresh native gesture starts music again. Exiting
+   retain their values, and the audio control starts music again. Exiting
    through the component returns to the collection and disposes its styles.
 3. After another native process exit, the collection remains open and a fresh
    bare-root document does not resurrect the exited game.
@@ -57,7 +58,8 @@ inspection, bundled-Node provenance, actual production launch/quit/failure
 tests, both architectures, and its native Sofa Kingdoms regression. This
 instrumented extension is additional combined-product evidence, not a replacement
 for those gates or a production distributable. Physical phones, home Wi-Fi,
-internet-disconnected hardware, device audio, sleep/wake, TV casting, Developer
+internet-disconnected hardware, trusted physical audio-unlock gestures, device
+audio, sleep/wake, TV casting, Developer
 ID/notarization and downloaded-app Gatekeeper behavior remain separately reported.
 
 Current preparation was source-reviewed against WS5 draft
@@ -65,3 +67,10 @@ Current preparation was source-reviewed against WS5 draft
 wait correction; syntax checks pass. A prepared test is
 not a native pass. Recheck the delivered WS5 setup contract and run this suite
 at the proposed final integration commit before counting acceptance.
+
+The locked `tauri-plugin-wdio-webdriver` 1.5.1 implements clicks and key/value
+input with evaluated DOM operations. This suite does not describe them as
+trusted operating-system input. Its range value operation is supported;
+synthetic Home/Arrow keys do not invoke the browser's native range defaults.
+Actual running AudioContext state and saved controls are functional checks,
+while physical gesture unlocking and audible output remain separate gates.

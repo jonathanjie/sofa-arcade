@@ -20,6 +20,8 @@ Normal screenshots capture the viewport, and the report records both viewport
 and actual PNG dimensions. On failure, an overflowing document also gets a
 separately named full-page image; that image never substitutes for the viewport
 fit assertion.
+Visible images finish decoding before capture, including newly revealed market
+art; an unavailable or invalid image fails that screenshot gate.
 
 `SOFA_CHROMIUM` may point to an existing Chromium executable. The default uses
 Playwright's installed browser. `SOFA_EVIDENCE_DIR` changes the evidence directory;
@@ -76,6 +78,13 @@ matching visible resources/city/turn/readiness or results in each context. It
 includes browser rendering, driver scheduling and up to 40ms observation
 granularity. The report retains individual samples and median/p95/maximum by
 viewer. Median averages the middle two samples when even; p95 uses nearest rank.
+Each command observation matches its emitted action ID and exact request bytes,
+requires HTTP 200, and checks a single revision advance within the same match.
+If Chromium has released that response body from its CDP cache, a fresh
+authenticated GET supplies the expected projection for all three rendered
+views. Those samples identify the fallback and include its extra round trip;
+non-200 responses and unrelated body errors remain failures. No command is
+replayed to recover the observer.
 It makes no claim about a home network or physical screen.
 
 These checks establish Chromium/local-server behavior only. They do not establish

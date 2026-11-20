@@ -163,28 +163,66 @@ export async function openOddLaws(run, { candidate = false } = {}) {
 }
 
 async function clickCommand(run, live, page, selector, policy) {
-  let startedAt;
+  const before = live.room;
+  const seen = live.observedActionIds ||= new Set();
+  const navigations = [];
+  let emitted;
   const observe = request => {
-    if (new URL(request.url()).pathname === actionPath(live.code) && request.method() === 'POST') startedAt ??= performance.now();
+    if (emitted || new URL(request.url()).pathname !== actionPath(live.code) || request.method() !== 'POST') return;
+    const command = request.postDataJSON();
+    if (seen.has(command?.actionId)) return;
+    emitted = { command, bytes: request.postData(), startedAt: performance.now() };
+  };
+  const navigated = frame => {
+    if (frame === page.mainFrame()) navigations.push(new URL(frame.url()).pathname);
   };
   page.on('request', observe);
-  const pending = page.waitForResponse(response => commandResponse(response, live.code));
+  page.on('framenavigated', navigated);
+  // Match the newly emitted command, including its action ID and exact bytes.
+  // A delayed response/retry for a previous click must never satisfy this one.
+  // Begin reading as soon as the response arrives, before click auto-wait ends.
+  const pending = page.waitForResponse(response => commandResponse(response, live.code) && emitted && response.request().postData() === emitted.bytes).then(async response => {
+    assert.equal(response.status(), 200, `Rendered command ${emitted.command?.action?.type} must return HTTP 200; received ${response.status()}`);
+    try {
+      return { room: await response.json(), observation: 'command-response' };
+    } catch (error) {
+      // Chromium may release the CDP response cache after the real client reads
+      // and cancels its stream. This is an observation-only recovery: never
+      // replay the action or accept a non-200 response. The fresh authenticated
+      // projection must pass the same exact match/revision and render fences.
+      if (!/Protocol error \(Network\.getResponseBody\): No data found for resource with given identifier/.test(error.message)) throw error;
+      return { room: await run.room(live.code, live.tokens.host), observation: 'http-200-plus-authenticated-get' };
+    }
+  });
   pending.catch(() => {});
   try {
     await page.locator(selector).click();
-    const response = await pending;
-    const room = await response.json();
-    assert.equal(response.status(), 200, `Rendered command is accepted; code ${room.code || response.status()}`);
-    assert.ok(Number.isFinite(startedAt), 'Latency starts when the browser emits the actual action request');
-    const command = response.request().postDataJSON();
+    const { room, observation } = await pending;
+    assert.ok(emitted && Number.isFinite(emitted.startedAt), 'Latency starts when the browser emits this action request');
+    const { command, startedAt } = emitted;
+    assert.ok(typeof command.actionId === 'string' && command.actionId, 'Observed command carries a fresh idempotency ID');
+    assert.equal(command.revision, before.revision, 'Observed command uses the acknowledged pre-click revision');
+    assert.equal(command.action.matchId, before.state.matchId, 'Observed command belongs to this match');
+    assert.equal(command.action.phaseId, before.state.phaseId, 'Observed command belongs to this phase');
+    assert.equal(room.code, live.code);
+    assert.equal(room.state.matchId, command.action.matchId);
+    assert.equal(room.revision, command.revision + 1, 'Exactly this one serialized UI command advanced the authority');
+    assert.deepEqual(navigations, [], 'A city/voting command must not navigate its controller');
+    seen.add(command.actionId);
+    (run.evidence.commandObservations ||= []).push({
+      actionId: command.actionId, action: command.action.type, policy,
+      matchId: command.action.matchId, revisionBefore: command.revision,
+      revisionAfter: room.revision, status: 200, observation,
+    });
     await Promise.all([[live.tv, 'tv', null], ...IDS.map(id => [live.phones[id], id, id])].map(async ([surface, name, id]) => {
       await waitForRendered(surface, room, id);
-      live.latency[name].push({ policy, action: command.action.type, milliseconds: performance.now() - startedAt });
+      live.latency[name].push({ policy, action: command.action.type, observation, milliseconds: performance.now() - startedAt });
     }));
     live.room = room;
     return { room, command };
   } finally {
     page.off('request', observe);
+    page.off('framenavigated', navigated);
   }
 }
 
@@ -618,7 +656,7 @@ export async function finishOddJourney(run, live) {
     return { count: sorted.length, medianMs: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2, p95Ms: sorted[Math.max(0, Math.ceil(sorted.length * 0.95) - 1)], maxMs: sorted.at(-1) };
   };
   run.evidence.renderedLatency = {
-    methodology: 'Monotonic Node clock from Playwright actual browser POST request emission to matching rendered public resources, city instances, active turn/readiness or final scores. Three separate contexts on one Chromium runner and one real SQLite LAN server over loopback. Includes HTTP/SSE delivery, rendering, driver scheduling and at most 40ms state-poll granularity. Median averages the middle two samples when even; p95 uses nearest rank. No home Wi-Fi, casting, physical screen or native-webview claims.',
+    methodology: 'Monotonic Node clock from Playwright actual browser POST request emission to matching rendered public resources, city instances, active turn/readiness or final scores. Three separate contexts on one Chromium runner and one real SQLite LAN server over loopback. Each response matches the emitted command ID/bytes and must be HTTP 200 with exactly one revision advance in the same match. If Chromium releases that response body from its CDP cache, a fresh authenticated GET supplies the expected projection; those samples include its additional round trip and identify that observation method. Includes HTTP/SSE delivery, rendering, driver scheduling and at most 40ms state-poll granularity. Median averages the middle two samples when even; p95 uses nearest rank. No home Wi-Fi, casting, physical screen or native-webview claims.',
     samples: live.latency,
     summary: Object.fromEntries(Object.entries(live.latency).map(([viewer, samples]) => [viewer, summary(samples)])),
   };

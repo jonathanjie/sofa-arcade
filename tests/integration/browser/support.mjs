@@ -125,6 +125,15 @@ export async function acceptanceSession(label, { serverOptions = {}, setup = nul
     },
     async screenshot(page, name, { fullPage = false } = {}) {
       await page.evaluate(() => document.fonts?.ready);
+      // A legal market transition can paint before its newly referenced art
+      // finishes decoding. Capture settled visible assets, not that transient.
+      await page.evaluate(async fullPage => {
+        const images = [...document.images].filter(image => {
+          const rect = image.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 && (fullPage || (rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth));
+        });
+        await Promise.all(images.map(image => image.decode()));
+      }, fullPage);
       const filename = `${label}-${name}.png`;
       const png = await page.screenshot({ path: path.join(evidenceRoot, filename), fullPage, animations: 'disabled', mask: [...privateValues].map(token => page.getByText(token, { exact: false })) });
       screenshots.push({

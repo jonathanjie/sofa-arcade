@@ -397,3 +397,36 @@ The independent WS5 artifact audit at `3a2bd4e` verified both native architectur
 staged bytes, signatures and absent test-driver binary markers. See
 `tests/integration/evidence/ws5-3a2bd4-review.json`. The owner's final checkpoint
 `618fc837` is still draft while rerunning native CI and has not been included.
+
+### Rendered correction and observation checkpoint — 4ade372
+
+At `4ade372b912ce500a44a7cf4650fae316a803f4b`, the actual 720p council
+measured top **108px**, bottom **712px**; the term-II reveal measured bottom
+**710.89px**. Viewport PNGs were inspected and show complete law cards.
+The real Odd Laws run also passed reduced-motion changes, host-only soundtrack
+controls and saved preferences, all ten tutorial lessons/skip/replay, sealed
+refresh, offline/reconnect, SQLite restart and bare-root identity restoration.
+It reached session four before Chromium's test protocol could no longer read
+one response body; all three screens had already advanced and no navigation,
+application exception or failed HTTP response was recorded. This is still an
+incomplete full-game acceptance run.
+
+The next harness anchors each command's new ID and exact request bytes, requires
+HTTP 200 and exactly one revision advance in the same match/phase, and checks
+all three rendered projections. Only the specific CDP response-cache error can
+fall back to a fresh authenticated GET; it never replays a command or accepts
+an API/JSON error. Such observations are marked in latency evidence, including
+the extra GET round trip. Screenshots now wait for visible artwork decoding.
+The supported Ubuntu correction passed the exact-head WS3 rendered suite.
+Protocol/package, production/public delivery, both Node component matrices,
+WS2 browser and WS4 media suites also passed in
+[run 44707286793](https://github.com/jonathanjie/sofa-arcade/actions/runs/44707286793).
+
+Native preflight inspected the locked `tauri-plugin-wdio-webdriver` 1.5.1
+implementation. Its clicks/key events are scripted DOM operations; synthetic
+Home/ArrowRight do not change a range control. The WS6 native spec therefore
+uses the driver's supported range-value input and records its input method
+accurately. It checks the real WKWebView AudioContext running state and saved
+preferences, but does not label scripted events as trusted OS gestures.
+Trusted physical gesture unlocking and audible speaker output remain explicit
+hardware checks. No component-owned native source was changed.

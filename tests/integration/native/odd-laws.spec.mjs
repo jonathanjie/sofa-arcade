@@ -146,8 +146,9 @@ async function nativeAudioSettings() {
 
 async function verifyNativeAudio({ relaunch = false } = {}) {
   await waitRendered('[data-action="audio"]');
-  // Native WebDriver clicks are real input gestures in the actual WKWebView.
-  // The app reports "Playing" only when its real AudioContext is running.
+  // This pinned native driver mediates DOM clicks; it does not establish a
+  // trusted OS gesture. The app reports "Playing" only when the actual
+  // WKWebView AudioContext is running, which remains a useful functional gate.
   await $('[data-action="audio"]').click();
   await waitRendered('#volume-slider');
   if (relaunch) {
@@ -159,7 +160,7 @@ async function verifyNativeAudio({ relaunch = false } = {}) {
     await $('[data-action="toggle-music"]').click();
   }
   await browser.waitUntil(async () => /Playing on this screen/.test((await nativeAudioSettings()).status || ''), {
-    timeout: 10_000, timeoutMsg: 'A native host gesture did not start the real WKWebView AudioContext',
+    timeout: 10_000, timeoutMsg: 'The driver-mediated host audio control did not start the real WKWebView AudioContext',
   });
   const playing = await nativeAudioSettings();
   assert.equal(playing.music, true);
@@ -169,16 +170,14 @@ async function verifyNativeAudio({ relaunch = false } = {}) {
     await $('[data-action="toggle-effects"]').click();
     assert.equal((await nativeAudioSettings()).effects, true);
   }
-  await screenshot(relaunch ? 'audio-relaunch-playing' : 'audio-gesture-playing');
+  await screenshot(relaunch ? 'audio-relaunch-playing' : 'audio-control-playing');
   await $('[data-action="toggle-music"]').click();
   assert.equal((await nativeAudioSettings()).effects, true, 'Disabling music leaves the effects control independent');
   await $('[data-action="toggle-effects"]').click();
   if (!relaunch) {
-    await $('#volume-slider').click();
-    // Separate key sequences release each arrow. WDIO's array form holds all
-    // keys down before releasing, which is unsuitable for repeated increments.
-    await browser.keys('Home');
-    for (let index = 0; index < 27; index++) await browser.keys('ArrowRight');
+    // The plugin implements range value input and dispatches input/change.
+    // Its synthetic key events do not invoke native range keyboard defaults.
+    await $('#volume-slider').setValue('27');
   }
   const saved = await nativeAudioSettings();
   assert.deepEqual({ music: saved.music, effects: saved.effects, volume: saved.volume }, { music: false, effects: false, volume: '27' });
@@ -186,10 +185,11 @@ async function verifyNativeAudio({ relaunch = false } = {}) {
   await $('[data-action="close-modal"]').click();
   await waitRendered('.ols-tv');
   return {
-    actualNativeGesture: true, runningAudioContextReported: true,
+    inputMethod: 'Pinned WebDriver DOM click and range value input',
+    trustedNativeGestureEstablished: false, runningAudioContextReported: true,
     track: playing.track, music: saved.music, effects: saved.effects,
     volumePercent: Number(saved.volume), preferencesRestoredAcrossNativeProcess: relaunch,
-    limitation: 'Observed the real WebAudio running state and controls; speaker output/listening quality is not established.',
+    limitation: 'Observed real WKWebView WebAudio running state and persisted controls through driver-mediated input; trusted physical gesture unlocking and speaker output/listening quality are not established.',
   };
 }
 
