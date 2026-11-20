@@ -2,7 +2,15 @@
 
 This is a living-room game collection for Jon and Lydia: one Site, one source repository, a shared TV, and two phone controllers. Read [README.md](../README.md), [AGENTS.md](../AGENTS.md), and the current source before editing. This handoff includes the strategy, local-network, randomized-opening, GitHub migration, and parallel game-design updates; inspect version history and deployment status for the latest published release.
 
-## Local integration checkpoint
+## Current continuation — Odd Laws feedback and the next game
+
+The initial local workstreams were merged through PRs #3–#8; main reached `a96fd477d2a3239d715421ed711682648e16eccc` with the combined browser/native acceptance complete. PR #9 then added composed collection music and the acknowledged AppKit Quit shutdown path at `392345f4fbdfdb65218482bd204403264ae7a34c`. Preserve those changes when reconciling newer branches.
+
+PR #10 adds an original Odd Laws cover, larger labelled/coloured guild cards, and read-only **My city** inspection that preserves policy/bid/build drafts. Its exact CI results and corrections are recorded in the PR and [UI feedback report](workstreams/odd-laws-ui-feedback.md). Inspect current PR/main status before calling that feedback released; a GitHub merge does not deploy the Site.
+
+The next assignment is **Gravity Orchard v0.2**, a real-time cooperative game with two phone-controlled garden trays, bridge transfers, shared picnic recipes and Brake. Read the [seven-session dispatch pack](DISPATCH_GRAVITY_ORCHARD.md), [frozen implementation contract](GRAVITY_ORCHARD_CONTRACT.md), [PRD](games/gravity-orchard.md) and [browser/LAN technical notes](GRAVITY_ORCHARD_TECHNICAL_NOTES.md). These supersede the old turn-based Gravity Orchard draft and overlapping broad ownership for this game. Six components can start in parallel; GO7 owns shared server/native/shell wiring and final acceptance. The catalog remains planned.
+
+## Historical local integration checkpoint
 
 WS6 works on `feature/local-integration` from base
 `e34b0015399cb9791b175987adf1fab1b542565a`. Read
@@ -11,8 +19,9 @@ WS6 works on `feature/local-integration` from base
 [local setup/build instructions](LOCAL_RELEASE.md) before continuing.
 All five ready component heads are included by merge ancestry. The complete
 browser candidate passed at `4695643`; Odd Laws is now enabled. The ordinary
-collection-create rerun and combined native acceptance keep the aggregate PR
-draft until their exact-head gates pass.
+collection-create rerun and combined native acceptance were subsequently completed
+before the aggregate PR merged. The paragraph above records the merged baseline;
+the reports below retain their original checkpoint history.
 Do not combine moving owner-branch tips or copy unfinished component files.
 
 Shared production and portable inputs now live in `scripts/runtime-files.mjs`.
@@ -40,7 +49,7 @@ The URL, package, and folder retain the earlier `sofa-kingdoms` name. Preserve t
 
 ## Product intent and playable scope
 
-**Current execution plan:** Jon chose Tauri/local play and requested independent, long-running implementation sessions, each ending in a tested GitHub PR. Start with [DISPATCH_LOCAL.md](DISPATCH_LOCAL.md) and the versioned [local implementation contracts](LOCAL_IMPLEMENTATION_CONTRACT.md). WS1–WS5 can work in parallel (engine, private room platform, UI, media, desktop); WS6 owns final shared wiring and acceptance. Each has a separate branch, exclusive write set, and workstream report. WS5 supplies the native implementation and prior native test evidence; its final tested inclusion and the integrated native acceptance gates are tracked in the component matrix and integration report. No hosted migration/deployment is authorized by these task scopes.
+**Current execution plan:** Jon chose Tauri/local play and requested independent implementation sessions ending in tested GitHub PRs. The initial [local dispatch](DISPATCH_LOCAL.md) is implemented and remains useful architecture history. New work uses the [Gravity Orchard dispatch](DISPATCH_GRAVITY_ORCHARD.md): GO1 simulation, GO2 realtime, GO3 phone, GO4 TV/tutorial, GO5 media, GO6 secure LAN, GO7 integration. Each has a separate branch, exclusive write set and report. No hosted migration/deployment is part of these scopes.
 
 The TV displays the shared board, normally from a Mac browser cast to the living-room TV. Each phone owns one controller seat. Jon and Lydia are illustrated tiny mouse adventurers; their orange cat Lala rearranges the sofa kingdom. Generated game art is in `public/assets/`; original character sheets are not committed.
 
@@ -50,13 +59,13 @@ Keep characters lively and regular match screens spacious. Explanations belong i
 | --- | --- | --- |
 | Sofa Kingdoms | Playable | Collect and bank crumbs while Lala shifts the board |
 | Borrowed Minutes | Planned | Cooperative time-loop heist |
-| Gravity Orchard | Planned | Rotate gravity to guide fruit |
+| Gravity Orchard | Planned | Real-time cooperative phone tilt, garden routing and shared picnic orders |
 | Afterglow Market | Planned | Trade and build a night-market stall |
-| The Odd Laws Society | Playable in the local integration candidate | Six-session city builder with sealed bids, finite markets and changing shared laws |
+| The Odd Laws Society | Playable in the merged local collection | Six-session city builder with sealed bids, finite markets and changing shared laws |
 | The Last Ninety Seconds | Planned | Mystery with clues split across phones |
 | Footprints at Midnight | Planned | Hidden movement and tracking |
 
-A planned catalog entry cannot create rooms. Odd Laws has all five integrated components and passed four real browser matches before catalog enablement. The ordinary enabled-card journey and combined native checks must still pass before the aggregate PR is ready. The other planned games remain concept specifications.
+A planned catalog entry cannot create rooms. Odd Laws has all five integrated components and passed the ordinary enabled-card browser journey and combined native checks before the aggregate PR merged. New feedback continues through its own PR checks. The other planned games remain specifications.
 
 ### Latest planning direction — 20 November 2026
 

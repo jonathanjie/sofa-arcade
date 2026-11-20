@@ -114,9 +114,12 @@ for (const playerId of ['jon', 'lydia']) {
 test('waiting and disconnected players retain read-only city inspection', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await openFixture(page, 'jon', 'actions');
+  const connection = page.locator('.ols-connection-dot');
+  await expect(connection).toBeVisible();
   await action(page, 'phone-work').click();
   await expect(page.locator('.ols-phone-turn')).toHaveClass(/waiting/);
   await page.evaluate(() => window.fixture.setConnection({ state: 'offline' }));
+  await expect(connection).toBeVisible();
   const before = await snapshot(page);
   await cityTrigger(page).click();
   await expect(page.getByRole('dialog')).toContainText('Jon’s borough');
@@ -125,6 +128,9 @@ test('waiting and disconnected players retain read-only city inspection', async 
   await expect(page.locator('.ols-phone-turn')).toHaveClass(/waiting/);
   expect(await snapshot(page)).toEqual(before);
   expect(await page.evaluate(() => window.fixture.commands.length)).toBe(1);
+  await page.evaluate(() => window.fixture.setConnection({ state: 'connected' }));
+  await expect(page.locator('.ols-connection-dot.connected')).toBeVisible();
+  await expectTargetsInsideViewport(page, '.ols-toolbar, .ols-toolbar button, .ols-connection-dot');
 });
 
 test('open city responds to live snapshots, rejects older snapshots, and clears nested inspection on a new match', async ({ page }) => {

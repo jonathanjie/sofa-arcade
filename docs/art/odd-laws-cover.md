@@ -27,4 +27,3 @@ Composition: strong triangular grouping of Lala plus Jon and Lydia; all faces, h
 ## Verification
 
 The generated image was visually inspected before conversion. Browser acceptance checks decode the actual served cover on the collection card and detail page and capture both placements. Existing delivery/package checks verify the declared asset is available in the browser build, LAN archive and native runtime inventory. See the associated feedback PR for executed results.
-

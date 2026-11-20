@@ -59,3 +59,11 @@ The runner's escalation request was rejected by the environment's granular appro
 3. Run the root production build and the nested Node/Playwright suites in GitHub Actions.
 4. Inspect phone city/market screenshots and both TV resolutions, especially card fit at 720p and the new toolbar at 360 px.
 5. Record the actual CI run, screenshot review, and any final fixes in the combined PR.
+
+## CI regression follow-up
+
+The first combined PR CI run at `0f32be6` executed the browser suites. The nested UI suite passed 69 of 72 cases; the remaining three assertions identified TV action/reveal layouts about 13 px below the 720p viewport. The real-room journey also found that the narrow phone toolbar could shrink its 7 px connection dot to zero width during sealed-vote recovery. The downloaded screenshots were inspected for these two findings.
+
+The targeted follow-up keeps all guild symbols, illustrations, font sizes, and card targets intact. At short TV heights it reduces market-card vertical padding and price-row spacing, recovering about 20 px across the two market rows. The phone toolbar reserves an explicit 7 px connection column and uses equal-width, 48 px-minimum navigation targets with their symbols above their labels. This also keeps “My city” on one line. The existing waiting/offline browser case now asserts that the connection indicator stays visible before, during, and after reconnection and that toolbar controls remain inside the viewport.
+
+The same full browser assertions remain enabled, including the 720p bounds checks. A subsequent CI run must verify the corrected layout and real-room recovery; the local browser restriction remains unchanged.

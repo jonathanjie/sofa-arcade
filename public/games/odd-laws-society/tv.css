@@ -244,3 +244,11 @@
  .ols .ols-tv-building-art{height:50px}
  .ols .ols-tv-card-top .ols-tv-stock{top:48px}
 }
+
+/* On a 720p board, recover card whitespace while preserving the guild marks,
+   illustrations, type sizes and full-card inspection targets. */
+@media(min-width:1000px) and (max-height:780px){
+ .ols .ols-tv-market-card{padding-block:5px}
+ .ols .ols-tv-card-values{margin-top:5px}
+ .ols .ols-tv-card-top .ols-tv-stock{top:44px}
+}

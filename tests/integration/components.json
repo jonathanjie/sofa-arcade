@@ -88,70 +88,70 @@
           "blob": "de152efa5a60f07520ed9443446326c0f2d5d97a",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/index.mjs",
           "blob": "44cb54c4964d1dee1c07935657baec5b09e9a3c4",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/phone.css",
           "blob": "600504053a0793c19b9aeeaa03a5d487b0c3360f",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/phone.mjs",
           "blob": "a9f9c28d7330b4c1ab2d42a77eb535e20c526753",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/shared.mjs",
           "blob": "dfe94641d9e25fac71a0b2e70488a3e468340f01",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/tests/city-inspection.spec.mjs",
-          "blob": "00262b2fc6ad95d5cbb5f2a438f2805a62552635",
+          "blob": "de4efc0c949339747467f65de12d6d280a25c002",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/tests/city-inspection.test.mjs",
           "blob": "6c508e16305e6671cd68209e936659ee04fceac8",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/tv.css",
-          "blob": "867257a154a7dacd01a97c40762c7b1e12828b16",
+          "blob": "3d00a4e4d62e1615369291db14f9acca2eebbc9f",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/tv.mjs",
           "blob": "9264124b5043ea93e8ab725f268c37cb4bfda40a",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         },
         {
           "path": "ui/games/odd-laws-society/view.css",
-          "blob": "8bb0f5763f38fd753127255a340a3c3558a830ae",
+          "blob": "5f250912c0b51db778c0539e161b1d6b5d9caa5c",
           "mode": "100644",
           "reason": "User-requested guild legibility and read-only My city inspection, preserving policy/bid/build drafts, authenticated views, nested focus, and new-match resets; focused regression coverage.",
-          "verification": "37 owned Node tests pass. Added rendered 360/390 phone and 1280/1920 TV cases; GitHub component and real-room browser acceptance required. See docs/workstreams/odd-laws-ui-feedback.md."
+          "verification": "37 owned Node tests pass. First CI exposed 720p market overflow and a flex-collapsed phone connection indicator; targeted spacing/grid fixes preserve 24px guild symbols and existing assertions. Exact final browser/native results are recorded in PR #10."
         }
       ],
       "review": {
