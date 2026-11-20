@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Sofa Arcade",
+  "version": "0.1.0",
+  "identifier": "com.sofaarcade.desktop",
+  "build": {
+    "frontendDist": "../shell"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [],
+    "security": {
+      "capabilities": [],
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app",
+      "dmg"
+    ],
+    "category": "Game",
+    "shortDescription": "Living-room games with two quiet phone controllers",
+    "longDescription": "Sofa Arcade runs its game board and private local host on your Mac. Join from two browser phones on the same Wi-Fi.",
+    "icon": [
+      "../icons/icon.png",
+      "../icons/icon.icns"
+    ],
+    "externalBin": [
+      "binaries/node"
+    ],
+    "resources": {
+      "../stage/runtime/": "runtime/",
+      "../stage/licenses/": "licenses/"
+    },
+    "macOS": {
+      "minimumSystemVersion": "13.5",
+      "infoPlist": "Info.plist"
+    }
+  }
+}

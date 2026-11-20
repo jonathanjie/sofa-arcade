@@ -1,0 +1,2 @@
+# Preserve checksum-pinned upstream license documents byte for byte.
+scripts/license-fallbacks/*.txt -whitespace -text
