@@ -146,17 +146,46 @@ native code and certificate capabilities remain excluded.
 | Rendered collection TV + two phone contexts | CI gate; local Chromium blocked before page load by AF_UNIX restrictions |
 | Actual packaged macOS ARM64 and Intel | Separate CI gates; Linux is not native evidence |
 
-The real-rate, real-socket three-stage diagnostic completed 12/12 orders, 9/9
-stars, zero compost, and nine transfers in each direction using unchanged GO1
-public-only pilot controls and seed `orchard-proof-1`. No teleport, state/score
-setter, altered deadline or simulation rate was used. Active stage times were
-41.48 / 41.32 / 39.67 seconds; total wall time was 132.02 seconds. It processed
-5,180 accepted inputs and 36 lifecycle/periodic checkpoint writes, with no store
-errors or host stalls. Two tick overruns and two skipped catch-up ticks were
-recorded. ACK RTT p95 was approximately 50.28 / 50.60 ms for the two clients.
-These numbers describe a **dirty-source localhost diagnostic**, not the final
-head, one-way latency, physical phones, home Wi-Fi or casting. CI reruns the
-measurement at the committed candidate and publishes the exact report.
+The first clean committed real-rate CI campaign passed at
+`64e417d9dc4b18a3b3e9def6a3232a06d7010134` in
+[GO7 run 44834486575](https://github.com/jonathanjie/sofa-arcade/actions/runs/44834486575).
+Its [Node 24 evidence artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44834486575/artifacts/14678285637)
+records 12/12 orders, 9/9 stars, zero compost and nine transfers in each direction
+using unchanged GO1 public-only pilot controls and seed `orchard-proof-1`.
+No teleport, state/score setter, altered deadline or simulation rate was used.
+
+| Clean CI measurement | Observed value |
+| --- | --- |
+| Complete campaign wall time | 131.988 seconds |
+| Stage active ticks | 2,488 / 2,479 / 2,379 at nominal 60 Hz |
+| Accepted input samples / checkpoint writes | 5,236 / 36 |
+| ACK RTT median, Jon / Lydia | 27.24 / 28.13 ms |
+| ACK RTT p95, Jon / Lydia | 49.29 / 49.10 ms |
+| ACK RTT maximum | 66.16 ms |
+| Applied-input observed tick-age maximum, Jon / Lydia | 4 / 5 ticks |
+| Host tick overruns / stalls / checkpoint errors | 0 / 0 / 0 |
+| Healthy six-second sample tick / snapshot rate | 59.83 Hz / 19.83 Hz |
+| Healthy six-second input samples / checkpoint writes / changed SQLite rows | 238 / 1 / 2 |
+
+These are actual same-machine TCP loopback measurements on a Linux GitHub runner,
+not one-way latency, physical phones, home Wi-Fi, macOS rendering or casting.
+The report includes CPU/Node/runtime, raw per-client ACK distributions, event-loop
+delay and authoritative queue counters. The earlier dirty-source local diagnostic
+also completed the campaign, but is not used as the committed acceptance claim.
+Rendered/native outcomes remain separate gates. Deliberate slow-reader and burst
+load diagnostics are reported separately from this healthy baseline.
+
+The separate stress diagnostic pauses actual TCP consumption on a fourth
+spectator while the TV and two 20 Hz controllers remain healthy. It waits for
+unchanged game snapshots to cause genuine backpressure, checks one latest pending
+snapshot per connection, and verifies slow-reader removal. It then sends a real
+200-frame authenticated input burst, verifies rate-limited closure, both-ready
+recovery with cleared steering, and zero coordinator timers after owned shutdown.
+The development run observed 42 coalesced snapshots and removal after 53.53 s,
+2,122 accepted inputs versus 10 checkpoints, and zero host/tick overruns. Those
+are labelled dirty-source feasibility results; CI publishes a new exact-head
+`stress.json`. No bufferedAmount override, payload inflation or fake latency is
+used.
 
 Protocol tests also exercise shared verified TLS/WS/WSS, wrong credentials and
 origins, stale observed ticks/epochs, controller replacement, lost command ACK,
@@ -189,6 +218,22 @@ terminal/transient assertions were retained unchanged. The complete legacy
 integration suite then passed all 53 tests. The first candidate's 31 GO7 tests
 and both strict component locks passed locally at the published SHA.
 
+The first rendered attempt then exposed a test race: a seat-claim click returned
+before the real join response persisted its credential. The helper now waits for
+that actual write, without injecting credentials or changing production behavior.
+The combined component job also installs GO6's own lockfile before its inventory
+checks, because those intentionally verify its local installed dependency tree.
+The unchanged GO6 suite passed all 65 tests after that setup correction.
+
+The Apple Silicon GO7 app compiled and rendered into stage two before WDIO's
+outer 90-second test wrapper expired. The spec's Mocha timeout did not override
+that wrapper, so the GO7 runner now explicitly passes the documented 420-second
+CLI timeout required for a full real-time campaign. The failure teardown still
+verified normal Mac Quit, both owned processes exiting and supervisor `stopped`.
+This partial run is not recorded as full GO7 native acceptance. The inherited
+Desktop ARM production build/startup/persistence/relaunch gate passed separately
+at `64e417d9` (workflow 44834486614, job 136627492193).
+
 Independent native review also corrected a status-mutex/UI-thread lock inversion
 before publication. Rejoin disposal and loopback QR selection corrections are
 covered by focused bridge/transport checks. All changes are in shared integration
@@ -206,6 +251,7 @@ npm run verify:gravity-components
 npm run verify:components
 SOFA_GO7_EVIDENCE_DIR=/tmp/go7-evidence node tests/gravity-orchard-integration/protocol/campaign.mjs
 node tests/gravity-orchard-integration/protocol/measure.mjs --out=/tmp/go7-evidence/transport.json
+node tests/gravity-orchard-integration/protocol/stress.mjs --out=/tmp/go7-evidence/stress.json
 npx playwright install --with-deps chromium
 SOFA_GO7_EVIDENCE_DIR=/tmp/go7-browser npm run test:gravity-browser
 node scripts/prepare-game.mjs

@@ -31,7 +31,10 @@ try {
       await writeFile(filename, JSON.stringify({ ...config, lastPath: `/?room=${saved.code}` }) + '\n', { mode: 0o600 });
     }
     const result = await new Promise((resolve, reject) => {
-      runner = spawn(process.execPath, [path.join(desktopDir, 'node_modules/@wdio/cli/bin/wdio.js'), 'run', path.join(desktopDir, 'wdio.native.mjs'), '--spec', spec], {
+      // WDIO captures the configured Mocha timeout before invoking the test;
+      // this.timeout() inside the spec cannot extend its outer wrapper. A real
+      // three-stage campaign exceeds the legacy 90-second collection timeout.
+      runner = spawn(process.execPath, [path.join(desktopDir, 'node_modules/@wdio/cli/bin/wdio.js'), 'run', path.join(desktopDir, 'wdio.native.mjs'), '--spec', spec, '--mochaOpts.timeout', '420000'], {
         cwd: desktopDir,
         env: { ...process.env, SOFA_NATIVE_PHASE: `go7-${phase}`, SOFA_GO7_NATIVE_PHASE: phase, SOFA_GO7_NATIVE_FIXTURE: fixture },
         stdio: 'inherit',

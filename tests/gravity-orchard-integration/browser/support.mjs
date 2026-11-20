@@ -126,7 +126,13 @@ function installProbe({permission}){
 
 export async function view(page){return page.evaluate(()=>window.__go7Probe.view());}
 export async function waitPhase(page,phase,timeout=15000){return until(async()=>{const next=await view(page);return next?.phase===phase&&next;},`public phase ${phase}`,timeout);}
-export async function roomCredential(run,page,code,role){const token=await page.evaluate(({code,role})=>{const saved=JSON.parse(localStorage.getItem('sofa-room:'+code)||'{}');return role==='host'?saved.hostToken:saved.playerTokens?.[role];},{code,role});run.protect(token);assert.equal(typeof token,'string');return token;}
+export async function roomCredential(run,page,code,role){
+ // A click completes before its asynchronous /join response has necessarily
+ // arrived. Wait for the real shell's durable credential write, never a delay
+ // or a test-written token; retain the existing credential authority unchanged.
+ await page.waitForFunction(({code,role})=>{const saved=JSON.parse(localStorage.getItem('sofa-room:'+code)||'{}');const token=role==='host'?saved.hostToken:saved.playerTokens?.[role];return typeof token==='string'&&token.length>0;},{code,role});
+ const token=await page.evaluate(({code,role})=>{const saved=JSON.parse(localStorage.getItem('sofa-room:'+code)||'{}');return role==='host'?saved.hostToken:saved.playerTokens?.[role];},{code,role});run.protect(token);assert.equal(typeof token,'string');return token;
+}
 export async function request(run,path,{token,body}={}){run.protect(token);const response=await fetch(run.origin+path,{method:body===undefined?'GET':'POST',headers:{...(token?{Authorization:'Bearer '+token}:{}),...(body===undefined?{}:{'Content-Type':'application/json',Origin:run.origin})},...(body===undefined?{}:{body:JSON.stringify(body)})});const value=await response.json();run.protect(value.hostToken);run.protect(value.playerToken);assert.equal(response.status,200,`${path}: ${value.code||response.status}`);return value;}
 
 export async function touchDriver(page){
