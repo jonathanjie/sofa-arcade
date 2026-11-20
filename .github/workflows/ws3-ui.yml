@@ -1,0 +1,52 @@
+name: WS3 Odd Laws interface
+
+on:
+  pull_request:
+    paths:
+      - 'ui/games/odd-laws-society/**'
+      - '.github/workflows/ws3-ui.yml'
+      - 'docs/workstreams/odd-laws-ui.md'
+  push:
+    branches: [feature/odd-laws-ui]
+    paths:
+      - 'ui/games/odd-laws-society/**'
+      - '.github/workflows/ws3-ui.yml'
+      - 'docs/workstreams/odd-laws-ui.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ws3-ui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fixture-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ui/games/odd-laws-society
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/games/odd-laws-society/package-lock.json
+      - name: Install isolated test dependencies
+        run: npm ci
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test projected fixtures, public previews, tutorial, and motion
+        run: npm test
+      - name: Test rendered TV and phone interactions
+        run: npm run test:browser
+      - name: Preserve rendered screenshots and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws3-ui-browser-evidence
+          path: ui/games/odd-laws-society/test-results/
+          if-no-files-found: ignore
+          retention-days: 14

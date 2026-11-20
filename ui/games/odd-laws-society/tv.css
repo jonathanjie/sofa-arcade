@@ -1,0 +1,217 @@
+/* TV-only layout. The core view owns typography, controls, and media fallbacks. */
+.ols .ols-tv { --tv-line: #d8d2bc; --tv-paper: #faf7ec; --tv-ink: #283f38; --tv-muted: #667469; display: flex; flex-direction: column; gap: clamp(12px, 1.15vw, 22px); max-width: 1880px; margin: 0 auto; color: var(--tv-ink); }
+.ols .ols-tv-masthead { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0 3px 3px; }
+.ols .ols-tv-wordmark { display: flex; align-items: center; gap: 15px; }
+.ols .ols-tv-brand-seal { display: grid; place-items: center; width: 54px; height: 58px; border: 1px solid #a89b6f; border-radius: 46% 46% 45% 45%; color: #6f794c; background: #ebe9ce; box-shadow: inset 0 0 0 5px #f5f2df, inset 0 0 0 6px #b6af85; transform: rotate(-5deg); }
+.ols .ols-tv-brand-seal svg { width: 27px; height: 27px; }
+.ols .ols-tv h1, .ols .ols-tv h2, .ols .ols-tv h3, .ols .ols-tv p { margin: 0; }
+.ols .ols-tv h1 { font: 600 clamp(25px, 2.15vw, 42px)/1.04 Georgia, 'Times New Roman', serif; letter-spacing: -.8px; }
+.ols .ols-tv h1 em { font-weight: 400; }
+.ols .ols-tv-kicker { display: block; color: var(--tv-muted); font-size: clamp(10px, .67vw, 13px); font-weight: 750; letter-spacing: .13em; text-transform: uppercase; line-height: 1.45; }
+.ols .ols-tv-wordmark .ols-tv-kicker { margin-bottom: 4px; }
+.ols .ols-tv-session { display: flex; align-items: center; gap: 13px; padding-left: 20px; border-left: 1px solid var(--tv-line); }
+.ols .ols-tv-session-number { font: 500 clamp(32px, 2.6vw, 50px)/1 Georgia, serif; color: #697653; }
+.ols .ols-tv-session-number small { margin-left: 5px; font: 500 18px/1 Georgia, serif; color: var(--tv-muted); }
+.ols .ols-tv-session strong { display: block; margin-top: 4px; font-size: clamp(15px, 1.05vw, 20px); }
+.ols .ols-tv-board { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.16fr) minmax(0, 1fr); gap: clamp(14px, 1.4vw, 26px); align-items: stretch; }
+.ols .ols-tv-borough { min-width: 0; padding: clamp(12px, 1.15vw, 22px); border: 1px solid var(--tv-line); border-radius: 24px; background: linear-gradient(155deg, #f7f8ef, #eff0df); box-shadow: 0 5px 0 #d5d7c0, 0 14px 24px #2f44320b; position: relative; }
+.ols .ols-tv-borough-lydia { background: linear-gradient(155deg, #fbf5ed, #f0e6db); box-shadow: 0 5px 0 #ddcbbc, 0 14px 24px #44312f0b; }
+.ols .ols-tv-borough.is-active { border-color: #6f8462; box-shadow: 0 0 0 3px #8ea2763d, 0 5px 0 #b0bc96, 0 14px 24px #2f44320b; }
+.ols .ols-tv-borough-lydia.is-active { border-color: #ae7661; box-shadow: 0 0 0 3px #c894793d, 0 5px 0 #d5b497, 0 14px 24px #44312f0b; }
+.ols .ols-tv-borough-head { display: flex; align-items: center; gap: clamp(7px, .7vw, 13px); min-height: 62px; }
+.ols .ols-tv-portrait { width: clamp(54px, 5.2vw, 100px); height: clamp(54px, 5.2vw, 100px); flex: 0 0 auto; align-self: end; }
+.ols .ols-tv-portrait > * { width: 100%; height: 100%; }
+.ols .ols-tv-portrait img, .ols .ols-tv-portrait svg { width: 100%; height: 100%; object-fit: contain; }
+.ols .ols-tv-borough-title h2 { font: 500 clamp(26px, 2.4vw, 46px)/1.05 Georgia, serif; }
+.ols .ols-tv-borough-title { flex: 1; min-width: 0; }
+.ols .ols-tv-borough.is-active .ols-tv-borough-title .ols-tv-kicker { color: #35573b; }
+.ols .ols-tv-score { border: 0; border-radius: 12px; padding: 6px 6px 8px; color: #344f3f; background: transparent; min-width: 65px; min-height: 54px; display: grid; grid-template-columns: 18px auto; align-items: center; justify-content: center; column-gap: 5px; text-align: center; }
+.ols .ols-tv-score:hover { background: #ffffff66; }
+.ols .ols-tv-score > svg { width: 18px; height: 18px; }
+.ols .ols-tv-score strong { font: 500 clamp(28px, 2.5vw, 48px)/1 Georgia, serif; }
+.ols .ols-tv-score > span { grid-column: 1 / -1; color: var(--tv-muted); font-size: clamp(10px, .7vw, 13px); }
+.ols .ols-tv-purse { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5px 18px; padding: 10px 0 12px; margin: 4px 0 10px; border-block: 1px solid #b6bba54f; font-size: clamp(12px, .9vw, 17px); }
+.ols .ols-tv-purse > span:not(.ols-tv-potential) { display: inline-flex; align-items: center; gap: 5px; }
+.ols .ols-tv-purse svg { width: clamp(17px, 1.25vw, 24px); height: clamp(17px, 1.25vw, 24px); }
+.ols .ols-tv-purse strong { font-size: clamp(18px, 1.45vw, 28px); font-variant-numeric: tabular-nums; }
+.ols .ols-tv-purse .ols-tv-potential { flex-basis: 100%; text-align: center; font-size: clamp(10px, .68vw, 13px); color: #626d5f; }
+.ols .ols-tv-city-wrap { border-radius: 14px; overflow: hidden; }
+.ols .ols-tv .ols-city-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(7px, .6vw, 12px); }
+.ols .ols-tv .ols-street { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(7px, .6vw, 12px); }
+.ols .ols-tv .ols-plot { min-width: 0; min-height: 0; aspect-ratio: 1.05; }
+.ols .ols-tv .ols-plot svg, .ols .ols-tv .ols-plot img { max-width: 100%; }
+.ols .ols-tv-borough-foot { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin-top: 14px; min-height: 22px; color: var(--tv-muted); font-size: clamp(11px, .78vw, 15px); }
+.ols .ols-tv-pips { display: flex; gap: 5px; }
+.ols .ols-tv-pips i { width: 8px; height: 8px; border: 1px solid #7c876d; border-radius: 50%; }
+.ols .ols-tv-pips i.is-available { background: #6e8161; }
+.ols .ols-tv-chair { display: inline-flex; align-items: center; justify-content: end; gap: 4px; min-width: 45px; color: #546249; }
+.ols .ols-tv-chair svg { width: 16px; height: 16px; }
+.ols .ols-tv-center { display: flex; flex-direction: column; gap: 13px; min-width: 0; }
+.ols .ols-tv-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 54px; margin: 0 0 12px; }
+.ols .ols-tv-section-heading h2 { font: 500 clamp(24px, 1.9vw, 36px)/1.1 Georgia, serif; }
+.ols .ols-tv-market-note { color: var(--tv-muted); font-size: clamp(11px, .8vw, 15px); }
+.ols .ols-tv-market-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(9px, .8vw, 15px); }
+.ols .ols-tv-market-card { --guild-color: #a37e30; min-width: 0; display: flex; flex-direction: column; align-items: stretch; border: 1px solid #d8cfb7; border-radius: 14px; background: #fffdf5; color: var(--tv-ink); padding: clamp(9px, .75vw, 14px); box-shadow: 0 3px 0 #e1dbc8; text-align: left; cursor: pointer; }
+.ols .ols-tv-market-card:hover { border-color: var(--guild-color); background: #fffef8; }
+.ols .ols-tv-market-card.guild-craft { --guild-color: #ad6352; }
+.ols .ols-tv-market-card.guild-civic { --guild-color: #4d8076; }
+.ols .ols-tv-market-card.guild-culture { --guild-color: #8b6686; }
+.ols .ols-tv-card-top { display: flex; align-items: center; justify-content: space-between; gap: 4px; font-size: clamp(10px, .65vw, 12px); }
+.ols .ols-tv-card-top .ols-guild, .ols .ols-tv-card-top .ols-guild-label { gap: 3px; font-size: inherit; }
+.ols .ols-tv-card-top svg { width: 15px; height: 15px; }
+.ols .ols-tv-stock { color: #5f6858; font-size: clamp(10px, .65vw, 12px); white-space: nowrap; }
+.ols .ols-tv-building-art { display: block; height: clamp(55px, 6.2vw, 115px); margin: 4px -4px 2px; }
+.ols .ols-tv-building-art > *, .ols .ols-tv-building-art img, .ols .ols-tv-building-art svg { width: 100%; height: 100%; object-fit: contain; }
+.ols .ols-tv-building-name { font: 600 clamp(14px, 1.03vw, 20px)/1.1 Georgia, serif; min-height: 2.2em; display: flex; align-items: center; }
+.ols .ols-tv-card-values { display: flex; align-items: center; gap: 5px; margin-top: 7px; padding-top: 6px; border-top: 1px solid #e7e0cd; font-variant-numeric: tabular-nums; }
+.ols .ols-tv-live-price, .ols .ols-tv-split-price { display: inline-flex; align-items: center; gap: 4px; font-size: clamp(12px, .8vw, 16px); }
+.ols .ols-tv-live-price > strong { font-size: clamp(17px, 1.25vw, 24px); }
+.ols .ols-tv-live-price > span { font-size: 10px; color: #68715f; }
+.ols .ols-tv-card-values svg { width: clamp(15px, 1vw, 20px); height: clamp(15px, 1vw, 20px); }
+.ols .ols-tv-card-values del { color: #767e6e; font-size: 12px; }
+.ols .ols-tv-card-prestige { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; font-size: clamp(15px, 1.1vw, 21px); font-weight: 750; color: #687346; }
+.ols .ols-tv-ability { display: flex; gap: 4px; align-items: center; font-size: clamp(10px, .67vw, 13px); line-height: 1.2; color: #68715f; min-height: 25px; margin-top: 3px; }
+.ols .ols-tv-ability svg { flex: 0 0 auto; width: 13px; height: 13px; }
+.ols .ols-tv-market-card.is-exhausted { background: #e9e8df; box-shadow: 0 3px 0 #d6d6ca; }
+.ols .ols-tv-market-card.is-exhausted .ols-tv-building-art { filter: grayscale(1); opacity: .5; }
+.ols .ols-tv-market-card.is-exhausted .ols-tv-stock { color: #6c5144; font-weight: 750; }
+.ols .ols-tv-stock-note { font-size: 13px; line-height: 1.4; margin-top: 10px !important; color: #654d3e; }
+.ols .ols-tv-laws { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(14px, 1.4vw, 26px); }
+.ols .ols-tv-active-law { display: flex; align-items: center; gap: 14px; min-width: 0; padding: clamp(12px, 1.1vw, 20px); border: 1px solid #d8d0b8; border-radius: 15px; background: #faf8ed; }
+.ols .ols-tv-law-emblem { flex: 0 0 auto; width: clamp(35px, 3vw, 58px); height: clamp(35px, 3vw, 58px); display: grid; place-items: center; border-radius: 50%; background: #ece9d8; color: #6b7859; }
+.ols .ols-tv-law-emblem svg { width: 52%; height: 52%; }
+.ols .ols-tv-active-law > div { min-width: 0; flex: 1; }
+.ols .ols-tv-active-law h3 { font: 600 clamp(16px, 1.25vw, 24px)/1.2 Georgia, serif; margin: 1px 0 3px; }
+.ols .ols-tv-active-law p { font-size: clamp(12px, .82vw, 16px); line-height: 1.35; color: #5c6959; }
+.ols .ols-tv-civic-projection { flex: 0 0 auto; font-size: clamp(12px, .8vw, 15px); line-height: 1.55; text-align: right; font-variant-numeric: tabular-nums; color: #586d54; }
+.ols .ols-tv-council { padding: 12px 0 0; }
+.ols .ols-tv-council .ols-tv-section-heading { margin-bottom: 15px; }
+.ols .ols-tv-lala { display: block; flex: 0 0 auto; width: clamp(55px, 5.8vw, 110px); height: clamp(55px, 5.8vw, 110px); }
+.ols .ols-tv-lala > *, .ols .ols-tv-lala svg, .ols .ols-tv-lala img { width: 100%; height: 100%; object-fit: contain; }
+.ols .ols-tv-proposals { display: flex; flex-direction: column; gap: 10px; }
+.ols .ols-tv-proposal { display: flex; gap: 12px; border: 1px solid #d7cdb5; background: #fffdf4; border-radius: 14px; padding: clamp(12px, 1.1vw, 21px); box-shadow: 0 3px 0 #e4ddca; }
+.ols .ols-tv-proposal-number { color: #8a906f; font: 500 clamp(22px, 1.8vw, 34px)/1 Georgia, serif; min-width: 28px; }
+.ols .ols-tv-proposal h3 { font: 600 clamp(18px, 1.4vw, 27px)/1.12 Georgia, serif; margin-bottom: 5px; }
+.ols .ols-tv-proposal p { color: #5e6c5b; font-size: clamp(13px, .92vw, 18px); line-height: 1.35; }
+.ols .ols-tv-proposal-keep { background: #f1f0e4; }
+.ols .ols-tv-law-preview { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; font-size: 12px; color: #536a55; }
+.ols .ols-tv-ballot-tray { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 17px; }
+.ols .ols-tv-ballot { display: grid; grid-template-columns: 42px 1fr; align-items: center; column-gap: 8px; border: 1px dashed #b9bca6; border-radius: 13px; padding: 10px; background: #eeefe396; }
+.ols .ols-tv-envelope { grid-row: 1 / 3; display: grid; place-items: center; position: relative; color: #a29f80; }
+.ols .ols-tv-envelope svg { width: 34px; height: 34px; }
+.ols .ols-tv-envelope-lock { position: absolute; bottom: -3px; right: -1px; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: #e2e7d3; }
+.ols .ols-tv-envelope-lock svg { width: 15px; height: 15px; }
+.ols .ols-tv-ballot strong { font-size: clamp(14px, 1vw, 19px); }
+.ols .ols-tv-ballot > span:last-child { font-size: clamp(11px, .72vw, 14px); color: #65735c; }
+.ols .ols-tv-ballot.is-sealed { border-style: solid; border-color: #8d9b79; background: #e2e7d3; }
+.ols .ols-tv-ballot.is-sealed .ols-tv-envelope { color: #6d8057; }
+.ols .ols-tv-council-note { margin-top: 12px !important; font-size: clamp(12px, .83vw, 16px); text-align: center; color: #626f5c; }
+.ols .ols-tv-reveal { padding: 11px 13px; background: #e7eddc; border: 1px solid #b4c39a; border-radius: 13px; }
+.ols .ols-tv-masthead.has-reveal .ols-tv-reveal { flex: 1; }
+.ols .ols-tv-masthead.has-reveal .ols-tv-wordmark { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ols .ols-tv-masthead.has-reveal .ols-tv-session { flex: 0 0 auto; }
+.ols .ols-tv-reveal-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: clamp(12px, .85vw, 16px); }
+.ols .ols-tv-reveal-heading svg { width: 19px; height: 19px; }
+.ols .ols-tv-reveal-heading > span { color: #586c51; font-size: .85em; }
+.ols .ols-tv-revealed-votes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+.ols .ols-tv-revealed-votes > span { display: grid; grid-template-columns: 18px auto 1fr; align-items: center; gap: 3px 5px; font-size: clamp(11px, .72vw, 14px); }
+.ols .ols-tv-revealed-votes svg { width: 16px; height: 16px; }
+.ols .ols-tv-revealed-votes > span > span { grid-column: 1 / -1; color: #53674e; }
+.ols .ols-tv-revealed-votes b { grid-column: 3; grid-row: 1; text-align: right; font-size: .9em; font-weight: 600; }
+.ols .ols-tv-results { display: flex; flex-direction: column; align-items: center; padding: 8px 12px; text-align: center; }
+.ols .ols-tv-result-lala { width: clamp(70px, 8vw, 150px); height: clamp(70px, 8vw, 150px); margin-bottom: 5px; }
+.ols .ols-tv-result-lala > *, .ols .ols-tv-result-lala svg, .ols .ols-tv-result-lala img { width: 100%; height: 100%; object-fit: contain; }
+.ols .ols-tv-results h2 { font: 500 clamp(27px, 2.7vw, 52px)/1.08 Georgia, serif; margin: 8px 0 7px; }
+.ols .ols-tv-result-subtitle { font-size: clamp(12px, .87vw, 17px); color: #657259; }
+.ols .ols-tv-score-table { width: 100%; max-width: 420px; border-collapse: collapse; margin-top: clamp(15px, 1.4vw, 27px); font-size: clamp(13px, 1vw, 19px); font-variant-numeric: tabular-nums; }
+.ols .ols-tv-score-table th, .ols .ols-tv-score-table td { padding: clamp(7px, .6vw, 11px) 8px; border-bottom: 1px solid #d9d4c1; }
+.ols .ols-tv-score-table th:first-child { text-align: left; }
+.ols .ols-tv-score-table tbody th { font-weight: 500; color: #626f5d; }
+.ols .ols-tv-score-table thead th { font-size: 12px; color: #5f7059; }
+.ols .ols-tv-score-table tfoot th, .ols .ols-tv-score-table tfoot td { border-bottom: 0; background: #e4e9d7; font-weight: 750; padding-block: 11px; }
+.ols .ols-tv-return { display: inline-flex; align-items: center; justify-content: center; gap: 7px; margin-top: 20px; padding: 11px 20px; border: 1px solid #7a8b65; border-radius: 12px; min-height: 46px; background: #536d4e; color: #fffdf4; font-size: 14px; }
+.ols .ols-tv-return svg { width: 17px; height: 17px; }
+.ols .ols-tv-finish-seal { color: #61744f; font-size: 11px; }
+@media (max-width: 1390px) {
+  .ols .ols-tv { gap: 12px; }
+  .ols .ols-tv-borough { padding: 12px; border-radius: 18px; }
+  .ols .ols-tv-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; }
+  .ols .ols-tv-market-grid { gap: 8px; }
+  .ols .ols-tv-card-top { flex-wrap: wrap; gap: 2px; }
+  .ols .ols-tv-card-top .ols-tv-stock { margin-left: auto; }
+  .ols .ols-tv-market-card { padding: 9px 8px; }
+  .ols .ols-tv-building-art { height: 59px; }
+  .ols .ols-tv-building-name { font-size: 14px; }
+  .ols .ols-tv-ability { font-size: 10px; min-height: 25px; }
+  .ols .ols-tv-section-heading { min-height: 40px; margin-bottom: 9px; }
+  .ols .ols-tv-reveal { padding: 8px 10px; }
+  .ols .ols-tv-revealed-votes { margin-top: 5px; }
+  .ols .ols-tv-center { gap: 8px; }
+  .ols .ols-tv-council { padding-top: 0; }
+  .ols .ols-tv-council .ols-tv-section-heading { margin-bottom: 10px; }
+  .ols .ols-tv-lala { width: 60px; height: 60px; }
+  .ols .ols-tv-proposal { padding: 12px; gap: 9px; }
+  .ols .ols-tv-proposal h3 { font-size: 18px; }
+  .ols .ols-tv-proposal p { font-size: 13px; }
+  .ols .ols-tv-ballot-tray { margin-top: 12px; }
+  .ols .ols-tv-council-note { margin-top: 9px !important; }
+  .ols .ols-tv-active-law { padding: 11px 13px; }
+  .ols .ols-tv-borough-foot { margin-top: 11px; gap: 5px; }
+}
+@media (min-width: 1000px) and (max-height: 780px) {
+  .ols .ols-tv-masthead { min-height: 47px; }
+  .ols .ols-tv-brand-seal { width: 44px; height: 47px; }
+  .ols .ols-tv-borough-head { min-height: 52px; }
+  .ols .ols-tv-portrait { width: 56px; height: 56px; }
+  .ols .ols-tv-purse { padding: 6px 0 8px; margin-bottom: 8px; gap: 2px 15px; }
+  .ols .ols-tv-city-wrap { max-width: 320px; margin-inline: auto; }
+  .ols .ols-tv .ols-plot { aspect-ratio: 1.23; }
+  .ols .ols-tv-proposal { padding: 10px 12px; }
+  .ols .ols-tv-proposals { gap: 8px; }
+  .ols .ols-tv-results { padding-top: 0; }
+  .ols .ols-tv-result-lala { width: 78px; height: 78px; }
+  .ols .ols-tv-score-table { margin-top: 12px; }
+  .ols .ols-tv-return { margin-top: 13px; }
+}
+@media (max-width: 999px) {
+  .ols .ols-tv-masthead { gap: 14px; }
+  .ols .ols-tv-brand-seal { display: none; }
+  .ols .ols-tv-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .ols .ols-tv-center { grid-column: 1 / -1; grid-row: 2; }
+  .ols .ols-tv-borough-lydia { grid-column: 2; grid-row: 1; }
+  .ols .ols-tv-market-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .ols .ols-tv-building-art { height: 70px; }
+  .ols .ols-tv-ballot-tray { max-width: 450px; margin-inline: auto; }
+  .ols .ols-tv-laws { grid-template-columns: 1fr; }
+  .ols .ols-tv-borough .ols-plot { aspect-ratio: 1.3; }
+}
+@media (max-width: 620px) {
+  .ols .ols-tv-masthead { align-items: start; flex-direction: column; gap: 12px; }
+  .ols .ols-tv-masthead.has-reveal .ols-tv-reveal { width: 100%; }
+  .ols .ols-tv-session { padding-left: 0; border-left: 0; }
+  .ols .ols-tv-board { gap: 9px; }
+  .ols .ols-tv-borough { padding: 9px; border-radius: 14px; }
+  .ols .ols-tv-portrait { display: none; }
+  .ols .ols-tv-score { min-width: 44px; padding: 4px; grid-template-columns: 12px auto; gap: 2px; }
+  .ols .ols-tv-score > svg { width: 12px; height: 12px; }
+  .ols .ols-tv-score strong { font-size: 25px; }
+  .ols .ols-tv-score > span { font-size: 9px; }
+  .ols .ols-tv-borough-title h2 { font-size: 25px; }
+  .ols .ols-tv-borough-title .ols-tv-kicker { font-size: 8px; letter-spacing: .05em; }
+  .ols .ols-tv-purse { gap: 3px 8px; }
+  .ols .ols-tv-purse > span > span { display: none; }
+  .ols .ols-tv-potential { font-size: 9px !important; }
+  .ols .ols-tv-borough-foot { flex-wrap: wrap; font-size: 10px; }
+  .ols .ols-tv-chair { min-width: auto; }
+  .ols .ols-tv .ols-city-grid, .ols .ols-tv .ols-street { gap: 4px; }
+  .ols .ols-tv .ols-plot { aspect-ratio: .8; }
+  .ols .ols-tv-market-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ols .ols-tv-card-top { flex-direction: column; align-items: start; }
+  .ols .ols-tv-card-top .ols-tv-stock { margin-left: 0; }
+  .ols .ols-tv-laws { gap: 9px; }
+  .ols .ols-tv-active-law { gap: 9px; }
+  .ols .ols-tv-law-emblem { width: 30px; height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ols .ols-tv * { scroll-behavior: auto; }
+}
