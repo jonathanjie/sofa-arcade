@@ -82,6 +82,7 @@ export function mountPhone(root, {
   let localHold = true;
   let controlling = false;
   let syncing = false;
+  let updateDepth = 0;
   let dialogOpen = false;
   let focusReturn = null;
   let joystickPointer = null;
@@ -312,7 +313,7 @@ export function mountPhone(root, {
   }
 
   function syncControls() {
-    if (!motion || syncing || disposed) return;
+    if (!motion || syncing || disposed || updateDepth > 0) return;
     syncing = true;
     const shouldControl = canControl();
     if (shouldControl && !controlling) {
@@ -349,7 +350,7 @@ export function mountPhone(root, {
       if (status.reason === 'rotation' || (selectedMode === 'tilt' && !status.calibrated)) setupOpen = true;
     }
     input.onStatus?.({ ...status });
-    render();
+    if (updateDepth === 0) render();
     syncControls();
   }
 
@@ -627,45 +628,55 @@ export function mountPhone(root, {
   return {
     update(nextView) {
       if (disposed || nextView?.gameId !== 'gravity-orchard' || !PHASES.has(nextView.phase)) return;
-      const previous = view;
-      const boundary = previous && (previous.matchId !== nextView.matchId || previous.runEpoch !== nextView.runEpoch || previous.phase !== nextView.phase);
-      view = nextView;
-      if (boundary) {
-        lifecycleGeneration += 1;
-        readyGeneration += 1;
-        controlling = false;
-        releasePointers();
-        motion.pause();
-        input.setInput({ ...SAFE });
-        pendingReady = false;
-        pendingReadyValue = null;
-        commandError = '';
-        if (previous.matchId !== nextView.matchId || previous.runEpoch !== nextView.runEpoch) {
-          pauseRequest = null;
-          withdrawalRequestedAt = null;
+      // pause() reports status synchronously. Do not let that callback resume
+      // halfway through clearing an authoritative boundary, then overwrite its
+      // fresh input with SAFE. Nested fixture/stream updates settle as one unit.
+      updateDepth += 1;
+      try {
+        const previous = view;
+        const boundary = previous && (previous.matchId !== nextView.matchId || previous.runEpoch !== nextView.runEpoch || previous.phase !== nextView.phase);
+        view = nextView;
+        if (boundary) {
+          lifecycleGeneration += 1;
+          readyGeneration += 1;
+          controlling = false;
+          releasePointers();
+          motion.pause();
+          input.setInput({ ...SAFE });
+          pendingReady = false;
+          pendingReadyValue = null;
+          commandError = '';
+          if (previous.matchId !== nextView.matchId || previous.runEpoch !== nextView.runEpoch) {
+            pauseRequest = null;
+            withdrawalRequestedAt = null;
+          }
+        }
+        if (!nextView.ready?.[playerId]) withdrawalRequestedAt = null;
+        // Arm only a new authoritative countdown epoch following this phone's
+        // deliberate ready intent. A stale countdown -> playing transition after
+        // Help, cancellation or a failed pause must never release a safety hold.
+        const epochKey = `${nextView.matchId}:${nextView.runEpoch}`;
+        const startsRequestedRun = nextView.phase === 'countdown' && readyIntent &&
+          readyIntent.matchId === nextView.matchId && nextView.runEpoch > readyIntent.epoch;
+        if (startsRequestedRun && !dialogOpen && !setupOpen && configured && connection.state === 'connected') {
+          activeEpoch = epochKey;
+          readyIntent = null;
+          localHold = false;
+        }
+        if (ACTIVE.has(nextView.phase) && activeEpoch !== epochKey) localHold = true;
+        if (!ACTIVE.has(nextView.phase)) {
+          localHold = true;
+          activeEpoch = null;
+          if (boundary) readyIntent = null;
+        }
+        if (ACTIVE.has(nextView.phase) && (localHold || dialogOpen || setupOpen || connection.state !== 'connected')) requestSharedPause('requested');
+      } finally {
+        updateDepth -= 1;
+        if (updateDepth === 0) {
+          render();
+          syncControls();
         }
       }
-      if (!nextView.ready?.[playerId]) withdrawalRequestedAt = null;
-      // Arm only a new authoritative countdown epoch following this phone's
-      // deliberate ready intent. A stale countdown -> playing transition after
-      // Help, cancellation or a failed pause must never release a safety hold.
-      const epochKey = `${nextView.matchId}:${nextView.runEpoch}`;
-      const startsRequestedRun = nextView.phase === 'countdown' && readyIntent &&
-        readyIntent.matchId === nextView.matchId && nextView.runEpoch > readyIntent.epoch;
-      if (startsRequestedRun && !dialogOpen && !setupOpen && configured && connection.state === 'connected') {
-        activeEpoch = epochKey;
-        readyIntent = null;
-        localHold = false;
-      }
-      if (ACTIVE.has(nextView.phase) && activeEpoch !== epochKey) localHold = true;
-      if (!ACTIVE.has(nextView.phase)) {
-        localHold = true;
-        activeEpoch = null;
-        if (boundary) readyIntent = null;
-      }
-      if (ACTIVE.has(nextView.phase) && (localHold || dialogOpen || setupOpen || connection.state !== 'connected')) requestSharedPause('requested');
-      render();
-      syncControls();
     },
     setConnection(nextStatus) {
       if (disposed) return;

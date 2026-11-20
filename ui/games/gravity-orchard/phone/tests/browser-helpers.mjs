@@ -67,13 +67,39 @@ export async function touchController(page) {
   const points = new Map();
   const send = type => session.send('Input.dispatchTouchEvent', { type, touchPoints: [...points.values()] });
   const point = (id, x, y) => ({ id, x, y, radiusX: 9, radiusY: 9, force: 1 });
+  await page.evaluate(() => {
+    const events = [];
+    const record = event => {
+      const control = event.target.closest?.('[data-go3="joystick"], [data-go3="brake"]')?.dataset.go3;
+      if (control) events.push({ type: event.type, pointerId: event.pointerId, control });
+    };
+    for (const type of ['pointerdown', 'pointerup', 'pointercancel']) document.addEventListener(type, record, true);
+    window.go3TouchAudit = { events, dispose() {
+      for (const type of ['pointerdown', 'pointerup', 'pointercancel']) document.removeEventListener(type, record, true);
+    } };
+  });
   return {
-    async down(id, x, y) { points.set(id, point(id, x, y)); await send('touchStart'); },
+    async down(id, x, y) {
+      const pressed = point(id, x, y);
+      points.set(id, pressed);
+      await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [pressed] });
+    },
     async move(id, x, y) { points.set(id, point(id, x, y)); await send('touchMove'); },
-    async up(id) { points.delete(id); await send('touchEnd'); },
+    async up(id) {
+      const released = points.get(id);
+      assert.ok(released, `touch ${id} was down before release`);
+      points.delete(id);
+      // Chromium CreateWebTouchEvents releases supplied IDs on touchEnd; an
+      // empty list releases all. Supplying the *remaining* fingers ends the
+      // wrong pointer. Keep the real two-finger release assertions below.
+      // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/content/browser/devtools/protocol/input_handler.cc
+      await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [released] });
+    },
     async cancel() { points.clear(); await send('touchCancel'); },
+    async events() { return page.evaluate(() => window.go3TouchAudit.events); },
     async close() {
       if (points.size) { points.clear(); await send('touchCancel'); }
+      await page.evaluate(() => { window.go3TouchAudit.dispose(); delete window.go3TouchAudit; });
       await session.detach();
     },
   };

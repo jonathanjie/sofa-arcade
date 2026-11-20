@@ -147,9 +147,12 @@ const cases = [
     await waitInput(page, () => window.go3Fixture.lastInput.x < -.4 && window.go3Fixture.lastInput.y < -.4 && window.go3Fixture.lastInput.brake);
     await screenshot(page, '390-touch-brake-combination');
     await touch.up(2);
+    assert.equal((await touch.events()).filter(event => event.type === 'pointerup').at(-1)?.control, 'brake', 'the browser released the Brake finger, not the steering finger');
     await waitInput(page, () => window.go3Fixture.lastInput.x < -.4 && !window.go3Fixture.lastInput.brake);
     await touch.up(1);
+    assert.equal((await touch.events()).filter(event => event.type === 'pointerup').at(-1)?.control, 'joystick', 'the browser released the steering finger independently');
     assert.deepEqual(await input(page), { x: 0, y: 0, brake: false });
+    currentResult.pointerEvents = await touch.events();
     await touch.close();
   }],
   ['pointer-cancel-and-epoch-fence', async () => {
