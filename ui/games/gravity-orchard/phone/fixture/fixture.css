@@ -1,0 +1,30 @@
+:root { color-scheme: light; font-family: ui-rounded, "Avenir Next", "Trebuchet MS", system-ui, sans-serif; color: #284536; background: #ebe8db; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.fixture-layout { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 390px minmax(0, 1fr); gap: 48px; padding: 32px; align-items: start; }
+.controller-panel { min-width: 0; border-radius: 32px; overflow: hidden; box-shadow: 0 18px 70px #243f2920; }
+.diagnostics { padding: 16px 0; }
+.eyebrow { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .15em; }
+h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.08; font-family: Georgia, serif; font-weight: 500; margin: 12px 0 16px; }
+.fixture-note { font-size: 14px; line-height: 1.6; color: #58634d; }
+.diagnostic-visual { background: #f8f5e9; border-radius: 20px; text-align: center; padding: 12px; }
+.diagnostic-visual svg { max-width: 300px; width: 100%; display: block; margin: 0 auto; }
+output { font-size: 13px; font-family: ui-monospace, monospace; }
+fieldset { padding: 16px; border: 1px solid #aeb89c; border-radius: 16px; margin-top: 24px; }
+legend { padding: 0 8px; font-weight: 700; font-size: 14px; }
+button, select { min-height: 48px; border-radius: 10px; border: 1px solid #9caa8f; background: #fffaf0; color: #284536; font: inherit; font-size: 13px; padding: 10px 14px; cursor: pointer; }
+button:focus-visible, select:focus-visible { outline: 3px solid #bd602f; outline-offset: 3px; }
+.scenario-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+label { display: block; margin: 4px 0 8px; font-size: 14px; }
+select { width: 100%; }
+#status-output { min-height: 24px; font-size: 13px; }
+body.controller-only { background: #f7f1e2; }
+.controller-only .fixture-layout { display: block; width: 100%; max-width: none; padding: 0; margin: 0; }
+.controller-only .controller-panel { width: 100%; box-shadow: none; border-radius: 0; overflow: visible; }
+.controller-only .diagnostics { display: none; }
+@media (max-width: 780px) {
+  .fixture-layout { display: block; padding: 0; }
+  .controller-panel { border-radius: 0; box-shadow: none; }
+  .diagnostics { padding: 32px 24px; max-width: 600px; margin: 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }

@@ -8,7 +8,25 @@ export function readTransportConfig({ document: doc = globalThis.document, origi
       if (['http:', 'https:'].includes(candidate.protocol) && !candidate.username && !candidate.password) joinOrigin = candidate.origin;
     } catch {}
   }
-  return Object.freeze({ mode, joinOrigin, realtime: mode === 'lan' });
+  const orchard = mode === 'lan' && ['candidate', 'enabled'].includes(doc?.querySelector('meta[name="sofa-gravity-orchard"]')?.getAttribute('content'));
+  return Object.freeze({ mode, joinOrigin, realtime: mode === 'lan', ...(orchard ? {gravityOrchard: true} : {}) });
+}
+
+/** A phone QR must never point at the Mac's own loopback listener. */
+export function trustedPhoneOrigin(status, preferredOrigin) {
+  if (status?.status !== 'ready' || !Array.isArray(status.controllerOrigins)) return null;
+  let preferredHostname = '';
+  try { preferredHostname = new URL(preferredOrigin).hostname; } catch {}
+  const candidates = status.controllerOrigins.flatMap(value => {
+    try {
+      const url = new URL(value), host = url.hostname.toLowerCase();
+      if (url.protocol !== 'https:' || url.username || url.password ||
+          host === 'localhost' || host.endsWith('.localhost') || /^127\./.test(host) ||
+          ['0.0.0.0', '::', '[::]', '::1', '[::1]'].includes(host)) return [];
+      return [url];
+    } catch { return []; }
+  });
+  return (candidates.find(url => url.hostname === preferredHostname) || candidates[0])?.origin || null;
 }
 
 /** Handles arbitrary UTF-8/text chunk boundaries in a server-sent event stream. */

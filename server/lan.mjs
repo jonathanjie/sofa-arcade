@@ -5,11 +5,16 @@ import { networkInterfaces } from 'node:os';
 import { readFile, readdir, mkdir, realpath, chmod, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { handleApi, MAX_BODY_BYTES } from './rooms.mjs';
+import { MAX_BODY_BYTES } from './rooms.mjs';
+import { getGame } from '../games/catalog.mjs';
+import { createGravityOrchardHost } from './gravity-orchard-host.mjs';
+import { GRAVITY_BROWSER_FILES, GRAVITY_ASSET_FILES } from './gravity-orchard-delivery.mjs';
+import { createRequestPolicy } from './runtime/gravity-orchard-dependencies.mjs';
 
 const PROJECT_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const ROOM_CODE = '[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}';
 const SOURCES = new Map([
+  ...GRAVITY_BROWSER_FILES.map(({ url, source }) => [url, source]),
   ['/app.js', 'ui/app.js'], ['/styles.css', 'ui/styles.css'],
   ['/audio.js', 'ui/audio.js'], ['/score.mjs', 'ui/score.mjs'],
   ['/motion.js', 'ui/motion.js'], ['/motion.css', 'ui/motion.css'],
@@ -33,6 +38,7 @@ const SOURCES = new Map([
 ]);
 // Only declared delivery assets are public; authoring sources remain in the checkout.
 const ASSETS = new Set([
+  ...GRAVITY_ASSET_FILES.map(file => file.replace(/^public/, '')),
   '/assets/sofa-room.png',
   '/assets/odd-laws-cover.webp',
   '/assets/characters.png',
@@ -220,10 +226,15 @@ export async function startLanServer({
   host = '0.0.0.0',
   port = 4177,
   heartbeatMs = 10_000,
-  roomApi = handleApi,
+  roomApi,
   browserModules = [],
+  enableGravityOrchard = getGame('gravity-orchard')?.status === 'playable',
+  realtimeClock,
+  realtimeSeed,
 } = {}) {
-  if (typeof roomApi !== 'function') throw new TypeError('roomApi must be an authoritative request handler.');
+  if (roomApi !== undefined && typeof roomApi !== 'function') throw new TypeError('roomApi must be an authoritative request handler.');
+  if (realtimeSeed !== undefined && (typeof realtimeSeed !== 'string' || !/^[A-Za-z0-9._:-]{1,128}$/.test(realtimeSeed))) throw new TypeError('Invalid realtime seed.');
+  if (typeof enableGravityOrchard !== 'boolean') throw new TypeError('enableGravityOrchard must be boolean.');
   if (!Number.isFinite(heartbeatMs) || heartbeatMs < 1) throw new TypeError('heartbeatMs must be positive.');
   root = await realpath(root);
   const sources = await browserSources(root, browserModules);
@@ -235,11 +246,86 @@ export async function startLanServer({
   let closed = false;
   let closing = null;
   const pendingApi = new Set();
+  let requestPolicy;
+  let secureStatus = Object.freeze({ enabled: false, status: 'disabled', controllerOrigins: [], requiresPhoneTrust: false });
+  function makePolicy(httpsOrigins) {
+    const tlsPolicy = createRequestPolicy({ httpsOrigins });
+    function validateRequest(request) {
+      if (request.socket.encrypted === true) return tlsPolicy.validateRequest(request);
+      const header = name => {
+        const values = [];
+        for (let i = 0; i < request.rawHeaders.length; i += 2) if (request.rawHeaders[i].toLowerCase() === name) values.push(request.rawHeaders[i + 1]);
+        return values;
+      };
+      const hosts = header('host');
+      let authority;
+      try { authority = new URL(`http://${hosts[0]}`); } catch {}
+      if (hosts.length !== 1 || hosts[0] !== request.headers.host || !authority || authority.username || authority.password
+        || authority.pathname !== '/' || authority.search || authority.hash
+        || (hosts[0].toLowerCase() !== authority.host && !(actualPort === 80 && hosts[0].toLowerCase() === `${authority.hostname}:80`))
+        || !allowedHosts.has(authority.hostname) || Number(authority.port || 80) !== actualPort) {
+        return { ok: false, status: 421, code: 'host_rejected' };
+      }
+      const origins = header('origin');
+      if (origins.length > 1 || (origins.length === 1 && (origins[0] !== authority.origin || request.headers.origin !== origins[0]))) {
+        return { ok: false, status: 403, code: 'origin_rejected' };
+      }
+      if (typeof request.url !== 'string' || request.url.length > 8192 || !request.url.startsWith('/')
+        || request.url.startsWith('//') || /[\\#\u0000-\u0020\u007f]/.test(request.url)) return { ok: false, status: 400, code: 'address_rejected' };
+      let url;
+      try { url = new URL(request.url, authority.origin); } catch { return { ok: false, status: 400, code: 'address_rejected' }; }
+      if (url.origin !== authority.origin) return { ok: false, status: 400, code: 'address_rejected' };
+      return { ok: true, origin: authority.origin, scheme: 'http', url };
+    }
+    return {
+      validateRequest,
+      validateUpgrade(request) {
+        if (request.socket.encrypted === true) return tlsPolicy.validateUpgrade(request);
+        const result = validateRequest(request);
+        const count = name => request.rawHeaders.filter((value, i) => i % 2 === 0 && value.toLowerCase() === name).length;
+        return result.ok && request.method === 'GET' && request.url === '/api/realtime/gravity-orchard'
+          && count('origin') === 1 && request.headers.origin === result.origin
+          && count('upgrade') === 1 && request.headers.upgrade?.toLowerCase() === 'websocket'
+          && count('connection') === 1 && request.headers.connection?.split(',').some(value => value.trim().toLowerCase() === 'upgrade');
+      },
+    };
+  }
+  const refreshPolicy = () => { requestPolicy = makePolicy(secureStatus.controllerOrigins); };
+  function setSecureControllerStatus(status) {
+    const statuses = ['disabled', 'needs-setup', 'ready', 'certificate-expired', 'address-mismatch', 'failed'];
+    if (!status || typeof status.enabled !== 'boolean' || !statuses.includes(status.status)
+      || typeof status.requiresPhoneTrust !== 'boolean' || !Array.isArray(status.controllerOrigins)
+      || status.controllerOrigins.length > 32 || (status.status !== 'ready' && status.controllerOrigins.length)
+      || (status.status === 'ready' && (!status.enabled || !status.requiresPhoneTrust))) throw new TypeError('Invalid secure status.');
+    const next = { enabled: status.enabled, status: status.status, requiresPhoneTrust: status.requiresPhoneTrust,
+      controllerOrigins: [...status.controllerOrigins] };
+    if (status.certificateFingerprint !== undefined) {
+      if (!/^(?:[A-Fa-f0-9]{2}:){31}[A-Fa-f0-9]{2}$/.test(status.certificateFingerprint)) throw new TypeError('Invalid secure fingerprint.');
+      next.certificateFingerprint = status.certificateFingerprint;
+    }
+    if (status.validUntil !== undefined) {
+      if (typeof status.validUntil !== 'string' || !Number.isFinite(Date.parse(status.validUntil))) throw new TypeError('Invalid secure validity.');
+      next.validUntil = status.validUntil;
+    }
+    // The actual native-owned listener provides origins; the policy validates
+    // exact local identity, scheme and port before replacing the previous set.
+    const policy = makePolicy(next.controllerOrigins);
+    secureStatus = Object.freeze(next);
+    requestPolicy = policy;
+    return structuredClone(secureStatus);
+  }
+  const orchard = createGravityOrchardHost({ sqlite, DB, enabled: enableGravityOrchard, clock: realtimeClock, seed: realtimeSeed,
+    validateUpgrade: request => !closed && requestPolicy?.validateUpgrade(request) === true,
+    onLifecycle: ({ roomCode }) => {
+      if (!closed) for (const client of streams.get(roomCode) || []) void push(client);
+    },
+  });
+  const effectiveRoomApi = roomApi || orchard.authority;
 
   // The exact same injected authority handles HTTP and every subscriber's GET.
   // Neither this adapter nor a broadcast cache ever sees a full engine state.
   const callApi = request => {
-    const pending = Promise.resolve().then(() => roomApi(request, { DB }));
+    const pending = Promise.resolve().then(() => effectiveRoomApi(request, { DB }));
     pendingApi.add(pending);
     pending.finally(() => pendingApi.delete(pending)).catch(() => {});
     return pending;
@@ -323,8 +409,9 @@ export async function startLanServer({
     if (url.pathname === '/') {
       const currentHost = url.hostname;
       const joinHost = ['localhost', '127.0.0.1', '[::1]'].includes(currentHost) ? (addresses[0] || currentHost) : currentHost;
-      const joinOrigin = `http://${joinHost}:${actualPort}`;
-      const meta = `<meta name="sofa-transport" content="lan"><meta name="sofa-join-origin" content="${escapeAttribute(joinOrigin)}">`;
+      const joinOrigin = url.protocol === 'https:' ? url.origin : `http://${joinHost}:${actualPort}`;
+      const meta = `<meta name="sofa-transport" content="lan"><meta name="sofa-join-origin" content="${escapeAttribute(joinOrigin)}">`
+        + (enableGravityOrchard ? '<meta name="sofa-gravity-orchard" content="candidate">' : '');
       const html = (await readFile(path.join(root, 'ui/index.html'), 'utf8')).replace('</head>', meta + '</head>');
       response.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
       response.end(request.method === 'HEAD' ? undefined : html);
@@ -355,23 +442,12 @@ export async function startLanServer({
     }
   }
 
-  const server = createServer(async (request, response) => {
+  const requestHandler = async (request, response) => {
     try {
-      const suppliedHost = request.headers.host || '';
-      let authority;
-      try { authority = new URL(`http://${suppliedHost}`); } catch {}
-      const hostCount = request.rawHeaders.filter((value, index) => index % 2 === 0 && value.toLowerCase() === 'host').length;
-      const rawHostMatches = authority && (suppliedHost.toLowerCase() === authority.host
-        || (actualPort === 80 && suppliedHost.toLowerCase() === `${authority.hostname}:80`));
-      if (!authority || hostCount !== 1 || !rawHostMatches || authority.username || authority.password
-        || !allowedHosts.has(authority.hostname) || Number(authority.port || 80) !== actualPort) {
-        return respondJson(response, 421, { error: 'Open the local address printed by the game host.' });
-      }
-      const origin = authority.origin;
-      const url = new URL(request.url, origin);
-      if (url.origin !== origin) return respondJson(response, 400, { error: 'Invalid request address.' });
-      const suppliedOrigin = request.headers.origin;
-      if (suppliedOrigin !== undefined && suppliedOrigin !== origin) return respondJson(response, 403, { error: 'Open the controller from this local game host.', code: 'origin_rejected' });
+      if (closed) return respondJson(response, 503, { error: 'The local host is closing.' });
+      const policy = requestPolicy.validateRequest(request);
+      if (!policy.ok) return respondJson(response, policy.status, { error: 'Open the controller from this local game host.', code: policy.code });
+      const { origin, url } = policy;
       const stream = new RegExp(`^/api/rooms/(${ROOM_CODE})/events$`, 'i').exec(url.pathname);
       if (stream) {
         if (request.method !== 'GET') return respondJson(response, 405, { error: 'Use GET for live updates.' });
@@ -394,7 +470,10 @@ export async function startLanServer({
       if (!response.headersSent && !response.destroyed) respondJson(response, error.status || 500, { error: error.status === 413 ? error.message : 'The local host could not serve this request.' });
       else if (!response.destroyed) response.end();
     }
-  });
+  };
+  const server = createServer(requestHandler);
+  const handleUpgrade = (request, socket, head) => orchard.handleUpgrade(request, socket, head);
+  server.on('upgrade', handleUpgrade);
   server.requestTimeout = 15_000;
   server.headersTimeout = 15_000;
   try {
@@ -403,9 +482,15 @@ export async function startLanServer({
       server.listen(port, host, () => { server.off('error', reject); resolve(); });
     });
     actualPort = server.address().port;
-  } catch (error) { sqlite.close(); throw error; }
+    refreshPolicy();
+    await orchard.restoreExisting();
+  } catch (error) {
+    await orchard.close();
+    if (server.listening) await new Promise(resolve => server.close(resolve));
+    sqlite.close(); throw error;
+  }
 
-  return {
+  const api = {
     port: actualPort,
     origin: `http://127.0.0.1:${actualPort}`,
     urls: addresses.map(address => `http://${address}:${actualPort}/`),
@@ -415,11 +500,21 @@ export async function startLanServer({
       closed = true;
       for (const clients of streams.values()) for (const client of [...clients]) { removeClient(client); client.response.end(); }
       closing = (async () => {
-        await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
         await Promise.allSettled([...pendingApi]);
+        await orchard.close();
+        await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
         sqlite.close();
       })();
       return closing;
     },
   };
+  // Capabilities are explicit non-serializable host seams, separate from the
+  // historical public readiness shape (port/origin/urls/databasePath/close).
+  Object.defineProperties(api, Object.fromEntries(Object.entries({
+    requestHandler, handleUpgrade, setSecureControllerStatus,
+    getSecureControllerStatus: () => structuredClone(secureStatus),
+    pauseAllForSystem: reason => orchard.pauseAllForSystem(reason),
+    realtimeDiagnostics: code => orchard.diagnostics(code),
+  }).map(([name, value]) => [name, { value }])));
+  return api;
 }

@@ -2,6 +2,7 @@ use crate::{
     config::{self, Config},
     process::{self, Paths},
     protocol::{self, Record},
+    secure::{self, SecureCommand, SecureControllerStatus, SecureResult},
     termination::{Completion, Coordinator, Request},
 };
 use serde::Serialize;
@@ -36,6 +37,8 @@ struct Status {
     message: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     error_code: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    secure_controller_status: Option<SecureControllerStatus>,
 }
 impl Default for Status {
     fn default() -> Self {
@@ -48,6 +51,7 @@ impl Default for Status {
             generation: 0,
             message: "Opening your local game shelf…",
             error_code: None,
+            secure_controller_status: None,
         }
     }
 }
@@ -56,6 +60,7 @@ enum Control {
     Retry,
     Refresh,
     Shutdown(Sender<Result<(), &'static str>>),
+    Secure(SecureCommand, u64),
 }
 struct Desktop {
     control: Sender<Control>,
@@ -175,11 +180,26 @@ fn reveal_game(app: &tauri::AppHandle, config: &Config) {
         // always open the stable origin and let the shell own resume routing.
         let url = tauri::Url::parse(&format!("http://127.0.0.1:{port}/")).expect("validated loopback origin");
         let on_loaded = on_main.clone();
+        let native_navigation = on_main.clone();
         let window = WebviewWindowBuilder::new(&on_main, "main", WebviewUrl::External(url))
             .title("Sofa Arcade")
             .inner_size(1440.0, 900.0).min_inner_size(800.0, 600.0)
             .visible(false)
-            .on_navigation(move |url| protocol::allowed_game_navigation(url, port))
+            .initialization_script(include_str!("../../native-bridge.js"))
+            .on_navigation(move |url| {
+                if let Some(command) = secure::parse_secure_navigation(url) {
+                    let owned_document = native_navigation.get_webview_window("main")
+                        .and_then(|window| window.url().ok())
+                        .is_some_and(|current| protocol::allowed_game_navigation(&current, port));
+                    let desktop = native_navigation.state::<Desktop>();
+                    let status = desktop.status.lock().expect("status mutex poisoned");
+                    if owned_document && status.state == "ready" && status.generation == generation {
+                        let _ = desktop.control.send(Control::Secure(command, generation));
+                    }
+                    return false;
+                }
+                protocol::allowed_game_navigation(url, port)
+            })
             .on_new_window(|_, _| tauri::webview::NewWindowResponse::Deny)
             .on_download(|_, _| false)
             .on_page_load(move |webview, payload| {
@@ -210,6 +230,8 @@ struct OwnedHost {
     launched: Instant,
     ready: bool,
     refresh_started: Option<Instant>,
+    secure_pending: Option<(SecureCommand, u64, Instant)>,
+    retired_secure_ids: std::collections::VecDeque<String>,
 }
 fn launch(paths: &Paths, port: u16) -> Result<OwnedHost, &'static str> {
     let mut child = process::host_command(paths, port)
@@ -242,7 +264,61 @@ fn launch(paths: &Paths, port: u16) -> Result<OwnedHost, &'static str> {
         launched: Instant::now(),
         ready: false,
         refresh_started: None,
+        secure_pending: None,
+        retired_secure_ids: std::collections::VecDeque::new(),
     })
+}
+
+fn retire_secure_request(owned: &mut OwnedHost) {
+    if let Some((command, _, _)) = owned.secure_pending.take() {
+        if owned.retired_secure_ids.len() == 8 { owned.retired_secure_ids.pop_front(); }
+        owned.retired_secure_ids.push_back(command.id);
+    }
+}
+
+fn reply_secure(app: &tauri::AppHandle, shared: &Arc<Mutex<Status>>, generation: u64, result: &SecureResult) {
+    // WebView getters synchronously dispatch to the main thread. Its navigation
+    // and page-load callbacks also inspect Status, so never retain this lock
+    // across a native WebView call. A retired document cannot consume a result:
+    // its pending request is disposed and every request has a fresh UUID.
+    let port = {
+        let state = shared.lock().expect("status mutex poisoned");
+        if state.state != "ready" || state.generation != generation { return; }
+        state.port
+    };
+    if let Some(window) = app.get_webview_window("main") {
+        if window.url().ok().is_some_and(|url| protocol::allowed_game_navigation(&url, port)) {
+            if let Ok(payload) = serde_json::to_string(result) {
+                let _ = window.eval(&format!("window.__sofaSecureResult?.({payload})"));
+            }
+        }
+    }
+}
+
+/// Save exactly the already-validated public export. The client cannot choose
+/// a path, existing files are never overwritten, and Finder only reveals it.
+fn export_public_trust(app: &tauri::AppHandle, value: &secure::PublicTrust) -> Result<(), &'static str> {
+    use std::{fs::OpenOptions, io::Write};
+    value.validate()?;
+    let directory = app.path().download_dir().map_err(|_| "export unavailable")?;
+    let directory = directory.canonicalize().map_err(|_| "export unavailable")?;
+    for attempt in 0..100 {
+        let name = if attempt == 0 { value.filename.clone() } else { format!("{attempt}-{}", value.filename) };
+        let destination = directory.join(name);
+        let mut options = OpenOptions::new(); options.create_new(true).write(true);
+        #[cfg(unix)] { use std::os::unix::fs::OpenOptionsExt; options.mode(0o600); }
+        match options.open(&destination) {
+            Ok(mut file) => {
+                file.write_all(value.contents.as_bytes()).and_then(|_| file.sync_all()).map_err(|_| "export unavailable")?;
+                #[cfg(target_os = "macos")]
+                { std::process::Command::new("/usr/bin/open").arg("-R").arg(&destination).status().map_err(|_| "export unavailable")?; }
+                return Ok(());
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(_) => return Err("export unavailable"),
+        }
+    }
+    Err("export unavailable")
 }
 
 fn supervisor(
@@ -337,10 +413,26 @@ fn supervisor(
                             Some(owned.child.id()),
                         );
                         retire_game(&app);
+                        retire_secure_request(owned);
                         owned.refresh_started = Some(Instant::now());
                         let _ = process::send(&mut owned.child, b"{\"type\":\"refresh\"}\n");
                     }
                 }
+            }
+            Ok(Control::Secure(command, generation)) => {
+                let current = shared.lock().expect("status mutex poisoned").generation;
+                if let Some(owned) = host.as_mut() {
+                    if owned.ready && owned.refresh_started.is_none() && current == generation && owned.secure_pending.is_none() {
+                        if let Ok(mut bytes) = serde_json::to_vec(&command) {
+                            bytes.push(b'\n');
+                            if bytes.len() <= 256 && process::send(&mut owned.child, &bytes).is_ok() {
+                                owned.secure_pending = Some((command, generation, Instant::now()));
+                                continue;
+                            }
+                        }
+                    }
+                }
+                reply_secure(&app, &shared, generation, &SecureResult::failure(command.id, command.operation));
             }
             Err(mpsc::RecvTimeoutError::Disconnected) => {
                 if let Some(mut owned) = host.take() {
@@ -371,6 +463,7 @@ fn supervisor(
                         }
                         owned.ready = true;
                         owned.refresh_started = None;
+                        shared.lock().expect("status mutex poisoned").secure_controller_status = value.secure_controller_status;
                         if let Some(cfg) = config.as_mut() {
                             remember_location(&app, cfg, &paths);
                             set_status(
@@ -405,6 +498,7 @@ fn supervisor(
                             Some(owned.child.id()),
                         );
                         retire_game(&app);
+                        retire_secure_request(owned);
                         owned.refresh_started = Some(Instant::now());
                         if process::send(&mut owned.child, b"{\"type\":\"refresh\"}\n").is_err() {
                             failure = Some("child_crashed");
@@ -415,6 +509,26 @@ fn supervisor(
                         failure = Some(code);
                         break;
                     }
+                    Ok(Record::Secure(mut value)) => {
+                        if let Some(index) = owned.retired_secure_ids.iter().position(|id| id == &value.id) {
+                            owned.retired_secure_ids.remove(index); continue;
+                        }
+                        let Some((command, generation, _)) = owned.secure_pending.take() else { continue; };
+                        if value.id != command.id || value.operation != command.operation {
+                            failure = Some("invalid_protocol"); break;
+                        }
+                        if let Some(public) = value.public_trust.as_ref() {
+                            if export_public_trust(&app, public).is_err() {
+                                value = SecureResult::failure(command.id, command.operation);
+                            }
+                        }
+                        if let Some(status) = value.status.as_ref() {
+                            shared.lock().expect("status mutex poisoned").secure_controller_status = Some(status.clone());
+                            let status = shared.lock().expect("status mutex poisoned");
+                            let _ = config::atomic_json(paths.data.join("host-status.json"), &*status);
+                        }
+                        reply_secure(&app, &shared, generation, &value);
+                    }
                     Err(_) => {
                         failure = Some("invalid_protocol");
                         break;
@@ -422,6 +536,12 @@ fn supervisor(
                 }
             }
             if failure.is_none() {
+                if owned.secure_pending.as_ref().is_some_and(|(_, _, started)| started.elapsed() > STARTUP_TIMEOUT) {
+                    if let Some((command, generation, _)) = owned.secure_pending.as_ref() {
+                        reply_secure(&app, &shared, *generation, &SecureResult::failure(command.id.clone(), command.operation.clone()));
+                    }
+                    retire_secure_request(owned);
+                }
                 match owned.child.try_wait() {
                     Ok(Some(_)) | Err(_) => {
                         failure = Some("child_crashed");

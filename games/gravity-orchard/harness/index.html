@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gravity Orchard · GO1 Simulation Lab</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span><div><h1>Gravity Orchard</h1><p>GO1 · deterministic simulation lab</p></div></div>
+    <div class="readouts"><span id="stage-label">Morning Delivery</span><strong id="clock">90.0s</strong><span id="phase" class="badge">waiting</span><span class="micro" id="tick">tick 0 · epoch 0</span></div>
+  </header>
+  <nav class="toolbar" aria-label="Simulation controls">
+    <label>Seed <input id="seed" maxlength="80" value="orchard-proof-1"></label>
+    <label>Mode <select id="mode"><option value="campaign">3-stage run</option><option value="practice">Untimed practice</option></select></label>
+    <button id="new-run">New run</button>
+    <span class="divider"></span>
+    <button id="ready-jon" class="jon">Jon ready</button>
+    <button id="ready-lydia" class="lydia">Lydia ready</button>
+    <button id="pause">Pause</button>
+    <button id="retry">Retry stage</button>
+    <label class="toggle"><input type="checkbox" id="demo">Route demo</label>
+    <button id="help" aria-expanded="false">Keys / help</button>
+  </nav>
+  <main>
+    <section class="board-panel" aria-label="Orchard simulation">
+      <div class="board-legend"><span><i class="swatch jon-bg"></i>Jon's force</span><span><i class="swatch lydia-bg"></i>Lydia's force</span><span><i class="swatch line"></i>Collision bounds</span><span><i class="swatch gold"></i>Route / contacts</span><span id="world-count">0 / 8 fruit</span></div>
+      <div class="canvas-wrap"><canvas id="board" width="1280" height="720" role="img" aria-label="Live orchard board with fruit, baskets, force arrows and collision outlines"></canvas></div>
+      <div id="notice" role="status" aria-live="polite">Both gardeners ready to start. Use keyboard or the route demonstration.</div>
+    </section>
+    <aside aria-label="Engine diagnostics">
+      <section class="card recipe"><div class="card-heading"><h2>Picnic orders</h2><span id="orders-count">0 / 4</span></div><div id="active-recipe"></div><div id="next-recipes"></div></section>
+      <section class="card"><div class="card-heading"><h2>Basket buffers</h2><span>cap 3</span></div><div id="buffers" class="buffers"></div></section>
+      <section class="card"><div class="card-heading"><h2>Controls & forces</h2><span>60 Hz</span></div><div id="controls"></div><div id="hazard"></div></section>
+      <section class="card telemetry"><div class="card-heading"><h2>Tick work</h2><span id="physics-bound">bounded</span></div><div id="work"></div><div id="result"></div></section>
+      <section class="card events"><div class="card-heading"><h2>Recent events</h2><span id="event-count">0</span></div><ol id="events"></ol></section>
+    </aside>
+  </main>
+  <footer><span><b>Jon</b> W A S D · hold Space to Brake</span><span><b>Lydia</b> arrow keys · hold Shift to Brake</span><span>P pause · R ready both · diagnostic art, real rules</span></footer>
+  <dialog id="help-dialog"><h2>Two trays, one picnic</h2><p>Each gardener steers every fruit on their own tray. Cross the bridge together, and guide each fruit into its matching basket. A full or wrong basket bounces it back.</p><dl><dt>Jon</dt><dd>W A S D steer, Space brakes</dd><dt>Lydia</dt><dd>Arrow keys steer, either Shift brakes</dd><dt>Run</dt><dd>R readies both seats; P requests a shared pause. Readying both resumes after a countdown.</dd></dl><p>Route demo submits only ordinary normalized controls to the real engine. It cannot place fruit, bypass collisions, choose the future supply or award points. The gold path is a controller plan; the board and counters are authoritative.</p><p>Dashed outlines show collision radii. Small gold contact marks show recent actual wall hits. The bridge shades blend the two force fields. All diagnostic files stay outside the production runtime.</p><button id="close-help">Back to the orchard</button></dialog>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

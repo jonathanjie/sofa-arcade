@@ -1,0 +1,217 @@
+# GO7 — Gravity Orchard collection integration and acceptance
+
+## Candidate status
+
+Integration branch: `feature/gravity-orchard-integration`. Fetched `main` base:
+`6c6eb9343958da591b4488366c2ada4000e3ba08`. The branch uses an isolated worktree.
+All six reviewed component heads are preserved as ancestors; none of their PRs
+has been merged or rewritten by GO7. The catalog remains **planned** while the
+rendered and actual macOS gates run. This report records implementation and
+checkpoints honestly; passing a component fixture is not final native acceptance.
+
+The exact committed candidate is recorded in every workflow checkout, artifact
+name, browser report and native `tested-commit.txt`. The integration PR identifies
+the latest tested head and links its CI runs. Working-tree diagnostic measurements
+below are explicitly distinguished from final committed CI evidence.
+
+## Reviewed components and dependency order
+
+| Stream | PR | Exact tested head | Owner CI inspected |
+| --- | --- | --- | --- |
+| GO1 simulation and stages | [#15](https://github.com/jonathanjie/sofa-arcade/pull/15) | `5aa3b0ec090b373e41526cebee0d5a4a729cea52` | 44779385753, passed |
+| GO2 realtime coordinator/client | [#12](https://github.com/jonathanjie/sofa-arcade/pull/12) | `a5ff02c61ad84808d07a38b1e6d346b7f0b45683` | 44777922848, passed |
+| GO3 phone motion/touch | [#11](https://github.com/jonathanjie/sofa-arcade/pull/11) | `7adf500e435cfcf4589150f2852622be8731a647` | 44778154482, passed |
+| GO4 TV/tutorial | [#14](https://github.com/jonathanjie/sofa-arcade/pull/14) | `76b2a529d35fe8eb9415d5f2cff28d72c0b1e82c` | 44779164338, passed |
+| GO5 final art/composed score | [#13](https://github.com/jonathanjie/sofa-arcade/pull/13) | `1bdd9c4ee9d6ab2712ea34f48662b77b6f946c77` | 44782268391, passed |
+| GO6 trusted local HTTPS/WSS | [#16](https://github.com/jonathanjie/sofa-arcade/pull/16) | `33d36dc15f7174dec2066e4144b3f07c551fbc4f` | 44780325601, passed, including both Mac targets |
+
+Review/merge the component PRs first, preferably GO1 then GO2–GO6 in reviewed
+order, and GO7 last. The integration branch assembles those immutable commits
+without changing `main`. Reconcile any newer `main` deliberately before merge.
+The machine-checked lock is `tests/gravity-orchard-integration/components.json`.
+
+The GO6 owner correctly reported an inherited WS5 checkpoint failure in run
+44780326031: the legacy lock protected the entire desktop tree, so its 29 new
+GO6 files needed explicit records. GO7 records each original GO6 blob in the WS5
+correction array while preserving the original WS5 head and verifier. Shared
+server/native changes also have exact path/blob/mode/reason/verification records
+in `tests/integration/components.json`; the legacy gate is not bypassed.
+
+## Integrated authority and lifecycle
+
+`server/gravity-orchard-host.mjs` composes the actual GO1 simulation and GO2
+coordinator with the existing room authority and SQLite connection. Its only
+new durable table, `sofa_gravity_checkpoints`, lives in the existing room database.
+A saved checkpoint and its coarse room row commit in one SQLite transaction.
+Continuous input and ticks stay in memory. The existing turn-based action path
+rejects realtime actions rather than translating every sample into a CAS write.
+
+`createRoomApi().authorizeRealtime` is a non-enumerable server-only capability.
+It reuses existing credential hash comparison, expiry and authenticated roles;
+it never treats a projected room GET or a claimed actor as socket ownership.
+Unknown/cross-room credentials and host steering fail. Bearers remain in the
+first bounded WebSocket authentication message, never URL, QR, subprotocol or
+readiness data. The original HTTP/SSE/private council projections remain intact.
+
+GET and each authenticated SSE subscriber project the coordinator's current
+public view, rather than a second simulation. Bounded durable transitions update
+room revision/phase and notify coarse listeners. Restoration occurs before socket
+acceptance, pauses the saved run and fences the old epoch. Invalid checkpoints
+fail closed for that orchard while existing games remain available. Shutdown
+pauses active runs, drains writes and closes the owned coordinator before SQLite.
+
+HTTP/WS and optional HTTPS/WSS use the same `requestHandler` and `handleUpgrade`.
+Host and Origin validation uses the actual socket's encrypted state; forwarded
+headers do not confer trust. HTTP compatibility is retained without accepting
+duplicate/spoofed Host/Origin or cross-origin upgrades. Secure origins are exact,
+validated local HTTPS origins advertised by the owned native listener.
+
+## Collection, views, audio and disposal
+
+`ui/games/gravity-orchard/index.mjs` owns one authenticated realtime client for
+each mounted view. It mounts GO3 phones or GO4 TV with public geometry/projections,
+passes presence separately, survives rematches without accumulating listeners,
+and disposes inputs, sockets, presentation and pending effects on navigation.
+Late HTTP/SSE completion cannot rewind the realtime stream.
+
+The bridge maps GO5's final manifest and character-state records to GO4's atlas
+interface, resolves basket art and crops the phone portrait to an authored idle
+frame. The final cover appears in the shared catalog. Practice creates an untimed
+run on the same authority for two phones. Tutorial fixtures remain isolated;
+live Help/recenter first pause the shared run and cannot resume it alone.
+
+All music uses the existing shared scheduler and saved preferences. The GO5
+score is selected only for the host; phones start quiet. Stable event identities,
+canonical cooldowns and cue priority avoid replaying a backlog after pause or
+rematch. The existing collection menu and both earlier game scores remain.
+
+## Host-only trusted-access setup
+
+The native main WKWebView receives only `sofaDesktopSecureLan` with four bounded
+operations: status, provision, public trust export and removal. Native navigation
+messages require the owned main window, validated loopback origin, current host
+generation and exact schema. They travel over the owned child's inherited pipe.
+No phone-accessible provisioning endpoint or general Tauri/filesystem permission
+is registered. A public root/profile export is validated and exclusively written
+as a new Downloads file; arbitrary paths/private keys are not exported.
+
+GO6 certificate storage remains per-installation and protected. Explicit enable
+and disable survive relaunch; status distinguishes expiry and changed addresses.
+Both listeners share lifecycle/refresh and owned-process Quit. The stable HTTP
+loopback origin remains the native document origin and saved-room authority.
+The existing AppKit Quit retirement/acknowledgment is preserved.
+
+Readiness stays bounded to 4 KiB and validates the additive safe status. A separate
+16 KiB bound covers only public-export IPC replies. Browser setup code is served
+at `/secure-lan/setup.mjs` plus its stylesheet; the diagnostic is
+`/secure-lan/diagnostic`. Merely serving that UI does not provide its native
+callbacks to phones. Phone trust remains an explicit manual choice.
+
+## Runtime and delivery inventory
+
+Pinned root production dependencies: `ws@8.23.0`, `@peculiar/x509@3.1.0` and
+`reflect-metadata@0.2.2`. `scripts/bundle-runtime.mjs` uses pinned
+`esbuild@0.28.0` to assemble reviewed GO2/GO6 sources and their **19-package**
+closure into `server/runtime/gravity-orchard-dependencies.mjs`.
+`dependency-inventory.json` records every source hash, version, integrity and
+license; `THIRD-PARTY-LICENSES.txt` retains notices. Only Node built-ins are
+required at runtime. Optional `ws` native accelerators are not shipped or needed.
+There is no startup download/npm install, external OpenSSL/mkcert or private key
+inside the delivered application.
+
+The common explicit map in `server/gravity-orchard-delivery.mjs` declares 33 new
+browser files, 50 final media assets and the private host closure. It feeds the
+LAN and generated/portable inventories. `desktop/runtime-manifest.json` contains
+the combined 198-file runtime at this checkpoint. The compiled native bridge is
+not a browser/static resource. Authoring sources, fixtures, screenshots, test
+drivers, private simulation/checkpoint files and certificates are never public.
+
+The previous native staging regex mistook a third-party diagnostic string
+containing `import "reflect-metadata"` for a dependency. Staging now uses pinned
+development-only `acorn@8.16.0` to inspect actual JavaScript syntax, preserves
+the two existing bounded dynamic import seams, and rejects other nonliteral
+imports. This parser does not enter the player runtime. The legacy public-delivery
+test has six exact exceptions for GO6's reviewed browser-only files under desktop;
+native code and certificate capabilities remain excluded.
+
+## Automated acceptance and current checkpoint
+
+| Gate | Initial integrated working-tree result |
+| --- | --- |
+| GO7 protocol/UI/native host/package suites | 28 passed, zero skipped |
+| Existing root rules/rooms/LAN/controller/music | 81 passed |
+| Existing portable delivery/source closure | 5 passed |
+| Production build and public inventory | Passed; 182 declared public files |
+| Rust non-GUI protocol/configuration/Quit | 20 passed |
+| Rendered collection TV + two phone contexts | CI gate; local Chromium blocked before page load by AF_UNIX restrictions |
+| Actual packaged macOS ARM64 and Intel | Separate CI gates; Linux is not native evidence |
+
+The real-rate, real-socket three-stage diagnostic completed 12/12 orders, 9/9
+stars, zero compost, and nine transfers in each direction using unchanged GO1
+public-only pilot controls and seed `orchard-proof-1`. No teleport, state/score
+setter, altered deadline or simulation rate was used. Active stage times were
+41.48 / 41.32 / 39.67 seconds; total wall time was 132.02 seconds. It processed
+5,180 accepted inputs and 36 lifecycle/periodic checkpoint writes, with no store
+errors or host stalls. Two tick overruns and two skipped catch-up ticks were
+recorded. ACK RTT p95 was approximately 50.28 / 50.60 ms for the two clients.
+These numbers describe a **dirty-source localhost diagnostic**, not the final
+head, one-way latency, physical phones, home Wi-Fi or casting. CI reruns the
+measurement at the committed candidate and publishes the exact report.
+
+Protocol tests also exercise shared verified TLS/WS/WSS, wrong credentials and
+origins, stale observed ticks/epochs, controller replacement, lost command ACK,
+reliable replay, rematches, host stall, checkpoint restore/schema rejection,
+live HTTP/SSE agreement and no per-input SQLite write. The extracted portable
+test runs certificate generation and both listeners with no installed runtime
+packages, verifies source bytes and rejects private canary routes.
+
+The new workflow runs strict old/new component locks, Node 22.13/24.22 suites,
+all six owned component suites, real rendered campaign and both actual macOS
+WKWebView targets. Existing workflows retain old-game/private-vote/menu-audio
+journeys and production app/DMG builds. Artifacts retain exact source, viewport,
+screenshots, rates/RTT/overrun methods and native lifecycle results.
+
+### Reproduce
+
+```sh
+npm run install:ci
+npm ci --prefix desktop --ignore-scripts
+node scripts/bundle-runtime.mjs --check
+npm test
+npm run test:gravity-orchard
+npm run verify:gravity-components
+npm run verify:components
+SOFA_GO7_EVIDENCE_DIR=/tmp/go7-evidence node tests/gravity-orchard-integration/protocol/campaign.mjs
+node tests/gravity-orchard-integration/protocol/measure.mjs --out=/tmp/go7-evidence/transport.json
+npx playwright install --with-deps chromium
+SOFA_GO7_EVIDENCE_DIR=/tmp/go7-browser npm run test:gravity-browser
+node scripts/prepare-game.mjs
+npm run package:lan
+node scripts/check-derived.mjs
+npm run build
+node tests/integration/package/production.mjs
+```
+
+For an actual matching-architecture Mac, build the instrumented acceptance app
+with `npm --prefix desktop run build:native:arm64` (or `:intel`), then run
+`tests/gravity-orchard-integration/native/run.mjs` with `SOFA_APP_PATH` pointing
+to that `.app`. Production builds use separate `build:mac:*` scripts and exclude
+the native test driver. The native suite requires three real owned app processes,
+saved state/credential recovery, explicit exit surviving a stale native URL,
+and normal Quit stopping the parent, sidecar and both listener ports.
+
+## Remaining physical/device gates
+
+| Gate | Evidence still required |
+| --- | --- |
+| iOS Safari | Manual root/profile installation and full trust; fingerprint check; no-warning HTTPS/WSS; gesture permission; finite physical readings; orientation/recenter, denial/revocation, lock/background/reconnect |
+| Android Chrome | Same checks using Android certificate settings and actual browser/version; do not infer from Node TLS |
+| Certificates | Physical wrong-root, expired, address-mismatched and changed-LAN behavior; removal from each phone |
+| Offline cold start | Installed Mac app and both configured phones, WAN disconnected before launch; no developer Node/Terminal/install required |
+| Home Wi-Fi and TV | Measured physical phone input, real network loss/roaming, casting/display delay, speakers and human comfort |
+| Human game acceptance | Seated tilt/touch comfort, cooperative difficulty, visible silhouettes and practical 6–10 minute session |
+
+Synthetic orientation events, numerical audio renders and CI screenshots do not
+establish those gates. CI bundles are ad-hoc signed; notarization/downloaded-app
+Gatekeeper acceptance is separate distribution work. No Site deployment, Pages
+migration, public desktop release, automatic trust change or self-merge occurred.

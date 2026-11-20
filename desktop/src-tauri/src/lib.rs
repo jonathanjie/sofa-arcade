@@ -4,5 +4,6 @@ pub mod config;
 pub mod native;
 pub mod process;
 pub mod protocol;
+pub mod secure;
 #[cfg(any(feature = "native", test))]
 pub(crate) mod termination;

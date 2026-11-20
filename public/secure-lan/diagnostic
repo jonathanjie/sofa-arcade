@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Phone motion check · Gravity Orchard</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/secure-lan/diagnostic.css">
+  <script type="module" src="/secure-lan/diagnostic-page.mjs"></script>
+</head>
+<body>
+  <main class="go6-diagnostic">
+    <p class="eyebrow">Gravity Orchard / Phone check</p>
+    <h1>A gentle tilt.<br>A clear check.</h1>
+    <p class="intro">Run this on each phone after trusting your Mac’s public certificate. No readings leave this page.</p>
+    <div class="probe-art" aria-hidden="true"><div class="probe-phone"><span>✦</span></div><span class="probe-dot"></span></div>
+    <p id="probe-status" class="status" role="status" aria-live="polite">Checking this page…</p>
+    <dl class="checks">
+      <div><dt>HTTPS page loaded</dt><dd id="https-state">Not checked</dd></div>
+      <div><dt>Secure context</dt><dd id="context-state">Not checked</dd></div>
+      <div><dt>Motion permission</dt><dd id="permission-state">Not requested</dd></div>
+      <div><dt>Finite motion samples</dt><dd id="sample-state">None yet</dd></div>
+    </dl>
+    <button id="start-probe" type="button">Check motion on this phone</button>
+    <button id="stop-probe" type="button" class="secondary">Stop checking</button>
+    <p id="evidence" class="evidence">Browser check · no simulated readings</p>
+    <p class="help">Hold the phone comfortably and tilt a little. If no readings arrive, keep using touch. Permission and certificate settings vary by phone and browser.</p>
+    <details><summary>What this check can tell you</summary><p>HTTPS loading and a secure context are separate checks. This page cannot read your phone’s trust settings or verify whether someone bypassed a certificate warning. Always open it without bypassing warnings. Finite browser events show data reached this page; synthetic tests and desktop browsers do not prove a physical phone works.</p><p>If trust is missing, return to the Mac’s trusted-access setup. Do not continue past a certificate warning. On ordinary local HTTP, choose touch controls.</p></details>
+    <a href="/" class="return-link">Return to Sofa Arcade</a>
+  </main>
+</body>
+</html>

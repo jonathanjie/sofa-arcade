@@ -35,6 +35,37 @@ and join both seats there. Secure controller recovery across a changed origin
 is a shared platform/UI integration request. The Mac's loopback origin and
 saved room state remain stable.
 
+## Optional trusted local access
+
+The Gravity Orchard integration adds **Trusted phone access** inside the native
+host. Ordinary HTTP remains available for complete touch controls. Setup creates
+this installation's certificate material in private application data and starts
+one additional HTTPS/WSS listener around the existing room database and realtime
+coordinator. The Mac window continues using its stable loopback HTTP origin.
+
+Use setup before joining a room from the phones. Exporting the public root or
+Apple profile creates a new file in **Downloads** and reveals it in Finder.
+Transfer that public file to each phone, compare the displayed fingerprint, and
+follow the explicit phone trust instructions. The app never installs trust or
+exports a private key. A ready host listener does not establish phone trust,
+motion permission or usable sensor readings. Keep touch available until each
+phone's diagnostic succeeds without a certificate warning.
+
+**Turn trusted access off** persists across relaunch and keeps the root for
+later use. **Remove this installation's certificates** also deletes the local
+material; remove the matching profile/root on each phone separately. A changed
+LAN address requires an explicit certificate refresh. The native host alone has
+these setup capabilities; no phone HTTP route accepts provisioning or export
+commands, paths or native operations.
+
+The integration's actual WKWebView acceptance runner is
+`node tests/gravity-orchard-integration/native/run.mjs`, with `SOFA_APP_PATH`
+pointing to the separate `native-e2e` build. It requires the root's locked test
+dependencies and `desktop` WebDriver tooling. That build exposes the planned
+game as an explicit integration candidate; production builds do not inherit
+the test flag. Physical iOS/Android trust and motion, home Wi-Fi, casting and
+WAN-disconnected cold startup remain separate checks.
+
 ## Build requirements
 
 - A matching native Mac: Apple Silicon for `aarch64-apple-darwin`, or an Intel

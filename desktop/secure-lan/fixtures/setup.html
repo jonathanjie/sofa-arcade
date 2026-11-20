@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>GO6 setup fixture · Sofa Arcade</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/secure-lan/setup.css">
+  <script type="module" src="/secure-lan/fixture.mjs"></script>
+</head>
+<body class="go6-fixture-shell">
+  <div class="go6-fixture-toolbar">
+    <strong>GO6 component fixture · simulated host operations</strong>
+    <label>Show state <select id="fixture-state">
+      <option value="initial">Initial setup</option>
+      <option value="ready">Host ready</option>
+      <option value="missing-trust">Missing phone trust</option>
+      <option value="permission-denied">Permission denied</option>
+      <option value="expired">Certificate expired</option>
+      <option value="address-changed">Address changed</option>
+      <option value="failed">Setup failed / retry</option>
+      <option value="disabled">Trusted access disabled</option>
+    </select></label>
+  </div>
+  <main id="setup-root"></main>
+  <section class="go6-fixture-probes" aria-label="Simulated phone check examples">
+    <h2>Simulated phone checks</h2>
+    <p id="jon-probe"></p>
+    <p id="lydia-probe"></p>
+    <small>Illustrative states only. These are not device probes. Open the diagnostic page on the actual phone over trusted HTTPS to check it.</small>
+  </section>
+  <p class="go6-fixture-note">UI fixture only. Setup, disable, removal, and replacement are safe in-memory stubs. A public export, when enabled by the fixture server, contains that server’s temporary public root only. HTTP screenshots do not prove phone trust or motion support.</p>
+</body>
+</html>

@@ -39,6 +39,10 @@ pub fn host_command(paths: &Paths, port: u16) -> io::Result<Command> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
+    // A candidate is reachable only in the explicit instrumented acceptance
+    // build until GO7 enables the ordinary production catalog after its gates.
+    #[cfg(feature = "native-e2e")]
+    command.arg("--gravity-orchard-candidate");
     Ok(command)
 }
 

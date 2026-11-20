@@ -121,7 +121,7 @@ async function loadRoom(db, code) {
  * serve HTTP and each authenticated SSE subscriber; never cache a shared view.
  * Resolvers are server configuration, never fields supplied by a request.
  */
-export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEngine } = {}) {
+export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEngine, realtime = null } = {}) {
   if (typeof resolveGame !== 'function' || typeof resolveEngine !== 'function') {
     throw new TypeError('Room engine resolvers must be functions.');
   }
@@ -129,6 +129,13 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
   function adapter(gameId) {
     const engine = resolveEngine(gameId);
     if (!engine) throw new ApiError(409, 'This game is not available yet.', 'game_not_available');
+    if (engine.realtime === true) {
+      if (gameId !== 'gravity-orchard' || !realtime
+        || ['startRoom', 'ensureRoom', 'getPublicView'].some(method => typeof realtime[method] !== 'function')) {
+        throw new ApiError(409, 'Open this game on the local Sofa Arcade host.', 'local_host_required');
+      }
+      return { engine, legacy: false, realtime: true };
+    }
     // This exact, already-public adapter is the sole compatibility exception. New
     // games cannot silently fall back to returning their complete authority state.
     const legacy = gameId === SOFA_GAME_ID && engine === getGameEngine(SOFA_GAME_ID)
@@ -146,10 +153,14 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     const gameId = room.data.gameId || SOFA_GAME_ID;
     let state = null;
     if (room.data.state !== null) {
-      const { engine, legacy } = adapter(gameId);
+      const { engine, legacy, realtime: isRealtime } = adapter(gameId);
       const fullState = structuredClone(room.data.state);
-      const projected = legacy ? fullState : engine.project(fullState, Object.freeze({ ...viewer }));
-      if (!projected || typeof projected !== 'object' || Array.isArray(projected)) throw new Error('Invalid game projection.');
+      const projected = isRealtime ? realtime.getPublicView(room.code, { role: viewer.role, playerId: viewer.playerId || null })
+        : legacy ? fullState : engine.project(fullState, Object.freeze({ ...viewer }));
+      if (!projected || typeof projected !== 'object' || Array.isArray(projected)) {
+        if (isRealtime) throw new ApiError(503, 'The local harvest is recovering. Reconnect to the host.', 'realtime_unavailable');
+        throw new Error('Invalid game projection.');
+      }
       // Return JSON data only, with no aliases to authority or another viewer.
       state = JSON.parse(JSON.stringify(projected));
     }
@@ -157,7 +168,7 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       code: room.code,
       gameId,
       revision: room.revision,
-      phase: room.data.phase,
+      phase: gameId === 'gravity-orchard' && state ? (state.phase === 'finished' ? 'finished' : 'playing') : room.data.phase,
       state,
       players: Object.fromEntries(PLAYER_IDS.map(id => {
         const lastSeen = Number(room[`${id}_seen`]) || 0;
@@ -227,12 +238,22 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     if (typeof gameId !== 'string' || !resolveGame(gameId)) {
       throw new ApiError(400, 'Choose a game from the collection.', 'invalid_game');
     }
-    adapter(gameId);
+    const selected = adapter(gameId);
+    let options;
+    if (selected.realtime) {
+      options = body.options === undefined ? { mode: 'campaign' } : body.options;
+      if (!options || typeof options !== 'object' || Array.isArray(options)
+        || Object.keys(options).some(key => key !== 'mode') || !['campaign', 'practice'].includes(options.mode)) {
+        throw new ApiError(400, 'Choose a harvest run or practice.', 'invalid_options');
+      }
+      options = { mode: options.mode };
+    }
     const hostToken = randomToken();
     const data = {
       gameId,
       hostHash: await sha256(hostToken), seats: { jon: null, lydia: null },
       phase: 'lobby', state: null, recentActions: [],
+      ...(options ? { options } : {}),
     };
     for (let attempt = 0; attempt < 8; attempt++) {
       const code = randomCode();
@@ -285,6 +306,14 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       const room = await loadRoom(db, code);
       const auth = await authenticate(request, room);
       requireHost(auth);
+      if ((room.data.gameId || SOFA_GAME_ID) === 'gravity-orchard') {
+        adapter('gravity-orchard');
+        if (rematch) throw new ApiError(409, 'Use the connected TV to choose a new harvest.', 'realtime_required');
+        if (!PLAYER_IDS.every(id => room.data.seats[id])) throw new ApiError(409, 'Both phones need to join before the game can start.', 'players_required');
+        try { await realtime.startRoom({ roomCode: code, matchId: randomToken(), seed: `${code}-${randomToken().slice(0, 10)}`, options: room.data.options }); }
+        catch { throw new ApiError(503, 'The local harvest could not start. Reconnect to the host.', 'realtime_unavailable'); }
+        return json(envelope(await loadRoom(db, code), auth));
+      }
       if (!rematch && room.data.phase === 'playing') return json(envelope(room, auth));
       if (rematch && room.data.phase !== 'finished') throw new ApiError(409, 'Finish this game before starting a rematch.', 'game_not_finished');
       if (!rematch && room.data.phase === 'finished') throw new ApiError(409, 'Choose rematch to play another game.', 'game_finished');
@@ -411,6 +440,7 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     // Authenticate before invoking the engine, including its normalization code.
     requirePlayer(await authenticate(request, room));
     const selected = adapter(room.data.gameId || SOFA_GAME_ID);
+    if (selected.realtime) throw new ApiError(409, 'Use the connected controller for this game.', 'realtime_required');
     const { engine, legacy } = selected;
     const { action, actionKey } = normalizeAction(selected, body.action);
     for (let attempt = 0; attempt <= MAX_ACTION_ATTEMPTS; attempt++) {
@@ -464,7 +494,7 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
   }
 
   /** Handles /api/rooms and its room routes. The caller supplies an existing D1 binding. */
-  return async function handleApi(request, env) {
+  async function handleApi(request, env) {
     try {
       const url = new URL(request.url);
       const path = url.pathname.replace(/\/$/, '');
@@ -488,6 +518,12 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       if (request.method === 'GET') {
         let room = await loadRoom(db, code);
         const auth = await authenticate(request, room);
+        if (room.data.gameId === 'gravity-orchard' && room.data.state !== null) {
+          adapter('gravity-orchard');
+          try { await realtime.ensureRoom(code); }
+          catch { throw new ApiError(503, 'The local harvest is recovering. Reconnect to the host.', 'realtime_unavailable'); }
+          room = await loadRoom(db, code);
+        }
         if (auth.role === 'player') room = await heartbeat(db, room, auth.playerId);
         return json(envelope(room, auth));
       }
@@ -499,7 +535,23 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       if (error instanceof ApiError) return json({ error: error.message, code: error.code }, error.status);
       return json({ error: 'The room could not be updated. Please try again.', code: 'server_error' }, 500);
     }
-  };
+  }
+
+  // Server-only capability: a projected GET is never proof of a socket seat.
+  // Reuse the exact expiry and bearer-hash checks, then return no stored data.
+  Object.defineProperty(handleApi, 'authorizeRealtime', { value: async ({ roomCode, bearer }, env) => {
+    try {
+      if (!env?.DB || !CODE_PATTERN.test(roomCode) || !TOKEN_PATTERN.test(bearer)) return null;
+      const room = await loadRoom(env.DB, roomCode);
+      if (room.data.gameId !== 'gravity-orchard' || room.data.state === null) return null;
+      adapter('gravity-orchard');
+      const viewer = await authenticate(new Request('http://localhost/', { headers: { Authorization: `Bearer ${bearer}` } }), room);
+      if (viewer.role === 'public') return null;
+      if (viewer.role === 'player') await heartbeat(env.DB, room, viewer.playerId);
+      return Object.freeze({ role: viewer.role, playerId: viewer.playerId || null });
+    } catch { return null; }
+  } });
+  return handleApi;
 }
 
 /** Production entry point retained for existing Worker, LAN, and Tauri callers. */

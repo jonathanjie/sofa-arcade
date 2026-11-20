@@ -1,0 +1,104 @@
+name: GO1 Gravity Orchard engine
+
+on:
+  pull_request:
+    paths:
+      - 'games/gravity-orchard/**'
+      - '.github/workflows/go1-engine.yml'
+      - 'docs/workstreams/gravity-orchard-go1.md'
+      - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
+      - 'docs/games/gravity-orchard.md'
+  push:
+    branches: [feature/gravity-orchard-engine]
+    paths:
+      - 'games/gravity-orchard/**'
+      - '.github/workflows/go1-engine.yml'
+      - 'docs/workstreams/gravity-orchard-go1.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go1-engine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Engine, physics, authority, recovery, public fixtures and real input routes
+        run: node --test games/gravity-orchard/tests/*.test.mjs
+      - name: Verify canonical public fixtures
+        run: node games/gravity-orchard/tests/generate-fixtures.mjs --check
+      - name: Exhaustive inventory proof
+        run: node games/gravity-orchard/checks/inventory.mjs --out games/gravity-orchard/.evidence/inventory.json
+      - name: Preserve actual input transcripts and path coverage
+        run: node games/gravity-orchard/validation/run-routes.mjs --output=games/gravity-orchard/.evidence/routes
+      - name: Measure bounded eight-fruit engine workload
+        run: node games/gravity-orchard/checks/benchmark.mjs --out games/gravity-orchard/.evidence/benchmark.json
+      - name: Preserve engine evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: go1-engine-node-${{ matrix.node }}
+          path: games/gravity-orchard/.evidence/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  graphical-harness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: games/gravity-orchard/harness/package-lock.json
+      - name: Install locked diagnostic browser dependency
+        run: npm ci --prefix games/gravity-orchard/harness
+      - name: Install Chromium for the isolated browser test
+        run: node games/gravity-orchard/harness/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Exercise keyboard, rendered three-stage campaign, hazards, pause and practice
+        env:
+          GO1_BROWSER_EVIDENCE: games/gravity-orchard/.evidence/browser
+        run: node games/gravity-orchard/harness/browser-check.mjs
+      - name: Preserve rendered screenshots and browser report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: go1-graphical-harness
+          path: games/gravity-orchard/.evidence/browser/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  collection-regression-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Preserve both existing games and room behavior
+        run: |
+          npm test
+          node --test games/odd-laws-society/tests/*.test.mjs
+      - name: Install existing locked framework dependencies
+        run: npm run install:ci
+      - name: Production build without enabling Gravity Orchard
+        run: npm run build

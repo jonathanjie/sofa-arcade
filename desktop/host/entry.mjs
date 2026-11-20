@@ -3,15 +3,18 @@ import path from 'node:path';
 import { mkdir, realpath, lstat } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { networkInterfaces } from 'node:os';
-import { createHostLifecycle, createRefreshGate, networkFingerprint, refreshReason, MAX_RECORD_BYTES, MAX_COMMAND_BYTES, PROTOCOL_VERSION } from './lifecycle.mjs';
+import { createHostLifecycle, createRefreshGate, networkFingerprint, refreshReason, MAX_RECORD_BYTES, MAX_SECURE_RECORD_BYTES, MAX_COMMAND_BYTES, PROTOCOL_VERSION } from './lifecycle.mjs';
+import { attachNativeSecureLan, validateSecureCommand } from './secure-lan.mjs';
 
 function emit(record) {
   const text = JSON.stringify(record) + '\n';
-  if (Buffer.byteLength(text) > MAX_RECORD_BYTES) throw new Error('Oversized protocol message.');
+  if (Buffer.byteLength(text) > (record.type === 'secure-result' ? MAX_SECURE_RECORD_BYTES : MAX_RECORD_BYTES)) throw new Error('Oversized protocol message.');
   process.stdout.write(text);
 }
 
 function argumentsFrom(args) {
+  const enableGravityOrchard = args.at(-1) === '--gravity-orchard-candidate';
+  if (enableGravityOrchard) args = args.slice(0, -1);
   if (args.length !== 6) throw new Error('Invalid arguments.');
   const values = {};
   for (let index = 0; index < args.length; index += 2) {
@@ -22,7 +25,7 @@ function argumentsFrom(args) {
   if (!path.isAbsolute(values['--root'] || '') || !path.isAbsolute(values['--database'] || '') || !/^\d{1,5}$/.test(values['--port'] || '')) throw new Error('Invalid arguments.');
   const port = Number(values['--port']);
   if (port < 0 || port > 65535) throw new Error('Invalid port.');
-  return { root: values['--root'], databasePath: values['--database'], port, host: '0.0.0.0' };
+  return { root: values['--root'], databasePath: values['--database'], port, host: '0.0.0.0', ...(enableGravityOrchard ? { enableGravityOrchard: true } : {}) };
 }
 
 let lifecycle;
@@ -70,6 +73,14 @@ process.stdin.on('data', chunk => {
     const line = input.slice(0, index); input = input.slice(index + 1);
     let command;
     try { command = JSON.parse(line); } catch { emitFailure(null, true); void stop(1); return; }
+    if (command?.type === 'secure') {
+      try { validateSecureCommand(command); } catch { emitFailure(null, true); void stop(1); return; }
+      const reply = { type: 'secure-result', protocolVersion: PROTOCOL_VERSION, id: command.id, operation: command.operation };
+      void lifecycle?.secureCommand(command.operation, command.options).then(result => {
+        if (!stopping) emit({ ...reply, ok: true, ...result });
+      }).catch(() => { if (!stopping) emit({ ...reply, ok: false, code: 'secure_operation_failed' }); });
+      continue;
+    }
     if (!command || Object.keys(command).length !== 1 || !['shutdown', 'refresh'].includes(command.type)) { emitFailure(null, true); void stop(1); return; }
     if (command.type === 'shutdown') void stop();
     else void refreshGate?.acknowledge().catch(error => { emitFailure(error); void stop(1); });
@@ -95,7 +106,12 @@ if (options && !stopping) {
     try { if ((await lstat(options.databasePath)).isSymbolicLink()) throw new Error('Database cannot be a symlink.'); }
     catch (error) { if (error.code !== 'ENOENT') throw error; }
     const { startLanServer } = await import(pathToFileURL(path.join(options.root, 'server/lan.mjs')).href);
-    lifecycle = createHostLifecycle({ start: startLanServer, options, emit });
+    const start = async current => {
+      const lan = await startLanServer(current);
+      try { return await attachNativeSecureLan(lan, { appDataDir: databaseParent }); }
+      catch (error) { await lan.close(); throw error; }
+    };
+    lifecycle = createHostLifecycle({ start, options, emit });
     refreshGate = createRefreshGate({ emit, refresh: reason => lifecycle.refresh(reason) });
     if (!stopping) await lifecycle.start();
     const fingerprint = () => { try { return networkFingerprint(networkInterfaces()); } catch { return ''; } };

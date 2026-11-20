@@ -1,0 +1,87 @@
+name: GO2 Gravity Orchard realtime
+
+on:
+  pull_request:
+    paths:
+      - 'server/realtime/gravity-orchard/**'
+      - 'ui/realtime/gravity-orchard/**'
+      - '.github/workflows/go2-realtime.yml'
+      - 'docs/workstreams/gravity-orchard-go2.md'
+      - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
+  push:
+    branches: [feature/gravity-orchard-realtime]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go2-realtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  protocol:
+    name: Realtime protocol (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            node: '22.13.0'
+          - os: ubuntu-24.04
+            node: '24.22.3'
+          - os: macos-15
+            node: '24.22.3'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: server/realtime/gravity-orchard/package-lock.json
+      - name: Record exact source, runtime and architecture
+        run: |
+          git rev-parse HEAD
+          node -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch})'
+      - name: Install only the pinned realtime runtime dependency
+        run: npm ci --prefix server/realtime/gravity-orchard --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Run all GO2 coordinator, client, fixture and adversarial suites
+        run: node server/realtime/gravity-orchard/tests/run.mjs
+      - name: Preserve existing rooms, games and secret projection
+        run: |
+          npm test
+          node --test server/room-platform.test.mjs server/room-lan-integration.test.mjs ui/room-client.test.mjs
+
+  browser:
+    name: Realtime host and two rendered controllers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.22.3'
+          cache: npm
+          cache-dependency-path: server/realtime/gravity-orchard/package-lock.json
+      - name: Install pinned nested browser tools
+        run: |
+          npm ci --prefix server/realtime/gravity-orchard --ignore-scripts --no-audit --no-fund
+          node server/realtime/gravity-orchard/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Exercise real authenticated sockets, interruption and recovery
+        env:
+          GO2_EVIDENCE_DIR: ${{ runner.temp }}/go2-browser-evidence
+        run: node server/realtime/gravity-orchard/tests/run.mjs --browser
+      - name: Retain screenshots and measured local transport evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: go2-browser-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/go2-browser-evidence/
+          if-no-files-found: error
+          retention-days: 14

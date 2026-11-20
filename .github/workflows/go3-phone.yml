@@ -1,0 +1,73 @@
+name: GO3 Gravity Orchard phone
+
+on:
+  pull_request:
+    paths:
+      - 'ui/games/gravity-orchard/phone/**'
+      - '.github/workflows/go3-phone.yml'
+      - 'docs/workstreams/gravity-orchard-go3.md'
+  push:
+    branches: [feature/gravity-orchard-phone]
+    paths:
+      - 'ui/games/gravity-orchard/phone/**'
+      - '.github/workflows/go3-phone.yml'
+      - 'docs/workstreams/gravity-orchard-go3.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go3-phone-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install the existing locked framework dependencies
+        run: npm run install:ci
+      - name: Verify the existing collection production build
+        run: npm run build
+
+  controller-and-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ui/games/gravity-orchard/phone
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/games/gravity-orchard/phone/package-lock.json
+      - name: Record the exact tested source
+        run: git rev-parse HEAD
+      - name: Install isolated browser test dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test sensor states, calibration and input safety
+        run: npm test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Exercise rendered controls and accessibility
+        run: npm run test:browser
+      - name: Preserve phone screenshots, traces and normalized input evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: go3-phone-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ui/games/gravity-orchard/phone/test-results/
+          if-no-files-found: warn
+          retention-days: 14

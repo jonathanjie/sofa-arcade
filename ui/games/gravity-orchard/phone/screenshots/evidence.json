@@ -1,0 +1,414 @@
+{
+  "evidenceKind": "Chromium DOM/pointer/keyboard tests with injected synthetic motion and host snapshots",
+  "physicalDevices": {
+    "iOSSafari": "unverified",
+    "androidChrome": "unverified",
+    "certificateTrust": "unverified"
+  },
+  "noNetworkLatencyMeasurement": true,
+  "testedSHA": "adf261d6f3af17cdb34eb004d5cd5efb10be3894",
+  "worktreeDirty": false,
+  "browser": "151.0.7922.34",
+  "node": "v22.23.5",
+  "runtimeHashes": {
+    "index.mjs": "802cc1861f5f2a70072c965001df97c53bb058c074d5a96aa4e844a6787e019c",
+    "motion.mjs": "ab16dbd601e566fb36da4063f6eb10e069be0a3c53e72220070013670cdf3393",
+    "tuning.mjs": "11bc59dcf32ddecf773577073c9c0aaec8ba97b2a29ccaed7314416600d583e3",
+    "icons.mjs": "2facabd2b80274659c86a74cbe4d8b1c6ad0c7331f49fda9b340c47ccb05fa0f",
+    "phone.css": "0a0228153d3479e5f1434b3a6e5950c9a7a09ee88caef79792e09576cc788496"
+  },
+  "cases": [
+    {
+      "name": "touch-jon-360",
+      "passed": true,
+      "screenshots": [
+        "360-insecure-setup.png",
+        "360-touch-ready.png",
+        "360-countdown.png",
+        "360-touch-playing.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "touch-lydia-390-multitouch",
+      "passed": true,
+      "screenshots": [
+        "390-touch-brake-combination.png"
+      ],
+      "layouts": [],
+      "contexts": 1,
+      "pointerEvents": [
+        {
+          "type": "pointerdown",
+          "pointerId": 2,
+          "control": "joystick"
+        },
+        {
+          "type": "pointerdown",
+          "pointerId": 3,
+          "control": "brake"
+        },
+        {
+          "type": "pointerup",
+          "pointerId": 3,
+          "control": "brake"
+        },
+        {
+          "type": "pointerup",
+          "pointerId": 2,
+          "control": "joystick"
+        }
+      ]
+    },
+    {
+      "name": "pointer-cancel-and-epoch-fence",
+      "passed": true,
+      "screenshots": [
+        "390-pointer-cancel-paused.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "help-focus-and-no-auto-resume",
+      "passed": true,
+      "screenshots": [
+        "390-help-paused.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "permission-and-fallback-states",
+      "passed": true,
+      "screenshots": [
+        "390-setup-insecure.png",
+        "390-setup-unsupported.png",
+        "390-setup-denied.png",
+        "390-setup-rejected.png",
+        "390-setup-no-samples.png"
+      ],
+      "layouts": [],
+      "contexts": 5
+    },
+    {
+      "name": "tilt-calibration-stationary-recenter",
+      "passed": true,
+      "screenshots": [
+        "390-tilt-calibrating.png",
+        "390-tilt-playing.png",
+        "390-recenter-ready.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "all-screen-orientations",
+      "passed": true,
+      "screenshots": [
+        "390-rotated-90.png",
+        "390-rotated-180.png",
+        "390-rotated-270.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "hidden-resume-disposal",
+      "passed": true,
+      "screenshots": [
+        "390-returned-paused.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "authoritative-phases-and-connection",
+      "passed": true,
+      "screenshots": [
+        "390-connection-connecting.png",
+        "390-connection-reconnecting.png",
+        "390-connection-offline.png",
+        "390-connection-error.png",
+        "390-phase-paused.png",
+        "390-phase-interlude.png",
+        "390-phase-finished.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "narrow-and-landscape-reduced-motion",
+      "passed": true,
+      "screenshots": [
+        "360x800-reduced-touch.png",
+        "360x800-help.png",
+        "390x844-reduced-touch.png",
+        "390x844-help.png",
+        "800x360-reduced-touch.png",
+        "800x360-help.png",
+        "844x390-reduced-touch.png",
+        "844x390-help.png"
+      ],
+      "layouts": [
+        {
+          "viewport": {
+            "width": 360,
+            "height": 800
+          },
+          "width": 360,
+          "targets": [
+            {
+              "name": "help",
+              "width": 48,
+              "height": 48,
+              "label": "Help and controls"
+            },
+            {
+              "name": "joystick",
+              "width": 302,
+              "height": 214,
+              "label": "Steer Jon's garden"
+            },
+            {
+              "name": "brake",
+              "width": 332,
+              "height": 122,
+              "label": "Hold Brake"
+            },
+            {
+              "name": "pause",
+              "width": 161,
+              "height": 50,
+              "label": "Pause"
+            },
+            {
+              "name": "recenter",
+              "width": 161,
+              "height": 50,
+              "label": "Recenter"
+            }
+          ],
+          "safeArea": {
+            "top": "18px",
+            "bottom": "20px"
+          }
+        },
+        {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "width": 390,
+          "targets": [
+            {
+              "name": "help",
+              "width": 48,
+              "height": 48,
+              "label": "Help and controls"
+            },
+            {
+              "name": "joystick",
+              "width": 324,
+              "height": 214,
+              "label": "Steer Jon's garden"
+            },
+            {
+              "name": "brake",
+              "width": 354,
+              "height": 122,
+              "label": "Hold Brake"
+            },
+            {
+              "name": "pause",
+              "width": 172,
+              "height": 50,
+              "label": "Pause"
+            },
+            {
+              "name": "recenter",
+              "width": 172,
+              "height": 50,
+              "label": "Recenter"
+            }
+          ],
+          "safeArea": {
+            "top": "18px",
+            "bottom": "20px"
+          }
+        },
+        {
+          "viewport": {
+            "width": 800,
+            "height": 360
+          },
+          "width": 800,
+          "targets": [
+            {
+              "name": "help",
+              "width": 48,
+              "height": 48,
+              "label": "Help and controls"
+            },
+            {
+              "name": "joystick",
+              "width": 352,
+              "height": 140,
+              "label": "Steer Jon's garden"
+            },
+            {
+              "name": "brake",
+              "width": 374,
+              "height": 116.390625,
+              "label": "Hold Brake"
+            },
+            {
+              "name": "pause",
+              "width": 182,
+              "height": 50,
+              "label": "Pause"
+            },
+            {
+              "name": "recenter",
+              "width": 182,
+              "height": 50,
+              "label": "Recenter"
+            }
+          ],
+          "safeArea": {
+            "top": "12px",
+            "bottom": "18px"
+          }
+        },
+        {
+          "viewport": {
+            "width": 844,
+            "height": 390
+          },
+          "width": 844,
+          "targets": [
+            {
+              "name": "help",
+              "width": 48,
+              "height": 48,
+              "label": "Help and controls"
+            },
+            {
+              "name": "joystick",
+              "width": 374,
+              "height": 140,
+              "label": "Steer Jon's garden"
+            },
+            {
+              "name": "brake",
+              "width": 396,
+              "height": 116.390625,
+              "label": "Hold Brake"
+            },
+            {
+              "name": "pause",
+              "width": 193,
+              "height": 50,
+              "label": "Pause"
+            },
+            {
+              "name": "recenter",
+              "width": 193,
+              "height": 50,
+              "label": "Recenter"
+            }
+          ],
+          "safeArea": {
+            "top": "12px",
+            "bottom": "18px"
+          }
+        }
+      ],
+      "contexts": 4
+    },
+    {
+      "name": "unready-boundary-and-command-failure",
+      "passed": true,
+      "screenshots": [
+        "390-command-failed.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "countdown-help-race-and-ready-withdrawal",
+      "passed": true,
+      "screenshots": [
+        "390-help-countdown-race.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "granted-no-prompt-and-invalid-late-reading",
+      "passed": true,
+      "screenshots": [
+        "390-invalid-reading-paused.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    },
+    {
+      "name": "diagnostic-fixture",
+      "passed": true,
+      "screenshots": [
+        "diagnostic-fixture.png"
+      ],
+      "layouts": [],
+      "contexts": 1
+    }
+  ],
+  "ciRunURL": "https://github.com/jonathanjie/sofa-arcade/actions/runs/44777390436",
+  "ciArtifactId": 14649044190,
+  "artifactZipSHA256": "daeec60a98dc6174eb9e075295b279612c74c294e7190c8864e2cd142ce0898e",
+  "artifactRetentionDays": 14,
+  "reviewedScreenshots": [
+    {
+      "file": "360-insecure-setup.png",
+      "sha256": "a4dde202dd6c6e8ae8dcd6185fe18d67ef0256ff7cb4b946ccdc9d3d04abf0d1"
+    },
+    {
+      "file": "360-touch-playing.png",
+      "sha256": "f180500b55a78b0033496837128512c0ccc993f305c2e7063835d3296a5e7b04"
+    },
+    {
+      "file": "390-tilt-playing.png",
+      "sha256": "0f343eefb9c054af140f969293129f147d7e505056104ebe969ae4d17c044a42"
+    },
+    {
+      "file": "390-touch-brake-combination.png",
+      "sha256": "d107f6aac751f099fc4c253150620624380e5b58c9d2c1229534f11f01e7e68d"
+    },
+    {
+      "file": "800x360-reduced-touch.png",
+      "sha256": "cc3bda652fa82b9ae3b4ff5efe97fb9e42e97219a590cc3fdc18e366b2dd2be7"
+    },
+    {
+      "file": "390-help-paused.png",
+      "sha256": "c02ca66bbcc2b5c2e3a86009d7c51f77b4e4501a2ae2c7e4281b405a0e0f513a"
+    },
+    {
+      "file": "800x360-help.png",
+      "sha256": "f472a11576e6dedba5c644832339a4e9342121cdd50028c8af8817a7136f3358"
+    },
+    {
+      "file": "390-setup-no-samples.png",
+      "sha256": "7534ce26de5fa132d3e78df2862dd349da15e5745f3957f160e2a4229d5db3b6"
+    },
+    {
+      "file": "390-phase-finished.png",
+      "sha256": "4f844debbbf23d39adbe920502e6b7bf68d0e9b4d8259c677699cc58eb5f5c8c"
+    },
+    {
+      "file": "diagnostic-fixture.png",
+      "sha256": "17f0d34a4a2973624500a74e743438e192ad874a23618d20be7c0eb030bf85b2"
+    }
+  ],
+  "normalizedControlsSHA256": "cb0b40a9e035a8fa6fb1ec097b2a91f64afd7ac2b7edf292db061b3596df1c9e"
+}

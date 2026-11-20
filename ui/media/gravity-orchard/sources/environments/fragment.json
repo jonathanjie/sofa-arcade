@@ -1,0 +1,44 @@
+{
+  "assets": {
+    "cover": {
+      "src": "/assets/gravity-orchard/cover.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Jon and Lydia cooperate across two floating orchard trays while Lala prepares a picnic.",
+      "label": "Gravity Orchard",
+      "layer": "cover",
+      "transparent": false
+    },
+    "environment-morning-delivery": {
+      "src": "/assets/gravity-orchard/environments/morning-delivery.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Pale morning clouds with delicate orchard blossoms around a quiet center.",
+      "label": "Morning Delivery",
+      "layer": "backdrop",
+      "transparent": false
+    },
+    "environment-switchback-grove": {
+      "src": "/assets/gravity-orchard/environments/switchback-grove.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Warm afternoon sage mist framed by small orchard branches.",
+      "label": "Switchback Grove",
+      "layer": "backdrop",
+      "transparent": false
+    },
+    "environment-moonlight-picnic": {
+      "src": "/assets/gravity-orchard/environments/moonlight-picnic.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Soft teal twilight clouds with a crescent moon and warm fireflies at the edges.",
+      "label": "Lala\u2019s Moonlight Picnic",
+      "layer": "backdrop",
+      "transparent": false
+    }
+  }
+}

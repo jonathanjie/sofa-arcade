@@ -19,11 +19,16 @@
     "package:lan": "node scripts/package-lan.mjs",
     "test:integration": "node tests/integration/run.mjs",
     "verify:local-release": "node tests/integration/run.mjs --require-complete",
-    "verify:components": "node tests/integration/component-lock.mjs --require-complete"
+    "verify:components": "node tests/integration/component-lock.mjs --require-complete",
+    "bundle:runtime": "node scripts/bundle-runtime.mjs",
+    "verify:gravity-components": "node tests/gravity-orchard-integration/component-lock.mjs",
+    "test:gravity-orchard": "node tests/gravity-orchard-integration/run.mjs",
+    "test:gravity-browser": "node tests/gravity-orchard-integration/browser/run.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@hookform/resolvers": "^5.7.1",
+    "@peculiar/x509": "3.1.0",
     "@shadcn/react": "^0.3.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -43,9 +48,11 @@
     "react-hook-form": "^7.85.0",
     "react-resizable-panels": "^4.12.2",
     "recharts": "^3.8.0",
+    "reflect-metadata": "0.2.2",
     "sonner": "^2.0.8",
     "tailwind-merge": "3.6.0",
     "vaul": "^1.1.2",
+    "ws": "8.23.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -58,6 +65,7 @@
     "@vitejs/plugin-react": "6.0.2",
     "@vitejs/plugin-rsc": "0.5.26",
     "drizzle-kit": "0.31.10",
+    "esbuild": "0.28.0",
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.4",
     "json-rpc-2.0": "1.7.1",

@@ -1,0 +1,62 @@
+{
+  "sourceCommit": "8f0e3f9b0e364f8554c68bc8f1db41e3443a29cc",
+  "workflowRun": 44778298198,
+  "workflowUrl": "https://github.com/jonathanjie/sofa-arcade/actions/runs/44778298198",
+  "artifactId": 14650064185,
+  "artifactSha256": "971b40b952f06fdf2998d855fec2910b6eb2a8d23d53273536acd8cc665bc79e",
+  "renderedTests": {
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "nodeTests": 19,
+  "existingTests": 81,
+  "fullArtifactScreenshots": 52,
+  "viewports": [
+    {
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "graphics": "Diagnostic injected public fixtures; not final GO5 assets or live engine acceptance.",
+  "captures": [
+    {
+      "path": "tv-1280-dense.png",
+      "sha256": "545efde429dedb930719ded6afce5b1c635765f2c3be353c6c84334e9e2bde3c",
+      "bytes": 205828
+    },
+    {
+      "path": "tv-1280-gust-forecast.png",
+      "sha256": "17b186f9404fbaadd4a620e69bdb3b34330e27f05a8cc82b0983b08bc1fa4ee6",
+      "bytes": 222074
+    },
+    {
+      "path": "tv-1920-gate-deferred.png",
+      "sha256": "6a53a0864f99316cff8492728160cf30e0259d3588dfd0e84a9f5fa9faeb1be6",
+      "bytes": 359738
+    },
+    {
+      "path": "tutorial-1280-step-6.png",
+      "sha256": "f995e19f08d78e1b91b760cdeed95292afecb7779bc9ef6d6aa664cf31668ab2",
+      "bytes": 131761
+    }
+  ],
+  "runtimeFileSha256": {
+    "ui/games/gravity-orchard/tv/index.mjs": "13ded809ad1fe230dc9ad3f3209b8703cfcdd35ebfb9976cb50c342b590c0309",
+    "ui/games/gravity-orchard/tv/public-view.mjs": "30ca4d2f34e475136bff697c2debef8921f91d0df288faedbcb17cd5b8113953",
+    "ui/games/gravity-orchard/tv/timeline.mjs": "d4e68430006f61bfa798e8d8f857048d27f7dd7b6e10d582531f4b15bbfa7279",
+    "ui/games/gravity-orchard/tv/effects.mjs": "52078dd2647320be840377bd55aa30999187a79491d3e26ccaea1924bebc37e5",
+    "ui/games/gravity-orchard/tv/styles.mjs": "55b38878d148e1e99c81c28be59dffeb83fe893b863c49366026e033b995514a",
+    "ui/games/gravity-orchard/tv/scene.mjs": "5516ed17cea11a7a6d855cd52576e1a05b409b6e00d423ad5e6ff5142ef256a9",
+    "ui/games/gravity-orchard/tv/scene-style.mjs": "e4c962974bc26e6d9cc2e552882236782cce052c3492828e075132614e4dd89e",
+    "ui/games/gravity-orchard/tutorial/index.mjs": "16323813fe20c8e0ee2b3f9972ea73ae6af2639e5a3eef042ad7d568d1db3caa",
+    "ui/games/gravity-orchard/tutorial/lessons.mjs": "eead2282ac4fcfc41cd49ac3d4e6e8cbefc006d0f265e6b29b5f4ae78c12f50f",
+    "ui/games/gravity-orchard/tutorial/graphics.mjs": "43fe464fa7c66d255262483c02ae2cb4f60560c81797cc6fc3104aab21ea8911",
+    "ui/games/gravity-orchard/tutorial/styles.mjs": "1ee433a6bcb35e3906b4b2cee79451b957123037e8cc09874922acc29c558d70"
+  }
+}

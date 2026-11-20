@@ -1,0 +1,186 @@
+name: GO7 Gravity Orchard integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go7-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  immutable-components:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+      - run: node tests/gravity-orchard-integration/component-lock.mjs
+      - run: npm run verify:components
+
+  protocol-and-delivery:
+    name: Shared authority and delivery (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.13.0', '24.22.3']
+    env:
+      SOFA_GO7_EVIDENCE_DIR: ${{ runner.temp }}/go7-protocol
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm run install:ci
+      - run: npm ci --prefix desktop --ignore-scripts --no-audit --no-fund
+      - name: Private bundle exactly reproduces pinned sources and packages
+        run: node scripts/bundle-runtime.mjs --check
+      - run: npm test
+      - name: Authoritative integration, verified TLS, native capabilities, package closure
+        run: node tests/gravity-orchard-integration/run.mjs
+      - name: Complete real-rate TCP campaign and transport measurements
+        if: matrix.node == '24.22.3'
+        run: |
+          node tests/gravity-orchard-integration/protocol/campaign.mjs
+          node tests/gravity-orchard-integration/protocol/measure.mjs --out="$SOFA_GO7_EVIDENCE_DIR/transport.json"
+      - name: Generated delivery remains committed and reproducible
+        if: matrix.node == '24.22.3'
+        run: |
+          node scripts/prepare-game.mjs
+          npm run package:lan
+          node scripts/check-derived.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: go7-protocol-node-${{ matrix.node }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/go7-protocol/
+          if-no-files-found: ignore
+
+  reviewed-component-suites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+          cache: npm
+      - run: npm run install:ci
+      - run: npm ci --prefix ui/media/gravity-orchard --no-audit --no-fund
+      - name: All six delivered components at the assembled candidate
+        run: |
+          node --test games/gravity-orchard/tests/*.test.mjs
+          node games/gravity-orchard/tests/generate-fixtures.mjs --check
+          npm test --prefix server/realtime/gravity-orchard
+          npm test --prefix ui/games/gravity-orchard/phone
+          npm test --prefix ui/games/gravity-orchard/tv
+          npm test --prefix ui/media/gravity-orchard
+          npm test --prefix server/secure-lan
+          npm test --prefix desktop/secure-lan
+
+  rendered-collection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SOFA_GO7_EVIDENCE_DIR: ${{ runner.temp }}/go7-browser
+      SOFA_EVIDENCE_DIR: ${{ runner.temp }}/go7-browser
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+          cache: npm
+      - run: npm run install:ci
+      - run: npx playwright install --with-deps chromium
+      - name: Rendered TV and two authenticated phone contexts through every orchard
+        run: node tests/gravity-orchard-integration/browser/run.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: go7-browser-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/go7-browser/
+          if-no-files-found: warn
+
+  native-integrated:
+    name: Gravity Orchard WKWebView (${{ matrix.arch }})
+    needs: immutable-components
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+            node_arch: arm64
+            target: aarch64-apple-darwin
+            suffix: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+            node_arch: x64
+            target: x86_64-apple-darwin
+            suffix: intel
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    env:
+      SOFA_TEST_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOFA_EVIDENCE_DIR: ${{ github.workspace }}/tests/gravity-orchard-integration/evidence/native
+      RUSTUP_TOOLCHAIN: '1.100.0'
+      APPLE_SIGNING_IDENTITY: '-'
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+          architecture: ${{ matrix.node_arch }}
+          cache: npm
+      - name: Verify actual architecture and locked native toolchain
+        run: |
+          test "$(uname -m)" = '${{ matrix.arch }}'
+          test "$(node -p process.arch)" = '${{ matrix.node_arch }}'
+          rustup toolchain install 1.100.0 --profile minimal --target '${{ matrix.target }}'
+          test "$(rustc -vV | sed -n 's/^host: //p')" = '${{ matrix.target }}'
+          mkdir -p "$SOFA_EVIDENCE_DIR"
+          git rev-parse HEAD > "$SOFA_EVIDENCE_DIR/tested-commit.txt"
+          uname -a > "$SOFA_EVIDENCE_DIR/runner.txt"
+          sw_vers >> "$SOFA_EVIDENCE_DIR/runner.txt"
+      - run: npm run install:ci
+      - run: npm ci --prefix desktop --ignore-scripts --no-audit --no-fund
+      - name: Production dependency graph excludes the native test driver
+        run: |
+          cargo tree --locked --manifest-path desktop/src-tauri/Cargo.toml --edges normal > "$SOFA_EVIDENCE_DIR/production-dependencies.txt"
+          if rg 'tauri-plugin-wdio' "$SOFA_EVIDENCE_DIR/production-dependencies.txt"; then exit 1; fi
+      - name: Build separate instrumented native acceptance app
+        run: npm --prefix desktop run build:native:${{ matrix.suffix }}
+      - name: Actual WKWebView game, trusted setup, recovery and three-process Quit/relaunch
+        run: node tests/gravity-orchard-integration/native/run.mjs
+        env:
+          SOFA_APP_PATH: ${{ github.workspace }}/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/Sofa Arcade.app
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: go7-native-${{ matrix.target }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: tests/gravity-orchard-integration/evidence/native/
+          if-no-files-found: warn

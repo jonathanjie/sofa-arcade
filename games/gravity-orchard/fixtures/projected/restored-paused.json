@@ -1,0 +1,232 @@
+{
+  "gameId": "gravity-orchard",
+  "schemaVersion": 1,
+  "matchId": "go1-public-fixtures-v1",
+  "runEpoch": 2,
+  "tick": 810,
+  "phase": "paused",
+  "mode": "campaign",
+  "stageIndex": 0,
+  "levelId": "morning-delivery",
+  "timeRemainingTicks": 4770,
+  "countdownTicks": 0,
+  "ready": {
+    "jon": false,
+    "lydia": false
+  },
+  "pauseReason": "recovery",
+  "fruits": [
+    {
+      "id": "go1-public-fixtures-v1:s0:a0:f01",
+      "type": "apple",
+      "x": 430,
+      "y": 360,
+      "vx": 0,
+      "vy": 0,
+      "radius": 14
+    },
+    {
+      "id": "go1-public-fixtures-v1:s0:a0:f02",
+      "type": "starfruit",
+      "x": 850,
+      "y": 360,
+      "vx": 0,
+      "vy": 0,
+      "radius": 14
+    },
+    {
+      "id": "go1-public-fixtures-v1:s0:a0:f03",
+      "type": "plum",
+      "x": 850,
+      "y": 360,
+      "vx": 0,
+      "vy": 0,
+      "radius": 14
+    },
+    {
+      "id": "go1-public-fixtures-v1:s0:a0:f04",
+      "type": "pear",
+      "x": 430,
+      "y": 360,
+      "vx": 0,
+      "vy": 0,
+      "radius": 14
+    }
+  ],
+  "baskets": {
+    "apple": {
+      "count": 0,
+      "capacity": 3
+    },
+    "plum": {
+      "count": 0,
+      "capacity": 3
+    },
+    "pear": {
+      "count": 0,
+      "capacity": 3
+    },
+    "starfruit": {
+      "count": 0,
+      "capacity": 3
+    }
+  },
+  "orders": {
+    "recipes": [
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:apple-picnic",
+        "recipeType": "apple-picnic",
+        "needs": {
+          "apple": 2,
+          "plum": 0,
+          "pear": 1,
+          "starfruit": 0
+        }
+      },
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:plum-picnic",
+        "recipeType": "plum-picnic",
+        "needs": {
+          "apple": 0,
+          "plum": 2,
+          "pear": 0,
+          "starfruit": 1
+        }
+      },
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:sunlit-mix",
+        "recipeType": "sunlit-mix",
+        "needs": {
+          "apple": 1,
+          "plum": 0,
+          "pear": 1,
+          "starfruit": 1
+        }
+      },
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:moonlit-mix",
+        "recipeType": "moonlit-mix",
+        "needs": {
+          "apple": 0,
+          "plum": 1,
+          "pear": 1,
+          "starfruit": 1
+        }
+      }
+    ],
+    "activeIndex": 0,
+    "completedIds": []
+  },
+  "gateStates": [],
+  "gust": null,
+  "players": {
+    "jon": {
+      "input": {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    },
+    "lydia": {
+      "input": {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    }
+  },
+  "results": [],
+  "events": [
+    {
+      "id": "go1-public-fixtures-v1:e1",
+      "kind": "phase-change",
+      "tick": 0,
+      "data": {
+        "phase": "waiting",
+        "reason": null
+      }
+    },
+    {
+      "id": "go1-public-fixtures-v1:e2",
+      "kind": "phase-change",
+      "tick": 0,
+      "data": {
+        "phase": "countdown",
+        "reason": null
+      }
+    },
+    {
+      "id": "go1-public-fixtures-v1:e3",
+      "kind": "phase-change",
+      "tick": 180,
+      "data": {
+        "phase": "playing",
+        "reason": null
+      }
+    },
+    {
+      "id": "go1-public-fixtures-v1:e4",
+      "kind": "spawn",
+      "tick": 180,
+      "entityId": "go1-public-fixtures-v1:s0:a0:f01",
+      "playerId": "jon",
+      "x": 430,
+      "y": 360,
+      "data": {
+        "fruitType": "apple"
+      }
+    },
+    {
+      "id": "go1-public-fixtures-v1:e5",
+      "kind": "spawn",
+      "tick": 390,
+      "entityId": "go1-public-fixtures-v1:s0:a0:f02",
+      "playerId": "lydia",
+      "x": 850,
+      "y": 360,
+      "data": {
+        "fruitType": "starfruit"
+      }
+    },
+    {
+      "id": "go1-public-fixtures-v1:e6",
+      "kind": "spawn",
+      "tick": 600,
+      "entityId": "go1-public-fixtures-v1:s0:a0:f03",
+      "playerId": "lydia",
+      "x": 850,
+      "y": 360,
+      "data": {
+        "fruitType": "plum"
+      }
+    },
+    {
+      "id": "go1-public-fixtures-v1:e7",
+      "kind": "spawn",
+      "tick": 810,
+      "entityId": "go1-public-fixtures-v1:s0:a0:f04",
+      "playerId": "jon",
+      "x": 430,
+      "y": 360,
+      "data": {
+        "fruitType": "pear"
+      }
+    },
+    {
+      "id": "go1-public-fixtures-v1:e8",
+      "kind": "phase-change",
+      "tick": 810,
+      "data": {
+        "phase": "paused",
+        "reason": "recovery"
+      }
+    }
+  ],
+  "summary": {
+    "ordersCompleted": 0,
+    "stars": 0,
+    "composted": 0,
+    "perfectPicnic": false,
+    "recordEligible": true
+  }
+}

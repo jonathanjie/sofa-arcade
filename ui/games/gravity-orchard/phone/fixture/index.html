@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>Gravity Orchard · phone component fixture</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/fixture/fixture.css">
+  <script type="module" src="/fixture/app.mjs"></script>
+</head>
+<body>
+  <main class="fixture-layout">
+    <section class="controller-panel" aria-label="Rendered phone controller"><div id="phone-root"></div></section>
+    <aside id="diagnostics" class="diagnostics" aria-label="Component fixture controls">
+      <p class="eyebrow">GO3 · isolated component fixture</p>
+      <h1>A phone, a garden, a gentle tilt.</h1>
+      <p class="fixture-note">This page mounts the real phone component. Sensor readings and host snapshots are synthetic. It does not run the game or establish iOS/Android sensor compatibility.</p>
+      <div class="diagnostic-visual">
+        <svg viewBox="0 0 280 190" role="img" aria-labelledby="vector-title vector-desc">
+          <title id="vector-title">Normalized controller input</title>
+          <desc id="vector-desc">A diagnostic vector on a garden tray. Right is positive x; down is positive y. It is not a simulated fruit position.</desc>
+          <defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#264d3520"/></pattern></defs>
+          <rect x="20" y="16" width="240" height="158" rx="28" fill="#e7eacb" stroke="#5c7250" stroke-width="3"/>
+          <rect x="28" y="24" width="224" height="142" rx="22" fill="url(#grid)"/>
+          <path d="M140 36V154M50 95H230" fill="none" stroke="#72805c" stroke-dasharray="4 5"/>
+          <circle cx="140" cy="95" r="47" fill="none" stroke="#72805c" stroke-dasharray="3 5"/>
+          <path id="vector-line" d="M140 95L140 95" fill="none" stroke="#315540" stroke-width="5" stroke-linecap="round"/>
+          <circle id="vector-dot" cx="140" cy="95" r="10" fill="#d97a42" stroke="#fff8e9" stroke-width="3"/>
+          <text x="237" y="100" fill="#315540" font-size="12">+x</text>
+          <text x="145" y="158" fill="#315540" font-size="12">+y</text>
+        </svg>
+        <output id="input-output">x 0.0000 · y 0.0000 · Brake held</output>
+      </div>
+      <fieldset>
+        <legend>Public host snapshots</legend>
+        <div class="scenario-buttons">
+          <button data-phase="waiting">Waiting</button><button data-phase="countdown">Countdown</button>
+          <button data-phase="playing">Playing</button><button data-phase="paused">Paused</button>
+          <button data-phase="interlude">Interlude</button><button data-phase="finished">Results</button>
+        </div>
+        <button id="peer-ready">Other player is ready</button>
+        <button id="disconnect">Disconnect / reconnect</button>
+      </fieldset>
+      <fieldset>
+        <legend>Synthetic sensor checks</legend>
+        <label for="scenario">Browser state</label>
+        <select id="scenario">
+          <option value="permission">Permission needed</option>
+          <option value="granted">Granted without a permission API</option>
+          <option value="denied">Permission denied</option>
+          <option value="rejected">Permission rejected</option>
+          <option value="no-samples">Granted, but no readings</option>
+          <option value="insecure">Insecure context</option>
+          <option value="unsupported">Orientation API unavailable</option>
+        </select>
+        <div class="scenario-buttons">
+          <button id="stable">Stable natural grip</button><button id="tilt-right">Tilt right</button>
+          <button id="tilt-down">Tilt down</button><button id="rotate">Rotate 90°</button>
+          <button id="wait">Wait 5 s</button><button id="hide">Hide / show page</button>
+        </div>
+      </fieldset>
+      <p id="status-output" role="status"></p>
+      <p class="fixture-note">Arrow keys steer while the steering pad has focus. Hold Space for Brake. The diagnostic view records only normalized controls, statuses and discrete commands; no raw sensor recording or network latency claim.</p>
+    </aside>
+  </main>
+</body>
+</html>

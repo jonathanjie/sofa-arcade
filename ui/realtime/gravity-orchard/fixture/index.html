@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Gravity Orchard · Transport fixture</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/fixture/styles.css">
+</head>
+<body>
+  <main class="shell" id="fixture-root">
+    <header class="masthead">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true"><rect x="3" y="8" width="16" height="28" rx="7"/><rect x="25" y="8" width="16" height="28" rx="7"/><path d="M17 22h10"/><circle cx="11" cy="17" r="3"/><circle cx="33" cy="27" r="3"/></svg>
+        <div><p class="eyebrow">SOFA ARCADE / GO2</p><h1>Gravity Orchard</h1></div>
+      </div>
+      <div class="masthead-right"><span class="fixture-label">TRANSPORT FIXTURE</span><span class="status-chip" id="connection-state" data-state="connecting"><i></i><span>Connecting</span></span></div>
+    </header>
+
+    <nav class="view-nav" aria-label="Fixture views">
+      <p id="view-description">Two controllers. One authoritative room.</p>
+      <div><a href="/?viewer=host" data-role="host">TV board</a><a href="/?viewer=jon" target="_blank" rel="noopener" data-role="jon">Jon ↗</a><a href="/?viewer=lydia" target="_blank" rel="noopener" data-role="lydia">Lydia ↗</a></div>
+    </nav>
+
+    <div class="layout">
+      <section class="orchard-panel" aria-label="Authoritative transport board">
+        <div class="board-toolbar"><span class="phase-label" id="phase" data-phase="waiting">Waiting for controllers</span><span class="board-identity">ROOM <b>GO2FIX</b><span> / </span>TICK <b id="board-tick">0</b></span></div>
+        <div class="board-canvas">
+          <svg id="orchard" viewBox="0 0 1280 720" role="img" aria-labelledby="board-title board-description">
+            <title id="board-title">Two separately controlled garden trays</title>
+            <desc id="board-description">Solid markers use the latest authoritative positions. Arrows show input actually applied by the server. This fixture has no final game physics or scoring.</desc>
+            <defs>
+              <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="16" cy="16" r="1.5" fill="#c5d5b9"/></pattern>
+              <pattern id="lydia-dots" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M14 16h4M16 14v4" stroke="#cabed1" stroke-width="1.5"/></pattern>
+              <marker id="arrow-jon" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0 0L6 3L0 6Z" fill="#215342"/></marker>
+              <marker id="arrow-lydia" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0 0L6 3L0 6Z" fill="#694078"/></marker>
+            </defs>
+            <rect width="1280" height="720" fill="#f0f2e7"/>
+            <ellipse cx="640" cy="661" rx="530" ry="18" fill="#e2e6d7"/>
+            <path d="M536 336h208v94H536Z" fill="#c9a979" stroke="#97754e" stroke-width="4"/>
+            <path d="M566 342v82M596 342v82M626 342v82M656 342v82M686 342v82M716 342v82" stroke="#ab885b" stroke-width="3"/>
+            <rect x="64" y="124" width="490" height="500" rx="42" fill="#8e6f4b"/>
+            <rect x="726" y="124" width="490" height="500" rx="42" fill="#8e6f4b"/>
+            <rect x="64" y="112" width="490" height="500" rx="42" fill="#ddc397" stroke="#8b724f" stroke-width="4"/>
+            <rect x="726" y="112" width="490" height="500" rx="42" fill="#ddc397" stroke="#8b724f" stroke-width="4"/>
+            <rect x="80" y="128" width="458" height="468" rx="31" fill="#dce8ca"/>
+            <rect x="742" y="128" width="458" height="468" rx="31" fill="#e5dce8"/>
+            <rect x="80" y="128" width="458" height="468" rx="31" fill="url(#dots)"/>
+            <rect x="742" y="128" width="458" height="468" rx="31" fill="url(#lydia-dots)"/>
+            <path d="M172 237Q322 164 449 239M155 512Q305 553 462 490" fill="none" stroke="#b6cc9b" stroke-width="10" stroke-linecap="round"/>
+            <path d="M833 232Q972 165 1128 235M822 505Q976 552 1110 490" fill="none" stroke="#c6b3d0" stroke-width="10" stroke-linecap="round" stroke-dasharray="3 20"/>
+            <text x="80" y="66" class="svg-name" fill="#215342">JON</text><text x="742" y="66" class="svg-name" fill="#694078">LYDIA</text>
+            <text x="80" y="92" class="svg-subtitle">ROUND MARKER / LEFT TRAY</text><text x="742" y="92" class="svg-subtitle">DIAMOND MARKER / RIGHT TRAY</text>
+            <g id="jon-marker" data-x="280" data-y="360" transform="translate(280 360)">
+              <circle r="39" fill="#ffffff" fill-opacity=".55"/>
+              <circle r="25" fill="#39745a" stroke="#204c3a" stroke-width="4"/>
+              <circle cx="-8" cy="-8" r="6" fill="#87b592"/>
+              <line id="jon-vector" x1="0" y1="0" x2="0" y2="0" stroke="#215342" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow-jon)"/>
+              <g id="jon-brake-mark"><rect x="-8" y="-10" width="5" height="20" rx="2" fill="#fff"/><rect x="3" y="-10" width="5" height="20" rx="2" fill="#fff"/></g>
+            </g>
+            <g id="lydia-marker" data-x="1000" data-y="360" transform="translate(1000 360)">
+              <circle r="39" fill="#ffffff" fill-opacity=".55"/>
+              <rect x="-20" y="-20" width="40" height="40" rx="7" transform="rotate(45)" fill="#805d8f" stroke="#593a6a" stroke-width="4"/>
+              <line id="lydia-vector" x1="0" y1="0" x2="0" y2="0" stroke="#694078" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow-lydia)"/>
+              <g id="lydia-brake-mark"><rect x="-8" y="-10" width="5" height="20" rx="2" fill="#fff"/><rect x="3" y="-10" width="5" height="20" rx="2" fill="#fff"/></g>
+            </g>
+            <text x="640" y="310" text-anchor="middle" class="bridge-label">SHARED</text><text x="640" y="455" text-anchor="middle" class="bridge-label">AUTHORITY</text>
+            <text x="640" y="695" text-anchor="middle" class="svg-footnote">Applied input moves these diagnostic markers. Orchard rules belong to GO1.</text>
+          </svg>
+          <div class="board-notice" id="board-notice" role="status"><span class="notice-icon">Ⅱ</span><div><strong id="notice-title">Connect both controllers</strong><p id="notice-detail">Open Jon and Lydia, then tap Ready on each phone.</p></div></div>
+        </div>
+        <div class="presence-grid">
+          <div class="presence-card jon" id="presence-jon"><span class="seat-symbol">●</span><div><h2>Jon <span class="seat-status" id="jon-presence">Offline</span></h2><p><span id="jon-input">x 0.00 · y 0.00</span><b class="brake-state" id="jon-brake">BRAKE</b></p></div><span class="ready-state" id="jon-ready">Not ready</span></div>
+          <div class="presence-card lydia" id="presence-lydia"><span class="seat-symbol">◆</span><div><h2>Lydia <span class="seat-status" id="lydia-presence">Offline</span></h2><p><span id="lydia-input">x 0.00 · y 0.00</span><b class="brake-state" id="lydia-brake">BRAKE</b></p></div><span class="ready-state" id="lydia-ready">Not ready</span></div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="controller-panel" id="controller-panel" hidden aria-label="Touch controller">
+          <div class="section-heading"><h2 id="controller-title">Your tray</h2><span>TOUCH + KEYS</span></div>
+          <div class="joystick" id="joystick" tabindex="0" role="application" aria-label="Tray steering pad. Drag or use arrow keys or W A S D. Space holds Brake.">
+            <div class="joystick-ring"></div><div class="joystick-horizontal"></div><div class="joystick-vertical"></div><span class="joy-up">↑</span><span class="joy-down">↓</span><span class="joy-left">←</span><span class="joy-right">→</span><div class="joystick-thumb" id="joystick-thumb"></div>
+          </div>
+          <button class="brake-button" id="brake-button" aria-pressed="false">Ⅱ <span>Hold Brake</span></button>
+          <div class="controller-actions"><button class="primary" id="ready-button">Ready</button><button id="phone-pause">Pause</button></div>
+          <p class="control-help">Drag to steer. Release to stop.<br>Keyboard: arrows / WASD · Space = Brake</p>
+        </section>
+
+        <section class="monitor" aria-label="Measured transport diagnostics">
+          <div class="section-heading"><h2>Transport monitor</h2><span id="monitor-role">HOST</span></div>
+          <div class="metrics">
+            <div><span id="rtt-label">Ping round-trip</span><strong id="rtt">—<small> ms</small></strong></div>
+            <div><span>Observed → applied</span><strong id="tick-age">—<small> ticks</small></strong></div>
+            <div><span>Received snapshots</span><strong id="snapshot-rate">—<small> /s</small></strong></div>
+            <div><span>Socket buffer</span><strong id="buffer-depth">0<small> B</small></strong></div>
+          </div>
+          <p class="measure-note">Round-trip uses this browser’s clock. No one-way or home Wi-Fi latency claim.</p>
+          <div class="counter-row"><span>Applied tick <b id="applied-tick">—</b></span><span>Reconnects <b id="reconnect-count">0</b></span></div>
+          <div class="counter-row"><span>Inputs sent <b id="inputs-sent">0</b></span><span>Coalesced <b id="coalesced-count">0</b></span></div>
+          <div class="counter-row host-counter"><span>Checkpoint writes <b id="checkpoint-count">0</b></span><span>Host ticks/s <b id="tick-rate">—</b></span></div>
+        </section>
+
+        <section class="lab" aria-label="Failure injection controls">
+          <div class="section-heading"><h2>Failure lab</h2><span>FIXTURE ONLY</span></div>
+          <div class="lab-actions" id="host-actions"><button id="host-pause">Pause shared run</button><button id="host-stall">Jump host clock +1s</button><button id="rematch">New run, same seed</button></div>
+          <div class="lab-actions"><div class="connection-actions"><button id="drop-socket">Drop socket · 3s</button><button id="restore-socket">Reconnect</button></div><button id="slow-delivery" aria-pressed="false">Delay snapshots · 500ms</button><button id="stale-input">Send stale input · 1s</button></div>
+          <p class="fault-status" id="fault-status" role="status">No faults injected</p>
+        </section>
+      </aside>
+    </div>
+    <footer><span class="footer-dot"></span><p><strong>Transport fixture, not the finished game.</strong> Deterministic mock simulation · local HTTP / touch · no phone sensors, Wi-Fi, TV casting or packaged Mac validation.</p></footer>
+  </main>
+  <script type="module" src="/fixture/app.mjs"></script>
+</body>
+</html>

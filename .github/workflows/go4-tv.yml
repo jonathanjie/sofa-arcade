@@ -1,0 +1,63 @@
+name: GO4 Gravity Orchard TV and tutorial
+
+on:
+  push:
+    branches: [feature/gravity-orchard-tv]
+  pull_request:
+    paths:
+      - 'ui/games/gravity-orchard/tv/**'
+      - 'ui/games/gravity-orchard/tutorial/**'
+      - '.github/workflows/go4-tv.yml'
+      - 'docs/workstreams/gravity-orchard-go4.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go4-tv-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fixture-and-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ui/games/gravity-orchard/tv
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/games/gravity-orchard/tv/package-lock.json
+      - name: Install locked isolated test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Public fixtures, timeline, event identity and module isolation
+        run: npm test
+      - name: Existing collection rules and rooms
+        working-directory: .
+        run: npm test
+      - name: Install pinned Chromium for rendered checks
+        run: npx playwright install --with-deps chromium
+      - name: Record exact submitted revision
+        run: |
+          mkdir -p tests/artifacts
+          git rev-parse HEAD > tests/tested-commit.txt
+      - name: Render full TV and tutorial journeys at 720p and 1080p
+        run: npm run test:browser
+      - name: Retain screenshots, HTML report and failure traces
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: go4-tv-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ui/games/gravity-orchard/tv/fixtures/evidence/
+            ui/games/gravity-orchard/tv/tests/report/
+            ui/games/gravity-orchard/tv/tests/artifacts/
+            ui/games/gravity-orchard/tv/tests/results.json
+            ui/games/gravity-orchard/tv/tests/tested-commit.txt
+          if-no-files-found: warn
+          retention-days: 14
