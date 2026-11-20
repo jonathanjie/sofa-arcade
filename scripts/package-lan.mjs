@@ -1,29 +1,16 @@
 #!/usr/bin/env node
 /** Reproducible, dependency-free local-play ZIP. Only named runtime files enter it. */
-import { readFile, readdir, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { deflateRawSync } from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runtimeFiles } from './runtime-files.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const prefix = 'sofa-arcade-local/';
 const output = path.join(root, 'public/downloads/sofa-arcade-local.zip');
-const runtime = [
-  'start-sofa.command',
-  'scripts/lan-server.mjs',
-  'server/lan.mjs', 'server/rooms.mjs',
-  'game/engine.mjs', 'games/catalog.mjs', 'games/registry.mjs',
-  'ui/index.html', 'ui/app.js', 'ui/styles.css', 'ui/audio.js', 'ui/score.mjs',
-  'ui/motion.js', 'ui/motion.css', 'ui/board-view.mjs', 'ui/board-view.css',
-  'ui/action-queue.mjs', 'ui/transport.mjs',
-  'public/assets/sofa-room.png', 'public/assets/characters.png',
-  'public/assets/qrcode.js', 'public/assets/qrcode-LICENSE.txt',
-  'public/favicon.svg', 'public/manifest.webmanifest',
-  'docs/LAN.md',
-];
-const migrations = (await readdir(path.join(root, 'drizzle'))).filter(name => /^\d[^/]*\.sql$/.test(name)).sort();
-if (!migrations.length) throw new Error('The local-play package needs its checked-in SQL migration.');
-runtime.push(...migrations.map(name => 'drizzle/' + name));
+const runtime = await runtimeFiles(root);
 
 const readme = `SOFA ARCADE — LOCAL PLAY
 
@@ -35,7 +22,7 @@ One Mac, one TV, two phones. Keep the devices on the same home Wi-Fi.
    bash start-sofa.command
 
 3. Open the local address printed in Terminal on your Mac.
-4. Choose Sofa Kingdoms, then Host on the TV.
+4. Choose an available game, then Host on the TV.
 5. Scan the room QR with both phones. Cast the Mac browser to your TV.
 
 Keep Terminal open while playing. Press Control+C to stop.
@@ -68,6 +55,19 @@ const files = await Promise.all(runtime.map(async name => ({
   mode: name === 'start-sofa.command' ? 0o100755 : 0o100644,
 })));
 files.push({ name: prefix + 'README.txt', data: Buffer.from(readme), mode: 0o100644 });
+// The archive can be audited after extraction without Git or a build tool.
+const artifactManifest = {
+  schemaVersion: 1,
+  artifact: 'sofa-arcade-local',
+  requires: { node: '>=22.13.0' },
+  files: files.map(file => ({
+    path: file.name.slice(prefix.length),
+    bytes: file.data.length,
+    mode: (file.mode & 0o777).toString(8),
+    sha256: createHash('sha256').update(file.data).digest('hex'),
+  })).sort((a, b) => a.path.localeCompare(b.path, 'en')),
+};
+files.push({ name: prefix + 'artifact-manifest.json', data: Buffer.from(JSON.stringify(artifactManifest, null, 2) + '\n'), mode: 0o100644 });
 files.sort((left, right) => left.name.localeCompare(right.name, 'en'));
 const directories = new Set([prefix]);
 for (const file of files) {
@@ -126,4 +126,4 @@ end.writeUInt32LE(offset, 16);
 const archive = Buffer.concat([...bodies, directory, end]);
 await mkdir(path.dirname(output), { recursive: true });
 await writeFile(output, archive);
-console.log(JSON.stringify({ archive: output, files: files.length, bytes: archive.length }));
+console.log(JSON.stringify({ archive: output, files: files.length, bytes: archive.length, sha256: createHash('sha256').update(archive).digest('hex') }));

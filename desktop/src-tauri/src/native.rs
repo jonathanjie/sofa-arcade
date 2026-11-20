@@ -148,7 +148,6 @@ fn reveal_game(app: &tauri::AppHandle, config: &Config) {
     let app = app.clone();
     let on_main = app.clone();
     let port = config.port;
-    let route = config.last_path.clone();
     let generation = app
         .state::<Desktop>()
         .status
@@ -169,7 +168,10 @@ fn reveal_game(app: &tauri::AppHandle, config: &Config) {
             if let Some(startup) = on_main.get_webview_window("startup") { let _ = startup.hide(); }
             return;
         }
-        let url = tauri::Url::parse(&format!("http://127.0.0.1:{port}{route}")).expect("validated saved route");
+        // The shared shell persists the current session and clears it on Exit.
+        // A periodically sampled native room URL can lag that explicit choice;
+        // always open the stable origin and let the shell own resume routing.
+        let url = tauri::Url::parse(&format!("http://127.0.0.1:{port}/")).expect("validated loopback origin");
         let on_loaded = on_main.clone();
         let window = WebviewWindowBuilder::new(&on_main, "main", WebviewUrl::External(url))
             .title("Sofa Arcade")

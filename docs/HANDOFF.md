@@ -2,6 +2,27 @@
 
 This is a living-room game collection for Jon and Lydia: one Site, one source repository, a shared TV, and two phone controllers. Read [README.md](../README.md), [AGENTS.md](../AGENTS.md), and the current source before editing. This handoff includes the strategy, local-network, randomized-opening, GitHub migration, and parallel game-design updates; inspect version history and deployment status for the latest published release.
 
+## Local integration checkpoint
+
+WS6 works on `feature/local-integration` from base
+`e34b0015399cb9791b175987adf1fab1b542565a`. Read
+[the frozen component matrix](../tests/integration/components.json),
+[the executed acceptance report](workstreams/integration.md), and
+[local setup/build instructions](LOCAL_RELEASE.md) before continuing.
+All five ready component heads are included by merge ancestry. The complete
+browser candidate passed at `4695643`; Odd Laws is now enabled. The ordinary
+collection-create rerun and combined native acceptance keep the aggregate PR
+draft until their exact-head gates pass.
+Do not combine moving owner-branch tips or copy unfinished component files.
+
+Shared production and portable inputs now live in `scripts/runtime-files.mjs`.
+Regenerate public modules/root HTML and the portable ZIP after source changes;
+verify the extracted archive, explicit LAN routes, and desktop manifest together.
+`npm run verify:components` / `npm run verify:local-release` are strict readiness
+gates. Reports distinguish exact committed checks, dirty diagnostics, native CI,
+and physical hardware acceptance. See the matrix for permitted serving-only
+post-handoff corrections.
+
 ## Project identity
 
 | Item | Value |
@@ -19,7 +40,7 @@ The URL, package, and folder retain the earlier `sofa-kingdoms` name. Preserve t
 
 ## Product intent and playable scope
 
-**Current execution plan:** Jon chose Tauri/local play and requested independent, long-running implementation sessions, each ending in a tested GitHub PR. Start with [DISPATCH_LOCAL.md](DISPATCH_LOCAL.md) and the versioned [local implementation contracts](LOCAL_IMPLEMENTATION_CONTRACT.md). WS1–WS5 can work in parallel (engine, private room platform, UI, media, desktop); WS6 owns final shared wiring and acceptance. Each has a separate branch, exclusive write set, and workstream report. Tauri can package Sofa Kingdoms immediately while the new game is built. No hosted migration/deployment is authorized by those task scopes, and no Tauri application has yet been implemented by this documentation update.
+**Current execution plan:** Jon chose Tauri/local play and requested independent, long-running implementation sessions, each ending in a tested GitHub PR. Start with [DISPATCH_LOCAL.md](DISPATCH_LOCAL.md) and the versioned [local implementation contracts](LOCAL_IMPLEMENTATION_CONTRACT.md). WS1–WS5 can work in parallel (engine, private room platform, UI, media, desktop); WS6 owns final shared wiring and acceptance. Each has a separate branch, exclusive write set, and workstream report. WS5 supplies the native implementation and prior native test evidence; its final tested inclusion and the integrated native acceptance gates are tracked in the component matrix and integration report. No hosted migration/deployment is authorized by these task scopes.
 
 The TV displays the shared board, normally from a Mac browser cast to the living-room TV. Each phone owns one controller seat. Jon and Lydia are illustrated tiny mouse adventurers; their orange cat Lala rearranges the sofa kingdom. Generated game art is in `public/assets/`; original character sheets are not committed.
 
@@ -31,17 +52,17 @@ Keep characters lively and regular match screens spacious. Explanations belong i
 | Borrowed Minutes | Planned | Cooperative time-loop heist |
 | Gravity Orchard | Planned | Rotate gravity to guide fruit |
 | Afterglow Market | Planned | Trade and build a night-market stall |
-| The Odd Laws Society | Planned; expanded specification | Build cities and use sealed bids to change shared laws |
+| The Odd Laws Society | Playable in the local integration candidate | Six-session city builder with sealed bids, finite markets and changing shared laws |
 | The Last Ninety Seconds | Planned | Mystery with clues split across phones |
 | Footprints at Midnight | Planned | Hidden movement and tracking |
 
-Planned games have concept pages but cannot create rooms. They are not implemented games.
+A planned catalog entry cannot create rooms. Odd Laws has all five integrated components and passed four real browser matches before catalog enablement. The ordinary enabled-card journey and combined native checks must still pass before the aggregate PR is ready. The other planned games remain concept specifications.
 
 ### Latest planning direction — 20 November 2026
 
-Jon requested strategy-game depth comparable in weight to Citadels / 7 Wonders. [Odd Laws Society v0.2](games/odd-laws-society.md) replaces the earlier 5×5 movement race with a six-session, four-action city builder: 3×3 boroughs, scarce public building stock, 18 building designs, 12 bounded laws, two active law slots, and simultaneous sealed influence bids. It is a full prototype specification, not implemented or human-playtested. Its private commitments now require Gates B/C as well as A; the old public-only integration advice is obsolete. The [parallel guide](PARALLEL_DEVELOPMENT.md) and session prompt have been updated accordingly.
+Jon requested strategy-game depth comparable in weight to Citadels / 7 Wonders. [Odd Laws Society v0.2](games/odd-laws-society.md) replaces the earlier 5×5 movement race with a six-session, four-action city builder: 3×3 boroughs, scarce public building stock, 18 building designs, 12 bounded laws, two active law slots, and simultaneous sealed influence bids. All five components are integrated at the reviewed heads in the WS6 matrix; automated component, protocol and rendered checks are recorded in the integration report. Human balance/playtime validation and combined native acceptance remain distinct gates. Private commitments require per-viewer projection; the old public-only integration advice is obsolete. The [parallel guide](PARALLEL_DEVELOPMENT.md) and session prompt have been updated accordingly.
 
-[DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md) answers the hosting and desktop questions. Pages can serve a static frontend but needs a separate online room backend; either frontend can connect to an external WebSocket service. The current Sites contract does not establish Durable Object provisioning. The LAN host already pushes changes using HTTP commands plus SSE. A proposed Tauri shell would bundle that local host for convenient startup; it is not an established performance improvement. No Pages migration, hosted WebSocket service, or Tauri app has been built or deployed by this planning update. The existing Site and Sofa Kingdoms remain the playable release.
+[DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md) preserves the hosting and desktop research. The implemented local Tauri shell bundles the HTTP/SSE host, SQLite and assets; its current build and acceptance instructions are in [LOCAL_RELEASE.md](LOCAL_RELEASE.md). This integration does not publish the existing Site, migrate to Pages, introduce a cloud service or claim a measured casting/Wi-Fi improvement.
 
 ## Architecture
 

@@ -5,6 +5,9 @@
  */
 import { SCORE, eventsForBar } from './score.mjs?v=3';
 
+const defaultSoundtrack = Object.freeze({ id: 'sofa-kingdoms', score: SCORE, eventsForBar, eventsForEffect: null });
+let soundtrack = defaultSoundtrack;
+
 const STORAGE_KEY = 'sofa-arcade-audio-v1';
 const clamp = (number, min, max) => Math.min(max, Math.max(min, number));
 const browser = typeof window !== 'undefined' ? window : null;
@@ -18,7 +21,7 @@ const preferences = {
   phoneEffects: typeof saved.phoneEffects === 'boolean' ? saved.phoneEffects : false,
   volume: Number.isFinite(saved.volume) ? clamp(saved.volume, 0, 1) : 0.45,
 };
-const scene = { role: null, view: 'collection', phase: null, forecastType: null, round: 1, maxRounds: 10 };
+const scene = { role: null, view: 'collection', phase: null, forecastType: null, round: 1, maxRounds: 10, scoreScene: 'lobby' };
 const listeners = new Set();
 const voices = new Set();
 let context = null;
@@ -39,8 +42,8 @@ let disposed = false;
 
 // The composition is a fixed, authored score; scene changes only alter the
 // supporting arrangement at four-bar phrase boundaries. Its tempo never jumps.
-const BEAT_SECONDS = 60 / SCORE.bpm;
-const BAR_SECONDS = BEAT_SECONDS * SCORE.beatsPerBar;
+const beatSeconds = () => 60 / soundtrack.score.bpm;
+const barSeconds = () => beatSeconds() * soundtrack.score.beatsPerBar;
 const musicViews = new Set(['detail', 'lobby', 'game', 'tutorial', 'practice']);
 const midi = pitch => 440 * Math.pow(2, (pitch - 69) / 12);
 const phone = () => scene.role === 'player';
@@ -145,7 +148,9 @@ function attach(source, envelope, extraNodes, kind, at, duration) {
 }
 
 function tone(pitch, at, duration, level, instrument = 'bell', kind = 'music') {
-  if (!context || !Number.isFinite(pitch)) return;
+  // Authored zero-level events are rests. Web Audio exponential ramps cannot
+  // target zero, and a rest does not need an oscillator or a scheduler voice.
+  if (!context || !Number.isFinite(pitch) || !Number.isFinite(level) || level <= 0) return;
   const source = context.createOscillator();
   const envelope = context.createGain();
   const filter = context.createBiquadFilter();
@@ -177,7 +182,7 @@ function tone(pitch, at, duration, level, instrument = 'bell', kind = 'music') {
   if (kind === 'music' && isLead) envelope.connect(delaySend);
   attach(source, envelope, [filter], kind, at, duration + .035);
 
-  // The sparkle is reserved for short gameplay effects, never the soundtrack.
+  // A quiet upper partial gives authored bell notes their short sparkle.
   if (instrument === 'bell') {
     const harmonic = context.createOscillator();
     const gain = context.createGain();
@@ -217,6 +222,7 @@ function stopClock() {
 }
 
 function arrangement() {
+  if (soundtrack.id !== 'sofa-kingdoms') return scene.scoreScene;
   if (scene.phase === 'finished') return 'celebrate';
   if (scene.forecastType === 'pounce' || scene.round >= scene.maxRounds - 1) return 'mischief';
   if (scene.view === 'lobby' || scene.view === 'detail') return 'lobby';
@@ -227,9 +233,9 @@ function scheduleBar(index, at) {
   // Scene changes wait for the next question or answer. Melody and tempo stay
   // intact while only the accompaniment's voicing, articulation, and level vary.
   if (index % 4 === 0) phraseMode = arrangement();
-  for (const note of eventsForBar(index, phraseMode)) {
-    tone(note.pitch, at + note.beat * BEAT_SECONDS,
-      note.duration * BEAT_SECONDS, note.level, note.instrument);
+  for (const note of soundtrack.eventsForBar(index, phraseMode)) {
+    tone(note.pitch, at + note.beat * beatSeconds(),
+      note.duration * beatSeconds(), note.level, note.instrument);
   }
   lastScheduledBar = index;
 }
@@ -244,8 +250,8 @@ function tick() {
   }
   if (nextBarTime < context.currentTime + .18) {
     scheduleBar(barCursor, nextBarTime);
-    nextBarTime += BAR_SECONDS;
-    barCursor = (barCursor + 1) % SCORE.bars.length;
+    nextBarTime += barSeconds();
+    barCursor = (barCursor + 1) % soundtrack.score.bars.length;
   }
 }
 
@@ -285,6 +291,12 @@ function resume() {
 function effect(type = 'move') {
   if (!running() || !effectsEnabled() || preferences.volume <= 0 || page?.hidden) return;
   const at = context.currentTime + 0.01;
+  if (soundtrack.eventsForEffect) {
+    for (const note of soundtrack.eventsForEffect(type)) {
+      tone(note.pitch, at + note.beat * beatSeconds(), note.duration * beatSeconds(), note.level, note.instrument, 'effect');
+    }
+    return;
+  }
   const sounds = {
     move: [[72, 0, 0.11, 0.055]],
     collect: [[79, 0, 0.16, 0.1], [84, 0.075, 0.23, 0.08]],
@@ -323,6 +335,33 @@ export const audio = Object.freeze({
     if (wasPhone !== phone()) stopVoices('effect');
     sync();
   },
+  /** Switch the score on the existing graph/clock; never open another audio context. */
+  setScore(id, module = null) {
+    let next = defaultSoundtrack;
+    if (id !== 'sofa-kingdoms') {
+      const score = module?.SCORE;
+      if (typeof id !== 'string' || !score || !Number.isFinite(score.bpm) || score.bpm <= 0 ||
+          !Number.isFinite(score.beatsPerBar) || score.beatsPerBar <= 0 || !Array.isArray(score.bars) ||
+          !score.bars.length || typeof module.eventsForBar !== 'function') {
+        throw new TypeError('A complete authored score is required.');
+      }
+      next = { id, score, eventsForBar: module.eventsForBar, eventsForEffect: typeof module.eventsForEffect === 'function' ? module.eventsForEffect : null };
+    }
+    if (soundtrack.id === next.id && soundtrack.score === next.score) return;
+    stopClock();
+    stopVoices('effect');
+    soundtrack = next;
+    barCursor = 0;
+    lastScheduledBar = 0;
+    scene.scoreScene = 'lobby';
+    phraseMode = arrangement();
+    sync();
+    notify();
+  },
+  setScene(value) {
+    if (!['lobby', 'council', 'term1', 'term2', 'term3', 'celebrate'].includes(value)) return;
+    scene.scoreScene = value;
+  },
   setMusic(enabled) {
     preferences.music = !!enabled;
     remember();
@@ -347,7 +386,7 @@ export const audio = Object.freeze({
   effect,
   getSettings() {
     return {
-      trackTitle: SCORE.title,
+      trackTitle: soundtrack.score.title,
       music: preferences.music,
       effects: effectsEnabled(),
       volume: preferences.volume,

@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "repository": "jonathanjie/sofa-arcade",
+  "integrationBranch": "feature/local-integration",
+  "base": {
+    "ref": "main",
+    "sha": "e34b0015399cb9791b175987adf1fab1b542565a"
+  },
+  "components": [
+    {
+      "id": "WS1",
+      "branch": "feature/odd-laws-engine",
+      "report": "docs/workstreams/odd-laws-engine.md",
+      "pr": 4,
+      "head": "a9d55b76c3c7d1da43836c350a0f7ce63820cecb",
+      "status": "included",
+      "protectedPaths": [
+        "games/odd-laws-society",
+        ".github/workflows/ws1-engine.yml"
+      ],
+      "postHandoffCorrections": [],
+      "review": {
+        "handoff": "PR #4 marked ready; owner report declares engine complete",
+        "localChecks": [
+          "95 engine tests passed",
+          "7 projected scenarios / 8 fixture files verified",
+          "64 smoke matches / 3072 transitions audited"
+        ],
+        "ciRuns": [
+          44700753729,
+          44700753722
+        ]
+      }
+    },
+    {
+      "id": "WS2",
+      "branch": "feature/local-platform",
+      "report": "docs/workstreams/room-platform.md",
+      "pr": 7,
+      "head": "adeefd5bd019e459f3f7a3fc4a921073cce3ec46",
+      "status": "included",
+      "protectedPaths": [
+        "server/rooms.mjs",
+        "server/rooms.test.mjs",
+        "server/lan.mjs",
+        "server/lan.test.mjs",
+        "server/room-*.mjs",
+        "ui/transport.mjs",
+        "ui/transport.test.mjs",
+        "ui/room-client.mjs",
+        "ui/room-client.test.mjs",
+        ".github/workflows/ws2-platform.yml"
+      ],
+      "postHandoffCorrections": [
+        {
+          "path": "server/lan.mjs",
+          "blob": "96bb9f34662649a83663d7c7003486f73ca7a28a",
+          "mode": "100644",
+          "reason": "Extend only explicit serving entries for shared adapters, three WS1 public helpers, twelve WS3 UI/CSS files, two WS4 score modules and the exact declared static assets; replace broad asset-directory membership with an explicit serving list while retaining canonicalization, Host/Origin/API/SSE logic.",
+          "verification": "79 focused WS2 tests and 4 public-delivery boundary tests pass; actual extracted ZIP browser-graph and privacy checks pass; exact-head component/browser acceptance runs in root CI."
+        }
+      ],
+      "review": {
+        "handoff": "PR #7 marked ready; final report explicitly permits serving-list additions",
+        "localChecks": [
+          "79 focused platform/client tests passed after entry-only LAN extension"
+        ],
+        "ciRuns": [
+          44701350370,
+          44701350366
+        ]
+      }
+    },
+    {
+      "id": "WS3",
+      "branch": "feature/odd-laws-ui",
+      "report": "docs/workstreams/odd-laws-ui.md",
+      "pr": 5,
+      "head": "87693dd61af1b6a011a26da814fc884f85bca809",
+      "status": "included",
+      "protectedPaths": [
+        "ui/games/odd-laws-society",
+        ".github/workflows/ws3-ui.yml"
+      ],
+      "postHandoffCorrections": [],
+      "review": {
+        "handoff": "PR #5 marked ready; runtime byte-identical to independently reviewed30a7f07",
+        "localChecks": [
+          "33 component Node tests passed on the assembled candidate",
+          "Actual WS1 helpers/renderers:6 complete matches,294 projected snapshots,20728 markup renders"
+        ],
+        "ciRuns": [
+          44703150418,
+          44703150367
+        ]
+      }
+    },
+    {
+      "id": "WS4",
+      "branch": "feature/odd-laws-media",
+      "report": "docs/workstreams/odd-laws-media.md",
+      "pr": 8,
+      "head": "be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85",
+      "status": "included",
+      "protectedPaths": [
+        "public/assets/odd-laws-society",
+        "ui/media/odd-laws-society",
+        ".github/workflows/ws4-media.yml"
+      ],
+      "postHandoffCorrections": [],
+      "review": {
+        "handoff": "PR #8 marked ready; final owner report and both exact-head workflows passed",
+        "localChecks": [
+          "16 media tests passed; all 57 inventory hashes and bytes independently verified",
+          "54 final images decoded/parsed and actual catalog/character sheets inspected",
+          "7 arrangements and 10 effects verified numerically; physical listening remains a hardware gate"
+        ],
+        "ciRuns": [
+          44704211495,
+          44704211519
+        ]
+      }
+    },
+    {
+      "id": "WS5",
+      "branch": "feature/tauri-local",
+      "report": "docs/workstreams/tauri.md",
+      "pr": 6,
+      "head": "618fc837f2f24f55a3aad1477ea9cf35ff478faf",
+      "status": "included",
+      "protectedPaths": [
+        "desktop",
+        ".github/workflows/desktop.yml"
+      ],
+      "postHandoffCorrections": [
+        {
+          "path": "desktop/runtime-manifest.json",
+          "blob": "ebd5dcc48d90b4639ab916095cc0e17ce12f3a02",
+          "mode": "100644",
+          "reason": "Append exactly79 reviewed game/client/UI/media runtime entries to the existing25-file manifest. No native code, build settings, owned tests, or workflow changes.",
+          "verification": "104-file Linux stage and independent manifest closure pass; bundled Node24.22.3 executes ESM/SQLite with no Node on PATH;12 desktop tests pass. Final combined macOS workflows remain required."
+        },
+        {
+          "path": "desktop/src-tauri/src/native.rs",
+          "blob": "e25b0c5aee1d3742e76b704d5b4b2b387d336fb7",
+          "mode": "100644",
+          "reason": "Open recreated native game windows at the stable bare loopback root so the shared shell saved-session pointer, including explicit Exit, owns resume. A sampled legacy room URL must not override a cleared session.",
+          "verification": "The prior exact-head ARM three-process regression exposed the real stale-room restore; the existing regression now deliberately seeds a stale native lastPath before the final launch. Both combined architecture/native workflows must pass on this correction before merge."
+        },
+        {
+          "path": "desktop/wdio.native.mjs",
+          "blob": "96cc0a20064202091e278f78bfa82d3a7dd060ce",
+          "mode": "100644",
+          "reason": "Use the existing PID-specific native Quit helper before the pinned WebDriver service sends SIGTERM. Validate launcher/app/sidecar ownership and require actual parent, child and listener closure; preserve all recent-write, explicit-exit and crash assertions.",
+          "verification": "Pinned WDIO 9.33.1 hook order and service 1.5.1 signal cleanup independently inspected; syntax and failure/control-flow checks pass. Exact-head combined ARM/Intel native and production desktop workflows remain required before merge."
+        }
+      ],
+      "review": {
+        "handoff": "PR #6 explicitly ready at618fc837; final owner report and all three exact-head desktop jobs passed on matching architectures.",
+        "localChecks": [
+          "104 explicit runtime files staged and verified after the entry-only integration extension",
+          "12 desktop runtime/bootstrap tests passed on Linux using the pinned bundled Node",
+          "Earlier3a2bd4e ARM/Intel production artifacts independently byte/hash inspected; final618fc837 runtime code unchanged, test/report delta reviewed"
+        ],
+        "ciRuns": [
+          44706214389,
+          44706214344
+        ]
+      }
+    }
+  ]
+}
