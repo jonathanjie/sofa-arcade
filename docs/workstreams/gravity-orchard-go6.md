@@ -358,11 +358,16 @@ node --test server/lan.test.mjs server/room-lan-integration.test.mjs ui/transpor
 npm test
 npm run install:ci
 npm run build
+node desktop/scripts/prepare.mjs --target x86_64-unknown-linux-gnu
+node --test desktop/tests/runtime.test.mjs desktop/tests/host.test.mjs
 ```
 
 Local Node 24.22.3 results: **74/74** component tests pass; the unchanged LAN/private
 room/transport set passes **22/22**; `npm test` passes **81/81**; the production
-build passes. Generated/shared build outputs are not committed.
+build passes. After staging the checksum-verified bundled Linux Node, the existing
+desktop runtime/host-lifecycle regressions pass **12/12**. These verify the existing
+portable host; they do not establish a GO6 native bridge or Mac GUI acceptance.
+Generated/shared build outputs are not committed.
 
 Component tests cover unique roots, restart persistence, renewable leaf/address
 changes, expiry/corruption/SAN/key/purpose rejection, atomic refresh and root
@@ -406,6 +411,27 @@ contains `browser-results.json`, `tested-sha.txt` and nine PNGs: initial, ready,
 missing-trust, permission-denied, expired, address-changed, failed, narrow setup,
 and HTTP-loopback diagnostic. Screenshots are UI evidence; simulated host/phone
 states and loopback secure-context eligibility do not prove phone trust/sensors.
+
+The reviewed browser capture passed **11/11 flows** in Chromium 151.0.7922.34 on
+Linux Node 24.22.3 at source `f3f15aad3ac706993da7e97758ded85fe9a12a56`:
+[capture workflow](https://github.com/jonathanjie/sofa-arcade/actions/runs/44778320277).
+All nine screenshots were visually inspected. Narrow setup now keeps the touch
+action in the first 390×844 viewport and preserves keyboard/DOM order when the
+window changes size. The checked-in [evidence index](../../desktop/secure-lan/evidence/README.md)
+includes every screenshot, the original browser result, runtime and capture SHA.
+The PR/checks record the final tested head; the evidence commit changes only
+documentation and reviewed public screenshots, not the captured application code.
+
+| Representative state | Reviewed capture |
+| --- | --- |
+| Initial setup | [1280px](../../desktop/secure-lan/evidence/initial-1280.png) |
+| Host ready | [1280px](../../desktop/secure-lan/evidence/ready-1280.png) |
+| Missing phone trust | [1280px](../../desktop/secure-lan/evidence/missing-trust-1280.png), [390px with keyboard focus](../../desktop/secure-lan/evidence/missing-trust-390.png) |
+| Motion permission denied (simulated) | [1280px](../../desktop/secure-lan/evidence/permission-denied-1280.png) |
+| Expired certificate | [1280px](../../desktop/secure-lan/evidence/expired-1280.png) |
+| Address changed | [1280px](../../desktop/secure-lan/evidence/address-changed-1280.png) |
+| Failure/retry | [1280px](../../desktop/secure-lan/evidence/failed-1280.png) |
+| Diagnostic on HTTP loopback | [390px](../../desktop/secure-lan/evidence/diagnostic-http-390.png) |
 
 The executor also denies interface enumeration (`uv_interface_addresses` EPERM).
 The production wildcard listener fails closed in that case. Only address-discovery
