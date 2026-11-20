@@ -5,9 +5,9 @@
 Work is on `feature/local-integration` in a dedicated clone. Base `main` is
 `e34b0015399cb9791b175987adf1fab1b542565a` (20 November 2026).
 
-**Status: assembling reviewed components; not a complete local release.** WS1 and WS2
-are included at their explicitly ready, tested heads. WS3 and WS5 have draft
-PRs with outstanding owner CI gates; WS4 has not published a handoff. No component
+**Status: assembling reviewed components; not a complete local release.** WS1, WS2 and WS3
+are included at their explicitly ready, tested heads. WS5 has a draft PR with
+an outstanding native UI gate; WS4 has not published a handoff. No component
 code is copied from an unfinished working tree. Odd Laws Society remains planned
 until real end-to-end acceptance passes.
 
@@ -20,7 +20,7 @@ immutable head. A later head is a new candidate requiring affected checks again.
 | --- | --- | --- | --- |
 | WS1 engine | `feature/odd-laws-engine` | #4 — `a9d55b76c3c7d1da43836c350a0f7ce63820cecb` | Included; ready handoff and owned CI verified |
 | WS2 private platform | `feature/local-platform` | #7 — `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Included; ready handoff and owned CI verified |
-| WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — observed `30a7f076d0b7202fb2d530f71ab010369f81f2cf` | Draft; not incorporated |
+| WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — `87693dd61af1b6a011a26da814fc884f85bca809` | Included; ready handoff and owned CI verified |
 | WS4 media/music | `feature/odd-laws-media` | Not published at initial inspection | Awaiting tested handoff |
 | WS5 Tauri | `feature/tauri-local` | #6 — observed `792b52cc9cd1826a8c23c810baf576ecd89e122a` | Draft; not incorporated |
 
@@ -286,3 +286,44 @@ feature-gated test app without changing native/component files and verify
 public modules, all final media, sealed TV projection, Build, and three actual
 processes for saved-root restoration and explicit exit. Syntax is verified;
 these are pending gates until the complete native combination runs.
+
+### WS3 reviewed handoff
+
+WS3 PR #5 is explicitly ready at `87693dd61af1b6a011a26da814fc884f85bca809`.
+Its runtime files are byte-identical to the independently reviewed `30a7f07`;
+the final delta adds tutorial screenshot evidence/documentation.
+[Final component CI](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703150418)
+and [Game checks](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703150367)
+were inspected and passed. WS6 reran all 33 component Node tests on the assembled
+candidate, and its independent pure-renderer composition exercised canonical
+WS1 helpers across both Chairs × rich/tie/fill matches, 294 projected snapshots,
+and 20,728 markup renders including all 18 inspections and ten tutorial lessons.
+That is helper/renderer compatibility evidence, not a browser journey.
+
+The exact 12 declared UI/CSS files now enter production preparation, explicit LAN
+serving and the portable runtime. The game uses the actual mounted view and
+component tutorial; no mock catalog, fixture coordinator or component test file
+is shipped. The remaining media handoff is required for the complete shared
+score/browser journey. The extra shell chrome must be measured with the full
+TV layout at 720p in that first combined run.
+
+At exact head `6f3ecbf1b23f677b1748980e404c39835ab2ac0c`, the complete rendered
+Sofa regression passed **15 checks with six screenshots**, including all four
+delayed create/find/join/start navigation races.
+[Passing browser evidence](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703555638/artifacts/14612884134).
+Production, WS1, WS2 and legacy checks also passed; only missing-component
+package/readiness gates remained red.
+
+A subsequent shared preference fix follows WS3's documented mount-only contract:
+system reduced-motion changes remount only the view, preserving the authenticated
+client, committed projection, sent request identities and recovery. Retired-view
+callbacks are fenced. Unsubmitted local drafts and open game drawers are reset;
+saved tutorial progress remains, and standalone guided practice changes its
+motion class in place. The shell's explicit Replay control now restarts the
+tutorial, while Learn resumes. Sixteen focused shell/audio/recovery tests pass.
+
+The component checkpoint now pins the exact blob and mode of every permitted
+post-handoff correction, checks base/head ancestry and owner reports, and rejects
+protected working-tree changes. Six temporary-repository tests exercise valid
+assembly, unknown bases/heads, report drift, correction drift and uncommitted
+changes. No whole-path wildcard exemption remains.

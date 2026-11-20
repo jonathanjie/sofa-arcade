@@ -57,6 +57,7 @@ internet-disconnected hardware, device audio, sleep/wake, TV casting, Developer
 ID/notarization and downloaded-app Gatekeeper behavior remain separately reported.
 
 Current preparation was source-reviewed against WS5 draft
-`792b52cc9cd1826a8c23c810baf576ecd89e122a`; syntax checks pass. A prepared test is
+`8d9f91c7b551856e8b66016720faf31eecf56877`, including its fresh-DOM visibility
+wait correction; syntax checks pass. A prepared test is
 not a native pass. Recheck the delivered WS5 setup contract and run this suite
 at the proposed final integration commit before counting acceptance.

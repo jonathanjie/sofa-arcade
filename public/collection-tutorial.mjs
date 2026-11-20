@@ -135,5 +135,10 @@ export function mountCollectionTutorial({
     bridge = createTutorialBridge({ createTutorial, rules, assets, sound, onRender: render, onClose: () => finish(true) });
     bridge.open({ replay });
   } catch (error) { finish(false); throw error; }
-  return Object.freeze({ dispose() { finish(false); } });
+  return Object.freeze({
+    setPreferences(next) {
+      if (!disposed && typeof next?.reducedMotion === 'boolean') root.classList.toggle('ols-reduced-motion', next.reducedMotion);
+    },
+    dispose() { finish(false); },
+  });
 }

@@ -16,6 +16,23 @@ const fixture = process.env.SOFA_INTEGRATION_NATIVE_FIXTURE;
 const screenshot = name => browser.saveScreenshot(path.join(evidenceDir, `integration-native-${name}.png`));
 const names = { jon: 'Jon', lydia: 'Lydia' };
 
+async function waitRendered(selector, { timeout = 15_000, scrollIntoView = false } = {}) {
+  // A legitimate SSE render can replace an element after WebDriver finds it.
+  // Query and inspect the current DOM in the same turn, requiring visible pixels.
+  await browser.waitUntil(() => browser.execute((selector, scroll) => {
+    const node = document.querySelector(selector);
+    if (!node?.isConnected) return false;
+    if (scroll) node.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+    const rect = node.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0 || rect.bottom <= 0 || rect.right <= 0 || rect.top >= innerHeight || rect.left >= innerWidth) return false;
+    for (let element = node; element; element = element.parentElement) {
+      const style = getComputedStyle(element);
+      if (style.display === 'none' || ['hidden', 'collapse'].includes(style.visibility) || Number(style.opacity) === 0) return false;
+    }
+    return true;
+  }, selector, scrollIntoView), { timeout, timeoutMsg: `Current native WKWebView did not visibly render ${selector}` });
+}
+
 async function mainWindow() {
   await browser.waitUntil(async () => (await browser.getWindowHandles()).includes('main'), { timeout: 25_000, timeoutMsg: 'Actual native main WKWebView did not open' });
   await browser.switchToWindow('main');
@@ -40,7 +57,7 @@ async function nativeRoom(code) {
 }
 
 async function boardAt(room) {
-  await $('.ols-tv').waitForDisplayed();
+  await waitRendered('.ols-tv');
   const state = room.state;
   await browser.waitUntil(() => browser.execute(expected => {
     const root = document.querySelector('.ols-tv');
@@ -118,6 +135,29 @@ async function verifyNativeModulesAndMedia(room) {
 }
 
 describe(`WS6 integrated real WKWebView (${phase})`, () => {
+  afterEach(async function () {
+    if (this.currentTest?.state !== 'failed') return;
+    try {
+      const diagnostic = await browser.execute(() => {
+        const selectors = ['.arcade-home', '.odd-laws-detail', '.room-code', '[data-action="start"]', '.ols-tv', '.ols-drawer'];
+        return {
+          origin: location.origin, pathname: location.pathname,
+          route: { host: new URL(location.href).searchParams.has('room'), player: new URL(location.href).searchParams.has('join') },
+          viewport: { width: innerWidth, height: innerHeight, scrollX, scrollY },
+          nodes: selectors.map(selector => {
+            const node = document.querySelector(selector);
+            if (!node) return { selector, exists: false };
+            const rect = node.getBoundingClientRect(), style = getComputedStyle(node);
+            return { selector, exists: true, connected: node.isConnected, width: rect.width, height: rect.height, top: rect.top, left: rect.left, display: style.display, visibility: style.visibility, opacity: style.opacity, checkVisibility: node.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) ?? null };
+          }),
+          // No response bodies, storage entries, headers or bearer URLs are saved.
+          resources: performance.getEntriesByType('resource').map(entry => new URL(entry.name, location.href)).filter(url => ['http:', 'https:'].includes(url.protocol)).map(url => url.origin + url.pathname),
+        };
+      });
+      await saveEvidence(`integration-native-${phase}-diagnostic.json`, diagnostic);
+      await screenshot(`${phase}-failure`);
+    } catch { /* The base native runner also attempts an actual failure screenshot. */ }
+  });
   it('loads the combined local runtime and restores a saved Odd Laws host through bare root', async function () {
     this.timeout(180_000);
     const status = await mainWindow();
@@ -127,11 +167,11 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
       const saved = JSON.parse(await readFile(fixture, 'utf8'));
       assert.equal(origin, saved.origin);
       assert.notEqual(status.parentPid, saved.relaunchParentPid, 'Collection exit is checked in another native process');
-      await $('.arcade-home').waitForDisplayed();
+      await waitRendered('.arcade-home');
       await browser.url(origin + '/');
-      await $('.arcade-home').waitForDisplayed();
+      await waitRendered('.arcade-home');
       assert.equal(new URL(await browser.getUrl()).search, '');
-      assert.equal(await $('.ols-tv').isExisting(), false);
+      assert.equal(await browser.execute(() => !!document.querySelector('.ols-tv')), false);
       await screenshot('exited-collection');
       await saveEvidence('integration-native-exited.json', { passed: true, nativePidChanged: true, explicitExitClearedSavedSession: true, freshRootRemainsCollection: true });
       return;
@@ -152,7 +192,7 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
       assert.equal(await browser.execute(() => localStorage.getItem('sofa-native-integration-marker')), saved.marker);
       await screenshot('root-restored-odd-laws');
       await $('.ols-toolbar [data-action="exit"]').click();
-      await $('.arcade-home').waitForDisplayed();
+      await waitRendered('.arcade-home');
       assert.equal(await browser.execute(() => JSON.parse(localStorage.getItem('sofa-last-local-session-v1') || 'null')), null);
       assert.equal(await browser.execute(() => document.querySelectorAll('link[data-odd-laws-style]').length), 0);
       await writeFile(fixture, JSON.stringify({ ...saved, relaunchParentPid: status.parentPid }, null, 2) + '\n', { mode: 0o600 });
@@ -160,17 +200,21 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
       return;
     }
     assert.equal(phase, 'first');
-    await $('.arcade-home').waitForDisplayed();
+    await waitRendered('.arcade-home');
     await $('[data-action="open-game"][data-game="odd-laws-society"]').click();
-    await $('.odd-laws-detail [data-action="create"]').waitForDisplayed();
+    await waitRendered('.odd-laws-detail [data-action="create"]', { scrollIntoView: true });
     await $('.odd-laws-detail [data-action="create"]').click();
-    await $('.room-code').waitForDisplayed();
-    const code = (await $('.room-code').getText()).trim();
+    await waitRendered('.room-code');
+    const code = await browser.execute(() => document.querySelector('.room-code')?.textContent.trim());
     assert.match(code, /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/);
     const tokens = await joinBoth(origin, code);
-    await browser.waitUntil(async () => await $('[data-action="start"]').isEnabled());
+    await browser.waitUntil(() => browser.execute(() => {
+      const button = document.querySelector('[data-action="start"]');
+      return !!button && !button.disabled;
+    }));
+    await waitRendered('[data-action="start"]', { scrollIntoView: true });
     await $('[data-action="start"]').click();
-    await $('.ols-tv').waitForDisplayed();
+    await waitRendered('.ols-tv');
     let room = await nativeRoom(code);
     await boardAt(room);
     assert.equal(room.state.gameId, 'odd-laws-society');
@@ -200,8 +244,8 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
     await boardAt(room);
     assert.equal(room.state.players[actor].city.filter(Boolean).length, 1);
     await $(`.ols-tv-borough[data-player-id="${actor}"] .ols-plot-built`).click();
-    await $('.ols-drawer').waitForDisplayed();
-    assert.match(await $('.ols-inspect-quotes').getText(), new RegExp(`${names[actor]}.*price`, 'is'));
+    await waitRendered('.ols-drawer');
+    assert.match(await browser.execute(() => document.querySelector('.ols-inspect-quotes')?.textContent), new RegExp(`${names[actor]}.*price`, 'is'));
     await $('[data-action="close-drawer"]').click();
     await screenshot('odd-laws-built-city');
     const marker = crypto.randomUUID();

@@ -1,0 +1,125 @@
+{
+  "captureCommit": "e1aab1a2492da1a4c00e94f583fbb08c387a2c78",
+  "workflowRun": "https://github.com/jonathanjie/sofa-arcade/actions/runs/44701879120",
+  "artifactId": 14612414866,
+  "artifactSha256": "db5b4cb825bcf5e378d4bfdee91c69b341313af1f56ee648fec59aa79a4f75d0",
+  "browser": "Playwright 1.57.0 Chromium on Ubuntu 24.04",
+  "fixtureOnly": true,
+  "images": [
+    {
+      "file": "tv-1920-actions.png",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "65632bbf4e7a95c2a4f0bf2a7444713a945e9e7de428e19085abf6b0879a026c",
+      "source": "layout-TV-1920\u00d71080-actions-remains-inside-the-screen/tv-1920-actions.png"
+    },
+    {
+      "file": "tv-1920-income.png",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "e0562d507d8d7e2b34a414db8df71807a31f706c5c8e23dadfb9c8f4903acdb6",
+      "source": "layout-TV-1920\u00d71080-income-remains-inside-the-screen/tv-1920-income.png"
+    },
+    {
+      "file": "tv-1280-council.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "2519f0104dc7a2cbb5c5ca9cfebc7aea385dd75724315301401994fa967d9789",
+      "source": "layout-TV-1280\u00d7720-council-remains-inside-the-screen/tv-1280-council.png"
+    },
+    {
+      "file": "tv-1280-reveal.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "c2ca2ab6230b3e948b64df5bd2a5df7d30937f276e0ade2e2eec81b5770868c2",
+      "source": "layout-TV-1280\u00d7720-reveal-remains-inside-the-screen/tv-1280-reveal.png"
+    },
+    {
+      "file": "tv-1280-results.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "d9fa3c7d2f488fd55a75a4ddff8cd7c15e6b0111507aec8ded48b5c585a037e7",
+      "source": "layout-TV-1280\u00d7720-results-remains-inside-the-screen/tv-1280-results.png"
+    },
+    {
+      "file": "tv-1280-tie.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "1766b5e378ddc222ba14ca656bbfba8706dca4b304c9204f37b73bb0e0de387e",
+      "source": "layout-TV-1280\u00d7720-tie-remains-inside-the-screen/tv-1280-tie.png"
+    },
+    {
+      "file": "phone-jon-360-council.png",
+      "width": 360,
+      "height": 800,
+      "sha256": "c3f43fa965c73d1fea3052079b0cbfd453762fbfe32b56ab9f33248aa39de68a",
+      "source": "layout-jon-phone-360\u00d7800-council/phone-jon-360-council.png"
+    },
+    {
+      "file": "phone-jon-390-actions.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "533b1f003a43283ed39cd0e66a0c8733c56c2baa5f0d3e0640ad85a0b77ef1b9",
+      "source": "layout-jon-phone-390\u00d7844-actions/phone-jon-390-actions.png"
+    },
+    {
+      "file": "phone-390-build.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "96b2abcccd07fa3e65bd1274fddf0e3a72d142e53a3fce274c84217655345d23",
+      "source": "interactions-Build-selects-a1b43--law-cost-and-confirms-once/phone-390-build.png"
+    },
+    {
+      "file": "phone-lydia-390-locked.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "23b64a2af5eb47262c465626abf02d9d512f7a5f31d0eca54822a8c06486d07e",
+      "source": "layout-lydia-phone-390\u00d7844-locked/phone-lydia-390-locked.png"
+    },
+    {
+      "file": "phone-jon-360-full.png",
+      "width": 360,
+      "height": 800,
+      "sha256": "2ce35db6a10ee55780e62e64849eeaea190d12bfd4cf51b58e297824eda42047",
+      "source": "layout-jon-phone-360\u00d7800-full/phone-jon-360-full.png"
+    },
+    {
+      "file": "phone-offline-fallback.png",
+      "width": 1280,
+      "height": 720,
+      "sha256": "bf8f5b99082099a234371e717b68c19453d6aecd2bc7f7d30625a0954d469fed",
+      "source": "interactions-media-failure-3c4ce-e-playable-vector-fallbacks/phone-offline-fallback.png"
+    },
+    {
+      "file": "tutorial-360-council.png",
+      "width": 360,
+      "height": 800,
+      "sha256": "fd372fdb9abc99b0fdff4afbdc44a1883251d9a4355395abcb1d98be7b2e6eca",
+      "source": "tutorial-guided-practice-t-41d22-ver-dispatches-to-the-match/tutorial-360-council.png"
+    },
+    {
+      "file": "tutorial-360-build.png",
+      "width": 360,
+      "height": 800,
+      "sha256": "4b6f173f954e1131d52922e89e7c84ad0b2c46a6eaa4ae475537df762e2eb543",
+      "source": "tutorial-guided-practice-t-41d22-ver-dispatches-to-the-match/tutorial-360-build.png",
+      "captureCommit": "30a7f076d0b7202fb2d530f71ab010369f81f2cf"
+    },
+    {
+      "file": "tutorial-360-street.png",
+      "width": 360,
+      "height": 800,
+      "sha256": "65d263ed7812c73b09bb921f7b33fbb4cff7bfe990fa56a4c23c4c3ca00ac6b4",
+      "source": "tutorial-guided-practice-t-41d22-ver-dispatches-to-the-match/tutorial-360-street.png",
+      "captureCommit": "30a7f076d0b7202fb2d530f71ab010369f81f2cf"
+    }
+  ],
+  "additionalCaptureRuns": [
+    {
+      "captureCommit": "30a7f076d0b7202fb2d530f71ab010369f81f2cf",
+      "workflowRun": "https://github.com/jonathanjie/sofa-arcade/actions/runs/44702674506",
+      "artifactId": 14614085341,
+      "artifactSha256": "79a51affc97a73f7700c3cf6da2667a638081e26931beb9d23c412fbe9a2d074"
+    }
+  ]
+}

@@ -96,6 +96,16 @@ async function assertTouchTargets(run, page, selector, expectedCount, name) {
   assert.deepEqual(small, [], `${name}: primary controls must be at least 44×44 CSS pixels`);
 }
 
+async function assertTVFits(run, page, name) {
+  const bounds = await page.evaluate(() => {
+    const rect = document.querySelector('.ols-tv').getBoundingClientRect();
+    return { viewport: { width: innerWidth, height: innerHeight }, top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, height: rect.height, scrollY };
+  });
+  (run.evidence.tvLayouts ||= []).push({ name, ...bounds });
+  assert.ok(bounds.top >= -1 && bounds.bottom <= bounds.viewport.height + 1 && bounds.left >= -1 && bounds.right <= bounds.viewport.width + 1,
+    `The full TV board including active laws must fit without scrolling (${name}): ${JSON.stringify(bounds)}`);
+}
+
 async function assertSealedProjections(run, live, before, first, vote) {
   for (const viewer of ['public', 'host', ...IDS]) {
     const { value, text } = await request(run, `/api/rooms/${live.code}`, { token: live.tokens[viewer] });
@@ -183,9 +193,11 @@ export async function verifyOddPresentation(run, live) {
     await noHorizontalOverflow(page);
     await run.screenshot(page, name);
   }
+  await assertTVFits(run, live.tv, 'council-1920x1080');
   await live.tv.setViewportSize({ width: 1280, height: 720 });
   await noHorizontalOverflow(live.tv);
   await run.screenshot(live.tv, 'council-tv-1280x720');
+  await assertTVFits(run, live.tv, 'council-1280x720');
   for (const id of IDS) {
     await assertTouchTargets(run, live.phones[id], '[data-action="phone-law"], [data-action="phone-bid"], [data-action="phone-seal"]', 8, `${id} council`);
     assert.equal(await live.phones[id].locator(`[data-character="${id}"]`).getAttribute('data-character-state'), 'thinking');
@@ -352,7 +364,10 @@ async function sealWithLostAcknowledgment(run, live, before, votes, policy) {
     await otherPhone.locator(`[data-action="phone-law"][data-choice-id="${votes[second].choiceId}"]`).click();
     await otherPhone.locator(`[data-action="phone-bid"][data-bid="${votes[second].bid}"]`).click();
     await clickCommand(run, live, otherPhone, '[data-action="phone-seal"]', policy);
-    await Promise.race([recovering, new Promise((_, reject) => setTimeout(() => reject(new Error('The rendered controller never resolved its uncertain command after exhausted retries')), 12_000))]);
+    let recoveryTimeout;
+    try {
+      await Promise.race([recovering, new Promise((_, reject) => { recoveryTimeout = setTimeout(() => reject(new Error('The rendered controller never resolved its uncertain command after exhausted retries')), 12_000); })]);
+    } finally { clearTimeout(recoveryTimeout); }
     if (failures.length) throw failures[0];
     assert.equal(live.room.state.activePlayer, first);
     const frames = await phone.evaluate(() => window.__sofaAcceptanceSseFrames);
@@ -462,6 +477,7 @@ export async function playOddMatch(run, live, rules, { policy = 'rich', recovery
       for (const id of IDS) assert.equal(room.state.players[id].influence, view.players[id].influence - votes[id].bid, 'Both winning and losing bids pay exactly once');
       if (councilCount === 1) {
         await run.screenshot(live.tv, `${policy}-council-reveal-tv`);
+        await assertTVFits(run, live.tv, `${policy}-reveal-1280x720`);
         for (const id of IDS) await assertTouchTargets(run, live.phones[id], '.ols-phone-actions button', 4, `${id} city actions`);
       }
       continue;

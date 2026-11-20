@@ -42,7 +42,10 @@ Council, Build, Work, Lobby and Festival command. The driver checks both all-pay
 outcomes, sealed per-viewer HTTP projections, replay of captured duplicate/stale
 commands, exact public score accounting, disabled full/exhausted purchases,
 private refresh, browser disconnect/reconnect, SQLite restart, bare-root role
-restoration and old-match isolation. It completes all ten guided lessons,
+restoration and old-match isolation. A lost-acknowledgment case commits the real
+command, drops four responses, holds its recovery response while live SSE moves
+to the next phase, and requires the controller to wait for that acknowledgment
+before another action. It completes all ten guided lessons,
 skip/resume/replay, Help/agenda/almanac, host-only default music, persisted audio
 controls, reduced-motion animation properties and collection exit. Screenshots
 show councils, private seals, Build previews, unavailable purchases and results.
@@ -67,7 +70,8 @@ Rendered latency uses a monotonic clock from actual browser POST emission to
 matching visible resources/city/turn/readiness or results in each context. It
 includes browser rendering, driver scheduling and up to 40ms observation
 granularity. The report retains individual samples and median/p95/maximum by
-viewer; it makes no claim about a home network or physical screen.
+viewer. Median averages the middle two samples when even; p95 uses nearest rank.
+It makes no claim about a home network or physical screen.
 
 These checks establish Chromium/local-server behavior only. They do not establish
 macOS WKWebView, native startup/quit, actual phone browsers, home Wi-Fi/casting

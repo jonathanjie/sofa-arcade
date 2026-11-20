@@ -22,6 +22,10 @@ export const BROWSER_FILES = Object.freeze([
   { url: '/games/odd-laws-society/catalog.mjs', source: 'games/odd-laws-society/catalog.mjs' },
   { url: '/games/odd-laws-society/preview.mjs', source: 'games/odd-laws-society/preview.mjs' },
   { url: '/games/odd-laws-society/errors.mjs', source: 'games/odd-laws-society/errors.mjs' },
+  ...[
+    'index.mjs', 'shared.mjs', 'graphics.mjs', 'motion.mjs', 'drawers.mjs',
+    'tv.mjs', 'phone.mjs', 'tutorial.mjs', 'view.css', 'tv.css', 'phone.css', 'tutorial.css',
+  ].map(file => ({ url: `/games/odd-laws-society/${file}`, source: `ui/games/odd-laws-society/${file}` })),
 ].map(Object.freeze));
 
 export const SERVER_FILES = Object.freeze([

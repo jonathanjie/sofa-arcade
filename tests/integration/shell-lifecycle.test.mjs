@@ -82,6 +82,63 @@ test('identical connected heartbeats do not rerender the component or clear its 
   h.handle.dispose();
 });
 
+test('motion preference changes remount only presentation while a pending command keeps its client', async () => {
+  const mounts = [], effects = [], submitted = [];
+  let clients = 0, clientDisposals = 0, options, acknowledge, exits = 0;
+  const handle = createCollectionGame({
+    root: {}, viewer: { role: 'player', playerId: 'jon' }, code: 'ABC234', token: 'seat', initialRoom: snapshot(),
+    preferences: { reducedMotion: false }, sound: { unlock() { effects.push('unlock'); }, effect(name) { effects.push(name); } },
+    createRoomClient(value) {
+      clients++; options = value; value.onStatus({ state: 'connected' });
+      return {
+        submit(action) { submitted.push(action); return new Promise(resolve => { acknowledge = resolve; }); },
+        dispose() { clientDisposals++; },
+      };
+    },
+    mount(_root, injected) {
+      const record = { injected, updates: [], statuses: [], disposals: 0 };
+      mounts.push(record);
+      return {
+        update(room) { record.updates.push(room); },
+        setConnection(status) { record.statuses.push(status); },
+        dispose() { record.disposals++; },
+      };
+    },
+    onExit() { exits++; },
+  });
+  const action = { type: 'work', matchId: 'first-match', phaseId: 'session-1-council' };
+  const pending = mounts[0].injected.dispatch(action);
+  assert.equal(submitted.length, 1);
+  assert.equal(handle.setPreferences({ reducedMotion: true }), true);
+  assert.equal(mounts[0].disposals, 1);
+  assert.equal(mounts[1].injected.preferences.reducedMotion, true);
+  assert.equal(mounts[1].updates.at(-1).revision, 1);
+  assert.equal(mounts[1].statuses.at(-1).state, 'connected');
+  assert.equal(handle.setPreferences({ reducedMotion: true }), false, 'an unchanged setting does not clear another draft');
+  assert.equal(mounts.length, 2);
+  assert.equal(clients, 1, 'a preference change never replaces the seat or retry identity');
+  assert.equal(clientDisposals, 0);
+  options.onRoom(snapshot(2));
+  acknowledge(snapshot(2));
+  assert.equal((await pending).revision, 2);
+  assert.equal(mounts[0].updates.length, 1, 'late acknowledgments update only the new view');
+  assert.equal(mounts[1].updates.at(-1).revision, 2);
+  assert.deepEqual(submitted, [action], 'remounting does not resend a command');
+  const effectsBefore = effects.length;
+  mounts[0].injected.sound.effect('build');
+  mounts[0].injected.onExit();
+  await assert.rejects(mounts[0].injected.dispatch(action), /closed/);
+  assert.equal(exits, 0);
+  assert.equal(effects.length, effectsBefore, 'retired callbacks cannot unlock or play effects');
+  assert.equal(handle.setPreferences({ reducedMotion: false }), true);
+  assert.equal(mounts[2].injected.preferences.reducedMotion, false);
+  assert.equal(mounts[2].updates.at(-1).revision, 2);
+  handle.dispose();
+  assert.equal(clientDisposals, 1);
+  assert.ok(mounts.every(record => record.disposals === 1));
+  assert.equal(handle.setPreferences({ reducedMotion: true }), false);
+});
+
 test('uncertain commands recover once through the same client and ignore late work after navigation', async () => {
   let options, dispatch, finishRecovery;
   let reconnects = 0;

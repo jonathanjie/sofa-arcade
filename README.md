@@ -73,7 +73,7 @@ New matches use rules version 3. Existing version 2 matches retain Jon as their 
 
 ## Development
 
-**Current integration: Tauri and local play.** The [dispatch pack](docs/DISPATCH_LOCAL.md) and [local implementation contracts](docs/LOCAL_IMPLEMENTATION_CONTRACT.md) define the five components and shared acceptance. The real Odd Laws engine and private multiplayer platform are now incorporated at reviewed immutable heads. UI/media/native handoffs and complete product acceptance remain gates. The catalog stays planned until the actual journey passes; a draft candidate is not an accepted Mac release.
+**Current integration: Tauri and local play.** The [dispatch pack](docs/DISPATCH_LOCAL.md) and [local implementation contracts](docs/LOCAL_IMPLEMENTATION_CONTRACT.md) define the five components and shared acceptance. The real Odd Laws engine, private multiplayer platform and TV/phone interface are incorporated at reviewed immutable heads. Media/native handoffs and complete product acceptance remain gates. The catalog stays planned until the actual journey passes; a draft candidate is not an accepted Mac release.
 
 Start with [AGENTS.md](AGENTS.md) and [docs/HANDOFF.md](docs/HANDOFF.md) to continue the project in another coding session. **GitHub `jonathanjie/sofa-arcade` is the source of truth.** Branch from its latest `main`, keep one game per feature branch, and reconcile upstream changes before merging. Sites keeps a deployment mirror for its publication workflow; it is not a competing development branch. [GitHub workflow](docs/GITHUB_WORKFLOW.md) describes the separate source and deployment checkouts.
 

@@ -54,7 +54,9 @@
       "postHandoffCorrections": [
         {
           "path": "server/lan.mjs",
-          "reason": "Extend only explicit serving entries for reviewed shared collection adapters and WS1 public catalog/preview/errors modules; no authority/private fixtures are served.",
+          "blob": "6926e85b8c8cf4e58c454a5807f4350c765dc4ff",
+          "mode": "100644",
+          "reason": "Extend only explicit serving entries for shared collection adapters, WS1 public catalog/preview/errors, and the12 declared WS3 UI/CSS runtime files; no authority/private fixtures are served.",
           "verification": "79 WS2 suites pass; integration package browser-graph/privacy checks and final composed acceptance required."
         }
       ],
@@ -73,18 +75,24 @@
       "id": "WS3",
       "branch": "feature/odd-laws-ui",
       "report": "docs/workstreams/odd-laws-ui.md",
-      "pr": null,
-      "head": null,
-      "status": "awaiting-handoff",
+      "pr": 5,
+      "head": "87693dd61af1b6a011a26da814fc884f85bca809",
+      "status": "included",
       "protectedPaths": [
         "ui/games/odd-laws-society",
         ".github/workflows/ws3-ui.yml"
       ],
       "postHandoffCorrections": [],
-      "observedCheckpoint": {
-        "pr": 5,
-        "head": "30a7f076d0b7202fb2d530f71ab010369f81f2cf",
-        "reason": "61 rendered owner checks and33Node tests passed; final ready-PR handoff pending."
+      "review": {
+        "handoff": "PR #5 marked ready; runtime byte-identical to independently reviewed30a7f07",
+        "localChecks": [
+          "33 component Node tests passed on the assembled candidate",
+          "Actual WS1 helpers/renderers:6 complete matches,294 projected snapshots,20728 markup renders"
+        ],
+        "ciRuns": [
+          44703150418,
+          44703150367
+        ]
       }
     },
     {
@@ -99,7 +107,12 @@
         "ui/media/odd-laws-society",
         ".github/workflows/ws4-media.yml"
       ],
-      "postHandoffCorrections": []
+      "postHandoffCorrections": [],
+      "observedCheckpoint": {
+        "pr": 8,
+        "head": "be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85",
+        "reason": "Ready report; final tested ready-PR handoff pending."
+      }
     },
     {
       "id": "WS5",

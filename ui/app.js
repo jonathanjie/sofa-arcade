@@ -6,6 +6,7 @@ import { createActionQueue } from '/action-queue.mjs?v=4';
 import { readTransportConfig, subscribeRoom } from '/transport.mjs?v=4';
 
 const transport = readTransportConfig();
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const $ = (s, node = document) => node.querySelector(s);
 const app = $('#app');
@@ -323,7 +324,7 @@ function modal() {
     const rules=[['cookie','Collect a little treasure','Move onto a crumb square, then Collect. Your bag holds five crumbs. Each move, collection, or deposit costs one action.'],['home','Make the delivery count',advanced?'Bank at your own burrow: Jon at A5, Lydia at E1. Each crumb scores one point. A full five-crumb delivery adds two bonus points. Banked points are safe.':'Bank your bag at your own burrow: Jon at A5, Lydia at E1. Only banked crumbs count, and they are always safe.'],['players','A fresh opening',fairOpening?'The first player is drawn randomly for each match. The second player starts with one secured point. You each get two actions; the starter swaps each round, then Lala acts after both turns. The same player can end one round and begin the next.':'You each get two actions per turn. This existing match starts Jon, Lydia, then Lala. The starter swaps each round, so the same player can get a fresh turn after Lala. A fresh match adds a random starter and one point for moving second.'],['paw','Watch Lala’s forecast','After both turns, Lala swipes a row or column, pounces, or naps. Swipes carry tiles, crumbs, and players; the edge wraps around. Burrows stay fixed.'],['bag','Keep your bag safe','A pounce hits the marked square plus above, below, left, and right. Diagonals are safe. Caught players drop every carried crumb on their square and return home. Banked points stay safe; nobody is eliminated.'],['toy','Steer the next swipe',advanced?'Spend one toy and one action to choose any row or column and either direction. Ride it home or disrupt a rival. Banking three or more crumbs restores one toy, up to two. Toys cannot change a pounce or nap.':'Each player has two toys for the match. Spend a toy and an action to redirect a swipe to another line of the same kind.'],['eye','Plan a move ahead','The amber lane shows this round’s swipe. The coral cross shows a pounce. Preview shows landing squares; Next round shows the following event.'],['crown','Claim your kingdom',advanced?'After ten rounds, banked crumbs, delivery bonuses, and any opening point decide the winner. Equal point totals share the crown.':'After ten rounds, the most banked crumbs wins. Equal scores share the crown. A rematch uses the expanded rules.']];
     content=`<div class="modal-header"><div><span class="eyebrow">The royal rulebook</span><h2>A little strategy.<br>A lot of cat.</h2></div>${close}</div><button class="button secondary full" data-action="tutorial">${icon('help')} Replay the interactive tutorial</button>${state.room&&state.mode==='network'?'<p class="help-saved-note">Your room and controller stay saved while you learn.</p>':''}<div class="rule-list">${rules.map(([i,t,d])=>`<div class="rule-item"><span class="rule-icon">${icon(i)}</span><div><h3>${t}</h3><p>${d}</p></div></div>`).join('')}</div><button class="button full" data-action="close-modal">Back to the game</button>`;
   } else if(state.modal==='odd-rules') {
-    content=`<div class="modal-header"><div><span class="eyebrow">The council handbook</span><h2>Build the city.<br>Rewrite its rules.</h2></div>${close}</div><button class="button secondary full" data-action="odd-tutorial">${icon('help')} Replay the guided tutorial</button><div class="rule-list">${[
+    content=`<div class="modal-header"><div><span class="eyebrow">The council handbook</span><h2>Build the city.<br>Rewrite its rules.</h2></div>${close}</div><button class="button secondary full" data-action="odd-tutorial" data-replay="true">${icon('help')} Replay the guided tutorial</button><div class="rule-list">${[
       ['market','Build a borough','Choose from six shared building stacks and place your purchase in an empty plot. Each city has nine plots. Complete a horizontal street with one or three guilds for two prestige.'],
       ['players','Six council sessions','Each player takes three city actions per session. Work gains three coins, Lobby gains two influence up to six, and Festival spends three coins for three prestige, plus one with Festival support. Each player can hold one Festival per session.'],
       ['sparkles','Seal your influence bid','Choose an offered law or Keep current, then seal a bid from zero to three influence within your budget. Both players pay, including the losing bid. Equal bids use the Chair’s choice. The non-Chair takes the first city action.'],
@@ -395,7 +396,7 @@ function closeCollectionTutorial() {
   collectionTutorial?.dispose();
   collectionTutorial=null;
 }
-async function openOddTutorial() {
+async function openOddTutorial({replay=false}={}) {
   if(state.gameId!==ODD_LAWS_GAME_ID||state.busy||collectionTutorial||collectionTutorialPending)return;
   audio.unlock();
   const epoch=roomEpoch,serial=++collectionTutorialSerial;
@@ -406,7 +407,7 @@ async function openOddTutorial() {
     if(epoch!==roomEpoch||serial!==collectionTutorialSerial||state.gameId!==ODD_LAWS_GAME_ID)return;
     collectionTutorial=mountCollectionTutorial({
       shell:app,createTutorial:modules.createTutorial,rules:modules.rules,assets:modules.assets,sound:audio,
-      preferences:{reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches},
+      preferences:{reducedMotion:motionPreference.matches},replay,
       onClose:()=>{collectionTutorial=null;if(document.activeElement===document.body)app.querySelector('[data-action="odd-tutorial"]')?.focus({preventScroll:true});},
     });
   }catch(error){if(epoch===roomEpoch&&serial===collectionTutorialSerial){state.error=error.message;render();}}
@@ -444,7 +445,7 @@ function renderCollectionMatch() {
         viewer:state.role==='player'?{role:'player',playerId:state.playerId}:{role:'host'},
         code:state.code,token:token(),initialRoom:state.room,
         rules:collectionModules.rules,assets:collectionModules.assets,sound:audio,
-        preferences:{reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches},
+        preferences:{reducedMotion:motionPreference.matches},
         onRoom:room=>{if(collectionIdentity===identity)applyRoom(room);},
         onStatus:status=>{if(collectionIdentity===identity){state.network=status.state;updateConnectionChrome();}},
         onExit:()=>goHome(),
@@ -477,7 +478,7 @@ function render() {
   if(state.view==='game' && game())content=engine?(state.role==='player'?controller(game()):tvBoard(game())):sofaLoadingView();
   if(state.view==='tutorial' && game())content=engine?tutorialView():sofaLoadingView();
   app.innerHTML=`<div class="app-shell ${state.role==='player'?'is-controller':''} ${state.view==='game'?'is-match':''} ${state.view==='tutorial'?'is-tutorial':''} view-${state.view}">${header()}${notices()}${content}${footer()}</div>${modal()}`;
-  if(old.size && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if(old.size && !motionPreference.matches) {
     app.querySelectorAll('[data-piece]').forEach(n=>{
       const before=old.get(n.dataset.piece), after=n.getBoundingClientRect();
       if(!before || Math.abs(before.width-after.width)>5) return;
@@ -778,7 +779,7 @@ app.addEventListener('click', async event=>{
   if(a==='open-game')openGame(button.dataset.game);
   if(a==='leave')goHome();
   if(a==='rules')openModal(state.gameId===ODD_LAWS_GAME_ID?'odd-rules':'rules');
-  if(a==='odd-tutorial')await openOddTutorial();
+  if(a==='odd-tutorial')await openOddTutorial({replay:button.dataset.replay==='true'});
   if(a==='close-modal')closeModal();
   if(a==='reload-view'){location.reload();return;}
   if(a==='retry-collection'){collectionLoadError='';render();}
@@ -825,6 +826,14 @@ document.addEventListener('keydown',event=>{
   }
   if(state.gameId!==SOFA_GAME_ID||state.modal||!['game','tutorial'].includes(state.view)||(!isLocal()&&state.role!=='player')||event.target.matches('input,textarea,select'))return;
   const direction=KEYS[event.key];if(direction){event.preventDefault();audio.unlock();const g=game(),id=isLocal()?g.activePlayer:state.playerId;if(legal(g,id).some(c=>c.type==='move'&&c.direction===direction))sendAction({type:'move',direction});}
+});
+motionPreference.addEventListener('change',()=>{
+  const preferences={reducedMotion:motionPreference.matches};
+  collectionTutorial?.setPreferences(preferences);
+  if(collectionGame){
+    try{collectionGame.setPreferences(preferences);}
+    catch(error){releaseCollectionGame();state.error=error.message;render();}
+  }else render();
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.code){poll(true);}});
 window.addEventListener('online',()=>{setNetworkConnection('reconnecting');poll(true);});

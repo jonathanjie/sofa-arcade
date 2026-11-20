@@ -28,6 +28,8 @@ export function createCollectionGame({
   let initializing = true;
   let client = null;
   let view = null;
+  let viewEpoch = 0;
+  let viewPreferences = Object.freeze({ ...preferences });
   let room = initialRoom;
   let status = { state: 'connecting' };
   let needsRecovery = false;
@@ -110,12 +112,6 @@ export function createCollectionGame({
     if (!initializing) onRoom(next);
   }
 
-  const guardedSound = {
-    unlock: () => disposed ? Promise.resolve(false) : sound?.unlock?.(),
-    setScene: scene => { if (!disposed) sound?.setScene?.(scene); },
-    effect: name => { if (!disposed) sound?.effect?.(name); },
-  };
-
   if (viewer.role === 'player') {
     if (!token || typeof createRoomClient !== 'function') throw new TypeError('A joined controller is required.');
     client = createRoomClient({
@@ -124,14 +120,21 @@ export function createCollectionGame({
     });
   }
 
-  try {
+  function mountView() {
+    const epoch = ++viewEpoch;
+    const active = () => !disposed && epoch === viewEpoch;
+    const guardedSound = {
+      unlock: () => active() ? sound?.unlock?.() : Promise.resolve(false),
+      setScene: scene => { if (active()) sound?.setScene?.(scene); },
+      effect: name => { if (active()) sound?.effect?.(name); },
+    };
     view = mount(root, {
       viewer: Object.freeze({ ...viewer }),
       dispatch(action) {
         // This call is synchronous with the view's click/keyboard handler. Do
         // not move unlocking behind an awaited HTTP request or module import.
         guardedSound.unlock();
-        if (disposed) return Promise.reject(new Error('This controller has closed.'));
+        if (!active()) return Promise.reject(new Error('This controller has closed.'));
         if (!client) return Promise.reject(new Error('Use a joined phone to choose an action.'));
         return Promise.resolve(client.submit(action)).then(next => {
           if (!disposed && needsRecovery && !recovery) {
@@ -147,20 +150,30 @@ export function createCollectionGame({
           throw error;
         });
       },
-      rules, assets, sound: guardedSound, preferences,
-      onExit: () => { if (!disposed) onExit?.(); },
-      onHelp: () => { if (!disposed) onHelp?.(); },
+      rules, assets, sound: guardedSound, preferences: viewPreferences,
+      onExit: () => { if (active()) onExit?.(); },
+      onHelp: () => { if (active()) onHelp?.(); },
     });
     if (!view || typeof view.update !== 'function' || typeof view.setConnection !== 'function' || typeof view.dispose !== 'function') {
       throw new TypeError('The game view does not implement its lifecycle contract.');
     }
     if (room) view.update(room);
     view.setConnection(status);
-    initializing = false;
-  } catch (error) {
+  }
+
+  function dispose() {
+    if (disposed) return;
     disposed = true;
+    viewEpoch++;
     client?.dispose();
     view?.dispose?.();
+  }
+
+  try {
+    mountView();
+    initializing = false;
+  } catch (error) {
+    dispose();
     throw error;
   }
 
@@ -172,11 +185,19 @@ export function createCollectionGame({
       else accept(next);
     },
     setConnection,
-    dispose() {
-      if (disposed) return;
-      disposed = true;
-      client?.dispose();
-      view.dispose();
+    setPreferences(next) {
+      if (disposed || !next || typeof next !== 'object' ||
+          Object.keys(next).every(key => viewPreferences[key] === next[key])) return false;
+      viewPreferences = Object.freeze({ ...viewPreferences, ...next });
+      // The component's preferences are mount inputs. Keep the authenticated
+      // client, uncertain request, and acknowledged board across this remount;
+      // only unsubmitted view drafts/drawers reset with its presentation.
+      viewEpoch++;
+      view?.dispose();
+      view = null;
+      try { mountView(); } catch (error) { dispose(); throw error; }
+      return true;
     },
+    dispose,
   });
 }

@@ -24,6 +24,10 @@ const SOURCES = new Map([
   ['/games/odd-laws-society/catalog.mjs', 'games/odd-laws-society/catalog.mjs'],
   ['/games/odd-laws-society/preview.mjs', 'games/odd-laws-society/preview.mjs'],
   ['/games/odd-laws-society/errors.mjs', 'games/odd-laws-society/errors.mjs'],
+  ...[
+    'index.mjs', 'shared.mjs', 'graphics.mjs', 'motion.mjs', 'drawers.mjs',
+    'tv.mjs', 'phone.mjs', 'tutorial.mjs', 'view.css', 'tv.css', 'phone.css', 'tutorial.css',
+  ].map(file => [`/games/odd-laws-society/${file}`, `ui/games/odd-laws-society/${file}`]),
 ]);
 const TYPES = {
   '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
