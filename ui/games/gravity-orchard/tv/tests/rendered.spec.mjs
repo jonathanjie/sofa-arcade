@@ -42,6 +42,10 @@ test('authoritative clock, scores, captures and results never advance because of
   await expect(page.locator('[data-go-clock]')).toHaveText(clock);
   await expect(page.locator('[data-fruit-id]')).toHaveCount(before.fruits.length);
   await expect(tv(page)).toHaveAttribute('data-go-stale', 'true');
+  for (const player of ['jon', 'lydia']) {
+    await expect(page.locator(`[data-player-presence="${player}"]`)).toContainText('View held');
+    await expect(page.locator(`[data-player-presence="${player}"]`)).not.toContainText('Steering');
+  }
 });
 
 test('SVG world coordinates and injected geometry remain aligned through scaling and resize', async ({ page }) => {
@@ -63,7 +67,38 @@ test('SVG world coordinates and injected geometry remain aligned through scaling
       expect(fruit.actualX).toBeCloseTo(fruit.expectedX, 3); expect(fruit.actualY).toBeCloseTo(fruit.expectedY, 3);
     }
     await expect(page.locator('[data-gate="bridge-gate"]')).toHaveAttribute('data-closure-deferred', 'true');
+    const caption = await page.locator('[data-gate-caption="bridge-gate"]').boundingBox();
+    const bridge = await page.evaluate(() => {
+      const svg = document.querySelector('[data-go-scene]');
+      const bridge = window.fixture.geometry.getLevel(window.fixture.view().levelId).bridge;
+      const left = new DOMPoint(bridge.x, bridge.y).matrixTransform(svg.getScreenCTM());
+      const right = new DOMPoint(bridge.x + bridge.width, bridge.y).matrixTransform(svg.getScreenCTM());
+      return { left: left.x, right: right.x };
+    });
+    expect(caption.x, 'Gate caption stays in bridge gap').toBeGreaterThanOrEqual(bridge.left - 1);
+    expect(caption.x + caption.width, 'Gate caption cannot cover adjacent compost').toBeLessThanOrEqual(bridge.right + 1);
   }
+});
+
+test('rendered movement interpolates known positions and freezes at the last authoritative endpoint', async ({ page }) => {
+  await openFixture(page);
+  const fruit = page.locator('[data-fruit-id="apple-1"]');
+  await expect(fruit).toHaveAttribute('data-x', '210');
+  await page.evaluate(() => {
+    const next = window.fixture.view();
+    window.fixture.advance(100); next.tick += 6; next.fruits[0].x = 230;
+    window.fixture.update(next);
+  });
+  await renderTurn(page);
+  const first = Number(await fruit.getAttribute('data-x'));
+  expect(first).toBeGreaterThan(210); expect(first).toBeLessThan(230);
+  await page.evaluate(() => window.fixture.advance(50)); await renderTurn(page);
+  const middle = Number(await fruit.getAttribute('data-x'));
+  expect(middle).toBeGreaterThan(first); expect(middle).toBeLessThan(230);
+  await page.evaluate(() => window.fixture.advance(5000)); await renderTurn(page);
+  await expect(fruit).toHaveAttribute('data-x', '230');
+  await expect(tv(page)).toHaveAttribute('data-go-stale', 'true');
+  await expect(page.locator('[data-go-clock]')).toHaveText('1:21');
 });
 
 test('missing and malformed data retain a safe waiting surface and never draw NaN', async ({ page }) => {
@@ -177,4 +212,21 @@ test('dispose clears the scene and late command settlement cannot reopen it; rem
   await page.evaluate(() => window.fixture.remount()); await expect(tv(page)).toHaveCount(1);
   await page.evaluate(() => window.fixture.dispose());
   expect(await page.locator('#fixture-root').innerHTML()).toBe('');
+});
+
+test('an exit gesture during a pending pause cannot linger and exit after a rejected command', async ({ page }) => {
+  await openFixture(page);
+  await page.evaluate(() => { window.fixture.holdNext(); window.fixture.rejectNext(); });
+  await action(page, 'pause').click();
+  await action(page, 'exit').click();
+  expect(await page.evaluate(() => window.fixture.commands)).toEqual([{ kind: 'pause', payload: { reason: 'requested' } }]);
+  await page.evaluate(() => window.fixture.releaseNext());
+  await expect(page.locator('[data-go-message]')).toContainText(/could not be completed/i);
+  await page.evaluate(() => {
+    const view = window.fixture.view(); view.phase = 'paused'; view.pauseReason = 'recovery'; view.runEpoch++;
+    window.fixture.update(view);
+  });
+  await renderTurn(page);
+  expect(await page.evaluate(() => window.fixture.exits)).toEqual([]);
+  await expect(tv(page)).toHaveAttribute('data-go-phase', 'paused');
 });

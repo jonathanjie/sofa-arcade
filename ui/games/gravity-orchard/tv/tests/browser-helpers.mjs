@@ -34,6 +34,20 @@ export async function visibleActionsFit(page, selector = '[data-go-action]') {
   }
 }
 export async function capture(page, name, testInfo) {
+  await page.evaluate(() => document.fonts.ready);
+  // Wait for the requested projection to reach the actual SVG, not merely the
+  // synchronously updated chrome. This is condition-based and adds no sleep.
+  await expect.poll(() => page.evaluate(() => {
+    const view = window.fixture?.view?.();
+    const scene = document.querySelector('[data-go-scene]');
+    if (!view || !scene) return true;
+    if (scene.dataset.matchId !== view.matchId || scene.dataset.levelId !== view.levelId) return false;
+    const drawn = [...scene.querySelectorAll('[data-fruit-id]')];
+    return drawn.length === view.fruits.length && view.fruits.every(fruit => {
+      const node = drawn.find(node => node.dataset.fruitId === fruit.id);
+      return node && Number(node.dataset.x) === fruit.x && Number(node.dataset.y) === fruit.y;
+    });
+  })).toBe(true);
   const directory = fileURLToPath(new URL('../fixtures/evidence/', import.meta.url));
   await mkdir(directory, { recursive: true });
   const path = `${directory}${name}.png`;

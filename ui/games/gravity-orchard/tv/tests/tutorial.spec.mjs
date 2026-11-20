@@ -1,11 +1,30 @@
 import { test, expect } from '@playwright/test';
 import { openFixture, tv, action, tutorialAction, noOverflow, visibleActionsFit, capture, renderTurn } from './browser-helpers.mjs';
 
+async function textContrast(locator) {
+  return locator.evaluate(element => {
+    const style = getComputedStyle(element);
+    const luminance = color => {
+      const rgb = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(value => {
+        const channel = value / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+      return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+    };
+    const foreground = luminance(style.color), background = luminance(style.backgroundColor);
+    return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+  });
+}
+
 async function heldBrake(page) {
   const button = tutorialAction(page, 'brake');
+  await button.hover();
+  expect(await textContrast(button), 'Released Brake hover contrast').toBeGreaterThanOrEqual(4.5);
   await button.focus(); await page.keyboard.down('Space');
   await expect(button).toHaveAttribute('aria-pressed', 'true');
+  expect(await textContrast(button), 'Held Brake hover contrast').toBeGreaterThanOrEqual(4.5);
   await page.waitForTimeout(420); await page.keyboard.up('Space');
+  expect(await textContrast(button), 'Brake release preserves hover contrast').toBeGreaterThanOrEqual(4.5);
 }
 
 async function completeStep(page, step) {
@@ -56,6 +75,17 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1920, height: 108
       await expect(tutorialAction(page, 'next')).toBeDisabled();
       await noOverflow(page); await visibleActionsFit(page, '[data-tutorial-action]');
       await completeStep(page, step); await renderTurn(page);
+      const next = tutorialAction(page, 'next');
+      await next.hover();
+      expect(await textContrast(next), 'Enabled Next hover contrast').toBeGreaterThanOrEqual(4.5);
+      if (step === 5) {
+        const card = await page.locator('[data-tutorial-recipe]').boundingBox();
+        for (const owner of ['jon', 'lydia']) {
+          const label = await page.locator(`[data-tutorial-owner="${owner}"]`).boundingBox();
+          const intersects = card.x < label.x + label.width && card.x + card.width > label.x && card.y < label.y + label.height && card.y + card.height > label.y;
+          expect(intersects, `Recipe must not cover ${owner}'s ownership label`).toBe(false);
+        }
+      }
       await capture(page, `tutorial-${viewport.width}-step-${step + 1}`, testInfo);
       await tutorialAction(page, 'next').click();
     }

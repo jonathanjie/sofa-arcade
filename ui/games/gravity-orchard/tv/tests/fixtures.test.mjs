@@ -69,6 +69,15 @@ test('fixtures are independently mutable while geometry and coordinator presence
   assert.ok(Object.isFrozen(CONNECTED.presence.jon));
 });
 
+test('initial waiting and countdown fixtures start without fruit or buffered captures', () => {
+  for (const phase of ['waiting', 'countdown']) {
+    const view = makeFixture(phase);
+    assert.deepEqual(view.fruits, []);
+    assert.ok(Object.values(view.baskets).every(basket => basket.count === 0));
+    assert.equal(view.timeRemainingTicks, 5400);
+  }
+});
+
 test('fixture server exposes no engine, transport, parent files or mutations', async () => {
   const server = createFixtureServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const origin = `http://127.0.0.1:${server.address().port}`;

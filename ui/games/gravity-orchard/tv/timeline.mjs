@@ -12,7 +12,8 @@ export function createPresentationTimeline({ now = () => globalThis.performance?
     if (!view) return { accepted: false, reason: 'invalid-view' };
     if (retiredMatches.has(view.matchId)) return { accepted: false, reason: 'old-match' };
     const sameMatch = latest?.matchId === view.matchId;
-    if (sameMatch && (view.runEpoch < latest.runEpoch || view.tick < latest.tick)) return { accepted: false, reason: 'old-frame' };
+    // A durable recovery can roll back several seconds, but must fence the old epoch.
+    if (sameMatch && (view.runEpoch < latest.runEpoch || (view.runEpoch === latest.runEpoch && view.tick < latest.tick))) return { accepted: false, reason: 'old-frame' };
     const reset = !sameMatch || view.runEpoch !== latest?.runEpoch || view.levelId !== latest?.levelId || view.phase !== latest?.phase || frozen;
     if (latest && !sameMatch) {
       retiredMatches.add(latest.matchId);

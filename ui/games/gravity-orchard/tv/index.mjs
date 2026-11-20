@@ -118,12 +118,14 @@ export function mountTV(root, { assets = {}, geometry, onCommand, onExit, sound 
       if (event.kind === 'order-complete') announce('Picnic order packed.');
     }
   }
-  function presenceMarkup() {
+  function presenceMarkup(stale = false) {
     return ['jon', 'lydia'].map(id => {
       const state = connection.presence?.[id];
-      const lost = state?.connected === false || (state && !state.inputFresh && view?.phase === 'playing');
+      const globalLoss = connection.state !== 'connected';
+      const held = invalidData || freshRequired || (stale && ACTIVE.has(view?.phase));
+      const lost = globalLoss || held || state?.connected === false || (state && !state.inputFresh && view?.phase === 'playing');
       const flag = lost ? 'lost' : state?.connected === true ? 'ready' : 'unknown';
-      const label = state?.connected === false ? 'Reconnect' : lost ? 'Safe Brake' : view?.ready[id] ? 'Ready ✓' : !state ? 'Phone status pending' : ACTIVE.has(view?.phase) ? view?.players[id].input.brake ? 'Brake held' : 'Steering' : 'Connected';
+      const label = globalLoss ? 'Connection pending' : held ? 'View held' : state?.connected === false ? 'Reconnect' : lost ? 'Safe Brake' : view?.ready[id] ? 'Ready ✓' : !state ? 'Phone status pending' : ACTIVE.has(view?.phase) ? view?.players[id].input.brake ? 'Brake held' : 'Steering' : 'Connected';
       return `<span class="go-tv-player" data-player-presence="${id}" data-connection="${flag}"><i class="go-tv-presence-dot" aria-hidden="true"></i><strong>${NAMES[id]}</strong><span>${label}</span></span>`;
     }).join('');
   }
@@ -141,7 +143,7 @@ export function mountTV(root, { assets = {}, geometry, onCommand, onExit, sound 
     if (text !== statusText) { statusNode.textContent = text; statusText = text; }
     statusNode.hidden = !text;
     container.dataset.goStale = String(Boolean(stale || freshRequired || invalidData));
-    writeHTML(presenceNode, presenceMarkup());
+    writeHTML(presenceNode, presenceMarkup(stale));
   }
   function renderChrome() {
     if (!view || disposed) return;
@@ -207,6 +209,8 @@ export function mountTV(root, { assets = {}, geometry, onCommand, onExit, sound 
     if (disposed || !view || pendingCommand || typeof onCommand !== 'function') {
       if (!disposed && typeof onCommand !== 'function') message('This control is not connected yet.');
       if (intent === 'help') helpPending = false;
+      if (intent === 'exit') exitPending = false;
+      if (!disposed) updateButtons();
       return;
     }
     const serial = ++commandSerial, matchId = view.matchId;
@@ -232,6 +236,7 @@ export function mountTV(root, { assets = {}, geometry, onCommand, onExit, sound 
     const button = event.target.closest?.('[data-go-action]');
     if (disposed || !button || !container.contains(button) || button.disabled || tutorial) return;
     const action = button.dataset.goAction;
+    if (pendingCommand && ACTIVE.has(view?.phase) && ['help', 'exit'].includes(action) && !helpPending) return;
     if (action === 'help') {
       if (helpPending) { helpPending = false; message(''); updateButtons(); return; }
       if (ACTIVE.has(view?.phase)) {

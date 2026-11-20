@@ -44,7 +44,10 @@ function node(document, tag, attrs = {}, parent) {
 }
 
 function label(document, parent, text, x, y, className = 'go-scene-label', attrs = {}) {
-  const item = node(document, 'text', { x, y, class: className, ...attrs }, parent);
+  // SVG presentation attributes lose to the scoped class rules; retain explicit
+  // per-label sizes/colours for hazard, owner and basket legibility.
+  const override = [attrs.fill ? `fill:${attrs.fill}` : '', attrs['font-size'] ? `font-size:${attrs['font-size']}px` : ''].filter(Boolean).join(';');
+  const item = node(document, 'text', { x, y, class: className, ...attrs, ...(override ? { style: override } : {}) }, parent);
   item.textContent = text;
   return item;
 }
@@ -461,12 +464,16 @@ export function mountScene(root, { geometry, assets, reducedMotion = false } = {
       const info = title(document, group, 'Bridge gate open');
       node(document, 'rect', { x: gate.x, y: gate.y, width: gate.width, height: gate.height, rx: 4, class: 'go-scene-gate-body', 'stroke-width': 4 }, group);
       const cross = node(document, 'path', { d: `M${gate.x + 3} ${gate.y + 3}L${gate.x + gate.width - 3} ${gate.y + gate.height - 3}M${gate.x + gate.width - 3} ${gate.y + 3}L${gate.x + 3} ${gate.y + gate.height - 3}`, stroke: '#f2dab0', 'stroke-width': 4, visibility: 'hidden' }, group);
-      const center = clamp(gate.x + gate.width / 2, b.x + 140, b.x + b.width - 140);
+      // Keep the local badge inside the bridge gap. A wide sentence here would
+      // obscure authored compost openings beside the bridge; the TV's hazard
+      // status supplies the full explanation outside the playing field.
+      const plateWidth = Math.max(1, Math.min(160, level.bridge.width - 12));
+      const center = clamp(gate.x + gate.width / 2, b.x + plateWidth / 2 + 4, b.x + b.width - plateWidth / 2 - 4);
       const top = clamp(gate.y - 43, b.y + 6, b.y + b.height - 70);
-      const plate = node(document, 'g', { transform: `translate(${center} ${top})` }, layers.cues);
-      const background = node(document, 'rect', { x: -135, y: -20, width: 270, height: 34, rx: 15, fill: '#f9edc4', stroke: '#ad8a4e', 'stroke-width': 1.5 }, plate);
-      const message = label(document, plate, 'Gate open', 0, 3, 'go-scene-small', { 'text-anchor': 'middle', 'font-size': 18 });
-      gates.set(gate.id, { group, info, cross, message, plate, background });
+      const plate = node(document, 'g', { transform: `translate(${center} ${top})`, 'data-gate-caption': cap(gate.id), visibility: plateWidth < 28 ? 'hidden' : 'visible' }, layers.cues);
+      const background = node(document, 'rect', { x: -plateWidth / 2, y: -20, width: plateWidth, height: 34, rx: 15, fill: '#f9edc4', stroke: '#ad8a4e', 'stroke-width': 1.5 }, plate);
+      const message = label(document, plate, 'Gate open', 0, 3, 'go-scene-small', { 'text-anchor': 'middle', 'font-size': plateWidth < 64 ? 18 : plateWidth < 100 ? 16 : 17 });
+      gates.set(gate.id, { group, info, cross, message, plate, background, compact: plateWidth < 100, symbolOnly: plateWidth < 64 });
     }
 
     const lalaX = clamp(bridge.x + bridge.width / 2 - 42, b.x + 4, b.x + b.width - 88);
@@ -587,7 +594,13 @@ export function mountScene(root, { geometry, assets, reducedMotion = false } = {
         : name === 'forecast' ? `Gate closes in ${Math.ceil(numeric(state.ticksToChange) / 60)}s`
           : name === 'closed' ? `Gate closed · ${Math.ceil(numeric(state.ticksToChange) / 60)}s`
             : name === 'open' ? 'Gate open' : 'Gate state unavailable';
-      item.message.textContent = message;
+      const short = name === 'forecast' && state.closureDeferred ? 'Waiting'
+        : name === 'forecast' ? 'Closing' : name === 'closed' ? 'Closed' : name === 'open' ? 'Open' : '?';
+      item.message.textContent = item.symbolOnly ? ({ forecast: '!', closed: '×', open: '✓' }[name] ?? '?')
+        : item.compact ? short : name === 'forecast' && state.closureDeferred ? 'Gate waiting'
+          : name === 'forecast' ? `Closes in ${Math.ceil(numeric(state.ticksToChange) / 60)}s`
+            : name === 'closed' ? `Closed · ${Math.ceil(numeric(state.ticksToChange) / 60)}s`
+              : name === 'open' ? 'Gate open' : 'Gate unknown';
       item.info.textContent = message;
       same(item.cross, 'visibility', name === 'closed' ? 'visible' : 'hidden');
       same(item.plate, 'opacity', name === 'open' ? .82 : 1);

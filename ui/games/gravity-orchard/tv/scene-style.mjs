@@ -16,6 +16,7 @@ export const sceneStyles = `
 .go-scene-root [data-state="closed"] .go-scene-gate-body{fill:#805845;stroke:#513c30}
 .go-scene-root [data-state="forecast"] .go-scene-gate-body{fill:#f1c86c;stroke:#7c5723;stroke-dasharray:8 5}
 .go-scene-root [data-state="open"] .go-scene-gate-body{fill:#ecf3df;fill-opacity:.22;stroke:#5b8268;stroke-dasharray:4 7}
+.go-scene-root [data-state="unknown"] .go-scene-gate-body{fill:none;stroke:#7d8071;stroke-dasharray:3 7}
 .go-scene-root [data-basket-state="full"] .go-scene-basket-ring{stroke:#8c5f21;stroke-width:5;stroke-dasharray:5 3}
 .go-scene-root [data-basket-state="catch"] .go-scene-basket-ring{stroke:#2f795d;stroke-width:6}
 .go-scene-root [data-basket-state="reject"] .go-scene-basket-ring{stroke:#9b4737;stroke-width:6;stroke-dasharray:8 4}

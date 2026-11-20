@@ -85,8 +85,10 @@ export function makeFixture(scene = 'playing', { matchId = `diagnostic-${scene}`
   const view = baseView(matchId);
   if (scene === 'waiting') {
     Object.assign(view, { phase: 'waiting', tick: 0, timeRemainingTicks: 5400, fruits: [], ready: { jon: true, lydia: false } });
+    for (const basket of Object.values(view.baskets)) basket.count = 0;
   } else if (scene === 'countdown') {
     Object.assign(view, { phase: 'countdown', tick: 60, timeRemainingTicks: 5400, countdownTicks: 120, fruits: [] });
+    for (const basket of Object.values(view.baskets)) basket.count = 0;
   } else if (scene === 'dense' || scene === 'full-baskets') {
     view.fruits.push(...structuredClone(extraFruit));
     if (scene === 'full-baskets') { view.baskets.plum.count = 3; view.baskets.starfruit.count = 3; }

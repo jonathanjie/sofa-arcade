@@ -55,6 +55,26 @@ test('old tick/epoch/match snapshots cannot roll back a later view', () => {
   assert.equal(timeline.push(view).accepted, false); assert.equal(timeline.sample().view.matchId, 'rematch');
 });
 
+test('a newer recovery epoch can restore an earlier checkpoint tick and fences all prior-epoch frames', () => {
+  const { timeline, view } = setup();
+  view.tick = 720; view.runEpoch = 1; timeline.push(view);
+  const restored = structuredClone(view);
+  Object.assign(restored, { phase: 'paused', pauseReason: 'recovery', runEpoch: 2, tick: 660 });
+  restored.fruits[0].x = 180;
+  const recovery = timeline.push(restored);
+  assert.equal(recovery.accepted, true); assert.equal(recovery.reset, true);
+  assert.equal(timeline.sample().view.tick, 660); assert.equal(timeline.sample().fruits[0].x, 180);
+  const delayed = structuredClone(view); delayed.tick = 723;
+  assert.equal(timeline.push(delayed).accepted, false);
+  assert.equal(timeline.sample().view.runEpoch, 2); assert.equal(timeline.sample().view.tick, 660);
+});
+
+test('empty recipe arrays are invalid rather than presenting a falsely completed picnic', () => {
+  const view = makeFixture('playing');
+  view.orders = { recipes: [], activeIndex: 0, completedIds: [] };
+  assert.equal(readPublicView(view), null);
+});
+
 test('missing, malformed, oversized and nonfinite snapshots leave the last valid state intact', () => {
   const { timeline, view } = setup(); assert.equal(timeline.sample().view, null); timeline.push(view);
   const variants = [null, undefined, {}, { ...view, gameId: 'other' }, { ...view, schemaVersion: 2 }, { ...view, phase: 'bogus' }];

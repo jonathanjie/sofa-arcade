@@ -28,6 +28,7 @@ export const TUTORIAL_STYLE = `
 .go-tutorial__actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:auto}
 .go-tutorial__actions button{flex:1;font-weight:700}
 .go-tutorial__actions [data-tutorial-action=brake]{min-height:80px;min-width:120px;background:#315f50;color:#fffbea;border:3px solid #315f50;font-size:21px;letter-spacing:.8px;touch-action:none;user-select:none;-webkit-user-select:none}
+.go-tutorial__actions [data-tutorial-action=brake]:hover{background:#274e40;color:#fffbea;border-color:#274e40}
 .go-tutorial__actions [data-tutorial-action=brake][aria-pressed=true]{background:#e9bd61;color:#263f34;border-color:#70581f;box-shadow:inset 0 0 0 4px #fff4c8}
 .go-tutorial__actions button[aria-pressed=true]:not([data-tutorial-action=brake]){background:#dbeaca;border-color:#43724d;box-shadow:inset 0 0 0 1px #43724d}
 .go-tutorial__actions [data-tutorial-action=catch]{display:flex;align-items:center;justify-content:center;gap:10px}
@@ -47,6 +48,7 @@ export const TUTORIAL_STYLE = `
 .go-tutorial__footer p{flex:1;font-size:13px;line-height:1.4;margin:0;color:#4e6853}
 .go-tutorial__footer button{flex:none}
 .go-tutorial__footer .go-tutorial__next{background:#315f50;color:#fffbea;border-color:#315f50;font-weight:700;min-width:152px}
+.go-tutorial__footer .go-tutorial__next:hover{background:#274e40;color:#fffbea;border-color:#274e40}
 .go-tutorial [hidden]{display:none!important}
 .go-tutorial[data-reduced-motion=true] *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 @media(max-width:760px){.go-tutorial{padding:10px}.go-tutorial__dialog{max-height:calc(100dvh - 20px);border-radius:18px}.go-tutorial__top{padding:10px 14px;gap:8px}.go-tutorial__eyebrow{font-size:11px;letter-spacing:1px}.go-tutorial__progress i{width:20px;height:4px}.go-tutorial__main{display:flex;flex-direction:column;gap:16px;padding:16px}.go-tutorial__visual{align-self:stretch}.go-tutorial__garden{max-width:600px;margin:auto}.go-tutorial__copy h2{font-size:29px;margin-top:0}.go-tutorial__copy p{font-size:16px;margin-bottom:12px}.go-tutorial__actions{margin-top:3px}.go-tutorial__footer{padding:12px 14px;flex-wrap:wrap}.go-tutorial__footer p{flex-basis:100%;order:3;font-size:12px}.go-tutorial__footer .go-tutorial__next{margin-left:auto}.go-tutorial__feedback{margin-top:12px}}
