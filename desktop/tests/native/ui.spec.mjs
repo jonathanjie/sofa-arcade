@@ -18,7 +18,7 @@ async function waitRendered(selector, { timeout = 15000, scrollIntoView = false 
   await browser.waitUntil(() => browser.execute((query, scroll) => {
     const element = document.querySelector(query);
     if (!element?.isConnected) return false;
-    if (scroll) element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+    if (scroll) element.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
     const rect = element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0 || rect.bottom <= 0 || rect.right <= 0 ||
         rect.top >= innerHeight || rect.left >= innerWidth) return false;

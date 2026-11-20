@@ -26,10 +26,14 @@ port and public room route; credentials remain in WKWebView/browser storage.
 The app does not place credentials in QR URLs or logs.
 
 Phone browsers store their credentials under the Mac's LAN origin. If a Wi-Fi
-change gives the Mac a different address, rescan the refreshed QR; credentials
-stored under the previous phone-browser origin do not automatically transfer
-to the new one. Recovery across a changed phone origin is a shared platform/UI
-integration consideration. The Mac's loopback origin remains stable.
+change gives the Mac a different address, the refreshed QR reaches that new
+origin, but it cannot recover an already-claimed phone seat: credentials and
+the original client identity remain under the previous browser origin, and
+the shared host correctly rejects a new identity with `seat_taken`. To continue
+the saved match, restore the original LAN origin; otherwise create a new room
+and join both seats there. Secure controller recovery across a changed origin
+is a shared platform/UI integration request. The Mac's loopback origin and
+saved room state remain stable.
 
 ## Build requirements
 
@@ -52,7 +56,7 @@ npm ci --ignore-scripts
 APPLE_SIGNING_IDENTITY=- npm run build:mac:arm64
 ```
 
-On Intel use `npm run build:mac:intel`. Build scripts stage the matching official
+On Intel use `APPLE_SIGNING_IDENTITY=- npm run build:mac:intel`. Build scripts stage the matching official
 Node runtime, collect third-party notices from the locked native Rust graph,
 then build `.app` and `.dmg` artifacts. Tauri receives Cargo's `--locked` option.
 Build outputs are under `desktop/src-tauri/target/<target>/release/bundle/` and

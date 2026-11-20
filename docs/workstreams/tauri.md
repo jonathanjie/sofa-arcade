@@ -12,18 +12,18 @@ The desktop packages the existing Sofa Kingdoms collection and shared LAN host.
 It does not fork game rules or change shared runtime code. Odd Laws will enter
 through the same runtime after the component handoffs and WS6 integration.
 
-**Current checkpoint: native production acceptance passed on Apple Silicon and
-Intel; the native UI harness is being repaired and rerun.**
-[PR #6](https://github.com/jonathanjie/sofa-arcade/pull/6) remains draft until
-the complete WKWebView flow passes. Portable checks passed locally and in CI.
-Both native runners verified their architecture, built the production app/DMG,
-verified signatures, and passed packaged gameplay/lifecycle acceptance.
-The Apple Silicon WebDriver screenshot confirms the real collection and lobby
-render, but a cached element wait failed across an SSE-driven DOM replacement.
-The revised harness re-queries rendered elements; it needs a new passing run.
-The PR records the exact tested head and superseded runs rather than embedding
-this report's future commit hash in itself. No physical phone, disconnected
-network, or notarized distribution acceptance is claimed.
+**Ready for WS6 integration of the native component.** Apple Silicon and Intel
+production bundles have been built and launched on matching native Mac runners.
+Each passed 14 production acceptance checks and two native WKWebView sessions,
+including gameplay, child recovery, and saved-credential relaunch. The final
+accepted immutable head, exact-head CI status, and downloadable artifacts are
+recorded in [PR #6](https://github.com/jonathanjie/sofa-arcade/pull/6). The PR stays
+draft while its final delivery checkpoint is being verified; this report does
+not embed its own future commit hash.
+
+Developer ID/notarization, downloaded-app Gatekeeper acceptance, and physical
+phone/Wi-Fi/TV/audio acceptance remain separate gates. No public release,
+merge, or deployment is part of WS5.
 
 ## Architecture and interfaces
 
@@ -34,7 +34,10 @@ network, or notarized distribution acceptance is claimed.
 - `desktop/host/entry.mjs` reuses
   `startLanServer({ root, databasePath, host, port })` and its returned
   `port`, `origin`, `urls`, and `close`. SQLite lives in writable application
-  data, outside immutable application resources.
+  data, outside immutable application resources. The desktop bootstrap emits
+  protocol-versioned `ready`, `refreshed`, `refresh-request`, or safe `error`
+  records bounded to 4096 bytes; stdin accepts only bounded `shutdown`/`refresh`
+  commands. A listener is never considered ready from a guessed URL or PID.
 - `desktop/runtime-manifest.json` implements exactly the v1 staging contract:
   `{ "schemaVersion": 1, "files": [{ "path": "..." }] }`.
   Paths are explicit repository-relative files; optional `mode` uses numeric
@@ -98,6 +101,40 @@ acceptance inspects the packaged signature and runs the signed Node executable
 directly. CI signatures are ad-hoc and establish no Developer ID identity or
 notarization.
 
+### Tested repository-shaped runtime inventory
+
+The initial Sofa Kingdoms handoff includes exactly these authored runtime files;
+verified architecture-specific Node binaries and license notices are staged
+separately:
+
+```text
+desktop/host/entry.mjs
+desktop/host/lifecycle.mjs
+server/lan.mjs
+server/rooms.mjs
+game/engine.mjs
+games/catalog.mjs
+games/registry.mjs
+ui/index.html
+ui/app.js
+ui/styles.css
+ui/audio.js
+ui/score.mjs
+ui/motion.js
+ui/motion.css
+ui/board-view.mjs
+ui/board-view.css
+ui/action-queue.mjs
+ui/transport.mjs
+public/assets/characters.png
+public/assets/sofa-room.png
+public/assets/qrcode.js
+public/assets/qrcode-LICENSE.txt
+public/favicon.svg
+public/manifest.webmanifest
+drizzle/0000_green_thunderbolts.sql
+```
+
 The configured minimum macOS version is **13.5**, matching the bundled Node 24
 runtime. Apple Silicon and Intel are separate native artifacts; no universal
 binary or compatibility with an older macOS version is claimed.
@@ -160,19 +197,62 @@ and screenshots. Generated outputs stay outside authored source control.
 
 ## Native validation and source basis
 
-The [first repaired native run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701519835)
-passed production acceptance on both native architectures. The Apple Silicon
-JSON records **14 passing checks**, an authoritative action/SSE response in
-105 ms, and verified process/profile cleanup. That is one CI observation, not a
-performance guarantee. Its [build and evidence artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701519835/artifacts/14613341831)
-contains the production app/DMG, SHA-256 values, exact runner/commit details,
-post-sign Node probe, entitlement maps, and genuine native screenshots.
+The [completed implementation validation run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703762760)
+passed all three desktop jobs. Its production artifacts are preserved before a
+separate instrumented build enables the supported embedded test driver.
 
-The first UI run reached the actual lobby but failed a stale element visibility
-wait. Its failure screenshot visibly contains the expected room code and QR;
-the subsequent test-only repair retains WebDriver clicks and requires current
-DOM geometry and visible styles. The old run is partial evidence, not validation
-of the revised head. Final passing native UI and relaunch evidence is pending.
+| Target | Actual native verification | Implementation evidence |
+| --- | --- | --- |
+| Apple Silicon, `aarch64-apple-darwin` | ARM64 runner and both Mach-O binaries; 14 production checks; first and relaunched native WKWebView sessions passed | [Mac job](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703762760/job/136178210508), [app/DMG and evidence](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703762760/artifacts/14613963189) |
+| Intel, `x86_64-apple-darwin` | x86-64 runner and both Mach-O binaries; 14 production checks; first and relaunched native WKWebView sessions passed | [Mac job](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703762760/job/136178210519), [app/DMG and evidence](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703762760/artifacts/14614533067) |
+
+This verifies two separate native builds, without Rosetta or a universal-binary
+claim. Apple Silicon remains the initial product assumption; Jon's own Mac
+architecture has not been confirmed. Each artifact includes its observed OS,
+compiler, Node, architecture, source commit, signature, and hash records. The
+PR identifies the final delivery-head rerun; the table above preserves the
+completed implementation checkpoint rather than claiming an older run tested
+a later commit. GitHub retains these CI artifacts for 14 days.
+
+Production acceptance verifies the signed bundled Node's ESM, SQLite, and
+optimized V8 execution with no Node on PATH; exact staged files and licenses;
+collection/assets; a real room and both HTTP/SSE phone seats; an immediate
+authoritative action; duplicate launch; owned-child crash; native Quit;
+persistence/relaunch; abrupt parent cleanup; an unrelated occupied-port
+listener receiving no connections; and recoverable database startup failure.
+Both production reports set `passed` and `cleanupVerified` to true.
+
+Native WebDriver acceptance runs inside the actual macOS WKWebView. It clicks
+through the existing collection and room flow, checks decoded artwork and QR,
+joins both seats through ordinary host HTTP APIs, observes the authoritative
+SSE change in the native board, denies a native window permission request,
+recovers the child and webview, then starts a new native process and reuses the
+same browser storage and host credential. Credentials stay inside WKWebView;
+only a public room code and non-secret marker enter the test fixture.
+
+The artifact's `evidence/` directory contains:
+
+- `native-production.json`, `native-ui.json`, `native-ui-first.json`, and
+  `native-ui-relaunch.json`: named executed checks and limitations.
+- `production-collection.png`: a system capture of the actual production Mac
+  window; `native-collection.png`, `native-lobby.png`, `native-board.png`,
+  `native-child-recovery.png`, and `native-relaunch.png`: real native WebDriver
+  screenshots. Collection, lobby, authoritative board, and restored state were
+  inspected visually.
+- `runner.txt`, `tested-commit.txt`, `signature.txt`,
+  `production-sha256.txt`, and `production-dependencies.txt`.
+- `signed-node-probe.json`, `app-entitlements.json`, and
+  `node-entitlements.json`: the post-sign capability and hardened-runtime proof.
+
+The same artifact includes `artifacts/*.app.zip`, `artifacts/*.dmg`, the generated
+runtime inventory, and Node provenance. It excludes databases, browser stores,
+credentials, raw driver logs, and the instrumented application from downloads.
+
+Validation caught and repaired Tauri's package-name/binary-name mismatch and a
+cached native WebDriver element reference invalidated by the shared UI's SSE
+render. The signing review added only the necessary Node/V8 JIT entitlement,
+then verified actual optimized execution on both architectures. Earlier failed
+or superseded runs are not substituted for the final accepted head's evidence.
 
 The current [Tauri WebDriver guidance](https://v2.tauri.app/develop/tests/webdriver/)
 recommends WebdriverIO and `@wdio/tauri-service`. Its embedded driver supports
@@ -190,11 +270,8 @@ The [Node 24.22.3 official release](https://nodejs.org/en/blog/release/v24.22.3)
 provides the pinned macOS archives and published checksums. Runtime tests must
 exercise ESM and `node:sqlite` using the staged executable.
 
-## Remaining gates at this checkpoint
+## Remaining hardware and distribution gates
 
-- Complete the repaired native WKWebView gameplay, child recovery, and
-  persistent-credential relaunch flow, then inspect final screenshots and
-  artifact evidence at the PR's exact proposed head.
 - Developer ID signing and notarization require credentials not provided here.
   Do not claim notarization or disable Gatekeeper. See
   [Tauri macOS signing](https://v2.tauri.app/distribute/sign/macos/).
@@ -215,13 +292,25 @@ launcher even when it runs inside Tauri. WS6 owns any shared Help-copy update;
 desktop must not fork `ui/app.js` merely to change those instructions.
 
 Phone credentials are scoped to their browser's LAN origin. When the Mac gets
-a different LAN address, the fresh QR can join that new origin, but credentials
-stored under the old phone origin do not transfer automatically. The Mac keeps
-its stable loopback origin and storage. Any cross-origin phone-seat recovery
-belongs in the shared room/UI protocol, without weakening authentication.
+a different LAN address, the refreshed QR reaches the new origin but cannot
+reclaim seats in the existing match: the original client identity/credential
+does not transfer, and `server/rooms.mjs` correctly returns `409 seat_taken`
+for a new identity. Restore the old LAN origin to continue that saved match,
+or create a new room and join both seats. The Mac retains its loopback origin
+and saved state. Secure controller recovery across a changed origin is an
+explicit WS2/WS6 shared room/UI request; desktop must not bypass seat ownership
+or weaken authentication to simulate that recovery.
 
 ## Handoff state
 
-Not yet ready. Native evidence, final test commands, CI/artifact URLs, complete
-file lists, and the tested head will be added before delivery. If native launch
-evidence cannot be obtained, the PR remains draft with that exact gate.
+The native component is ready for WS6 to integrate at the immutable accepted
+head recorded in PR #6 once its final checkpoint checks are green. The Mac
+packages and actual native tests are available; whole-product hardware and
+signed-download acceptance are still outstanding as listed above.
+
+After that tested handoff, WS6 may add final Odd Laws file entries to
+`desktop/runtime-manifest.json` and must rerun staging, desktop host tests,
+native protocol tests, and the matching Mac workflow. Shared serving-list,
+registry/catalog, UI, and media wiring remain the integrator's coordinated
+work. Other native files remain WS5-owned. Any later native change requires a
+new explicitly identified head and renewed validation.
