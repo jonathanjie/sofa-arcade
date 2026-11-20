@@ -14,6 +14,10 @@
       "pr": null,
       "head": null,
       "status": "awaiting-handoff",
+      "observedCheckpoint": {
+        "head": "9f630f26844351ad1b23c525585f91a2a5915d4a",
+        "reason": "Owner explicitly marks this as a non-final checkpoint; simulation and owned CI workflow pending. Reviewed separately, not incorporated."
+      },
       "protectedPaths": ["games/odd-laws-society", ".github/workflows/ws1-engine.yml"],
       "postHandoffCorrections": []
     },

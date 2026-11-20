@@ -11,14 +11,16 @@ export async function loadOddLaws({
     importer('/games/odd-laws-society/preview.mjs'),
     importer('/room-client.mjs'),
     importer('/media/odd-laws-society/score.mjs'),
-    importer('/media/odd-laws-society/effects.mjs'),
-    fetcher(manifestUrl, { cache: 'no-store' }),
+    Promise.resolve().then(() => importer('/media/odd-laws-society/effects.mjs')).catch(() => ({})),
+    Promise.resolve().then(() => fetcher(manifestUrl, { cache: 'no-store' })).catch(() => null),
   ]);
-  if (!response.ok) throw new Error('The Odd Laws artwork is unavailable.');
-  const manifest = await response.json();
-  if (manifest.schemaVersion !== 1 || manifest.gameId !== 'odd-laws-society') {
-    throw new Error('The Odd Laws artwork manifest is invalid.');
-  }
+  let manifest = null;
+  try { if (response?.ok) manifest = await response.json(); } catch {}
+  const mediaAvailable = manifest?.schemaVersion === 1 && manifest?.gameId === 'odd-laws-society';
+  // Artwork failure must not remove the phone's legal controls. The view has
+  // code-native fallback illustrations for absent entries. Release validation
+  // separately requires the complete final manifest and all referenced assets.
+  if (!mediaAvailable) manifest = { schemaVersion: 1, gameId: 'odd-laws-society', buildings: {}, laws: {}, guilds: {}, characters: {}, props: {} };
   return Object.freeze({
     mount: view.mount,
     tutorial: view.mountTutorial,
@@ -28,6 +30,7 @@ export async function loadOddLaws({
       buildQuote: previews.buildQuote, streetOutcome: previews.streetOutcome, civicAward: previews.civicAward,
     }),
     assets: Object.freeze({ manifest, manifestUrl }),
+    mediaAvailable,
     score: Object.freeze({ SCORE: score.SCORE, eventsForBar: score.eventsForBar, eventsForEffect: effects.eventsForEffect }),
   });
 }

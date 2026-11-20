@@ -1,6 +1,7 @@
 /** End-to-end regression of the shipped collection and two ordinary browser controllers. */
 import assert from 'node:assert/strict';
 import { acceptanceSession, credentials, closeDialog, noHorizontalOverflow, waitUntil } from './support.mjs';
+import { verifyNavigationRaces } from './navigation-races.mjs';
 
 const run = await acceptanceSession('sofa-kingdoms');
 let failure;
@@ -22,7 +23,7 @@ try {
     await phone.locator('.waiting-scene').waitFor();
     assert.ok(await credentials(phone, code, id));
   }));
-  assert.notEqual(await credentials(jon, code, 'jon'), await credentials(lydia, code, 'lydia'));
+  assert.ok((await credentials(jon, code, 'jon')) !== (await credentials(lydia, code, 'lydia')), 'Separate seats receive distinct credentials');
   run.check('Host and both seats join through the rendered UI with separate storage and credentials');
 
   // A phone stays silent by default; only the host can enable the soundtrack.
@@ -46,8 +47,21 @@ try {
   await noHorizontalOverflow(tv);
   await run.screenshot(tv, 'tv-1280x720');
   for (const phone of Object.values(phones)) {
-    const sizes = await phone.locator('.controller-inputs button, .controller-bottom .button').evaluateAll(nodes => nodes.map(node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height })));
-    assert.ok(sizes.every(size => size.width >= 44 && size.height >= 44), 'Primary phone actions retain 44px touch targets');
+    // Query and measure in one browser JS turn. An SSE render between resolving
+    // handles and measuring them can otherwise turn detached nodes into 0×0.
+    const sizes = await phone.evaluate(() => [...document.querySelectorAll('.controller-inputs button, .controller-bottom .button')].map(node => {
+      const box = node.getBoundingClientRect(), style = getComputedStyle(node);
+      return {
+        name: node.getAttribute('aria-label') || node.textContent.trim(),
+        width: box.width, height: box.height,
+        visible: !!node.getClientRects().length && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0',
+      };
+    }));
+    (run.evidence.phoneTargets ||= []).push({ viewport: phone.viewportSize(), controls: sizes });
+    const visible = sizes.filter(size => size.visible);
+    assert.equal(visible.length, 7, `Seven primary phone actions must remain visible: ${JSON.stringify(sizes)}`);
+    const undersized = visible.filter(size => size.width < 44 || size.height < 44);
+    assert.equal(undersized.length, 0, `Visible primary phone actions need 44px targets: ${JSON.stringify(undersized)}`);
     const animations = await phone.evaluate(() => document.getAnimations().filter(animation => animation.playState === 'running').length);
     assert.equal(animations, 0, 'Reduced motion suppresses running browser animations');
   }
@@ -109,7 +123,7 @@ try {
   assert.equal((await run.room(code, hostToken)).revision, beforeTutorial.revision);
   await jon.reload();
   await jon.locator('.controller-inputs').waitFor();
-  assert.equal(await credentials(jon, code, 'jon'), originalJonToken);
+  assert.ok((await credentials(jon, code, 'jon')) === originalJonToken, 'Phone refresh retains its original credential');
   run.check('All eight tutorial lessons, replay/skip, and phone refresh preserve the authenticated live room');
 
   await jon.context().setOffline(true);
@@ -147,16 +161,26 @@ try {
 
   const saved = structuredClone(room.state);
   await run.restartServer();
-  await tv.reload();
+  // A native webview starts at the stable root URL, not an old room query.
+  // This tests the saved local-session pointer while retaining origin storage.
+  await tv.goto(run.origin + '/');
   await tv.locator('.game-layout').waitFor();
+  assert.equal(new URL(tv.url()).searchParams.get('room'), code, 'Root launch restores the host room');
+  assert.equal(new URL(tv.url()).searchParams.has('join'), false, 'Root launch retains the host role');
+  assert.ok((await credentials(tv, code, 'host')) === hostToken, 'Root launch reuses the saved host credential');
   assert.deepEqual((await run.room(code, hostToken)).state, saved);
-  run.check('SQLite room state survives local host stop/restart at the same origin');
+  run.check('SQLite state and host role recover after local server restart and a fresh root-document launch');
 
   await tv.locator('[data-action="home"]').click();
   await tv.locator('[data-action="leave"]').click();
   await tv.locator('.arcade-home').waitFor();
   assert.equal(new URL(tv.url()).search, '');
-  run.check('Collection navigation disposes the match view');
+  await tv.goto(run.origin + '/');
+  await tv.locator('.arcade-home').waitFor();
+  assert.equal(new URL(tv.url()).search, '', 'Explicit exit clears root-launch restoration');
+  assert.equal(await tv.locator('.game-layout').count(), 0);
+  run.check('Explicit collection exit disposes the match and a fresh root launch stays on the collection');
+  await verifyNavigationRaces(run, { tv, jon, lydia });
   assert.deepEqual(run.evidence.externalRequests, []);
   assert.deepEqual(run.evidence.failedResponses, []);
   assert.deepEqual(run.evidence.errors, []);

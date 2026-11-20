@@ -144,3 +144,27 @@ failure. Its result remains a gate.
 `npm run verify:components` and `npm run verify:local-release` fail explicitly
 while an essential handoff is missing. Preparatory skips do not satisfy those
 release checks.
+
+### First remote integration run
+
+At `b2ecf4f3b80aec81533e5d04256556a151879606`,
+[run 44700066116](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700066116)
+passed the production build and existing regressions. The completeness gate
+failed because all five tested handoffs are still missing, and package closure
+failed at the known pre-handoff LAN entry.
+
+The real Chromium driver successfully created a host and two separately
+authenticated phone contexts and captured all four required viewport sizes with
+no console error, external request, or missing asset. It then failed its primary
+touch-target assertion. The screenshots were inspected; visible controls appear
+large enough, so the next run adds atomic named geometry diagnostics and
+suppresses unchanged SSE-driven shell rebuilds before accepting that gate.
+[Rendered evidence](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700066116/artifacts/14611589059)
+is a failed-run diagnostic, not complete browser acceptance.
+
+WS1 published checkpoint `9f630f26844351ad1b23c525585f91a2a5915d4a`.
+Independent read-only inspection ran its 89 tests, fixture consistency check,
+and six public-policy completions successfully. Its report explicitly says final
+simulation/review and workflow are pending. It is therefore recorded as observed
+only and **not incorporated**. Public helper closure includes `errors.mjs` in
+addition to `catalog.mjs` and `preview.mjs`; authority requires a fresh match ID.

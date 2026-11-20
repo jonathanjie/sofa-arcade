@@ -11,6 +11,12 @@ export const checkout = fileURLToPath(new URL('../../../', import.meta.url));
 export const runtimeRoot = path.resolve(process.env.SOFA_ACCEPTANCE_ROOT || checkout);
 export const evidenceRoot = path.resolve(process.env.SOFA_EVIDENCE_DIR || path.join(checkout, 'tests/integration/evidence'));
 const require = createRequire(import.meta.url);
+const privateValues = new Set();
+const redact = value => {
+  let text = String(value);
+  for (const token of privateValues) text = text.split(token).join('[REDACTED]');
+  return text.replace(/Bearer\s+[A-Za-z0-9_-]{24,128}/g, 'Bearer [REDACTED]');
+};
 
 export async function acceptanceSession(label) {
   const { chromium } = require(process.env.SOFA_PLAYWRIGHT_MODULE || 'playwright');
@@ -49,6 +55,7 @@ export async function acceptanceSession(label) {
   };
   return {
     browser, origin, evidence,
+    protectCredential(token) { if (typeof token === 'string' && token) privateValues.add(token); },
     async page(name, viewport, options = {}) {
       const context = await browser.newContext({ viewport, reducedMotion: 'reduce', ...options });
       await context.route('**/*', async route => {
@@ -61,7 +68,7 @@ export async function acceptanceSession(label) {
       });
       const page = await context.newPage();
       page.setDefaultTimeout(12_000);
-      page.on('pageerror', error => errors.push({ page: name, message: error.message }));
+      page.on('pageerror', error => errors.push({ page: name, message: redact(error.message) }));
       page.on('response', response => {
         if (response.status() >= 400 && !response.url().includes('/api/')) {
           const url = new URL(response.url());
@@ -74,11 +81,12 @@ export async function acceptanceSession(label) {
     async screenshot(page, name) {
       await page.evaluate(() => document.fonts?.ready);
       const filename = `${label}-${name}.png`;
-      await page.screenshot({ path: path.join(evidenceRoot, filename), fullPage: true, animations: 'disabled' });
+      await page.screenshot({ path: path.join(evidenceRoot, filename), fullPage: true, animations: 'disabled', mask: [...privateValues].map(token => page.getByText(token, { exact: false })) });
       screenshots.push({ file: filename, viewport: page.viewportSize() });
     },
     check(name, detail = true) { checks.push({ name, result: 'passed', detail }); },
     async room(code, token) {
+      if (token) privateValues.add(token);
       const response = await fetch(`${origin}/api/rooms/${code}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
       assert.equal(response.status, 200, `Read room ${response.status}`);
       return response.json();
@@ -91,12 +99,12 @@ export async function acceptanceSession(label) {
       evidence.finishedAt = new Date().toISOString();
       evidence.result = error ? 'failed' : 'passed';
       if (error) {
-        evidence.failure = { message: error.message, stack: error.stack };
+        evidence.failure = { message: redact(error.message), stack: redact(error.stack) };
         for (const { name, page } of pages) {
           try { await this.screenshot(page, `failure-${name}`); } catch {}
         }
       }
-      await writeFile(path.join(evidenceRoot, `${label}.json`), JSON.stringify(evidence, null, 2) + '\n');
+      await writeFile(path.join(evidenceRoot, `${label}.json`), redact(JSON.stringify(evidence, null, 2)) + '\n');
       await browser.close();
       await server.close();
       await rm(temp, { recursive: true, force: true });
@@ -120,10 +128,12 @@ export async function noHorizontalOverflow(page) {
 }
 
 export async function credentials(page, code, role) {
-  return page.evaluate(({ code, role }) => {
+  const value = await page.evaluate(({ code, role }) => {
     const saved = JSON.parse(localStorage.getItem('sofa-room:' + code) || '{}');
     return role === 'host' ? saved.hostToken : saved.playerTokens?.[role];
   }, { code, role });
+  if (typeof value === 'string' && value) privateValues.add(value);
+  return value;
 }
 
 export async function closeDialog(page) {

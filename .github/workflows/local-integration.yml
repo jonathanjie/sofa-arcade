@@ -3,7 +3,7 @@ name: Local integration acceptance
 on:
   pull_request:
   push:
-    branches: [main, feature/local-integration]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -33,11 +33,19 @@ jobs:
         run: npm test
       - name: Integrated protocol, lifecycle and package checks
         run: npm run test:integration
+        env:
+          SOFA_EVIDENCE_DIR: tests/integration/evidence/ci
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: local-portable-${{ github.event.pull_request.head.sha || github.sha }}
           path: public/downloads/sofa-arcade-local.zip
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-protocol-${{ github.event.pull_request.head.sha || github.sha }}
+          path: tests/integration/evidence/ci/
+          if-no-files-found: ignore
 
   rendered-browser:
     runs-on: ubuntu-latest

@@ -162,3 +162,28 @@ test('lazy collection loading resolves media from its manifest and never imports
   assert.equal(result.rules.buildQuote, modules['/games/odd-laws-society/preview.mjs'].buildQuote);
   assert.equal(imports.some(path => /engine|private|fixture/.test(path)), false);
 });
+
+test('missing or invalid artwork uses code-native view fallbacks and optional effects do not block controls', async () => {
+  const fixtureModule = {
+    mount() {}, createRoomClient() {}, BUILDINGS: [], LAWS: [], GUILDS: [],
+    buildQuote() {}, streetOutcome() {}, civicAward() {},
+    SCORE: { title: 'score' }, eventsForBar() {},
+  };
+  const importer = path => {
+    if (path.endsWith('/effects.mjs')) throw new Error('optional effect module absent');
+    return fixtureModule;
+  };
+  for (const fetcher of [
+    async () => { throw new Error('offline asset request'); },
+    async () => ({ ok: false }),
+    async () => ({ ok: true, async json() { throw new Error('invalid JSON'); } }),
+    async () => ({ ok: true, async json() { return { schemaVersion: 42, gameId: 'wrong-game' }; } }),
+  ]) {
+    const result = await loadOddLaws({ origin: 'http://127.0.0.1:4177', importer, fetcher });
+    assert.equal(result.mount, fixtureModule.mount);
+    assert.equal(result.mediaAvailable, false);
+    assert.deepEqual(result.assets.manifest.buildings, {});
+    assert.equal(result.assets.manifest.gameId, 'odd-laws-society');
+    assert.equal(result.score.eventsForEffect, undefined);
+  }
+});

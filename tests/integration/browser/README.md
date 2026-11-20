@@ -28,7 +28,9 @@ controller refresh, a passive network disconnect/reconnect, all eight optional
 tutorial lessons and skip/replay without changing the live room, saved
 music/effects/volume settings, quiet default phone audio, gesture audio unlock,
 reduced motion, collection navigation, and persistence after stopping/restarting
-the local host at the same origin. Screenshots cover 1920×1080 and 1280×720 TV
+the local host and opening a fresh root document at the same origin. Root launch
+must restore the saved host role/room; an explicit collection exit must clear that
+restoration. Screenshots cover 1920×1080 and 1280×720 TV
 viewports, plus 360×800 and 390×844 controller viewports.
 
 These checks establish Chromium/local-server behavior only. They do not establish

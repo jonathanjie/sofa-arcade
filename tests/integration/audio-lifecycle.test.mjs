@@ -11,7 +11,7 @@ function audioEnvironment() {
     cancelScheduledValues() {},
     setTargetAtTime(value, at, duration) { this.events.push({ value, at, duration }); },
     setValueAtTime(value, at) { this.events.push({ value, at }); },
-    exponentialRampToValueAtTime(value, at) { this.events.push({ value, at }); },
+    exponentialRampToValueAtTime(value, at) { assert.ok(value > 0, 'Web Audio exponential targets must be positive'); this.events.push({ value, at }); },
   });
   const node = () => ({ connect() {}, disconnect() {}, gain: parameter(), frequency: parameter() });
   class Context {
@@ -66,7 +66,11 @@ test('collection scores share one graph and clock, respect host/phone preference
     SCORE: { title: 'Council test theme', bpm: 120, beatsPerBar: 4, bars: [{}, {}, {}, {}] },
     eventsForBar(index, mode) {
       modes.push({ index, mode });
-      return [{ instrument: 'woodwind', pitch: 69, beat: 0, duration: 2, level: .1 }];
+      return [
+        { instrument: 'woodwind', pitch: 69, beat: 0, duration: 2, level: .1 },
+        { instrument: 'woodwind', pitch: 60, beat: 1, duration: 1, level: 0 },
+        { instrument: 'bell', pitch: 60, beat: 2, duration: 1, level: 0 },
+      ];
     },
     eventsForEffect(name) {
       return name === 'seal' ? [{ instrument: 'pizzicato', pitch: 60, beat: .5, duration: .5, level: .1 }] : [];
@@ -84,6 +88,7 @@ test('collection scores share one graph and clock, respect host/phone preference
   assert.equal(audio.getSettings().trackTitle, custom.SCORE.title);
   assert.equal(modes[0].mode, 'council');
   assert.equal(context.oscillators[0].frequency.events[0].value, 440);
+  assert.equal(context.oscillators.length, 1, 'zero-level notes are silent rests, not invalid exponential ramps');
   const beforeEffect = context.oscillators.length;
   audio.effect('seal');
   assert.equal(context.oscillators.length, beforeEffect + 1);

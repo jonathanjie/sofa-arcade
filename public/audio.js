@@ -148,7 +148,9 @@ function attach(source, envelope, extraNodes, kind, at, duration) {
 }
 
 function tone(pitch, at, duration, level, instrument = 'bell', kind = 'music') {
-  if (!context || !Number.isFinite(pitch)) return;
+  // Authored zero-level events are rests. Web Audio exponential ramps cannot
+  // target zero, and a rest does not need an oscillator or a scheduler voice.
+  if (!context || !Number.isFinite(pitch) || !Number.isFinite(level) || level <= 0) return;
   const source = context.createOscillator();
   const envelope = context.createGain();
   const filter = context.createBiquadFilter();

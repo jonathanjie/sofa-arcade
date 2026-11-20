@@ -32,7 +32,7 @@ let collectionIdentity = null;
 let collectionModules = null;
 let collectionLoading = null;
 let collectionLoadError = '';
-let collectionEpoch = 0;
+let collectionModalHTML = null;
 let modalPreviousFocus = null;
 let eventTimer = null;
 let tutorialReturn = null;
@@ -253,16 +253,18 @@ async function startTutorial(){
     saveTutorialReturn();
   }
   stopPolling();clearTimeout(eventTimer);rememberTutorialSeen();state.busy=true;state.error='';state.modal=null;
+  const epoch=roomEpoch;
   try{
     await engineReady;
+    if(epoch!==roomEpoch)return;
     const g=engine.createGame({seed:'sofa-training-v2',maxRounds:10,firstPlayer:'jon'});
     g.tiles.forEach(t=>t.crumbs=t.row===4&&t.col===1?3:0);
     g.forecast={type:'swipe',axis:'row',index:2,direction:1};
     state.mode='tutorial';state.view='tutorial';state.gameId=SOFA_GAME_ID;state.role='host';state.code='';state.hostToken=null;state.playerToken=null;state.playerId=null;state.room=null;state.tutorial={step:0};state.preview=false;state.eventToast='';state.turnToast='';state.lastEventKey='';state.network='connected';
     history.replaceState({},'', '/?game='+SOFA_GAME_ID+'&tutorial=1');
     state.room={phase:g.phase,state:g,revision:0,players:{jon:{joined:true,connected:true},lydia:{joined:true,connected:true}}};
-  }catch(err){state.error='The tutorial could not start: '+err.message;}
-  finally{state.busy=false;render();}
+  }catch(err){if(epoch===roomEpoch)state.error='The tutorial could not start: '+err.message;}
+  finally{if(epoch===roomEpoch){state.busy=false;render();}}
 }
 function advanceTutorial(){
   state.tutorial.step++;
@@ -346,10 +348,10 @@ function modal() {
   return `<div class="modal-backdrop" data-action="backdrop"><section class="modal" role="dialog" aria-modal="true" aria-label="${['rules','odd-rules'].includes(state.modal)?'How to play':state.modal==='audio'?'Music and sound settings':state.modal==='lure'?'Choose a toy target':state.modal==='results'?'Game results':state.modal==='local'?'Play over home Wi-Fi':'Return to menu'}">${content}</section></div>`;
 }
 function releaseCollectionGame() {
-  collectionEpoch++;
   collectionGame?.dispose();
   collectionGame=null;
   collectionIdentity=null;
+  collectionModalHTML=null;
 }
 function connectionStatus(value) {
   const next=typeof value==='string'?{state:value}:value;
@@ -361,9 +363,11 @@ function updateConnectionChrome() {
 }
 function setNetworkConnection(value) {
   const next=connectionStatus(value);
+  const changed=state.network!==next.state;
   state.network=next.state;
   collectionGame?.setConnection(next);
   updateConnectionChrome();
+  if(changed&&state.gameId===SOFA_GAME_ID&&state.view==='game')render();
 }
 function ensureCollectionModules() {
   if(collectionModules)return Promise.resolve(collectionModules);
@@ -389,9 +393,15 @@ function renderCollectionMatch() {
   $('#collection-chrome').innerHTML=header();
   $('#collection-notices').innerHTML=notices();
   $('#collection-room-actions').innerHTML=state.room?.phase==='finished'&&state.role==='host'?`<button class="button" data-action="rematch" ${state.busy?'disabled':''}>${icon('reset')} Start a new council</button>`:'';
-  const overlays=$('#collection-overlays'),hadModal=!!overlays.querySelector('.modal');
-  overlays.innerHTML=modal();
-  if(state.modal&&!hadModal)requestAnimationFrame(()=>$('.modal button')?.focus({preventScroll:true}));
+  const overlays=$('#collection-overlays'),hadModal=!!overlays.querySelector('.modal'),markup=modal();
+  if(markup!==collectionModalHTML){
+    const focused=document.activeElement;
+    const focusSelector=overlays.contains(focused)?focused.id?'#'+CSS.escape(focused.id):focused.dataset?.action?'[data-action="'+CSS.escape(focused.dataset.action)+'"]':null:null;
+    const selection=focused?.tagName==='INPUT'?{start:focused.selectionStart,end:focused.selectionEnd}:null;
+    overlays.innerHTML=markup;collectionModalHTML=markup;
+    if(state.modal&&!hadModal)requestAnimationFrame(()=>$('.modal button')?.focus({preventScroll:true}));
+    else if(focusSelector){const control=overlays.querySelector(focusSelector);if(control&&!control.disabled){control.focus({preventScroll:true});if(selection)try{control.setSelectionRange(selection.start,selection.end);}catch{}}}
+  }
   const root=$('#collection-game-root');
   if(!collectionModules){
     root.innerHTML=collectionLoadError?`<section class="collection-loading" role="alert"><h1>The council could not open.</h1><p>${esc(collectionLoadError)}</p><button class="button" data-action="retry-collection">Try again</button><button class="text-button" data-action="home">Back to the collection</button></section>`:'<div class="collection-loading" role="status"><span class="spinner"></span> Preparing the council…</div>';
@@ -528,6 +538,12 @@ function releaseActionQueue() {
   actionQueue?.dispose();actionQueue=null;state.pendingActions=0;
 }
 function receiveNetworkRoom(room) {
+  // SSE heartbeats may repeat the same projected envelope. Replacing the
+  // controller DOM for those repeats can detach a finger/keyboard target and
+  // reset a focused dialog even though no player-visible state has changed.
+  const previous=state.room;
+  if(previous&&room&&['code','gameId','revision','phase','expiresAt'].every(key=>previous[key]===room[key])&&
+      JSON.stringify(previous.players)===JSON.stringify(room.players)&&JSON.stringify(previous.state)===JSON.stringify(room.state))return;
   if(state.gameId===ODD_LAWS_GAME_ID&&collectionGame){collectionGame.receive(room);return;}
   if(actionQueue&&state.role==='player')actionQueue.receive(room);
   else applyRoom(room);
@@ -604,56 +620,78 @@ function stopPolling() {
   if(pollTimer)clearInterval(pollTimer);pollTimer=null;roomEpoch++;
   pollAbort?.abort();pollAbort=null;pollInFlight=false;
   streamStop?.();streamStop=null;streamConnected=false;releaseActionQueue();
+  state.busy=false;
 }
 async function createRoom() {
-  if(gameById(state.gameId).status!=='playable')return;
+  if(state.busy||gameById(state.gameId).status!=='playable')return;
   if(state.gameId===SOFA_GAME_ID)rememberTutorialSeen();
+  const epoch=roomEpoch,gameId=state.gameId;
+  const current=()=>epoch===roomEpoch&&gameId===state.gameId;
   state.busy=true;state.error='';render();
   try {
-    const room=await api('/api/rooms',{method:'POST',body:{gameId:state.gameId}});
+    const room=await api('/api/rooms',{method:'POST',body:{gameId}});
+    if(!current())return;
+    state.busy=false;
     state.role='host';state.mode='network';state.hostToken=room.hostToken;state.code=room.code;state.playerToken=null;state.playerId=null;state.resultDismissed=false;state.lastEventKey='';
     saveCredentials();history.replaceState({},'', '/?room='+encodeURIComponent(room.code));applyRoom(room,true);startPolling();
-  }catch(err){state.error=err.message;}finally{state.busy=false;render();}
+  }catch(err){if(current())state.error=err.message;}finally{if(current()){state.busy=false;render();}}
 }
 async function findRoom(code,preferredSeat=null,recovering=false) {
   code=code.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length<4){state.error='Enter the room code shown on your TV.';render();return;}
   stopPolling();state.code=code;state.role='player';state.mode='network';state.room=null;state.playerId=null;state.playerToken=null;state.hostToken=null;state.error='';state.busy=true;state.view='join';
+  const epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.preferredSeat=['jon','lydia'].includes(preferredSeat)?preferredSeat:null;
   const creds=readCredentials(code),seat=state.preferredSeat||creds.lastSeat||creds.playerId;
   if(seat&&creds.playerTokens[seat]){state.playerToken=creds.playerTokens[seat];state.playerId=seat;}
   history.replaceState({},'', '/?join='+encodeURIComponent(code)+(state.preferredSeat?'&seat='+state.preferredSeat:''));render();
-  try {const room=await api('/api/rooms/'+encodeURIComponent(code));applyRoom(room,true);if(state.playerToken)saveCredentials();startPolling();}
+  try {
+    const room=await api('/api/rooms/'+encodeURIComponent(code));
+    if(!current())return;
+    state.busy=false;applyRoom(room,true);if(state.playerToken)saveCredentials();startPolling();
+  }
   catch(err){
+    if(!current())return;
     const unavailable=[401,403,404,410].includes(err.status);
     if(unavailable&&stored(LAST_SESSION_KEY)?.code===code)persist(LAST_SESSION_KEY,null);
-    if(recovering&&unavailable){goHome();state.notice='Your saved room is no longer available. Choose a game to start a new one.';}
+    if(recovering&&unavailable){goHome();state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();}
     else if(err.status===401||err.status===403){state.playerToken=null;state.playerId=null;state.room=null;}else state.error=err.message;
   }
-  finally {state.busy=false;render();}
+  finally {if(current()){state.busy=false;render();}}
 }
 async function claimPlayer(id) {
+  if(state.busy)return;
+  const code=state.code,epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.busy=true;state.error='';render();
   try {
-    const room=await api('/api/rooms/'+state.code+'/join',{method:'POST',body:{playerId:id,clientId}});
-    state.playerId=id;state.preferredSeat=id;state.playerToken=room.playerToken;state.role='player';saveCredentials();history.replaceState({},'', '/?join='+encodeURIComponent(state.code)+'&seat='+id);applyRoom(room,true);startPolling();audio.effect('join');
-  }catch(err){state.error=err.message;}finally{state.busy=false;render();}
+    const room=await api('/api/rooms/'+code+'/join',{method:'POST',body:{playerId:id,clientId}});
+    if(!current())return;
+    state.busy=false;state.playerId=id;state.preferredSeat=id;state.playerToken=room.playerToken;state.role='player';saveCredentials();history.replaceState({},'', '/?join='+encodeURIComponent(code)+'&seat='+id);applyRoom(room);startPolling();audio.effect('join');
+  }catch(err){if(current())state.error=err.message;}finally{if(current()){state.busy=false;render();}}
 }
 async function startGame(rematch=false) {
+  if(state.busy)return;
   if(state.mode==='practice'){await startPractice();return;}
+  const code=state.code,epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.busy=true;state.error='';render();
-  try{const room=await api('/api/rooms/'+state.code+'/'+(rematch?'rematch':'start'),{method:'POST',body:{}});state.resultDismissed=false;state.preview=false;state.modal=null;state.lastEventKey='';applyRoom(room,true);audio.effect('join');}
-  catch(err){state.error=err.message;}finally{state.busy=false;render();}
+  try{
+    const room=await api('/api/rooms/'+code+'/'+(rematch?'rematch':'start'),{method:'POST',body:{}});
+    if(!current())return;
+    state.busy=false;state.resultDismissed=false;state.preview=false;state.modal=null;state.lastEventKey='';applyRoom(room);audio.effect('join');
+  }
+  catch(err){if(current())state.error=err.message;}finally{if(current()){state.busy=false;render();}}
 }
 async function startPractice() {
   rememberTutorialSeen();
   stopPolling();state.busy=true;state.error='';render();
+  const epoch=roomEpoch;
   try {
     await engineReady;
+    if(epoch!==roomEpoch)return;
     const g=engine.createGame({seed:uid(),maxRounds:10});
     state.mode='practice';state.gameId=SOFA_GAME_ID;state.role='host';state.code='';state.hostToken=null;state.playerToken=null;state.playerId=null;state.modal=null;state.resultDismissed=false;state.lastEventKey='';state.preview=false;state.tutorial=null;
     state.room=null;history.replaceState({},'', '/?game='+SOFA_GAME_ID+'&practice=1');applyRoom({phase:g.phase,state:g,revision:0,players:{jon:{joined:true,connected:true},lydia:{joined:true,connected:true}}},true);state.view='game';audio.effect('join');
-  }catch(err){state.error='Practice could not start: '+err.message;}finally{state.busy=false;render();}
+  }catch(err){if(epoch===roomEpoch)state.error='Practice could not start: '+err.message;}finally{if(epoch===roomEpoch){state.busy=false;render();}}
 }
 
 async function sendAction(action) {
@@ -665,8 +703,9 @@ async function sendAction(action) {
   state.error='';state.preview=false;state.modal=null;
   if(state.mode==='network'){
     if(state.network!=='connected'){state.error='Waiting for your controller to reconnect.';render();return;}
-    try{await engineReady;controllerQueue().dispatch(action);}
-    catch(error){state.error=error.message;render();}
+    const epoch=roomEpoch,code=state.code;
+    try{await engineReady;if(epoch===roomEpoch&&code===state.code&&id===state.playerId)controllerQueue().dispatch(action);}
+    catch(error){if(epoch===roomEpoch&&code===state.code){state.error=error.message;render();}}
     return;
   }
   state.busy=true;
@@ -753,16 +792,21 @@ render();
 async function restoreHostRoom(code) {
   const creds=readCredentials(code);
   if(!creds.hostToken){await findRoom(code);return;}
-  state.code=code;state.role='host';state.hostToken=creds.hostToken;state.view='lobby';render();
+  stopPolling();
+  const epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
+  state.code=code;state.role='host';state.hostToken=creds.hostToken;state.view='lobby';state.busy=true;render();
   try{
     const room=await api('/api/rooms/'+encodeURIComponent(code));
+    if(!current())return;
+    state.busy=false;
     history.replaceState({},'', '/?room='+encodeURIComponent(code));
     applyRoom(room,true);saveCredentials();startPolling();
   }catch(error){
+    if(!current())return;
     if([401,403,404,410].includes(error.status)){
       goHome();state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();
     }else{state.error=error.message;setNetworkConnection('offline');render();}
-  }
+  }finally{if(current()){state.busy=false;render();}}
 }
 async function restoreLocalSession() {
   if(transport.mode!=='lan')return false;
