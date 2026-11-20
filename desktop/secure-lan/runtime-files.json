@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "hostViewFiles": [
+    "desktop/secure-lan/index.mjs",
+    "desktop/secure-lan/setup.css"
+  ],
+  "publicDiagnosticFiles": [
+    "desktop/secure-lan/diagnostic.html",
+    "desktop/secure-lan/diagnostic.mjs",
+    "desktop/secure-lan/diagnostic-page.mjs",
+    "desktop/secure-lan/diagnostic.css"
+  ],
+  "publicDiagnosticRoutes": [
+    "/secure-lan/diagnostic",
+    "/secure-lan/diagnostic.mjs",
+    "/secure-lan/diagnostic-page.mjs",
+    "/secure-lan/diagnostic.css"
+  ],
+  "runtimeDependencies": [],
+  "excludedFromProduction": [
+    "desktop/secure-lan/fixtures/**",
+    "desktop/secure-lan/tests/**",
+    "desktop/secure-lan/evidence/**",
+    "desktop/secure-lan/node_modules/**",
+    "desktop/secure-lan/package.json",
+    "desktop/secure-lan/package-lock.json"
+  ]
+}

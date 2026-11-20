@@ -1,0 +1,99 @@
+name: GO6 secure local access
+
+on:
+  pull_request:
+    paths:
+      - 'server/secure-lan/**'
+      - 'desktop/secure-lan/**'
+      - '.github/workflows/go6-secure-lan.yml'
+      - 'docs/workstreams/gravity-orchard-go6.md'
+  push:
+    branches: [feature/gravity-orchard-secure-lan]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go6-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  tls-component:
+    name: TLS, storage and authority (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            node: '22.13.0'
+          - os: ubuntu-24.04
+            node: '24.22.3'
+          - os: macos-15
+            node: '24.22.3'
+          - os: macos-15-intel
+            node: '24.22.3'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: server/secure-lan/package-lock.json
+      - name: Record exact source and runtime
+        run: |
+          git rev-parse HEAD
+          node -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch})'
+      - name: Install locked isolated certificate and test dependencies
+        run: npm ci --prefix server/secure-lan --ignore-scripts --no-audit --no-fund
+      - name: Verify real TLS, WSS, store, privilege boundaries, fixture and runtime closure
+        run: node --test server/secure-lan/certificates/tests/*.test.mjs server/secure-lan/tests/*.test.mjs desktop/secure-lan/tests/diagnostic.test.mjs
+      - name: Preserve existing LAN, private room and transport behavior
+        run: node --test server/lan.test.mjs server/room-lan-integration.test.mjs ui/transport.test.mjs
+
+  setup-browser:
+    name: Setup UI and diagnostic browser flows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GO6_EVIDENCE_DIR: ${{ github.workspace }}/desktop/secure-lan/evidence
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.22.3'
+          cache: npm
+          cache-dependency-path: |
+            server/secure-lan/package-lock.json
+            desktop/secure-lan/package-lock.json
+      - name: Install locked nested test dependencies
+        run: |
+          npm ci --prefix server/secure-lan --ignore-scripts --no-audit --no-fund
+          npm ci --prefix desktop/secure-lan --ignore-scripts --no-audit --no-fund
+          node desktop/secure-lan/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Exercise setup, denial, retry, removal, narrow layouts and lifecycle
+        run: node desktop/secure-lan/tests/browser.mjs
+      - name: Record evidence boundary and tested source
+        if: always()
+        run: |
+          mkdir -p desktop/secure-lan/evidence
+          git rev-parse HEAD > desktop/secure-lan/evidence/tested-sha.txt
+          node -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch})' > desktop/secure-lan/evidence/runtime.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: go6-setup-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            desktop/secure-lan/evidence/*.png
+            desktop/secure-lan/evidence/*.json
+            desktop/secure-lan/evidence/tested-sha.txt
+          if-no-files-found: error
+          retention-days: 14
