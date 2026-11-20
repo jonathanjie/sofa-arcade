@@ -1,0 +1,59 @@
+name: WS2 private local multiplayer
+
+on:
+  pull_request:
+  push:
+    branches: [feature/local-platform]
+
+permissions:
+  contents: read
+
+jobs:
+  private-platform:
+    name: Private platform (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: '22.13.0'
+          - os: ubuntu-latest
+            node: '24'
+          - os: macos-14
+            node: '24'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Verify private authority, real LAN payloads, and client lifecycle
+        run: >-
+          node --test
+          server/rooms.test.mjs
+          server/lan.test.mjs
+          server/room-platform.test.mjs
+          server/room-lan-integration.test.mjs
+          ui/transport.test.mjs
+          ui/room-client.test.mjs
+      - name: Preserve Sofa Kingdoms and existing room/controller behavior
+        run: npm test
+
+  browser-client:
+    name: Browser clients on insecure LAN HTTP
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Install isolated browser test tools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ws2-browser" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.62.1
+          node "$RUNNER_TEMP/ws2-browser/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Exercise projected commands and streams in three browser contexts
+        env:
+          SOFA_PLAYWRIGHT_MODULE: ${{ runner.temp }}/ws2-browser/node_modules/playwright/index.mjs
+        run: node --test server/room-browser.test.mjs

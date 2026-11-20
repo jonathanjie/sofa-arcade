@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { handleApi, ROOM_TTL_MS, MAX_BODY_BYTES } from './rooms.mjs';
+import { createRoomApi, handleApi, ROOM_TTL_MS, MAX_BODY_BYTES } from './rooms.mjs';
 
 const ORIGIN = 'https://sofa.example';
 
-function fixture() {
+function fixture(handler = handleApi) {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(`CREATE TABLE sofa_rooms (
     code TEXT PRIMARY KEY, revision INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL,
@@ -22,7 +22,7 @@ function fixture() {
     });
     return bound([]);
   } };
-  return { env: { DB }, sqlite, stats };
+  return { env: { DB }, sqlite, stats, handler };
 }
 
 async function api(f, path, { method = 'GET', body, token, origin = ORIGIN, rawBody, headers = {} } = {}) {
@@ -34,7 +34,7 @@ async function api(f, path, { method = 'GET', body, token, origin = ORIGIN, rawB
     method, headers: requestHeaders,
     ...(rawBody !== undefined ? { body: rawBody } : body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
-  const response = await handleApi(request, f.env);
+  const response = await f.handler(request, f.env);
   const value = await response.json();
   assert.match(response.headers.get('cache-control'), /no-store/);
   return { status: response.status, body: value, response };
@@ -415,5 +415,156 @@ test('an index-only swipe retry stays valid after a later action changes the swi
   assert.equal(retry.status, 200);
   assert.equal(retry.body.revision, changed.body.revision);
   assert.equal(retry.body.state.forecast.axis, 'column');
+  f.sqlite.close();
+});
+
+test('a known committed ID cannot acknowledge a fabricated future revision', async () => {
+  const f = fixture();
+  const live = await openedRoom(f);
+  const body = actionBody(live.game.revision, live.openingMove);
+  const first = await api(f, `/api/rooms/${live.code}/action`, { method: 'POST', token: live.tokens[live.firstPlayer], body });
+  assert.equal(first.status, 200);
+  const future = await api(f, `/api/rooms/${live.code}/action`, {
+    method: 'POST', token: live.tokens[live.firstPlayer], body: { ...body, revision: first.body.revision + 1 },
+  });
+  assert.equal(future.status, 409);
+  assert.equal(future.body.code, 'stale_revision');
+  assert.equal(rawRoom(f, live.code).revision, first.body.revision);
+  f.sqlite.close();
+});
+
+for (const version of [1, 2]) {
+  test(`restored Sofa Kingdoms v${version} rooms retain scoring and toys until a v3 rematch`, async () => {
+    const f = fixture();
+    const live = await openedRoom(f);
+    const stored = rawRoom(f, live.code);
+    const data = JSON.parse(stored.data);
+    delete data.gameId;
+    delete data.state.firstPlayer;
+    data.state.version = version;
+    data.state.activePlayer = 'jon';
+    for (const player of Object.values(data.state.players)) {
+      delete player.openingBonus;
+      if (version === 1) delete player.bonusPoints;
+    }
+    data.state.players.jon.carried = 5;
+    data.state.players.jon.lures = 1;
+    f.sqlite.prepare('UPDATE sofa_rooms SET data = ? WHERE code = ?').run(JSON.stringify(data), live.code);
+    const banked = await api(f, `/api/rooms/${live.code}/action`, {
+      method: 'POST', token: live.tokens.jon, body: actionBody(stored.revision, { type: 'bank' }),
+    });
+    assert.equal(banked.status, 200);
+    assert.equal(banked.body.state.version, version);
+    assert.equal(banked.body.state.players.jon.banked, 5);
+    assert.equal(banked.body.state.players.jon.bonusPoints || 0, version === 1 ? 0 : 2);
+    assert.equal(banked.body.state.players.jon.lures, version === 1 ? 1 : 2);
+    assert.equal(banked.body.state.players.jon.openingBonus, undefined);
+    let current = banked.body;
+    for (let index = 0; index < 20 && current.phase === 'playing'; index++) {
+      const next = await api(f, `/api/rooms/${live.code}/action`, {
+        method: 'POST', token: live.tokens[current.state.activePlayer], body: actionBody(current.revision, { type: 'end' }),
+      });
+      assert.equal(next.status, 200);
+      current = next.body;
+      assert.equal(current.state.version, version);
+    }
+    assert.equal(current.phase, 'finished');
+    const rematch = await api(f, `/api/rooms/${live.code}/rematch`, { method: 'POST', token: live.hostToken });
+    assert.equal(rematch.status, 200);
+    assert.equal(rematch.body.state.version, 3);
+    assert.ok(rematch.body.players.jon.joined && rematch.body.players.lydia.joined);
+    f.sqlite.close();
+  });
+}
+
+test('a new engine without the complete private adapter cannot create or expose a room', async () => {
+  const handler = createRoomApi({
+    resolveGame: () => ({ id: 'private-broken' }),
+    resolveEngine: () => ({ playerIds: ['jon', 'lydia'], create() {}, apply() {} }),
+  });
+  const f = fixture(handler);
+  const create = await api(f, '/api/rooms', { method: 'POST', body: { gameId: 'private-broken' } });
+  assert.equal(create.status, 503);
+  assert.equal(create.body.code, 'invalid_engine');
+  assert.equal(f.stats.writes, 0);
+  f.handler = handleApi;
+  const live = await openedRoom(f);
+  const data = JSON.parse(rawRoom(f, live.code).data);
+  data.gameId = 'private-broken';
+  data.state.secret = 'unprojected-state-must-not-be-returned';
+  f.sqlite.prepare('UPDATE sofa_rooms SET data = ? WHERE code = ?').run(JSON.stringify(data), live.code);
+  f.handler = handler;
+  for (const token of [undefined, live.hostToken, live.tokens.jon, live.tokens.lydia]) {
+    const read = await api(f, `/api/rooms/${live.code}`, { token });
+    assert.equal(read.status, 503);
+    assert.equal(read.body.code, 'invalid_engine');
+    assert.ok(!JSON.stringify(read.body).includes(data.state.secret));
+  }
+  f.sqlite.close();
+});
+
+test('projector failures are redacted and do not start, rotate credentials, or commit actions', async () => {
+  let failProjection = false;
+  const secret = 'private-state-and-engine-diagnostic';
+  const engine = {
+    playerIds: ['jon', 'lydia'],
+    create: ({ matchId }) => ({ matchId, phaseId: `${matchId}:city:0`, phase: 'playing', turns: 0, secret }),
+    normalizeAction: action => action,
+    actionKey: action => JSON.stringify(action),
+    canRebaseAction: () => false,
+    apply: state => ({ ...state, turns: state.turns + 1, phaseId: `${state.matchId}:city:1` }),
+    project(state) {
+      if (failProjection || state.turns > 0) throw new Error(secret);
+      const { secret: omitted, ...publicState } = state;
+      return publicState;
+    },
+  };
+  const f = fixture(createRoomApi({ resolveGame: () => ({ id: 'private-projector' }), resolveEngine: () => engine }));
+  const created = await api(f, '/api/rooms', { method: 'POST', body: { gameId: 'private-projector' } });
+  const code = created.body.code;
+  const tokens = {};
+  const clients = {};
+  for (const playerId of ['jon', 'lydia']) {
+    clients[playerId] = crypto.randomUUID();
+    const joined = await api(f, `/api/rooms/${code}/join`, { method: 'POST', body: { playerId, clientId: clients[playerId] } });
+    tokens[playerId] = joined.body.playerToken;
+  }
+  const beforeStart = rawRoom(f, code);
+  failProjection = true;
+  const failedStart = await api(f, `/api/rooms/${code}/start`, { method: 'POST', token: created.body.hostToken });
+  assert.equal(failedStart.status, 500);
+  assert.ok(!JSON.stringify(failedStart.body).includes(secret));
+  assert.deepEqual(rawRoom(f, code), beforeStart);
+  failProjection = false;
+  const started = await api(f, `/api/rooms/${code}/start`, { method: 'POST', token: created.body.hostToken });
+  assert.equal(started.status, 200);
+  const beforeAction = rawRoom(f, code);
+  const failedAction = await api(f, `/api/rooms/${code}/action`, {
+    method: 'POST', token: tokens.jon, body: actionBody(started.body.revision, {
+      type: 'work', matchId: started.body.state.matchId, phaseId: started.body.state.phaseId,
+    }),
+  });
+  assert.equal(failedAction.status, 500);
+  assert.ok(!JSON.stringify(failedAction.body).includes(secret));
+  assert.deepEqual(rawRoom(f, code), beforeAction);
+  failProjection = true;
+  const failedJoin = await api(f, `/api/rooms/${code}/join`, {
+    method: 'POST', body: { playerId: 'jon', clientId: clients.jon },
+  });
+  assert.equal(failedJoin.status, 500);
+  assert.ok(!JSON.stringify(failedJoin.body).includes(secret));
+  assert.deepEqual(rawRoom(f, code), beforeAction);
+  failProjection = false;
+  assert.equal((await api(f, `/api/rooms/${code}`, { token: tokens.jon })).status, 200);
+  f.sqlite.close();
+});
+
+test('foreign Origins are rejected on reads as well as writes', async () => {
+  const f = fixture();
+  const live = await openedRoom(f);
+  const read = await api(f, `/api/rooms/${live.code}`, { token: live.tokens.jon, headers: { Origin: 'https://hostile.example' } });
+  assert.equal(read.status, 403);
+  assert.equal(read.body.code, 'origin_rejected');
+  assert.equal(read.body.state, undefined);
   f.sqlite.close();
 });
