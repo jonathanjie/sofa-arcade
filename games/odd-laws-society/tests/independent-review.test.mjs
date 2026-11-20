@@ -123,6 +123,57 @@ test('independent review: sparse or accessor setup agendas fail safely before cr
   assert.equal(getterRead, false);
 });
 
+test('independent review: Lydia wins distinct-choice council ties in both commitment arrival orders', () => {
+  for (const bid of [0, 1, 2]) for (const order of [['jon', 'lydia'], ['lydia', 'jon']]) {
+    let state = engine.create({ seed: 'lydia-tie', matchId: 'lydia-tie', options: { firstChair: 'lydia' } });
+    const choices = { jon: state.council.optionIds[0], lydia: state.council.optionIds[1] };
+    for (const seat of order) state = engine.apply(state, seat, action(state, 'commitCouncil', { choiceId: choices[seat], bid }));
+    assert.equal(state.activeLaws.economy, choices.lydia);
+    assert.equal(state.activePlayer, 'jon');
+    assert.equal(state.players.jon.influence, 2 - bid);
+    assert.equal(state.players.lydia.influence, 2 - bid);
+  }
+});
+
+test('independent review: the sixth action earns the new Civic threshold before income; replacement preserves awards', () => {
+  const agenda = [
+    { session: 1, category: 'economy', lawIds: ['public-grants', 'honest-wages'] },
+    { session: 2, category: 'civic', lawIds: ['public-service-day', 'shop-local'] },
+    { session: 3, category: 'economy', lawIds: ['small-shop-supremacy', 'workshop-week'] },
+    { session: 4, category: 'civic', lawIds: ['industrial-pride', 'mandatory-applause'] },
+    { session: 5, category: 'economy', lawIds: ['everything-is-art', 'open-tender'] },
+    { session: 6, category: 'civic', lawIds: ['fashionable-streets', 'diversity-parade'] },
+  ];
+  let state = engine.create({ seed: 'sixth-action', matchId: 'sixth-action', options: { firstChair: 'jon', agenda } });
+  const vote = choiceId => {
+    for (const seat of ['jon', 'lydia']) state = engine.apply(state, seat, action(state, 'commitCouncil', { choiceId, bid: 0 }));
+  };
+  const work = () => { state = engine.apply(state, state.activePlayer, action(state, 'work')); };
+  vote('keep');
+  state = engine.apply(state, 'lydia', action(state, 'build', { designId: 'petition-kiosk', row: 0, col: 0 }));
+  for (let index = 0; index < 5; index++) work();
+  assert.equal(state.session, 2);
+  vote('public-service-day');
+  for (let index = 0; index < 5; index++) work();
+  assert.equal(state.actionIndex, 5);
+  assert.equal(state.activePlayer, 'lydia');
+  assert.equal(state.players.lydia.score.civic, 0);
+  state = engine.apply(state, 'lydia', action(state, 'build', { designId: 'petition-kiosk', row: 0, col: 1 }));
+  assert.equal(state.session, 3);
+  assert.equal(state.players.lydia.score.civic, 1);
+  assert.equal(state.players.jon.score.civic, 0);
+  assert.equal(state.players.lydia.coins, 16);
+  assert.equal(state.players.lydia.influence, 6);
+  assert.equal(state.players.lydia.buildsThisSession, 0);
+  vote('keep');
+  for (let index = 0; index < 6; index++) work();
+  assert.equal(state.players.lydia.score.civic, 2);
+  vote('industrial-pride');
+  for (let index = 0; index < 6; index++) work();
+  assert.equal(state.session, 5);
+  assert.equal(state.players.lydia.score.civic, 2);
+});
+
 test('independent review: browser module graph ends at public data and safe errors', () => {
   const publicModules = new Set(['catalog.mjs', 'preview.mjs', 'errors.mjs']);
   const visited = new Set();
