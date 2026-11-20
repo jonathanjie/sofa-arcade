@@ -36,38 +36,59 @@ export function createEventDecoder(onEvent) {
  * Authenticated fetch/SSE with automatic reconnect. The bearer stays in the
  * Authorization header, never in the address or QR. Returns an idempotent stop.
  */
-export function subscribeRoom({ code, token, onRoom, onConnection = () => {}, fetcher = globalThis.fetch, retryMs = 500 }) {
+export function subscribeRoom({ code, token, onRoom, onConnection = () => {}, onStatus = () => {}, fetcher = globalThis.fetch, retryMs = 500, idleTimeoutMs = 30_000 }) {
   if (!/^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/.test(code) || !/^[A-Za-z0-9_-]{24,128}$/.test(token || '')) {
     throw new Error('A joined room is required for live updates.');
   }
   let stopped = false;
   let controller = null;
+  let activeReader = null;
   let retryTimer = null;
+  let idleTimer = null;
   let failures = 0;
-  const status = value => { if (!stopped) onConnection(value); };
+  let attempted = false;
+  // Preserve Sofa Kingdoms' string callback; new views receive the frozen
+  // contract's object shape, including passive stream loss and terminal auth.
+  const status = (legacy, value) => {
+    if (stopped) return;
+    onConnection(legacy);
+    onStatus(value);
+  };
+  const watch = () => {
+    clearTimeout(idleTimer);
+    if (idleTimeoutMs > 0) idleTimer = setTimeout(() => {
+      controller?.abort();
+      void activeReader?.cancel().catch(() => {});
+    }, idleTimeoutMs);
+  };
 
   async function connect() {
     if (stopped) return;
     controller = new AbortController();
-    status('connecting');
+    status('connecting', { state: attempted ? 'reconnecting' : 'connecting' });
+    attempted = true;
+    watch();
     let terminal = false;
     try {
       const response = await fetcher(`/api/rooms/${encodeURIComponent(code)}/events`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'text/event-stream' },
         cache: 'no-store', signal: controller.signal,
       });
+      if (stopped) { await response.body?.cancel().catch(() => {}); return; }
       terminal = [401, 403, 404, 410].includes(response.status);
       if (!response.ok || !response.body || !response.headers.get('content-type')?.includes('text/event-stream')) throw new Error('Live updates are unavailable.');
       const reader = response.body.getReader();
+      activeReader = reader;
       const decoder = new TextDecoder();
       const decode = createEventDecoder((type, value) => {
         if (type === 'error') {
           terminal = [401, 403, 404, 410].includes(value.status);
           throw new Error('The live room session ended.');
         }
-        if (type === 'room' && value?.code === code && Number.isSafeInteger(value.revision)) {
+        if (type === 'room' && value?.code === code && Number.isSafeInteger(value.revision) && value.revision >= 0) {
           failures = 0;
-          status('connected');
+          watch();
+          status('connected', { state: 'connected' });
           if (!stopped) onRoom(value);
         }
       });
@@ -77,11 +98,14 @@ export function subscribeRoom({ code, token, onRoom, onConnection = () => {}, fe
           if (done) break;
           decode(decoder.decode(value, { stream: true }));
         }
-      } finally { await reader.cancel().catch(() => {}); }
+      } finally { await reader.cancel().catch(() => {}); if (activeReader === reader) activeReader = null; }
     } catch { /* Polling can remain available while the stream reconnects. */ }
     finally {
+      clearTimeout(idleTimer);
       if (!stopped) {
-        status('offline');
+        status('offline', terminal
+          ? { state: 'error', message: 'This room session ended. Rejoin from the game page.' }
+          : { state: 'offline', message: 'Live updates disconnected. Reconnecting…' });
         if (!terminal) {
           const delay = Math.min(5000, retryMs * 2 ** Math.min(failures++, 4));
           retryTimer = setTimeout(connect, delay);
@@ -94,6 +118,8 @@ export function subscribeRoom({ code, token, onRoom, onConnection = () => {}, fe
     if (stopped) return;
     stopped = true;
     clearTimeout(retryTimer);
+    clearTimeout(idleTimer);
     controller?.abort();
+    void activeReader?.cancel().catch(() => {});
   };
 }

@@ -4,18 +4,11 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { SCENARIOS } from '../fixtures/odd-laws-scenarios.mjs';
+import { phaseAction as action, councilCommitments as currentCommitments, choosePublicAction } from '../fixtures/odd-laws-policy.mjs';
 import { oddComponents, oddServer, ODD_GAME_ID } from './components.mjs';
+import { captureSource, writeLatencyEvidence } from './evidence.mjs';
 import { PLAYER_IDS, otherPlayer, openRoom, connectThree, closeStreams, listen, request, command, submit,
   expectRevision, assertNoCredentials, latencySummary } from './harness.mjs';
-
-const action = (view, type, fields = {}) => ({ type, matchId: view.matchId, phaseId: view.phaseId, ...fields });
-
-function currentCommitments(view, plan) {
-  return Object.fromEntries(PLAYER_IDS.map((id, index) => [id, {
-    choiceId: plan.keep ? 'keep' : view.council.optionIds[plan.sameChoice ? 0 : index],
-    bid: Math.min(plan[id], view.players[id].influence),
-  }]));
-}
 
 function assertSealed(view, prior, seat, commitment, viewer) {
   assert.equal(view.stage, 'council');
@@ -33,33 +26,6 @@ async function assertViews(host, live, state, seat, commitment) {
     assertSealed(result.value.state, state, seat, commitment, viewer);
     assertNoCredentials(result.text, live);
   }
-}
-
-function selectBuild(view, id, components) {
-  const slot = view.players[id].city.findIndex(plot => plot === null);
-  if (slot < 0) return null;
-  const candidates = view.market.map(stack => ({ stack, quote: components.previews.buildQuote(view, id, stack.designId) }))
-    .filter(candidate => candidate.quote.allowed);
-  // Public deterministic policy, not a full engine prediction on a phone.
-  candidates.sort((a, b) => {
-    if (view.session === 1 && view.players[id].buildsThisSession === 0) {
-      if (a.stack.designId === 'corner-shop') return -1;
-      if (b.stack.designId === 'corner-shop') return 1;
-    }
-    return a.quote.cost - b.quote.cost || b.quote.prestige - a.quote.prestige || a.stack.designId.localeCompare(b.stack.designId);
-  });
-  if (!candidates.length) return null;
-  return action(view, 'build', { designId: candidates[0].stack.designId, row: Math.floor(slot / 3), col: slot % 3 });
-}
-
-function chooseAction(view, id, components, policy) {
-  if (policy === 'tie') return action(view, 'work');
-  if (policy === 'fill') return selectBuild(view, id, components) || action(view, 'work');
-  const index = 3 - view.actionsRemaining[id];
-  const wanted = SCENARIOS.richActions[view.session][index];
-  if (wanted === 'build') return selectBuild(view, id, components) || action(view, 'work');
-  if (wanted === 'festival' && (view.players[id].coins < 3 || view.players[id].festivalUsed)) return action(view, 'work');
-  return action(view, wanted);
 }
 
 function assertFinalAccounting(view, components, actionsTaken) {
@@ -83,6 +49,7 @@ function assertFinalAccounting(view, components, actionsTaken) {
 }
 
 async function playMatch(t, components, { chair, policy = 'rich' }) {
+  const sourceBefore = process.env.SOFA_EVIDENCE_DIR ? captureSource() : null;
   const host = await oddServer(components, { chair });
   const streams = {};
   t.after(async () => { await closeStreams(streams); await host.close(); });
@@ -98,7 +65,7 @@ async function playMatch(t, components, { chair, policy = 'rich' }) {
   const phases = new Set();
   const exhausted = new Set();
   const full = new Set();
-  const delays = [];
+  const delays = { host: [], jon: [], lydia: [] };
   let firstCityAction = null;
   let winnerRequest;
   let winnerActor;
@@ -181,7 +148,8 @@ async function playMatch(t, components, { chair, policy = 'rich' }) {
     if (firstCityAction && view.session === 1 && view.actionIndex === 2) {
       assert.equal(actor, firstCityAction.actor);
       const stalePhase = await submit(host, live, actor, command(room, firstCityAction.action));
-      assert.equal(stalePhase.status, 400, 'fresh revision cannot revive an old city phase');
+      assert.equal(stalePhase.status, 409, 'fresh revision cannot revive an old city phase');
+      assert.equal(stalePhase.value.code, 'stale_phase');
       const staleRevision = await submit(host, live, actor, { ...command(room, action(view, 'work')), revision: room.revision - 1 });
       assert.equal(staleRevision.status, 409, 'city actions never rebase');
     }
@@ -199,16 +167,16 @@ async function playMatch(t, components, { chair, policy = 'rich' }) {
         full.add(actor);
       }
     }
-    const selected = chooseAction(view, actor, components, policy);
+    const selected = choosePublicAction(view, actor, components.previews, policy);
     const payload = command(room, selected);
     const applied = await submit(host, live, actor, payload);
     assert.equal(applied.status, 200, applied.text);
     assert.equal(applied.value.revision, room.revision + 1, 'rejected requests did not advance the room');
     const pushed = await expectRevision(streams, applied.value.revision);
-    for (const event of Object.values(pushed)) {
+    for (const [viewer, event] of Object.entries(pushed)) {
       assert.deepEqual(event.value.state, applied.value.state);
       assertNoCredentials(event.raw, live);
-      delays.push(event.receivedAt - applied.startedAt);
+      delays[viewer].push(event.receivedAt - applied.startedAt);
     }
     if (selected.type === 'build' && view.session === applied.value.state.session) {
       const quote = components.previews.buildQuote(view, actor, selected.designId);
@@ -225,7 +193,10 @@ async function playMatch(t, components, { chair, policy = 'rich' }) {
   assert.equal(councilCount, 6);
   assert.equal(phases.size, 36);
   assertFinalAccounting(room.state, components, taken);
-  if (policy === 'rich') assert.deepEqual([...types].sort(), ['build', 'festival', 'lobby', 'work']);
+  if (policy === 'rich') {
+    assert.deepEqual([...types].sort(), ['build', 'festival', 'lobby', 'work']);
+    assert.notEqual(room.state.result.winner, 'tie', 'asymmetric legal decisions must exercise a winning result, separately from the tie fixture');
+  }
   if (policy === 'fill') {
     assert.equal(full.size, 2, 'both full-city fallback states were reached through legal actions');
     assert.ok(exhausted.size >= 2, 'exhausted stacks were actually requested and rejected');
@@ -246,8 +217,10 @@ async function playMatch(t, components, { chair, policy = 'rich' }) {
   assert.deepEqual(rematch.value.state.council.ready, { jon: false, lydia: false });
   await expectRevision(streams, rematch.value.revision);
   const oldMatch = await submit(host, live, winnerActor, { ...winnerRequest, revision: rematch.value.revision, actionId: crypto.randomUUID() });
-  assert.equal(oldMatch.status, 400, 'fresh revision cannot make an old-match command valid');
-  t.diagnostic(JSON.stringify({ chair, policy, cityActions: taken, councils: councilCount, score: room.state.result, latency: latencySummary(delays), method: 'Node loopback POST start to parsed per-viewer SSE update, all 3 viewers, 60-second heartbeat; no home Wi-Fi or TV/casting measurement' }));
+  assert.equal(oldMatch.status, 409, 'fresh revision cannot make an old-match command valid');
+  assert.equal(oldMatch.value.code, 'stale_match');
+  const evidence = await writeLatencyEvidence({ name: `odd-laws-${chair}-${policy}`, gameId: ODD_GAME_ID, chair, policy, samples: delays, sourceBefore });
+  t.diagnostic(JSON.stringify({ chair, policy, cityActions: taken, councils: councilCount, score: room.state.result, latency: Object.fromEntries(Object.entries(delays).map(([viewer, values]) => [viewer, latencySummary(values)])), evidence, method: 'Node loopback POST start to parsed per-viewer SSE update, all 3 viewers, 60-second heartbeat; no home Wi-Fi or TV/casting measurement' }));
 }
 
 for (const chair of SCENARIOS.chairs) {
@@ -294,7 +267,8 @@ test('Odd Laws: racing same-revision sealed votes resolve once, then reject futu
     assert.deepEqual(duplicate.value.state.players, final.value.state.players);
   }
   const staleCouncil = await submit(host, live, 'jon', { ...requests.jon, revision: final.value.revision, actionId: crypto.randomUUID() });
-  assert.equal(staleCouncil.status, 400, 'the old council phase must not reopen');
+  assert.equal(staleCouncil.status, 409, 'the old council phase must not reopen');
+  assert.equal(staleCouncil.value.code, 'stale_phase');
   const future = await submit(host, live, final.value.state.activePlayer, {
     ...command(final.value, action(final.value.state, 'work')), revision: final.value.revision + 1,
   });

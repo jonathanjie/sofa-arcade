@@ -76,3 +76,96 @@ test('a temporary connection failure reconnects and delivers the current room', 
   try { assert.equal((await received).revision, 9); assert.equal(calls, 2); }
   finally { stop(); }
 });
+
+test('object-shaped connection status reports passive disconnection and reconnect while legacy strings remain compatible', async () => {
+  const statuses = [];
+  const legacy = [];
+  let attempts = 0;
+  let resolveConnected;
+  const received = new Promise(resolve => { resolveConnected = resolve; });
+  const stop = subscribeRoom({ code: 'ABC234', token: 'x'.repeat(43), retryMs: 1,
+    onStatus: value => statuses.push(value), onConnection: value => legacy.push(value),
+    onRoom: value => { if (value.revision === 2) resolveConnected(); },
+    fetcher: async () => {
+      attempts++;
+      return new Response(new ReadableStream({ start(controller) {
+        controller.enqueue(new TextEncoder().encode(`event: room\ndata: {"code":"ABC234","revision":${attempts}}\n\n`));
+        if (attempts === 1) controller.close();
+      } }), { headers: { 'Content-Type': 'text/event-stream' } });
+    },
+  });
+  try {
+    await received;
+    assert.deepEqual(statuses.map(value => value.state), ['connecting', 'connected', 'offline', 'reconnecting', 'connected']);
+    assert.deepEqual(legacy, ['connecting', 'connected', 'offline', 'connecting', 'connected']);
+    assert.ok(statuses.every(value => typeof value === 'object'));
+  } finally { stop(); }
+});
+
+test('disposing a stalled reader cancels it even if fetch ignores the abort signal', async () => {
+  let resolveConnected;
+  let resolveCancelled;
+  const connected = new Promise(resolve => { resolveConnected = resolve; });
+  const cancelled = new Promise(resolve => { resolveCancelled = resolve; });
+  const statuses = [];
+  const stop = subscribeRoom({ code: 'ABC234', token: 'x'.repeat(43), onRoom: resolveConnected,
+    onStatus: value => statuses.push(value),
+    fetcher: async () => new Response(new ReadableStream({
+      start(controller) { controller.enqueue(new TextEncoder().encode('event: room\ndata: {"code":"ABC234","revision":1}\n\n')); },
+      cancel() { resolveCancelled(); },
+    }), { headers: { 'Content-Type': 'text/event-stream' } }),
+  });
+  await connected;
+  stop(); stop();
+  await cancelled;
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(statuses.map(value => value.state), ['connecting', 'connected']);
+});
+
+test('idle stream watchdog cancels a silent connection and recovers without a full engine snapshot', async () => {
+  let attempts = 0;
+  let cancellations = 0;
+  let resolveRoom;
+  const received = new Promise(resolve => { resolveRoom = resolve; });
+  const stop = subscribeRoom({ code: 'ABC234', token: 'x'.repeat(43), retryMs: 1, idleTimeoutMs: 10,
+    onRoom: resolveRoom,
+    fetcher: async () => {
+      attempts++;
+      return new Response(new ReadableStream({
+        start(controller) {
+          if (attempts === 2) controller.enqueue(new TextEncoder().encode('event: room\ndata: {"code":"ABC234","revision":2}\n\n'));
+        },
+        cancel() { cancellations++; },
+      }), { headers: { 'Content-Type': 'text/event-stream' } });
+    },
+  });
+  try {
+    assert.equal((await received).revision, 2);
+    assert.equal(attempts, 2);
+    assert.equal(cancellations, 1);
+  } finally { stop(); }
+});
+
+test('terminal SSE errors produce safe error status and never reconnect or expose the error payload', async () => {
+  let attempts = 0;
+  let resolveEnded;
+  const ended = new Promise(resolve => { resolveEnded = resolve; });
+  const statuses = [];
+  const stop = subscribeRoom({ code: 'ABC234', token: 'x'.repeat(43), retryMs: 1,
+    onRoom() { assert.fail('An error is not a room.'); },
+    onStatus: value => { statuses.push(value); if (value.state === 'error') resolveEnded(); },
+    fetcher: async () => {
+      attempts++;
+      return new Response(new ReadableStream({ start(controller) {
+        controller.enqueue(new TextEncoder().encode('event: error\ndata: {"status":403,"error":"PRIVATE-COMMITMENT"}\n\n'));
+      } }), { headers: { 'Content-Type': 'text/event-stream' } });
+    },
+  });
+  try {
+    await ended;
+    await new Promise(resolve => setTimeout(resolve, 15));
+    assert.equal(attempts, 1);
+    assert.ok(!JSON.stringify(statuses).includes('PRIVATE-COMMITMENT'));
+    assert.equal(statuses.at(-1).state, 'error');
+  } finally { stop(); }
+});

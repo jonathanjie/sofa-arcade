@@ -18,11 +18,12 @@ const redact = value => {
   return text.replace(/Bearer\s+[A-Za-z0-9_-]{24,128}/g, 'Bearer [REDACTED]');
 };
 
-export async function acceptanceSession(label) {
+export async function acceptanceSession(label, { serverOptions = {}, setup = null } = {}) {
   const { chromium } = require(process.env.SOFA_PLAYWRIGHT_MODULE || 'playwright');
   const temp = await mkdtemp(path.join(tmpdir(), `sofa-${label}-`));
   const { startLanServer } = await import(pathToFileURL(path.join(runtimeRoot, 'server/lan.mjs')).href);
-  let server = await startLanServer({ root: runtimeRoot, databasePath: path.join(temp, 'rooms.sqlite'), host: '127.0.0.1', port: 0, heartbeatMs: 200 });
+  const options = { ...serverOptions, root: runtimeRoot, databasePath: path.join(temp, 'rooms.sqlite'), host: '127.0.0.1', heartbeatMs: 200 };
+  let server = await startLanServer({ ...options, port: 0 });
   const port = server.port;
   const origin = server.origin;
   let browser;
@@ -49,6 +50,7 @@ export async function acceptanceSession(label) {
     environment: { platform: process.platform, architecture: process.arch, node: process.version, browser: browser.version() },
     methodology: 'Three isolated Chromium browser contexts talking to one real Node/SQLite/HTTP/SSE server on loopback. External HTTP(S) requests are blocked and recorded. This is not physical phone, home Wi-Fi, casting, WKWebView, or native app evidence.',
     startedAt: new Date().toISOString(),
+    ...(setup ? { setup } : {}),
     commit: (() => { try { return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: checkout, encoding: 'utf8' }).trim(); } catch { return null; } })(),
     dirtyPaths: (() => { try { return execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: checkout, encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } })(),
     checks, screenshots, externalRequests, errors, failedResponses,
@@ -58,6 +60,49 @@ export async function acceptanceSession(label) {
     protectCredential(token) { if (typeof token === 'string' && token) privateValues.add(token); },
     async page(name, viewport, options = {}) {
       const context = await browser.newContext({ viewport, reducedMotion: 'reduce', ...options });
+      // Observe only the number of real SSE frames consumed by the application.
+      // Payloads, credentials, requests and response contents are not retained.
+      await context.addInitScript(() => {
+        window.__sofaAcceptanceSseFrames = 0;
+        window.__sofaAcceptanceMotion = [];
+        const originalAnimate = Element.prototype.animate;
+        Element.prototype.animate = function (keyframes, options) {
+          // Record only animation properties, never UI text or game data.
+          // The real Web Animations API still executes every supplied frame.
+          window.__sofaAcceptanceMotion.push({
+            reduced: matchMedia('(prefers-reduced-motion: reduce)').matches,
+            properties: [...new Set((Array.isArray(keyframes) ? keyframes : [keyframes]).flatMap(frame => Object.keys(frame || {})))],
+          });
+          return originalAnimate.call(this, keyframes, options);
+        };
+        const originalFetch = window.fetch.bind(window);
+        window.fetch = async (...args) => {
+          const response = await originalFetch(...args);
+          if (response.headers.get('content-type')?.includes('text/event-stream') && response.body) {
+            const originalGetReader = response.body.getReader.bind(response.body);
+            response.body.getReader = (...readerArgs) => {
+              const reader = originalGetReader(...readerArgs);
+              const originalRead = reader.read.bind(reader);
+              const decoder = new TextDecoder();
+              let pending = '';
+              reader.read = async () => {
+                const chunk = await originalRead();
+                if (chunk.value) {
+                  pending += decoder.decode(chunk.value, { stream: true });
+                  let boundary;
+                  while ((boundary = pending.indexOf('\n\n')) >= 0) {
+                    window.__sofaAcceptanceSseFrames++;
+                    pending = pending.slice(boundary + 2);
+                  }
+                }
+                return chunk;
+              };
+              return reader;
+            };
+          }
+          return response;
+        };
+      });
       await context.route('**/*', async route => {
         const url = new URL(route.request().url());
         if (['http:', 'https:'].includes(url.protocol) && url.origin !== origin) {
@@ -93,12 +138,16 @@ export async function acceptanceSession(label) {
     },
     async restartServer() {
       await server.close();
-      server = await startLanServer({ root: runtimeRoot, databasePath: path.join(temp, 'rooms.sqlite'), host: '127.0.0.1', port, heartbeatMs: 200 });
+      server = await startLanServer({ ...options, port });
     },
     async finish(error = null) {
       evidence.finishedAt = new Date().toISOString();
       evidence.result = error ? 'failed' : 'passed';
       if (error) {
+        // The caller rethrows after cleanup; sanitize its console form too.
+        error.message = redact(error.message);
+        error.stack = redact(error.stack);
+        if (Array.isArray(error.log)) error.log = error.log.map(redact);
         evidence.failure = { message: redact(error.message), stack: redact(error.stack) };
         for (const { name, page } of pages) {
           try { await this.screenshot(page, `failure-${name}`); } catch {}

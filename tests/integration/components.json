@@ -36,9 +36,9 @@
       "id": "WS2",
       "branch": "feature/local-platform",
       "report": "docs/workstreams/room-platform.md",
-      "pr": null,
-      "head": null,
-      "status": "awaiting-handoff",
+      "pr": 7,
+      "head": "adeefd5bd019e459f3f7a3fc4a921073cce3ec46",
+      "status": "included",
       "protectedPaths": [
         "server/rooms.mjs",
         "server/rooms.test.mjs",
@@ -51,11 +51,22 @@
         "ui/room-client.test.mjs",
         ".github/workflows/ws2-platform.yml"
       ],
-      "postHandoffCorrections": [],
-      "observedCheckpoint": {
-        "pr": 7,
-        "head": "adeefd5bd019e459f3f7a3fc4a921073cce3ec46",
-        "reason": "Draft; owned platform/browser CI pending."
+      "postHandoffCorrections": [
+        {
+          "path": "server/lan.mjs",
+          "reason": "Extend only explicit serving entries for reviewed shared collection adapters and WS1 public catalog/preview/errors modules; no authority/private fixtures are served.",
+          "verification": "79 WS2 suites pass; integration package browser-graph/privacy checks and final composed acceptance required."
+        }
+      ],
+      "review": {
+        "handoff": "PR #7 marked ready; final report explicitly permits serving-list additions",
+        "localChecks": [
+          "79 focused platform/client tests passed after entry-only LAN extension"
+        ],
+        "ciRuns": [
+          44701350370,
+          44701350366
+        ]
       }
     },
     {

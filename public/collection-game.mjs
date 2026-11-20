@@ -35,7 +35,9 @@ export function createCollectionGame({
 
   function setConnection(next) {
     if (disposed) return;
-    status = connectionStatus(next);
+    const normalized = connectionStatus(next);
+    if (status.state === normalized.state && status.message === normalized.message) return;
+    status = normalized;
     view?.setConnection(status);
     onStatus(status);
   }

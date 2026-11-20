@@ -5,8 +5,8 @@
 Work is on `feature/local-integration` in a dedicated clone. Base `main` is
 `e34b0015399cb9791b175987adf1fab1b542565a` (20 November 2026).
 
-**Status: assembling reviewed components; not a complete local release.** WS1
-is included at its explicitly ready, tested head. WS2, WS3 and WS5 have draft
+**Status: assembling reviewed components; not a complete local release.** WS1 and WS2
+are included at their explicitly ready, tested heads. WS3 and WS5 have draft
 PRs with outstanding owner CI gates; WS4 has not published a handoff. No component
 code is copied from an unfinished working tree. Odd Laws Society remains planned
 until real end-to-end acceptance passes.
@@ -19,7 +19,7 @@ immutable head. A later head is a new candidate requiring affected checks again.
 | Component | Expected branch | PR / immutable head | Integration state |
 | --- | --- | --- | --- |
 | WS1 engine | `feature/odd-laws-engine` | #4 — `a9d55b76c3c7d1da43836c350a0f7ce63820cecb` | Included; ready handoff and owned CI verified |
-| WS2 private platform | `feature/local-platform` | #7 — observed `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Draft; not incorporated |
+| WS2 private platform | `feature/local-platform` | #7 — `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Included; ready handoff and owned CI verified |
 | WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — observed `777bb73055e8c1b3214a7e94dd949886c2fde625` | Draft; not incorporated |
 | WS4 media/music | `feature/odd-laws-media` | Not published at initial inspection | Awaiting tested handoff |
 | WS5 Tauri | `feature/tauri-local` | #6 — observed `d989530000828f1132388e487950f99cfd62190d` | Draft; not incorporated |
@@ -193,3 +193,20 @@ failed at final results because the TV could restore before its rules module
 loaded (`roundStarter` on null). This is a real shared-shell defect, with a fix
 being revalidated; it is **not** a completed browser acceptance.
 [Diagnostic screenshots and report](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700690114/artifacts/14612378717).
+
+### WS2 reviewed handoff
+
+WS2 PR #7 is explicitly ready at `adeefd5bd019e459f3f7a3fc4a921073cce3ec46`.
+WS6 inspected its final diff/report and [four passing owned jobs](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701350370):
+Node 22.13/Linux, Node 24/Linux, Node 24/macOS arm64, and a real Chromium
+three-context test on ordinary insecure LAN HTTP. The production source is
+byte-identical to the separately reviewed `6a9227a` checkpoint; final changes
+correct the CI runner and finalize the report.
+
+The exact head is merged by ancestry. Only `server/lan.mjs`'s explicit serving
+entries are extended under the owner handoff: shared collection adapters and
+WS1's public helper closure including `errors.mjs`. The engine and projector
+remain unserved. `room-client.mjs` enters preparation and the portable runtime.
+All **79 focused WS2 tests passed after the serving-entry extension**. This
+correction is documented in the immutable component matrix and will be retested
+with the final UI/media closure.

@@ -16,8 +16,9 @@ const persist = (key, value) => { try { localStorage.setItem(key, JSON.stringify
 const clientId = stored('sofa-client-id') || uid();
 persist('sofa-client-id', clientId);
 let engine = null;
+let engineLoadFailed = false;
 const engineReady = import('/engine.mjs?v=5').then(m => { engine = m; return m; });
-engineReady.catch(() => {});
+engineReady.catch(() => {engineLoadFailed=true;if(state.gameId===SOFA_GAME_ID&&['game','tutorial'].includes(state.view))render();});
 let pollTimer = null;
 let pollInFlight = false;
 let pollAbort = null;
@@ -33,6 +34,9 @@ let collectionModules = null;
 let collectionLoading = null;
 let collectionLoadError = '';
 let collectionModalHTML = null;
+let collectionTutorial = null;
+let collectionTutorialPending = false;
+let collectionTutorialSerial = 0;
 let modalPreviousFocus = null;
 let eventTimer = null;
 let tutorialReturn = null;
@@ -98,7 +102,7 @@ function character(id, extra = '') {
 function header() {
   const inMatch=state.view==='game'||state.view==='tutorial';
   const settings=audio.getSettings();
-  return `<header class="topbar"><button class="brand" data-action="home" aria-label="Back to Sofa Arcade"><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${inMatch?esc(gameById(state.gameId).title):'Sofa Arcade'}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></button><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!state.code?'hidden':''}>${state.network==='offline'?'Offline':'Reconnecting…'}</span>${state.code ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
+  return `<header class="topbar"><button class="brand" data-action="home" aria-label="Back to Sofa Arcade"><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${inMatch?esc(gameById(state.gameId).title):'Sofa Arcade'}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></button><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!state.code?'hidden':''}>${state.network==='offline'?'Offline':'Reconnecting…'}</span>${state.code ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'&&!(state.gameId===ODD_LAWS_GAME_ID&&state.view==='game')?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
 }
 function notices() {
   const text = state.error || state.notice;
@@ -327,7 +331,7 @@ function modal() {
       ['crown','Prestige decides the result','Building, street, Festival, and secured Civic prestige stay earned. The final treasury adds one prestige per three remaining coins, up to four. Equal totals share the victory.'],
     ].map(([i,title,description])=>`<div class="rule-item"><span class="rule-icon">${icon(i)}</span><div><h3>${title}</h3><p>${description}</p></div></div>`).join('')}</div><button class="button full" data-action="close-modal">Back to the council</button>`;
   } else if(state.modal==='local') {
-    content=`<div class="modal-header"><div><span class="eyebrow">Your living room, connected</span><h2>Play over home Wi-Fi.</h2></div>${close}</div><div class="local-instructions"><p>Run the game on your Mac. Both phones connect directly to it, with live updates across your home network.</p><ol><li>Download and unzip the local game on your Mac.</li><li>Install Node.js 22.13 or newer if needed.</li><li>Open <strong>start-sofa.command</strong>, or run <code>node scripts/lan-server.mjs</code> in the extracted folder.</li><li>Open the address shown in Terminal, host a room, and scan its QR on both phones.</li></ol>${transport.mode==='lan'?'<p class="lan-mode-label">You are already playing over the local network.</p>':'<a class="button full" href="/downloads/sofa-arcade-local.zip" download="sofa-arcade-local.zip">Download local game</a>'}<p class="connection-detail">Use the same home Wi-Fi and keep Terminal open. Local rooms are separate from online rooms. Screencasting can still add display delay.</p></div><button class="button secondary full" data-action="close-modal">Done</button>`;
+    content=`<div class="modal-header"><div><span class="eyebrow">Your living room, connected</span><h2>Play over home Wi-Fi.</h2></div>${close}</div><div class="local-instructions"><p>The Sofa Arcade Mac app starts its local host automatically. Open the app, host a room, and scan its QR code on both phones.</p><p>Keep the Mac and phones on the same home Wi-Fi. Installed-app play needs no separate Node runtime or Terminal.</p><details><summary>Using the portable ZIP instead?</summary><ol><li>Download and unzip the portable game on your Mac.</li><li>Install Node.js 22.13 or newer if needed.</li><li>Open <strong>start-sofa.command</strong>, or run <code>node scripts/lan-server.mjs</code> in the extracted folder.</li><li>Open the address shown in Terminal, host a room, and scan its QR on both phones.</li></ol></details>${transport.mode==='lan'?'<p class="lan-mode-label">You are already playing over the local network.</p>':'<a class="button full" href="/downloads/sofa-arcade-local.zip" download="sofa-arcade-local.zip">Download portable ZIP</a>'}<p class="connection-detail">Keep the Mac app open while playing; the portable ZIP host instead keeps its launcher running. Local rooms are separate from online rooms. Screencasting can still add display delay.</p></div><button class="button secondary full" data-action="close-modal">Done</button>`;
   } else if(state.modal==='audio') {
     const a=audio.getSettings(),phone=isPhoneAudio();
     const status=audioStatus();
@@ -384,6 +388,29 @@ function prepareCollectionModules() {
   if(collectionModules||collectionLoading||collectionLoadError)return;
   void ensureCollectionModules().then(()=>{if(state.gameId===ODD_LAWS_GAME_ID)render();}).catch(()=>{if(state.gameId===ODD_LAWS_GAME_ID)render();});
 }
+function closeCollectionTutorial() {
+  collectionTutorialSerial++;
+  collectionTutorialPending=false;
+  collectionTutorial?.dispose();
+  collectionTutorial=null;
+}
+async function openOddTutorial() {
+  if(state.gameId!==ODD_LAWS_GAME_ID||state.busy||collectionTutorial||collectionTutorialPending)return;
+  audio.unlock();
+  const epoch=roomEpoch,serial=++collectionTutorialSerial;
+  collectionTutorialPending=true;
+  state.modal=null;state.error='';render();
+  try{
+    const [modules,{mountCollectionTutorial}]=await Promise.all([ensureCollectionModules(),import('/collection-tutorial.mjs?v=1')]);
+    if(epoch!==roomEpoch||serial!==collectionTutorialSerial||state.gameId!==ODD_LAWS_GAME_ID)return;
+    collectionTutorial=mountCollectionTutorial({
+      shell:app,createTutorial:modules.createTutorial,rules:modules.rules,assets:modules.assets,sound:audio,
+      preferences:{reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches},
+      onClose:()=>{collectionTutorial=null;if(document.activeElement===document.body)app.querySelector('[data-action="odd-tutorial"]')?.focus({preventScroll:true});},
+    });
+  }catch(error){if(epoch===roomEpoch&&serial===collectionTutorialSerial){state.error=error.message;render();}}
+  finally{if(serial===collectionTutorialSerial)collectionTutorialPending=false;}
+}
 function renderCollectionMatch() {
   const identity=[state.code,state.role,state.playerId||'',token()||''].join(':');
   if(collectionIdentity!==identity||!app.querySelector('#collection-game-root')){
@@ -418,11 +445,14 @@ function renderCollectionMatch() {
         preferences:{reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches},
         onRoom:room=>{if(collectionIdentity===identity)applyRoom(room);},
         onStatus:status=>{if(collectionIdentity===identity){state.network=status.state;updateConnectionChrome();}},
-        onExit:()=>openModal('leave'),onHelp:()=>openModal('odd-rules'),
+        onExit:()=>goHome(),
       });
       collectionGame.setConnection({state:state.network});
     }catch(error){collectionLoadError=error.message;root.innerHTML=`<div class="collection-loading" role="alert">${esc(error.message)}</div>`;}
   }else collectionGame.update(state.room);
+}
+function sofaLoadingView() {
+  return engineLoadFailed?'<main class="collection-loading" role="alert"><h1>The board could not load.</h1><p>Your room is saved. Reload this screen to try again.</p><button class="button" data-action="reload-view">Reload game</button></main>':'<main class="collection-loading" role="status"><span class="spinner"></span> Preparing your board…</main>';
 }
 function render() {
   const current=game();
@@ -442,8 +472,8 @@ function render() {
   if(state.view==='detail')content=gameDetail();
   if(state.view==='join') content=joinScreen();
   if(state.view==='lobby') content=state.role==='host'?lobby():waiting();
-  if(state.view==='game' && game()) content=state.role==='player'?controller(game()):tvBoard(game());
-  if(state.view==='tutorial' && game())content=tutorialView();
+  if(state.view==='game' && game())content=engine?(state.role==='player'?controller(game()):tvBoard(game())):sofaLoadingView();
+  if(state.view==='tutorial' && game())content=engine?tutorialView():sofaLoadingView();
   app.innerHTML=`<div class="app-shell ${state.role==='player'?'is-controller':''} ${state.view==='game'?'is-match':''} ${state.view==='tutorial'?'is-tutorial':''} view-${state.view}">${header()}${notices()}${content}${footer()}</div>${modal()}`;
   if(old.size && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     app.querySelectorAll('[data-piece]').forEach(n=>{
@@ -518,7 +548,7 @@ function applyRoom(room,force=false) {
   if(room.state?.lastEvent) {
     const ev=room.state.lastEvent;
     const key=ev.round+':'+ev.description;
-    if(previous?.state && state.lastEventKey!==key && state.view==='game'&&!state.modal&&state.mode!=='tutorial') {
+    if(engine && previous?.state && state.lastEventKey!==key && state.view==='game'&&!state.modal&&state.mode!=='tutorial') {
       state.turnToast=room.state.phase==='playing'?`Round ${room.state.round} · ${NAMES[engine.roundStarter(room.state)]} starts`:'The final scores are in';
       state.eventToast=forecastInfo({forecast:ev}).detail+' '+state.turnToast;
       clearTimeout(eventTimer);
@@ -603,20 +633,28 @@ async function poll(force=false) {
 function startPolling() {
   stopPolling();lastPollAt=0;
   const code=state.code,epoch=roomEpoch;
+  let richConnectionStatus=false;
+  const updateConnection=connection=>{
+    if(epoch!==roomEpoch||code!==state.code)return;
+    const status=connectionStatus(connection);
+    streamConnected=status.state==='connected';
+    setNetworkConnection(status);
+    // Polling remains a fallback while a local stream reconnects.
+    if(['offline','reconnecting'].includes(status.state)){lastPollAt=0;void poll(true);}
+  };
   if(transport.realtime&&token())streamStop=subscribeRoom({code,token:token(),
     onRoom:room=>{if(epoch!==roomEpoch||code!==state.code)return;setNetworkConnection('connected');receiveNetworkRoom(room);},
     onConnection:connection=>{
-      if(epoch!==roomEpoch||code!==state.code)return;
-      const status=connectionStatus(connection);
-      streamConnected=status.state==='connected';
-      setNetworkConnection(status);
-      // Polling remains a fallback while a local stream reconnects.
-      if(['offline','reconnecting'].includes(status.state)){lastPollAt=0;void poll(true);}
+      // Older Sofa hosts provide only this string callback. WS2 invokes the
+      // richer callback synchronously after it; prefer that safe message/state.
+      queueMicrotask(()=>{if(!richConnectionStatus)updateConnection(connection);});
     },
+    onStatus:status=>{richConnectionStatus=true;updateConnection(status);},
   });
   pollTimer=setInterval(()=>{void poll();},250);
 }
 function stopPolling() {
+  closeCollectionTutorial();
   if(pollTimer)clearInterval(pollTimer);pollTimer=null;roomEpoch++;
   pollAbort?.abort();pollAbort=null;pollInFlight=false;
   streamStop?.();streamStop=null;streamConnected=false;releaseActionQueue();
@@ -738,7 +776,9 @@ app.addEventListener('click', async event=>{
   if(a==='open-game')openGame(button.dataset.game);
   if(a==='leave')goHome();
   if(a==='rules')openModal(state.gameId===ODD_LAWS_GAME_ID?'odd-rules':'rules');
+  if(a==='odd-tutorial')await openOddTutorial();
   if(a==='close-modal')closeModal();
+  if(a==='reload-view'){location.reload();return;}
   if(a==='retry-collection'){collectionLoadError='';render();}
   if(a==='dismiss-notice'){state.error='';state.notice='';render();}
   if(a==='audio')openModal('audio');
@@ -829,7 +869,11 @@ async function init() {
     const code=(params.get('room')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
     await restoreHostRoom(code);return;
   }
-  if(params.has('tutorial')){await startTutorial();return;}
+  if(params.has('tutorial')){
+    if(params.get('game')===ODD_LAWS_GAME_ID){openGame(ODD_LAWS_GAME_ID);await openOddTutorial();}
+    else await startTutorial();
+    return;
+  }
   if(params.has('practice')){await startPractice();return;}
   if(params.has('game')){openGame(params.get('game'));return;}
   await restoreLocalSession();

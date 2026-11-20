@@ -75,6 +75,11 @@ try {
   await tv.getByRole('switch', { name: 'Sound effects', exact: true }).uncheck();
   await tv.locator('#volume-slider').press('Home');
   for (let step = 0; step < 27; step++) await tv.locator('#volume-slider').press('ArrowRight');
+  const sseFrames = await tv.evaluate(() => window.__sofaAcceptanceSseFrames);
+  await waitUntil(async () => (await tv.evaluate(() => window.__sofaAcceptanceSseFrames)) > sseFrames, 'Real SSE heartbeat while volume has focus');
+  assert.equal(await tv.locator('#volume-slider').evaluate(node => node === document.activeElement), true, 'SSE heartbeat preserves focused volume control');
+  assert.equal(await tv.locator('#volume-slider').inputValue(), '27');
+  run.check('A real SSE heartbeat preserves audio-dialog input focus and its chosen value');
   await closeDialog(tv);
   await tv.reload();
   await tv.locator('.game-layout').waitFor();

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { connectionStatus, createCollectionGame } from '../../ui/collection-game.mjs';
 import { loadOddLaws } from '../../ui/collection-load.mjs';
+import { createTutorialBridge } from '../../ui/collection-tutorial.mjs';
 
 const snapshot = (revision = 1, changes = {}) => ({
   code: 'ABC234', gameId: 'odd-laws-society', revision, phase: 'playing',
@@ -66,6 +67,18 @@ test('passive stream failure reaches the mounted view even when no command is pe
   assert.deepEqual(h.statuses.at(-1), { state: 'reconnecting', message: 'Rejoining the room.' });
   h.handle.setConnection('connected');
   assert.deepEqual(h.calls.at(-1), ['connection', 'connected']);
+  h.handle.dispose();
+});
+
+test('identical connected heartbeats do not rerender the component or clear its motion', () => {
+  const h = harness();
+  const before = h.calls.length;
+  for (let index = 0; index < 20; index++) h.handle.setConnection({ state: 'connected' });
+  assert.equal(h.calls.length, before);
+  h.handle.setConnection({ state: 'offline', message: 'Waiting for the host.' });
+  const afterDisconnect = h.calls.length;
+  h.handle.setConnection({ state: 'offline', message: 'Waiting for the host.' });
+  assert.equal(h.calls.length, afterDisconnect);
   h.handle.dispose();
 });
 
@@ -146,6 +159,7 @@ test('lazy collection loading resolves media from its manifest and never imports
   const requests = [];
   const modules = {
     '/games/odd-laws-society/index.mjs': { mount() {} },
+    '/games/odd-laws-society/tutorial.mjs': { createTutorial() {} },
     '/games/odd-laws-society/catalog.mjs': { BUILDINGS: [], LAWS: [], GUILDS: [] },
     '/games/odd-laws-society/preview.mjs': { buildQuote() {}, streetOutcome() {}, civicAward() {} },
     '/room-client.mjs': { createRoomClient() {} },
@@ -160,12 +174,13 @@ test('lazy collection loading resolves media from its manifest and never imports
   assert.equal(result.assets.manifestUrl, 'http://127.0.0.1:4177/assets/odd-laws-society/manifest.json');
   assert.deepEqual(requests, [result.assets.manifestUrl]);
   assert.equal(result.rules.buildQuote, modules['/games/odd-laws-society/preview.mjs'].buildQuote);
+  assert.equal(result.createTutorial, modules['/games/odd-laws-society/tutorial.mjs'].createTutorial);
   assert.equal(imports.some(path => /engine|private|fixture/.test(path)), false);
 });
 
 test('missing or invalid artwork uses code-native view fallbacks and optional effects do not block controls', async () => {
   const fixtureModule = {
-    mount() {}, createRoomClient() {}, BUILDINGS: [], LAWS: [], GUILDS: [],
+    mount() {}, createTutorial() {}, createRoomClient() {}, BUILDINGS: [], LAWS: [], GUILDS: [],
     buildQuote() {}, streetOutcome() {}, civicAward() {},
     SCORE: { title: 'score' }, eventsForBar() {},
   };
@@ -186,4 +201,46 @@ test('missing or invalid artwork uses code-native view fallbacks and optional ef
     assert.equal(result.assets.manifest.gameId, 'odd-laws-society');
     assert.equal(result.score.eventsForEffect, undefined);
   }
+});
+
+test('standalone guided practice delegates lessons and progress without exposing a room or dispatcher', () => {
+  const rules = Object.freeze({ buildings: [], laws: [], guilds: [] });
+  const assets = Object.freeze({ manifest: {}, manifestUrl: 'http://localhost/assets/manifest.json' });
+  const calls = [], renders = [], contexts = [];
+  let changed;
+  const state = { open: false, step: 4, done: false };
+  const bridge = createTutorialBridge({
+    rules, assets, sound: { unlock() { calls.push('unlock'); return Promise.resolve(true); } },
+    createTutorial({ onChange }) {
+      changed = onChange;
+      return {
+        getState() { return { ...state }; },
+        open({ replay }) { calls.push(['open', replay]); state.open = true; if (replay) state.step = 0; onChange(); },
+        close() { state.open = false; onChange(); },
+        render(ctx) { contexts.push(ctx); return `lesson ${state.step}`; },
+        handleAction(action, target, ctx) { calls.push(['action', action, target]); contexts.push(ctx); state.step++; onChange(); return true; },
+        dispose() { calls.push('dispose'); },
+      };
+    },
+    onRender(markup, progress) { renders.push({ markup, step: progress.step }); },
+    onClose() { calls.push('closed'); },
+  });
+  bridge.open();
+  assert.deepEqual(renders.at(-1), { markup: 'lesson 4', step: 4 }, 'opening resumes the component-owned saved lesson');
+  assert.equal(bridge.action('build', { dataset: {} }), false, 'real match commands cannot enter the practice bridge');
+  const target = { dataset: { plot: '2' } };
+  assert.equal(bridge.action('tutorial-plot', target), true);
+  assert.deepEqual(calls.slice(-2), ['unlock', ['action', 'tutorial-plot', target]], 'gesture unlock happens before lesson action');
+  assert.ok(contexts.every(ctx => ctx.rules === rules && ctx.media === assets));
+  assert.ok(contexts.every(ctx => !('room' in ctx) && !('dispatch' in ctx) && !('viewer' in ctx)));
+  bridge.close(); bridge.close();
+  assert.equal(calls.filter(value => value === 'closed').length, 1);
+  bridge.open({ replay: true });
+  assert.deepEqual(renders.at(-1), { markup: 'lesson 0', step: 0 });
+  bridge.dispose(); bridge.dispose();
+  const count = calls.length, renderCount = renders.length;
+  state.open = true; changed(); bridge.open(); bridge.action('tutorial-next', target);
+  assert.equal(calls.length, count);
+  assert.equal(renders.length, renderCount);
+  assert.equal(calls.filter(value => value === 'dispose').length, 1);
 });

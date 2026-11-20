@@ -6,10 +6,12 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { legalActions, scoreFor } from '../../../game/engine.mjs';
 import { legacySofaState } from '../fixtures/legacy-sofa.mjs';
+import { captureSource, writeLatencyEvidence } from './evidence.mjs';
 import { startFixtureServer, openRoom, connectThree, closeStreams, request, command, submit,
   expectRevision, assertNoCredentials, latencySummary, listen } from './harness.mjs';
 
 test('Sofa Kingdoms completes through three authenticated HTTP/SSE clients, retries the winning command, and rematches', async t => {
+  const sourceBefore = process.env.SOFA_EVIDENCE_DIR ? captureSource() : null;
   const host = await startFixtureServer();
   const streams = {};
   t.after(async () => { await closeStreams(streams); await host.close(); });
@@ -69,7 +71,8 @@ test('Sofa Kingdoms completes through three authenticated HTTP/SSE clients, retr
   await expectRevision(streams, rematched.value.revision);
   const oldRetry = await submit(host, live, winningActor, winningPayload);
   assert.equal(oldRetry.status, 409, 'a prior match command cannot mutate the rematch');
-  t.diagnostic(JSON.stringify({ method: 'same-process Node HTTP on 127.0.0.1; POST start to each parsed SSE revision; 60-second heartbeat rules out polling for this run; no Wi-Fi or casting measurement', node: process.version, platform: process.platform, arch: process.arch, clients: Object.fromEntries(Object.entries(timing).map(([key, values]) => [key, latencySummary(values)])) }));
+  const evidence = await writeLatencyEvidence({ name: 'sofa-kingdoms-regression', gameId: 'sofa-kingdoms', samples: timing, sourceBefore });
+  t.diagnostic(JSON.stringify({ method: 'same-process Node HTTP on 127.0.0.1; POST start to each parsed SSE revision; 60-second heartbeat rules out polling for this run; no Wi-Fi or casting measurement', node: process.version, platform: process.platform, arch: process.arch, evidence, clients: Object.fromEntries(Object.entries(timing).map(([key, values]) => [key, latencySummary(values)])) }));
 });
 
 test('real SQLite restart restores both seats and authoritative state; a refreshed phone opens a new stream', async t => {
