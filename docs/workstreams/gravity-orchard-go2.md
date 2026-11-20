@@ -167,7 +167,23 @@ Local verification completed during implementation:
 - `npm test`: **81 unchanged regression tests passed**. Private projection/LAN/client suites: **38 additional tests passed**.
 - `npm run build`: **exit 0**, run in an isolated source export with the unchanged root lockfile's already-installed dependencies. Generated copies/build output were excluded from the GO2 worktree.
 
-Local Chromium could not start: its process-singleton socket operation was denied before page load. A shared-browser attempt was also denied by the environment's URL policy. Neither is counted as a rendered pass, and no policy or certificate bypass was used. The remote CI browser job is the rendered acceptance path; its results, exact tested head and screenshot inspection are recorded in the PR and final evidence update.
+Local Chromium could not start: its process-singleton socket operation was denied before page load. A shared-browser attempt was also denied by the environment's URL policy. Neither is counted as a rendered pass, and no policy or certificate bypass was used. Remote CI supplied the rendered acceptance path: [run 44776568487](https://github.com/jonathanjie/sofa-arcade/actions/runs/44776568487), at `2dfe82ae176d6aec4cdb6a0028665a57b213d8cf`, passed the three-context browser journey and both Linux protocol/runtime jobs. Final-head results, including the macOS job, are recorded in the PR rather than predicting a future commit hash here.
+
+### Captured browser evidence
+
+The committed [browser evidence report](../../server/realtime/gravity-orchard/evidence/browser/browser-evidence.json) identifies that exact source commit, Node 24.22.3, Chromium 151.0.7922.34, assertions and safe counters. All eight screenshots were visually inspected. The downloaded artifact's SHA-256 matched GitHub's digest: `d7632d9aa4da1342695224fe67e4313dc71ee70da06764223eb7f8e7a6f91445`.
+
+| Evidence | Observed result |
+| --- | --- |
+| [Healthy TV, 1280×720](../../server/realtime/gravity-orchard/evidence/browser/healthy-tv-1280x720.png) | Separate round/diamond markers visibly steer in different directions; both seats and live transport counters are legible. |
+| [Jon, 360×800](../../server/realtime/gravity-orchard/evidence/browser/controller-jon-360x800.png) and [Lydia, 390×844](../../server/realtime/gravity-orchard/evidence/browser/controller-lydia-390x844.png) | Touch pad, held Brake and Ready/Pause controls fit the phone widths; measured ACK RTT uses each controller's own clock. |
+| [Requested shared pause](../../server/realtime/gravity-orchard/evidence/browser/requested-pause-tv-1280x720.png) | The shared board reports the requested pause and both inputs show Brake. |
+| [Network-paused TV](../../server/realtime/gravity-orchard/evidence/browser/interrupted-tv-1280x720.png) and [interrupted controller](../../server/realtime/gravity-orchard/evidence/browser/interrupted-controller-360x800.png) | Jon is offline, the shared run pauses, both inputs are neutral with Brake, and the controller exposes interruption/reconnect controls. |
+| [Host stall, 720p](../../server/realtime/gravity-orchard/evidence/browser/host-stall-tv-1280x720.png) and [1080p](../../server/realtime/gravity-orchard/evidence/browser/host-stall-tv-1920x1080.png) | A deliberate one-second clock jump pauses the run with the `host-stall` reason; both TV sizes retain readable board/presence controls. |
+
+Screenshot review found that the interrupted controller's cached mini-board still used the word “Live,” despite its correct interruption overlay. The follow-up fixture repair labels it “Offline · last received frame” and the cached presence “Last seen,” with explicit browser assertions. The committed captures remain unchanged evidence of their recorded source commit; the final CI artifact captures the repaired labels.
+
+At the healthy browser checkpoint, the two controllers observed approximately 20 snapshots/s and 60 ticks/s; applied-input ACK RTT EWMA was 32.29ms for Jon and 9.98ms for Lydia. Across the fault journey the coordinator recorded 561 accepted inputs, 20 stale-tick rejections, 82 input coalesces, 789 ticks, zero tick overruns, one injected host stall, and 14 checkpoint writes across eight accepted lifecycle commands. Delayed delivery replaced five of six pending snapshots in its measured window. These are rendered Chromium loopback observations, separate from the six-second Node sample above, and do not establish Wi-Fi, phone-sensor, screen-cast or packaged-Mac performance.
 
 ## Exact GO7 wiring required
 
@@ -181,4 +197,4 @@ Local Chromium could not start: its process-singleton socket operation was denie
 
 ## Remaining acceptance boundary
 
-GO2's independently testable component does not enable the game. GO7 still must integrate the exact reviewed GO1/GO3/GO4/GO5/GO6 heads, real room authentication/persistence/GET/SSE and native packaging. Actual iOS Safari/Android Chrome motion and trust, two physical phones on Wi-Fi, TV casting, packaged Mac execution and WAN-disconnected cold start remain separate unverified hardware/integration gates. No synthetic browser or localhost measurement substitutes for them.
+GO2's independently testable implementation is ready for GO7 composition after the PR's final-head CI gates pass. It does not enable the game. GO7 still must integrate the exact reviewed GO1/GO3/GO4/GO5/GO6 heads, real room authentication/persistence/GET/SSE and native packaging. Actual iOS Safari/Android Chrome motion and trust, two physical phones on Wi-Fi, TV casting, packaged Mac execution and WAN-disconnected cold start remain separate unverified hardware/integration gates. No synthetic browser or localhost measurement substitutes for them.

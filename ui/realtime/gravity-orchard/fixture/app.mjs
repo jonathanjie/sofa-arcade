@@ -146,7 +146,9 @@ function renderSnapshot() {
   $('board-tick').textContent = view.tick;
   $('phase').dataset.phase = view.phase;
   const labels = { waiting: 'Waiting for both players', countdown: `Starting in ${(view.countdownTicks / 60).toFixed(1)}s`, playing: 'Live · authoritative simulation', paused: `Paused · ${view.pauseReason ?? 'requested'}`, interlude: 'Stage complete', finished: 'Run complete' };
-  $('phase').textContent = labels[view.phase];
+  const live = latestStatus.state === 'connected';
+  $('phase').dataset.snapshotStale = String(!live);
+  $('phase').textContent = live ? labels[view.phase] : 'Offline · last received frame';
   for (const [index, seat] of ['jon', 'lydia'].entries()) {
     const input = view.players[seat].input;
     const fruit = view.fruits[index];
@@ -164,7 +166,7 @@ function renderSnapshot() {
     $(`${seat}-brake`).textContent = input.brake ? 'BRAKE' : 'STEER';
     $(`${seat}-brake`).dataset.brake = String(input.brake);
     const presence = latestSnapshot.presence[seat];
-    $(`${seat}-presence`).textContent = presence.connected ? (presence.inputFresh ? 'Live' : 'Connected') : 'Offline';
+    $(`${seat}-presence`).textContent = !live ? 'Last seen' : presence.connected ? (presence.inputFresh ? 'Live' : 'Connected') : 'Offline';
     $(`presence-${seat}`).dataset.connected = String(presence.connected);
     $(`presence-${seat}`).dataset.fresh = String(presence.inputFresh);
     $(`${seat}-ready`).textContent = view.ready[seat] ? 'Ready ✓' : 'Not ready';

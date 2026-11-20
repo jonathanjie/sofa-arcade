@@ -103,6 +103,9 @@ test('three isolated browsers exercise real sockets, applied input, interruption
 
     await jon.locator('#drop-socket').click();
     await host.waitForFunction(() => document.getElementById('presence-jon').dataset.connected === 'false');
+    await jon.waitForFunction(() => document.getElementById('phase').dataset.snapshotStale === 'true');
+    assert.equal(await jon.locator('#phase').textContent(), 'Offline · last received frame', 'a cached disconnected board is not labeled live');
+    assert.equal(await jon.locator('#jon-presence').textContent(), 'Last seen');
     await waitPhase(host, 'paused', 6000);
     assert.equal((await metrics(host)).pauseReason, 'network');
     await capture(host, 'interrupted-tv-1280x720.png');

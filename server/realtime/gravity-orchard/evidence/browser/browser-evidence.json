@@ -1,0 +1,592 @@
+{
+  "schemaVersion": 1,
+  "title": "Gravity Orchard GO2 transport fixture",
+  "testedCheckout": "2dfe82ae176d6aec4cdb6a0028665a57b213d8cf",
+  "node": "v24.22.3",
+  "platform": "linux",
+  "browser": "151.0.7922.34",
+  "environment": "Three isolated rendered Chromium contexts over actual loopback WebSockets; deterministic mock simulation.",
+  "limitations": [
+    "Not orchard physics or scoring.",
+    "Not phone sensors, iOS Safari or Android Chrome.",
+    "Not home Wi-Fi or screen-casting latency.",
+    "Not a packaged Mac or secure-LAN certificate test."
+  ],
+  "healthy": {
+    "host": {
+      "role": "host",
+      "phase": "playing",
+      "pauseReason": null,
+      "matchId": "fixture-run-1",
+      "runEpoch": 2,
+      "stats": {
+        "inputsSent": 0,
+        "inputsCoalesced": 0,
+        "inputsDropped": 0,
+        "snapshotsReceived": 112,
+        "snapshotsDropped": 0,
+        "commandsSent": 0,
+        "commandRetries": 0,
+        "reconnects": 0,
+        "maxBufferedBytes": 91,
+        "callbackErrors": 0,
+        "invalidMessages": 0,
+        "ackRttMs": null,
+        "ackRttEwmaMs": null,
+        "pingRttMs": 0.40000000002328306,
+        "lastAppliedTick": null,
+        "appliedInputAgeTicks": null,
+        "observedTickAgeAtApply": null,
+        "state": "connected",
+        "connected": true,
+        "viewer": {
+          "role": "host",
+          "playerId": null
+        },
+        "matchId": "fixture-run-1",
+        "runEpoch": 2,
+        "tick": 219,
+        "serverSeq": 301,
+        "lastAckSeq": null,
+        "bufferedBytes": 0,
+        "pendingCommands": 0,
+        "inFlightInputs": 0
+      },
+      "faults": {
+        "delayedSnapshots": 0,
+        "coalescedSnapshots": 0,
+        "staleInputs": 0,
+        "drops": 0
+      },
+      "measurements": {
+        "snapshotsPerSecond": 18.998100189980338,
+        "ticksPerSecond": 56.99430056994102
+      },
+      "checkpoints": 4
+    },
+    "jon": {
+      "role": "jon",
+      "phase": "playing",
+      "pauseReason": null,
+      "matchId": "fixture-run-1",
+      "runEpoch": 2,
+      "stats": {
+        "inputsSent": 99,
+        "inputsCoalesced": 0,
+        "inputsDropped": 0,
+        "snapshotsReceived": 101,
+        "snapshotsDropped": 0,
+        "commandsSent": 1,
+        "commandRetries": 0,
+        "reconnects": 0,
+        "maxBufferedBytes": 217,
+        "callbackErrors": 0,
+        "invalidMessages": 0,
+        "ackRttMs": 2.800000000046566,
+        "ackRttEwmaMs": 32.287576260475944,
+        "pingRttMs": 0.29999999998835847,
+        "lastAppliedTick": 219,
+        "appliedInputAgeTicks": 0,
+        "observedTickAgeAtApply": 3,
+        "state": "connected",
+        "connected": true,
+        "viewer": {
+          "role": "player",
+          "playerId": "jon"
+        },
+        "matchId": "fixture-run-1",
+        "runEpoch": 2,
+        "tick": 219,
+        "serverSeq": 302,
+        "lastAckSeq": 98,
+        "bufferedBytes": 0,
+        "pendingCommands": 0,
+        "inFlightInputs": 0
+      },
+      "faults": {
+        "delayedSnapshots": 0,
+        "coalescedSnapshots": 0,
+        "staleInputs": 0,
+        "drops": 0
+      },
+      "measurements": {
+        "snapshotsPerSecond": 20.001818347123102,
+        "ticksPerSecond": 60.0054550413693
+      },
+      "checkpoints": null
+    },
+    "lydia": {
+      "role": "lydia",
+      "phase": "playing",
+      "pauseReason": null,
+      "matchId": "fixture-run-1",
+      "runEpoch": 2,
+      "stats": {
+        "inputsSent": 87,
+        "inputsCoalesced": 0,
+        "inputsDropped": 0,
+        "snapshotsReceived": 89,
+        "snapshotsDropped": 0,
+        "commandsSent": 1,
+        "commandRetries": 0,
+        "reconnects": 0,
+        "maxBufferedBytes": 219,
+        "callbackErrors": 0,
+        "invalidMessages": 0,
+        "ackRttMs": 18.29999999998836,
+        "ackRttEwmaMs": 9.979544529468972,
+        "pingRttMs": 0.9000000000232831,
+        "lastAppliedTick": 219,
+        "appliedInputAgeTicks": 0,
+        "observedTickAgeAtApply": 3,
+        "state": "connected",
+        "connected": true,
+        "viewer": {
+          "role": "player",
+          "playerId": "lydia"
+        },
+        "matchId": "fixture-run-1",
+        "runEpoch": 2,
+        "tick": 219,
+        "serverSeq": 303,
+        "lastAckSeq": 86,
+        "bufferedBytes": 0,
+        "pendingCommands": 0,
+        "inFlightInputs": 0
+      },
+      "faults": {
+        "delayedSnapshots": 0,
+        "coalescedSnapshots": 0,
+        "staleInputs": 0,
+        "drops": 0
+      },
+      "measurements": {
+        "snapshotsPerSecond": 20,
+        "ticksPerSecond": 60
+      },
+      "checkpoints": null
+    }
+  },
+  "delayedDelivery": {
+    "role": "host",
+    "phase": "playing",
+    "pauseReason": null,
+    "matchId": "fixture-run-1",
+    "runEpoch": 6,
+    "stats": {
+      "inputsSent": 0,
+      "inputsCoalesced": 0,
+      "inputsDropped": 0,
+      "snapshotsReceived": 338,
+      "snapshotsDropped": 0,
+      "commandsSent": 1,
+      "commandRetries": 0,
+      "reconnects": 0,
+      "maxBufferedBytes": 140,
+      "callbackErrors": 0,
+      "invalidMessages": 0,
+      "ackRttMs": null,
+      "ackRttEwmaMs": null,
+      "pingRttMs": 0.40000000002328306,
+      "lastAppliedTick": null,
+      "appliedInputAgeTicks": null,
+      "observedTickAgeAtApply": null,
+      "state": "connected",
+      "connected": true,
+      "viewer": {
+        "role": "host",
+        "playerId": null
+      },
+      "matchId": "fixture-run-1",
+      "runEpoch": 6,
+      "tick": 767,
+      "serverSeq": 904,
+      "lastAckSeq": null,
+      "bufferedBytes": 0,
+      "pendingCommands": 0,
+      "inFlightInputs": 0
+    },
+    "faults": {
+      "delayedSnapshots": 6,
+      "coalescedSnapshots": 5,
+      "staleInputs": 0,
+      "drops": 0
+    },
+    "measurements": {
+      "snapshotsPerSecond": 20,
+      "ticksPerSecond": 60
+    },
+    "checkpoints": 12
+  },
+  "final": {
+    "host": {
+      "role": "host",
+      "phase": "waiting",
+      "pauseReason": null,
+      "matchId": "d6c1f985-2785-4aa6-8f80-286db3017374",
+      "runEpoch": 1,
+      "stats": {
+        "inputsSent": 0,
+        "inputsCoalesced": 0,
+        "inputsDropped": 0,
+        "snapshotsReceived": 344,
+        "snapshotsDropped": 0,
+        "commandsSent": 2,
+        "commandRetries": 0,
+        "reconnects": 0,
+        "maxBufferedBytes": 140,
+        "callbackErrors": 0,
+        "invalidMessages": 0,
+        "ackRttMs": null,
+        "ackRttEwmaMs": null,
+        "pingRttMs": 0.40000000002328306,
+        "lastAppliedTick": null,
+        "appliedInputAgeTicks": null,
+        "observedTickAgeAtApply": null,
+        "state": "connected",
+        "connected": true,
+        "viewer": {
+          "role": "host",
+          "playerId": null
+        },
+        "matchId": "d6c1f985-2785-4aa6-8f80-286db3017374",
+        "runEpoch": 1,
+        "tick": 0,
+        "serverSeq": 938,
+        "lastAckSeq": null,
+        "bufferedBytes": 0,
+        "pendingCommands": 0,
+        "inFlightInputs": 0
+      },
+      "faults": {
+        "delayedSnapshots": 6,
+        "coalescedSnapshots": 5,
+        "staleInputs": 0,
+        "drops": 0
+      },
+      "measurements": {
+        "snapshotsPerSecond": 20,
+        "ticksPerSecond": 60
+      },
+      "checkpoints": 12
+    },
+    "jon": {
+      "role": "jon",
+      "phase": "waiting",
+      "pauseReason": null,
+      "matchId": "d6c1f985-2785-4aa6-8f80-286db3017374",
+      "runEpoch": 1,
+      "stats": {
+        "inputsSent": 259,
+        "inputsCoalesced": 4,
+        "inputsDropped": 0,
+        "snapshotsReceived": 262,
+        "snapshotsDropped": 0,
+        "commandsSent": 3,
+        "commandRetries": 0,
+        "reconnects": 4,
+        "maxBufferedBytes": 218,
+        "callbackErrors": 0,
+        "invalidMessages": 0,
+        "ackRttMs": 31.099999999976717,
+        "ackRttEwmaMs": 26.402279191264192,
+        "pingRttMs": 0.5,
+        "lastAppliedTick": null,
+        "appliedInputAgeTicks": null,
+        "observedTickAgeAtApply": null,
+        "state": "connected",
+        "connected": true,
+        "viewer": {
+          "role": "player",
+          "playerId": "jon"
+        },
+        "matchId": "d6c1f985-2785-4aa6-8f80-286db3017374",
+        "runEpoch": 1,
+        "tick": 0,
+        "serverSeq": 940,
+        "lastAckSeq": null,
+        "bufferedBytes": 0,
+        "pendingCommands": 0,
+        "inFlightInputs": 1
+      },
+      "faults": {
+        "delayedSnapshots": 0,
+        "coalescedSnapshots": 0,
+        "staleInputs": 20,
+        "drops": 1
+      },
+      "measurements": {
+        "snapshotsPerSecond": 20,
+        "ticksPerSecond": 60
+      },
+      "checkpoints": null
+    },
+    "lydia": {
+      "role": "lydia",
+      "phase": "waiting",
+      "pauseReason": null,
+      "matchId": "d6c1f985-2785-4aa6-8f80-286db3017374",
+      "runEpoch": 1,
+      "stats": {
+        "inputsSent": 322,
+        "inputsCoalesced": 0,
+        "inputsDropped": 0,
+        "snapshotsReceived": 326,
+        "snapshotsDropped": 0,
+        "commandsSent": 3,
+        "commandRetries": 0,
+        "reconnects": 0,
+        "maxBufferedBytes": 219,
+        "callbackErrors": 0,
+        "invalidMessages": 0,
+        "ackRttMs": 18.099999999976717,
+        "ackRttEwmaMs": 12.888472361746876,
+        "pingRttMs": 0.20000000001164153,
+        "lastAppliedTick": null,
+        "appliedInputAgeTicks": null,
+        "observedTickAgeAtApply": null,
+        "state": "connected",
+        "connected": true,
+        "viewer": {
+          "role": "player",
+          "playerId": "lydia"
+        },
+        "matchId": "d6c1f985-2785-4aa6-8f80-286db3017374",
+        "runEpoch": 1,
+        "tick": 0,
+        "serverSeq": 939,
+        "lastAckSeq": null,
+        "bufferedBytes": 0,
+        "pendingCommands": 0,
+        "inFlightInputs": 0
+      },
+      "faults": {
+        "delayedSnapshots": 0,
+        "coalescedSnapshots": 0,
+        "staleInputs": 0,
+        "drops": 0
+      },
+      "measurements": {
+        "snapshotsPerSecond": 20,
+        "ticksPerSecond": 60
+      },
+      "checkpoints": null
+    }
+  },
+  "coordinator": {
+    "fixture": true,
+    "writes": 14,
+    "lifecycle": [
+      {
+        "roomCode": "GO2FIX",
+        "kind": "started",
+        "phase": "waiting",
+        "tick": 0,
+        "runEpoch": 1
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "presence",
+        "phase": "waiting",
+        "tick": 0,
+        "runEpoch": 1
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "presence",
+        "phase": "waiting",
+        "tick": 0,
+        "runEpoch": 1
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "presence",
+        "phase": "waiting",
+        "tick": 0,
+        "runEpoch": 1
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "ready",
+        "phase": "waiting",
+        "tick": 0,
+        "runEpoch": 1
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "ready",
+        "phase": "countdown",
+        "tick": 0,
+        "runEpoch": 2
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "playing",
+        "phase": "playing",
+        "tick": 180,
+        "runEpoch": 2
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "pause",
+        "phase": "paused",
+        "tick": 221,
+        "runEpoch": 3
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "ready",
+        "phase": "paused",
+        "tick": 221,
+        "runEpoch": 3
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "ready",
+        "phase": "countdown",
+        "tick": 221,
+        "runEpoch": 4
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "playing",
+        "phase": "playing",
+        "tick": 401,
+        "runEpoch": 4
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "presence",
+        "phase": "playing",
+        "tick": 401,
+        "runEpoch": 4
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "network",
+        "phase": "paused",
+        "tick": 521,
+        "runEpoch": 5
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "presence",
+        "phase": "paused",
+        "tick": 521,
+        "runEpoch": 5
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "ready",
+        "phase": "paused",
+        "tick": 521,
+        "runEpoch": 5
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "ready",
+        "phase": "countdown",
+        "tick": 521,
+        "runEpoch": 6
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "playing",
+        "phase": "playing",
+        "tick": 701,
+        "runEpoch": 6
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "host-stall",
+        "phase": "paused",
+        "tick": 789,
+        "runEpoch": 7
+      },
+      {
+        "roomCode": "GO2FIX",
+        "kind": "rematch",
+        "phase": "waiting",
+        "tick": 0,
+        "runEpoch": 1
+      }
+    ],
+    "transport": {
+      "roomCode": "GO2FIX",
+      "matchId": "d6c1f985-2785-4aa6-8f80-286db3017374",
+      "runEpoch": 1,
+      "tick": 0,
+      "phase": "waiting",
+      "blocked": false,
+      "faulted": false,
+      "sockets": 3,
+      "pendingCommands": 0,
+      "pendingInputs": 2,
+      "pendingSnapshots": 0,
+      "pendingLifecycle": 0,
+      "bufferedBytes": 0,
+      "dedupRecords": 8,
+      "presence": {
+        "jon": {
+          "connected": true,
+          "inputFresh": true
+        },
+        "lydia": {
+          "connected": true,
+          "inputFresh": true
+        }
+      },
+      "inputsAccepted": 561,
+      "inputsRejected": 21,
+      "rejectedInputReasons": {
+        "run_epoch": 1,
+        "stale_tick": 20
+      },
+      "inputsApplied": 465,
+      "inputsCoalesced": 82,
+      "lastAcceptedTickAge": 0,
+      "maxAcceptedTickAge": 3,
+      "ticks": 789,
+      "tickOverruns": 0,
+      "skippedCatchUpTicks": 0,
+      "hostStalls": 1,
+      "snapshotsSent": 933,
+      "snapshotsCoalesced": 0,
+      "maxBufferedBytes": 0,
+      "rateLimited": 0,
+      "commandsAccepted": 8,
+      "connections": 4,
+      "disconnections": 1,
+      "checkpointsQueued": 14,
+      "checkpointsSaved": 14,
+      "checkpointsWriting": 0,
+      "checkpointErrors": 0,
+      "lifecycleErrors": 0,
+      "lifecycleCoalesced": 0
+    }
+  },
+  "screenshots": [
+    "healthy-tv-1280x720.png",
+    "controller-jon-360x800.png",
+    "controller-lydia-390x844.png",
+    "requested-pause-tv-1280x720.png",
+    "interrupted-tv-1280x720.png",
+    "interrupted-controller-360x800.png",
+    "host-stall-tv-1280x720.png",
+    "host-stall-tv-1920x1080.png"
+  ],
+  "assertions": [
+    "Two authenticated seats move separate markers",
+    "Recipient applied-input ACK RTT",
+    "Explicit pause and both-ready countdown",
+    "Socket loss, deadman and network pause",
+    "Reconnect clears steering and requires both ready",
+    "Stale observed-tick rejection",
+    "One pending delayed snapshot",
+    "Host-stall pause",
+    "Fresh match identity on rematch",
+    "360/390 phone targets and 720p/1080p board widths",
+    "Reduced motion",
+    "No credential URLs, traces or logs"
+  ]
+}
