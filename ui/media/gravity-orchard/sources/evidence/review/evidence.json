@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "288a5975a2a59da909959f5246f178a83290f31b",
+  "workflowRun": 44780762995,
+  "workflowUrl": "https://github.com/jonathanjie/sofa-arcade/actions/runs/44780762995",
+  "artifactId": 14652217471,
+  "artifactSha256": "f88fc794d7430c674dd880bc815ff4ede8c284d027670c72de458c3d6385adf9",
+  "browser": "157.0.8103.0",
+  "sourceSha256": {
+    "ui/media/gravity-orchard/sources/gallery.html": "94d4fc36802c4b2aed0b447ab112d5cc6edb12bc1523f411369408fd2b3b66b9",
+    "ui/media/gravity-orchard/sources/gallery.css": "43b128a907f814c6d13ad1d506ebdb6fe70df71c218abddb6ce51ca2bbd994ed",
+    "ui/media/gravity-orchard/sources/gallery.mjs": "93411c380510afdb69d7dd361039776d8bbb768e66c2b488e152a8f39eb0eee4",
+    "ui/media/gravity-orchard/sources/browser-check.mjs": "2c41e6d4d147cdec085ada2b696cd8f9e0a783a3fd3b393e98828226edebfb9a",
+    "ui/media/gravity-orchard/sources/preview-server.mjs": "257f2830f683978d5f973e6f0cebd225036fd3c8cc83330413f5151922012abb",
+    "ui/media/gravity-orchard/manifest.mjs": "5e005812dd5118a21bcb6c81e7d1429b6041de9a250e69066f3b72ce5ee8df3e",
+    "ui/media/gravity-orchard/manifest-data.mjs": "455c7daf84c0e6918bff348c83c5309a45601d9e1499392e6ededcd97fafb876",
+    "ui/media/gravity-orchard/fallbacks.mjs": "ecf7660ce6b5f9fd762d0bae79eeb5154a33b952c57cfb34ecd7f4a646dadcec",
+    "ui/media/gravity-orchard/audio-preview.mjs": "40eff761d8d7f698c9be4026335698729afdb187873d2e9eb9b8ad61c2cbe793",
+    "ui/media/gravity-orchard/score.mjs": "0da5c26f5e4bbbdeccbea304d41ec81c447aaf2d330e96137ba6db750687dbe6",
+    "ui/media/gravity-orchard/events.mjs": "3438a0e8240f1d5ac864b0f886afa1a43ff4c30dec4fc04b7b129a4007b793a6"
+  },
+  "screenshots": [
+    {
+      "file": "collection-1280.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 869182,
+      "sha256": "8d5be2b6288ca32f12c3a2dccbc1507b03fc4237f7920456f973a8e546dbd3c7"
+    },
+    {
+      "file": "cover-phone-360.png",
+      "width": 360,
+      "height": 1312,
+      "bytes": 343442,
+      "sha256": "3264c8e9047ad1fccc27ff3901f0dc7b35d6cc098933bce30742f0cc02d7fb1d"
+    },
+    {
+      "file": "fruit-and-baskets-1280.png",
+      "width": 1280,
+      "height": 1623,
+      "bytes": 257248,
+      "sha256": "bcbd9e1c0127e59f040cb00e397c5b9c26f03491a03b5033a581b3f7408c4aaf"
+    },
+    {
+      "file": "cast-normal-1280.png",
+      "width": 1280,
+      "height": 1571,
+      "bytes": 319832,
+      "sha256": "4e03df766acd81d5b814d7d1707bef8be1c0ae46389476b95f42b2c3f8adaca2"
+    },
+    {
+      "file": "cast-phone-360.png",
+      "width": 360,
+      "height": 2534,
+      "bytes": 307148,
+      "sha256": "6d3a9a78c2f8b4d236f1e7dfd4f0ec17c7937250043c87896329cde5c61c0905"
+    },
+    {
+      "file": "garden-morning-delivery-1280.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 572926,
+      "sha256": "0c1450efa81ec3df2a6358649e1b328031810e00b05cd50cbfc005dff0a94203"
+    },
+    {
+      "file": "garden-switchback-grove-1280.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 754612,
+      "sha256": "7b4e8dbb6e8a3cbf211c124927948159055cb58a06334ad42e212f436356f2db"
+    },
+    {
+      "file": "garden-moonlight-picnic-1280.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 647244,
+      "sha256": "cc7ea102e6dad0aa727268f24e7082341763d0b28c7d11a3e96c98c1414d73fa"
+    },
+    {
+      "file": "audio-preview-1280.png",
+      "width": 1280,
+      "height": 1313,
+      "bytes": 134268,
+      "sha256": "0a9fc87282351eb61ac1e5ae1a3ef85d71072939405fd22bc27bda8b9ca56bc5"
+    },
+    {
+      "file": "fallback-real-missing-url.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 76174,
+      "sha256": "69b66d8d505cac0c27e4705a7255846d3a668117c6b2f680b06e0c16e3b1a23e"
+    },
+    {
+      "file": "fallback-real-missing-atlas.png",
+      "width": 1280,
+      "height": 1571,
+      "bytes": 245634,
+      "sha256": "c0c4c9ae43b63b702e4874d4ff18ad0b10da3607f2616464ed0a14c46c4b3d83"
+    }
+  ],
+  "notes": [
+    "Exact downloaded PNG bytes, not mockups or resized reconstructions.",
+    "Source hashes permit verifying these captures against subsequent evidence/documentation-only commits.",
+    "The complete CI artifact includes both TV sizes, both phone widths, normal/dark/reduced-motion and all missing-asset captures.",
+    "No physical TV/phone or human speaker audition is claimed."
+  ]
+}

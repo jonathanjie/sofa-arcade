@@ -43,18 +43,18 @@ jobs:
         run: |
           browser_path=""
           for candidate in chromium chromium-browser google-chrome google-chrome-stable; do
-            if command -v "$candidate" >/dev/null 2>&1; then
-              browser_path="$(command -v "$candidate")"
+            if candidate_path="$(command -v "$candidate")" && "$candidate_path" --version; then
+              browser_path="$candidate_path"
               break
             fi
           done
-          if [ -n "$browser_path" ]; then
-            "$browser_path" --version
-            echo "GO5_BROWSER=$browser_path" >> "$GITHUB_ENV"
-            echo "CHROMIUM_PATH=$browser_path" >> "$GITHUB_ENV"
-          else
+          if [ -z "$browser_path" ]; then
             node ui/media/gravity-orchard/node_modules/playwright/cli.js install --with-deps chromium
+            browser_path="$(node -p 'require("./ui/media/gravity-orchard/node_modules/playwright").chromium.executablePath()')"
+            "$browser_path" --version
           fi
+          echo "GO5_BROWSER=$browser_path" >> "$GITHUB_ENV"
+          echo "CHROMIUM_PATH=$browser_path" >> "$GITHUB_ENV"
           command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
       - name: Render seven arrangements, cue reel and scene/loop transitions through the shared scheduler
         run: node ui/media/gravity-orchard/sources/audio/render.mjs --write --encode

@@ -356,8 +356,8 @@
       "preCompressor": {
         "peak": 0.103785627,
         "peakDbFS": -19.677255767,
-        "rms": 0.034571128,
-        "rmsDbFS": -29.225728874,
+        "rms": 0.034571129,
+        "rmsDbFS": -29.225728865,
         "dcOffset": -0.000003099,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -366,7 +366,7 @@
         "peak": 0.170076281,
         "peakDbFS": -15.387124994,
         "rms": 0.056649324,
-        "rmsDbFS": -24.936105394,
+        "rmsDbFS": -24.936105384,
         "dcOffset": -0.000005076,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -733,7 +733,7 @@
         "peak": 0.078220375,
         "peakDbFS": -22.133602139,
         "rms": 0.025747876,
-        "rmsDbFS": -31.785171755,
+        "rmsDbFS": -31.785171786,
         "dcOffset": -0.000002341,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -742,7 +742,7 @@
         "peak": 0.128181815,
         "peakDbFS": -17.843471656,
         "rms": 0.042191231,
-        "rmsDbFS": -27.495556094,
+        "rmsDbFS": -27.495556125,
         "dcOffset": -0.000003835,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -1108,8 +1108,8 @@
       "preCompressor": {
         "peak": 0.103757821,
         "peakDbFS": -19.679583145,
-        "rms": 0.033949866,
-        "rmsDbFS": -29.383238597,
+        "rms": 0.033949867,
+        "rmsDbFS": -29.383238576,
         "dcOffset": -0.00000331,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -1117,8 +1117,8 @@
       "output": {
         "peak": 0.170030713,
         "peakDbFS": -15.389452476,
-        "rms": 0.055631239,
-        "rmsDbFS": -25.093625283,
+        "rms": 0.05563124,
+        "rmsDbFS": -25.093625262,
         "dcOffset": -0.000005421,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -1486,8 +1486,8 @@
         "peak": 0.102568097,
         "peakDbFS": -19.779754007,
         "rms": 0.032986797,
-        "rmsDbFS": -29.63319709,
-        "dcOffset": -0.000003479,
+        "rmsDbFS": -29.633197116,
+        "dcOffset": -0.000003478,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       },
@@ -1495,7 +1495,7 @@
         "peak": 0.168081075,
         "peakDbFS": -15.489623662,
         "rms": 0.054053056,
-        "rmsDbFS": -25.343594928,
+        "rmsDbFS": -25.343594954,
         "dcOffset": -0.000005696,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -1862,7 +1862,7 @@
         "peak": 0.088303924,
         "peakDbFS": -21.08039998,
         "rms": 0.029335567,
-        "rmsDbFS": -30.652110157,
+        "rmsDbFS": -30.652110169,
         "dcOffset": -0.000002754,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -1871,7 +1871,7 @@
         "peak": 0.144705996,
         "peakDbFS": -16.790269469,
         "rms": 0.048070159,
-        "rmsDbFS": -26.362488849,
+        "rmsDbFS": -26.36248886,
         "dcOffset": -0.000004511,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2239,7 +2239,7 @@
         "peak": 0.033727344,
         "peakDbFS": -29.440357123,
         "rms": 0.010800638,
-        "rmsDbFS": -39.331011452,
+        "rmsDbFS": -39.331011463,
         "dcOffset": -8.89e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2248,7 +2248,7 @@
         "peak": 0.055269901,
         "peakDbFS": -25.150226312,
         "rms": 0.017698208,
-        "rmsDbFS": -35.041414231,
+        "rmsDbFS": -35.041414242,
         "dcOffset": -0.000001458,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2614,8 +2614,8 @@
       "preCompressor": {
         "peak": 0.116482764,
         "peakDbFS": -18.674766616,
-        "rms": 0.038178818,
-        "rmsDbFS": -28.363550536,
+        "rms": 0.038178817,
+        "rmsDbFS": -28.363550585,
         "dcOffset": -0.000003785,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2623,8 +2623,8 @@
       "output": {
         "peak": 0.190883413,
         "peakDbFS": -14.38463617,
-        "rms": 0.062560943,
-        "rmsDbFS": -24.073934342,
+        "rms": 0.062560942,
+        "rmsDbFS": -24.073934391,
         "dcOffset": -0.000006198,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2680,7 +2680,7 @@
         "peak": 0.027800862,
         "peakDbFS": -31.11883484,
         "rms": 0.002470731,
-        "rmsDbFS": -52.143492128,
+        "rmsDbFS": -52.143492133,
         "dcOffset": -5.93e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2689,7 +2689,7 @@
         "peak": 0.043261241,
         "peakDbFS": -27.278020496,
         "rms": 0.003949536,
-        "rmsDbFS": -48.069079252,
+        "rmsDbFS": -48.069079254,
         "dcOffset": -9.3e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2827,7 +2827,7 @@
         "peak": 0.05185717,
         "peakDbFS": -25.703823801,
         "rms": 0.013014069,
-        "rmsDbFS": -37.711738126,
+        "rmsDbFS": -37.71173815,
         "dcOffset": -0.000003594,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -2836,7 +2836,7 @@
         "peak": 0.084979728,
         "peakDbFS": -21.41369328,
         "rms": 0.021269747,
-        "rmsDbFS": -33.444753536,
+        "rmsDbFS": -33.444753559,
         "dcOffset": -0.000005793,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -3023,7 +3023,7 @@
         "peak": 0.035851464,
         "peakDbFS": -28.909862182,
         "rms": 0.002385351,
-        "rmsDbFS": -52.448954183,
+        "rmsDbFS": -52.448954188,
         "dcOffset": -0.000001232,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -3032,7 +3032,7 @@
         "peak": 0.05584519,
         "peakDbFS": -25.060284568,
         "rms": 0.003764015,
-        "rmsDbFS": -48.486973898,
+        "rmsDbFS": -48.486973894,
         "dcOffset": -0.000001944,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -3072,7 +3072,7 @@
         "peak": 0.058703955,
         "peakDbFS": -24.626652731,
         "rms": 0.016205987,
-        "rmsDbFS": -35.806490347,
+        "rmsDbFS": -35.806490345,
         "dcOffset": -5.08e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -3081,7 +3081,7 @@
         "peak": 0.096199736,
         "peakDbFS": -20.336522396,
         "rms": 0.026544629,
-        "rmsDbFS": -31.520466888,
+        "rmsDbFS": -31.520466884,
         "dcOffset": -8.46e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -3121,7 +3121,7 @@
         "peak": 0.069782913,
         "peakDbFS": -23.125018142,
         "rms": 0.020369893,
-        "rmsDbFS": -33.820224955,
+        "rmsDbFS": -33.820224956,
         "dcOffset": 0.000008521,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
@@ -3149,52 +3149,52 @@
   },
   "previews": {
     "over-the-little-bridge-stage1": {
-      "pcmWavSha256": "e895a4b9229484601b3e47acf14b243f14927f63b058db941f8a6e2182d90a57",
+      "pcmWavSha256": "29fdb68c03cf6542895c88df8e7f46493e7672aef585a42002ac19ecdb48345e",
       "durationSeconds": 73.89115625,
       "file": "over-the-little-bridge-stage1.mp3",
       "bytes": 739844,
-      "sha256": "0193739cb41c7ce3a691899339dc11ebac00338fa6668a2b33748876d741dd5f",
+      "sha256": "62b413a4a1f2b1623744fa64b1e937d4b95c2cc8dd88923459e3ca335f2c444b",
       "decodedSeconds": 73.89115625,
       "decodedMeasurements": {
         "peak": 0.16148819,
         "peakDbFS": -15.837184647,
-        "rms": 0.052948487,
-        "rmsDbFS": -25.522928949,
-        "dcOffset": -0.000006445,
+        "rms": 0.052948697,
+        "rmsDbFS": -25.522894471,
+        "dcOffset": -0.000006452,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       }
     },
     "over-the-little-bridge-stage3": {
-      "pcmWavSha256": "3e339f2049b5802f8e44833aef4ab951849e5db38d47fc9f9ef23ee11ca74586",
+      "pcmWavSha256": "408dfde8d90b7a5334c91f706d6e1b149dfd7958b1a2d2fb257ba3517663ed8c",
       "durationSeconds": 73.89115625,
       "file": "over-the-little-bridge-stage3.mp3",
       "bytes": 739844,
-      "sha256": "1b85e079dd79fc7aff8a5a19f9e73a28b20c837a4d04129e31a7739374910001",
+      "sha256": "2edb5639e61bbd21e206b04c036895d05e6b58bb1d1cf7fcece453e9a49baf73",
       "decodedSeconds": 73.89115625,
       "decodedMeasurements": {
         "peak": 0.137453482,
         "peakDbFS": -17.236885109,
-        "rms": 0.045754278,
-        "rmsDbFS": -26.791365908,
-        "dcOffset": -0.00000543,
+        "rms": 0.0457538,
+        "rmsDbFS": -26.791456618,
+        "dcOffset": -0.000005436,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       }
     },
     "orchard-scene-transitions": {
-      "pcmWavSha256": "ae47e66c1399c2b6704d0c7cb76dcc2f9b19c00c28586f3f3d07651aee3afa8d",
+      "pcmWavSha256": "ab17a76b08fcc4a8f0e44a511c3caf8e8e53964e4b5520b5fe8449ba71ac302b",
       "durationSeconds": 73.89115625,
       "file": "orchard-scene-transitions.mp3",
       "bytes": 739844,
-      "sha256": "c74f6701bc6d4aaee473b8d2d578393955c2794c6084976a2e1c13025f892bd9",
+      "sha256": "5bd75e779475de4cf14e76d40aa666c77c1310b3c7a155b15fe28aa1187f63dc",
       "decodedSeconds": 73.89115625,
       "decodedMeasurements": {
         "peak": 0.16455926,
         "peakDbFS": -15.673553485,
-        "rms": 0.048642488,
-        "rmsDbFS": -26.259684451,
-        "dcOffset": -0.000003996,
+        "rms": 0.048641763,
+        "rmsDbFS": -26.259813799,
+        "dcOffset": -0.00000401,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       }
@@ -3396,8 +3396,8 @@
       "peak": 0.046691019,
       "peakDbFS": -26.615332939,
       "rms": 0.015240379,
-      "rmsDbFS": -36.340084841,
-      "dcOffset": -0.000001848,
+      "rmsDbFS": -36.340084896,
+      "dcOffset": -0.000001847,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     },
@@ -3405,8 +3405,8 @@
       "peak": 0.076513819,
       "peakDbFS": -22.32520237,
       "rms": 0.02497184,
-      "rmsDbFS": -32.050989122,
-      "dcOffset": -0.000003025,
+      "rmsDbFS": -32.050989177,
+      "dcOffset": -0.000003024,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     },
@@ -3598,7 +3598,7 @@
       "peak": 0.105707392,
       "peakDbFS": -19.51789283,
       "rms": 0.031113316,
-      "rmsDbFS": -30.141073899,
+      "rmsDbFS": -30.141073895,
       "dcOffset": -0.000002569,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
@@ -3607,7 +3607,7 @@
       "peak": 0.173225522,
       "peakDbFS": -15.227762424,
       "rms": 0.050979025,
-      "rmsDbFS": -25.852169544,
+      "rmsDbFS": -25.85216954,
       "dcOffset": -0.000004203,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
@@ -3691,7 +3691,7 @@
       "peak": 0.069584817,
       "peakDbFS": -23.14971025,
       "rms": 0.01052141,
-      "rmsDbFS": -39.558520965,
+      "rmsDbFS": -39.558520964,
       "dcOffset": 0.000004349,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
@@ -3700,7 +3700,7 @@
       "peak": 0.114030495,
       "peakDbFS": -18.859579787,
       "rms": 0.017241716,
-      "rmsDbFS": -35.268390309,
+      "rmsDbFS": -35.268390307,
       "dcOffset": 0.000007126,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
@@ -3940,7 +3940,7 @@
       "peak": 0.134428963,
       "peakDbFS": -17.430143027,
       "rms": 0.038324632,
-      "rmsDbFS": -28.330440212,
+      "rmsDbFS": -28.330440217,
       "dcOffset": -0.000004588,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
@@ -3949,8 +3949,8 @@
       "peak": 0.220274717,
       "peakDbFS": -13.140706976,
       "rms": 0.062796236,
-      "rmsDbFS": -24.041327759,
-      "dcOffset": -0.00000751,
+      "rmsDbFS": -24.041327764,
+      "dcOffset": -0.000007509,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     },

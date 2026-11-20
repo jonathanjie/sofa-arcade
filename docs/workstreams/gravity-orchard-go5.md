@@ -10,9 +10,11 @@
 
 ## Delivery status
 
-All 49 required final visual assets have been produced and decoded/validated. The initial owned CI passed all 16 media tests, 81 baseline tests, actual gallery rendering and shared-scheduler audio rendering on `642b77b7172da25932130676359d5d407301ef50` ([run 44777411670](https://github.com/jonathanjie/sofa-arcade/actions/runs/44777411670)). Downloaded screenshots were inspected at TV and phone dimensions; this review found and corrected a stretched secondary cover thumbnail, obscured moonlight labels and contradictory fallback captions. The next exact-head CI run verifies those corrections before the PR is marked ready. The four rendered MP3s and source-hashed audio report are retained under `sources/audio/`.
+**GO5 is ready for GO7 component integration.** All 49 required final visual assets are delivered, decoded and validated. The corrected gallery and complete shared-scheduler audio renders passed on `288a5975a2a59da909959f5246f178a83290f31b` ([run 44780762995](https://github.com/jonathanjie/sofa-arcade/actions/runs/44780762995)): 16 media tests, 81 baseline tests, actual browser rendering, motion/fallback checks and audio playback. Local production build also passes.
 
-This executor blocks Chromium's required Unix sockets and isolates loopback servers from the managed browser, so normal browser checks run in the owned GitHub CI. Local baseline tests and the production build pass. Exact final tested head and its complete CI artifact are recorded in the PR, avoiding a self-referential commit hash in this file.
+Downloaded screenshots were visually inspected at 1280×720 and 1920×1080 TV viewports and 360×800 and 390×844 phone viewports. Review led to corrections for thumbnail proportions, moonlight label placement/contrast, dark character captions and truthful missing-file status. The corrected captures were inspected again and passed. Eleven representative original PNGs, source hashes and browser/asset reports are retained in [`sources/evidence/review/`](../../ui/media/gravity-orchard/sources/evidence/review/README.md); the four rendered MP3s and their matching source-hashed audio report are under `sources/audio/`. No missing essential asset is counted as complete.
+
+This executor blocks Chromium's required Unix sockets and isolates loopback servers from the managed browser, so actual browser checks run in the owned GitHub CI. The final tested head and its complete CI artifact are recorded in the PR, avoiding a self-referential commit hash in this file. The retained screenshot report records its original capture commit, and `evidence.json` hashes the gallery/runtime source so later evidence-only commits remain auditable.
 
 ## Final visual inventory
 
@@ -134,7 +136,7 @@ The retained `sources/audio/render-report.json` records Chromium 157.0.8103.0, 3
 
 The retained full-loop Stage 1, Stage 3 and transition MP3s each decode to 73.891156 seconds (the 73.846-second score plus the scheduler's 45 ms start offset). The ten-cue reel is 16.353844 seconds. Their combined size is 2,384,096 bytes, excluded from runtime delivery. Browser checks also exercise live shared-scheduler unlocking, MP3 playback and seeking to 40 seconds.
 
-The owned CI installs locked nested tooling, checks reproducible assembly, runs actual audio renders, executes asset/score/baseline tests, captures browser evidence at 1280×720, 1920×1080, 360×800 and 390×844, and retains evidence against the exact head. It must not replace an essential missing-media gate with a success flag.
+The owned CI installs locked nested tooling, checks reproducible assembly, runs actual audio renders, executes asset/score/baseline tests, captures browser evidence at 1280×720, 1920×1080, 360×800 and 390×844, and retains evidence against the exact head. It first checks for a working installed Chromium/Chrome binary and explicitly selects the same binary for audio and gallery rendering; otherwise it installs Playwright's Chromium. Actual browser versions are recorded rather than described as pinned. An initial browser-download stall motivated this installation fallback; the complete updated job passed. No essential missing-media gate is replaced with a success flag.
 
 ## Honest boundaries
 
