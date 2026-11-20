@@ -123,11 +123,14 @@ export async function acceptanceSession(label, { serverOptions = {}, setup = nul
       pages.push({ name, page, context });
       return page;
     },
-    async screenshot(page, name) {
+    async screenshot(page, name, { fullPage = false } = {}) {
       await page.evaluate(() => document.fonts?.ready);
       const filename = `${label}-${name}.png`;
-      await page.screenshot({ path: path.join(evidenceRoot, filename), fullPage: true, animations: 'disabled', mask: [...privateValues].map(token => page.getByText(token, { exact: false })) });
-      screenshots.push({ file: filename, viewport: page.viewportSize() });
+      const png = await page.screenshot({ path: path.join(evidenceRoot, filename), fullPage, animations: 'disabled', mask: [...privateValues].map(token => page.getByText(token, { exact: false })) });
+      screenshots.push({
+        file: filename, viewport: page.viewportSize(), fullPage,
+        image: { width: png.readUInt32BE(16), height: png.readUInt32BE(20) },
+      });
     },
     check(name, detail = true) { checks.push({ name, result: 'passed', detail }); },
     async room(code, token) {
@@ -150,7 +153,11 @@ export async function acceptanceSession(label, { serverOptions = {}, setup = nul
         if (Array.isArray(error.log)) error.log = error.log.map(redact);
         evidence.failure = { message: redact(error.message), stack: redact(error.stack) };
         for (const { name, page } of pages) {
-          try { await this.screenshot(page, `failure-${name}`); } catch {}
+          try {
+            await this.screenshot(page, `failure-${name}`);
+            const overflows = await page.evaluate(() => document.documentElement.scrollHeight > innerHeight + 1 || document.documentElement.scrollWidth > innerWidth + 1);
+            if (overflows) await this.screenshot(page, `failure-${name}-full-page`, { fullPage: true });
+          } catch {}
         }
       }
       await writeFile(path.join(evidenceRoot, `${label}.json`), redact(JSON.stringify(evidence, null, 2)) + '\n');

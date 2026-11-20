@@ -36,10 +36,19 @@ transport time. Local play needs no internet connection after the runtime and
 assets have been obtained. Existing public-hosted rooms use a different room
 store and do not migrate into the local host.
 
-Refresh preserves a seat in the same browser profile. Relaunching the same
-local origin restores the last active room when its saved credential is valid.
-Choosing the collection explicitly clears that active-room pointer. Do not
-erase browser storage during a match; each phone owns its own credential.
+Refresh preserves a seat in the same browser profile at the same origin
+(protocol, address and port). Relaunching that origin restores the last active
+room when its saved credential is valid. Choosing the collection explicitly
+clears that active-room pointer. Do not erase browser storage during a match;
+each phone owns its own credential.
+
+If the Mac's LAN address or host port changes, phones reach a different browser
+origin. Scanning its new QR does not transfer their credentials or reclaim the
+occupied seats in an existing room. Restore the previous LAN address and port
+to continue that saved match, or create a new room and join both seats there.
+Use the same browser profile that originally joined. When only the Mac's LAN
+address changes, the native app keeps its separate loopback origin and saved
+host state; it cannot transfer a phone's browser identity across LAN origins.
 
 The portable host saves rooms in `.sofa-lan/rooms.sqlite`, outside the download
 inputs. Closing the host preserves the database. Rooms still have their normal
@@ -54,21 +63,51 @@ accepted release. A completed Tauri app starts its bundled local host itself;
 players do not install Node or keep Terminal open. Its saved origin and private
 application-data database allow quit/relaunch recovery.
 
+Once a tested native artifact is available, open **Sofa Arcade.app**, choose an
+available game and **Host on the TV**. Both phones scan the room QR and choose
+different seats. **View → Full Screen** controls the board window.
+**Connection → Refresh Network** refreshes the Mac's advertised LAN addresses
+and reloads its board at the same loopback origin. The phone-origin limitation
+above still applies. **Connection → Retry Local Host** retries a failed host.
+If another application occupies the saved port, close that application only
+after identifying it, then retry; Sofa Arcade does not attach to or stop it.
+
+Quit Sofa Arcade to stop its owned host. The native database lives in
+`~/Library/Application Support/com.sofaarcade.desktop/rooms.sqlite`, with the
+normal 24-hour room lifetime. `config.json` stores the selected port and public
+room route. Host and phone credentials remain in their respective webview or
+browser storage. The portable `.sofa-lan` store and native application-data
+store are separate; switching packages does not migrate an in-progress room.
+
 After the tested WS5 handoff is incorporated, use the commands in
 `desktop/README.md` on the matching Mac architecture. The owner currently
 targets macOS 13.5 or newer, Apple Silicon and Intel, with a pinned Node
-24.22.3 runtime and locked nested build dependencies:
+24.22.3 runtime and locked nested build dependencies. Development requires
+Xcode Command Line Tools, Rust 1.100.0 and Node 24.22.3. Initial installation,
+runtime staging and dependency downloads require internet access. The installed
+app obtains its runtime and assets from its bundle.
+
+From the repository root on an Apple Silicon Mac:
 
 ```sh
 cd desktop
 npm ci --ignore-scripts
 npm run stage
 npm test
-npm run test:rust
-APPLE_SIGNING_IDENTITY=- npm run build:mac:arm64
+node scripts/verify-runtime.mjs
+RUSTUP_TOOLCHAIN=1.100.0 npm run test:rust
+RUSTUP_TOOLCHAIN=1.100.0 APPLE_SIGNING_IDENTITY=- npm run build:mac:arm64
 # On an Intel Mac, use build:mac:intel instead.
-npm run test:native:release -- --app "/absolute/path/Sofa Arcade.app"
+mkdir -p artifacts/production
+ditto "src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Sofa Arcade.app" \
+  "artifacts/production/Sofa Arcade.app"
+npm run test:native:release -- --app "$PWD/artifacts/production/Sofa Arcade.app"
 ```
+
+The Intel target path is `x86_64-apple-darwin`. Build and execute each artifact
+on its matching native architecture. These commands do not create a universal
+binary. The `.app` and `.dmg` outputs are under
+`desktop/src-tauri/target/<target>/release/bundle/`.
 
 The ad-hoc signature used for CI/local validation is not Developer ID signing
 or notarization. Native acceptance must execute the packaged application and
@@ -76,10 +115,65 @@ its bundled Node. A generated app directory or a Linux host test does not prove
 a Mac launch. Use a disposable Mac user for the native acceptance scripts;
 they refuse to overwrite an existing Sofa Arcade profile.
 
-The separate instrumented native UI build is for acceptance only. It must not
-replace the ordinary production app/DMG. The native workflow records the actual
-runner architecture, source SHA, signatures, runtime inventory, checksums,
-lifecycle evidence and WKWebView screenshots.
+Preserve the production bundle before building the separate instrumented
+application, because both build variants use the target's bundle directory.
+From `desktop/`, on Apple Silicon:
+
+```sh
+RUSTUP_TOOLCHAIN=1.100.0 APPLE_SIGNING_IDENTITY=- npm run build:native:arm64
+SOFA_APP_PATH="$PWD/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Sofa Arcade.app" \
+  npm run test:native:ui
+```
+
+Use `build:native:intel` and the Intel target path on an Intel Mac. The
+instrumented build enables the native test driver and is for acceptance only.
+The production app/DMG omits that driver. WS6's separate
+`tests/integration/native/run.mjs` verifies the combined Odd Laws runtime in
+WKWebView and must pass after the final runtime manifest is assembled; the
+component's Sofa Kingdoms native run does not cover that combination.
+
+### Choose and verify a native test download
+
+Until the final integrated native gates pass, GitHub Actions artifacts are
+evaluation builds, not an accepted release. Follow the final integration PR's
+artifact links for its exact tested commit. An older WS5-only artifact proves
+its own component checkpoint, not the completed Odd Laws collection.
+
+Choose `aarch64-apple-darwin` for an Apple Silicon Mac or
+`x86_64-apple-darwin` for an Intel Mac. The desktop workflow's artifact name is
+`sofa-arcade-<target>-<tested-commit>`. It retains artifacts for 14 days. Extract
+the downloaded GitHub artifact archive, then inspect these files within it:
+
+| Artifact member | Acceptance check |
+| --- | --- |
+| `evidence/tested-commit.txt`, `evidence/runner.txt` | Exact intended source SHA, actual macOS version and runner/binary architecture |
+| `evidence/production-sha256.txt` | SHA-256 values for the production `.app.zip` and `.dmg` files in `artifacts/` |
+| `evidence/native-production.json` | `passed: true`, `cleanupVerified: true`, completed production checks and stated limitations |
+| `evidence/native-ui.json`, `evidence/native-ui-first.json`, `evidence/native-ui-relaunch.json` | Successful actual WKWebView sessions, with the accompanying screenshots |
+| `stage/runtime-inventory.json` | Explicit staged runtime paths, byte sizes, file modes and SHA-256 values |
+| `stage/licenses/NODE-PROVENANCE.json` | Pinned Node archive/checksum provenance and the verified runtime capabilities |
+| `evidence/signature.txt`, entitlement JSON and `signed-node-probe.json` | Actual packaged signatures, limited JIT entitlement and execution of the signed bundled Node |
+
+From the extracted artifact directory on the Mac, verify the production files
+before opening them:
+
+```sh
+shasum -a 256 -c evidence/production-sha256.txt
+```
+
+Every listed file must report `OK`. Open the matching `.dmg` and copy the app
+to Applications, or extract the matching production `.app.zip`. Check the
+separate WS6 `local-native-<target>-<tested-commit>` evidence artifact for the
+integrated Odd Laws checks and screenshots at that same commit. A failed or
+missing native report is an unresolved gate, even if the workflow uploaded a
+bundle.
+
+CI artifacts use ad-hoc signing. `codesign --verify --deep --strict` checks a
+bundle's signature integrity; it does not establish Developer ID identity,
+notarization or downloaded-app Gatekeeper acceptance. Signed distribution
+requires the owner's Developer ID/notarization credentials and a separately
+verified downloaded artifact. A blocked test download remains a distribution
+gate; do not remove quarantine or disable Gatekeeper to record a pass.
 
 ## Reproduce the automated checks
 
@@ -110,6 +204,7 @@ npm run package:lan
 node scripts/check-derived.mjs
 npm run test:integration
 npm run build
+node tests/integration/package/production.mjs
 npm run verify:components
 npm run verify:local-release
 ```
@@ -122,7 +217,10 @@ gate. CI must not silently repair a stale committed download.
 The strict verification commands fail when a component is missing or its
 recorded head is absent from the candidate's ancestry. Preparatory dependency
 skips are not a release pass. These Node checks are necessary; rendered browser
-and macOS native CI must pass separately. The package test also starts a host from an
+and macOS native CI must pass separately. The postbuild checker compares the
+actual `dist/client` bytes with the declared modules/assets/ZIP and rejects
+authoring sources, private paths and undeclared browser files. The package
+test also starts a host from an
 extracted ZIP, follows its public module/asset graph, and probes forbidden
 authority, fixture, credential and database paths.
 
@@ -176,12 +274,22 @@ final/placeholder status must be accurate.
 ## Hardware and distribution sign-off
 
 Record the hardware, operating systems/browsers, network and exact artifact SHA
-when Jon and Lydia run physical acceptance. The remaining checks are a real
-Mac app launch; two separate phone browsers; TV/fullscreen/casting; both games;
-device sound after a gesture; preferences and reduced motion; internet-disconnected
-play; sleep/wake and LAN address changes; quit/relaunch recovery; and downloaded
-app Gatekeeper behavior. Report Apple Silicon and Intel results separately.
-Developer ID signing and notarization require a separate distribution step.
+when Jon and Lydia run physical acceptance. Native CI evidence does not test
+their Mac, home Wi-Fi, phone browsers, television or speakers. The remaining
+checks are a real Mac app launch; two separate phone browsers; TV/fullscreen/
+casting; both games; device sound after a gesture; saved preferences and reduced
+motion; internet-disconnected play while the local network remains connected;
+physical sleep/wake; quit/relaunch recovery; and downloaded-app Gatekeeper
+behavior. Report Apple Silicon and Intel results separately.
+
+For a LAN-address-change test, confirm that **Refresh Network** presents the
+new reachable address and the Mac retains its room. A phone's old seat is
+restorable only at its original origin with its original saved browser
+identity. Record restoration at that origin or successful joining of a new
+room at the new origin; do not label a refreshed QR as credential recovery.
+Retain private databases and browser stores on the devices rather than in
+screenshots, CI artifacts or bug reports. Developer ID signing and notarization
+require a separate distribution step.
 
 No merge, deployment, or release publication is part of this integration task.
 

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-component-native-artifact-review",
+  "component": "WS5",
+  "pullRequest": 6,
+  "head": "3a2bd4e0bc498042ed54581cef88e544855626af",
+  "base": "e34b0015399cb9791b175987adf1fab1b542565a",
+  "reviewDate": "2026-11-20",
+  "ownerFilesModified": false,
+  "readinessAtReview": "Both exact-head workflows passed; PR remained draft and explicit owner handoff was still pending.",
+  "deltaFrom792b52cc": [
+    "desktop/tests/native/ui.spec.mjs replaces detached cached-element waits with fresh current-DOM geometry and visibility checks.",
+    ".github/workflows/desktop.yml limits push events to main to avoid duplicate branch/PR runs.",
+    "docs/workstreams/tauri.md records the earlier production success and pending UI rerun."
+  ],
+  "productionRuntimeChangedSince792b52cc": false,
+  "workflowRuns": [
+    { "id": 44703762719, "name": "Game checks", "conclusion": "success" },
+    { "id": 44703762760, "name": "Desktop Mac checks", "conclusion": "success" }
+  ],
+  "architectures": [
+    {
+      "target": "aarch64-apple-darwin",
+      "jobId": 136178210508,
+      "artifactId": 14613963189,
+      "artifactSha256": "8cb8cca018d87ef352a68a61ef2295909bddc3df01d8f10b3c7c1e5b5baaf485",
+      "appZipSha256": "875ecc52d98aa80255f2a166086de6c171946d18c4959798b1040acadb67f0c6",
+      "dmgSha256": "84cdbd2d41765f41cc2a417fba95078feb880a7ce11672694a29a00d602eb6ab",
+      "appExecutableSha256": "6f66c788299ef8db7288591e6110ba5635dba45827ba0d53380a0c7be187ba68",
+      "signedNodeSha256": "250b7ece98ce6d21e75be11b7eebd9a51243986ac35bae9ae41b7b4c62a012de",
+      "productionChecksPassed": 14,
+      "nativeUiFirstAndRelaunchPassed": true,
+      "runtimeFiles": 25,
+      "allRuntimeBytesEqualImmutableSource": true,
+      "productionTestDriverMarkersAbsent": true,
+      "nativeScreenshotsInspected": ["native-board.png", "native-relaunch.png"]
+    },
+    {
+      "target": "x86_64-apple-darwin",
+      "jobId": 136178210519,
+      "artifactId": 14614533067,
+      "artifactSha256": "b4c2ae1fbe0e4ab3129522bf0bfd48f94fd9733474343c296e261770964cd202",
+      "appZipSha256": "e74cb28dd3c2402abe40051f817f865b1d95b5a7e268c76bfdd7a07b5f9bbdcb",
+      "dmgSha256": "216456e74783b522e98e42138dbd82497cb6d7505a02c9dd324f537a7e0adfbe",
+      "appExecutableSha256": "3a8374d166dde83c6229864bf9ded724e6a3123e7d77bac7cb3094fe17608288",
+      "signedNodeSha256": "c2298869e5e0304b3a7954d866d500eb9ccae0da7ab0aff87712abe3955c084e",
+      "productionChecksPassed": 14,
+      "nativeUiFirstAndRelaunchPassed": true,
+      "runtimeFiles": 25,
+      "allRuntimeBytesEqualImmutableSource": true,
+      "productionTestDriverMarkersAbsent": true,
+      "nativeScreenshotsInspected": ["native-board.png", "native-child-recovery.png", "native-relaunch.png"]
+    }
+  ],
+  "artifactVerification": "Downloaded outer artifacts, application ZIPs and DMGs match their recorded SHA-256 digests. Both application ZIPs contain exactly the declared 25 runtime files, byte-identical to immutable source. Executable hashes match production reports and contain none of the three native test-driver markers.",
+  "nativeEvidence": "Actual architecture-matched macOS production launch, signed bundled Node with optimized JIT/ESM/SQLite, two seats/SSE, crash recovery, Quit/relaunch, conflict/database failure, and clean process/profile teardown passed. Actual WKWebView first and relaunch phases passed with persistent storage, authority-driven board updates and denied native game permissions.",
+  "visualFinding": "Inspected native board, child recovery and relaunch images show the actual Sofa Kingdoms interface and preserved authoritative positions without material missing artwork or board clipping.",
+  "workflowObservation": "The dependency-tree guard still logged 'rg: command not found'. The separate production acceptance script and this independent artifact review both scan the actual production executable for test-driver markers and pass. The owner should repair the command dependency before treating that particular workflow guard as exercised.",
+  "limitations": [
+    "These are WS5 Sofa Kingdoms artifacts, not the final integrated Odd Laws runtime.",
+    "The owner had not marked PR #6 ready at the time of review; this review does not perform or imply an owner handoff.",
+    "Native tests ran on GitHub-hosted Mac runners; no native execution was performed in this Linux workspace.",
+    "Controller seats are authenticated HTTP/SSE clients, not physical phones.",
+    "Audio output/listening quality, physical sleep/wake, home Wi-Fi, internet-disconnected hardware, TV casting and downloaded-app Gatekeeper behavior remain separate hardware gates.",
+    "Signatures are ad-hoc, not Developer ID or notarized distribution."
+  ]
+}

@@ -16,6 +16,10 @@ blocks and records external HTTP(S) page requests. It records page exceptions,
 missing static resources, screenshot sizes, checked journeys, and the source SHA.
 Screenshots and a machine-readable report go to `tests/integration/evidence/`.
 The database and browser contexts are removed after the run.
+Normal screenshots capture the viewport, and the report records both viewport
+and actual PNG dimensions. On failure, an overflowing document also gets a
+separately named full-page image; that image never substitutes for the viewport
+fit assertion.
 
 `SOFA_CHROMIUM` may point to an existing Chromium executable. The default uses
 Playwright's installed browser. `SOFA_EVIDENCE_DIR` changes the evidence directory;

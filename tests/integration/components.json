@@ -135,8 +135,8 @@
       "postHandoffCorrections": [],
       "observedCheckpoint": {
         "pr": 6,
-        "head": "3a2bd4e0bc498042ed54581cef88e544855626af",
-        "reason": "Draft. Apple Silicon production and WKWebView checks pass; Intel final UI gate and ready handoff pending."
+        "head": "618fc837f2f24f55a3aad1477ea9cf35ff478faf",
+        "reason": "Final owner handoff checkpoint remains draft while native CI reruns; earlier3a2bd4e production and WKWebView gates passed both architectures and were independently inspected."
       }
     }
   ]

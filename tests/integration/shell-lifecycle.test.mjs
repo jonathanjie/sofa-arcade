@@ -1,8 +1,80 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
 import { connectionStatus, createCollectionGame } from '../../ui/collection-game.mjs';
 import { loadOddLaws } from '../../ui/collection-load.mjs';
 import { createTutorialBridge } from '../../ui/collection-tutorial.mjs';
+
+// Execute the production polling/status boundary with controlled HTTP results.
+// The full app remains a browser entry; this isolates the asynchronous failure
+// path without making a second implementation or loading a private engine.
+async function pollingHarness(error, gameId = 'odd-laws-society') {
+  const source = await readFile(new URL('../../ui/app.js', import.meta.url), 'utf8');
+  const section = (start, end) => {
+    const begin = source.indexOf(start), finish = source.indexOf(end, begin);
+    assert.ok(begin >= 0 && finish > begin, `Missing production section: ${start}`);
+    return source.slice(begin, finish);
+  };
+  const state = { code: 'ABC234', network: 'connected', networkMessage: '', gameId, view: 'game', error: '', room: { phase: 'playing' } };
+  const statuses = [], pill = { hidden: true, textContent: '' };
+  let stopped = 0, rendered = 0;
+  const context = vm.createContext({
+    state, app: { querySelector: () => pill }, document: { hidden: false }, AbortController,
+    SOFA_GAME_ID: 'sofa-kingdoms', roomEpoch: 1, pollInFlight: false, pollAbort: null,
+    lastPollAt: 0, streamConnected: false, streamTerminalStatus: null, isLocal: () => false,
+    collectionGame: { setConnection(next) { statuses.push(next); return next; } },
+    api: async () => { throw error; }, stopPolling: () => { stopped++; },
+    render: () => { rendered++; }, receiveNetworkRoom: () => assert.fail('An error must not supply a board'),
+  });
+  vm.runInContext(section('function connectionStatus(', 'function ensureCollectionModules(') +
+    section('async function poll(', 'function startPolling('), context);
+  return { context, state, statuses, pill, get stopped() { return stopped; }, get rendered() { return rendered; } };
+}
+
+test('terminal polling failures preserve the rich stream error and stop retry presentation', async () => {
+  const message = 'This room session ended. Rejoin from the game page.';
+  for (const gameId of ['odd-laws-society', 'sofa-kingdoms']) {
+    for (const [status, code] of [[401, 'invalid_token'], [403, 'invalid_token'], [404, 'room_not_found'], [410, 'room_expired']]) {
+      const h = await pollingHarness(Object.assign(new Error('A later HTTP explanation.'), { status, code }), gameId);
+      h.context.setNetworkConnection({ state: 'error', message }, { terminal: true });
+      await h.context.poll(true);
+      assert.equal(h.state.network, 'error');
+      assert.equal(h.state.networkMessage, message);
+      assert.equal(h.state.error, message);
+      assert.ok(h.statuses.every(value => value.state === 'error' && value.message === message));
+      assert.equal(h.pill.textContent, 'Needs attention');
+      assert.equal(h.pill.hidden, false);
+      assert.equal(h.stopped, 1);
+      assert.ok(h.rendered > 0);
+    }
+  }
+});
+
+test('poll-only expiry receives rejoin guidance while a transient failure stays recoverable', async () => {
+  const expired = await pollingHarness(Object.assign(new Error('Expired room.'), { status: 410, code: 'room_expired' }));
+  await expired.context.poll(true);
+  assert.equal(expired.state.network, 'error');
+  assert.match(expired.state.networkMessage, /Return to the collection/);
+  assert.equal(expired.stopped, 1);
+
+  const commandError = await pollingHarness(Object.assign(new Error('Expired room.'), { status: 410, code: 'room_expired' }));
+  commandError.context.setNetworkConnection({ state: 'error', message: 'Wait for your turn.' });
+  await commandError.context.poll(true);
+  assert.match(commandError.state.networkMessage, /Return to the collection/, 'A recoverable command error cannot mask a later terminal failure');
+
+  const transient = await pollingHarness(Object.assign(new Error('Host is restarting.'), { status: 503 }));
+  await transient.context.poll(true);
+  assert.equal(transient.state.network, 'offline');
+  assert.equal(transient.state.error, '');
+  assert.equal(transient.pill.textContent, 'Offline');
+  assert.equal(transient.stopped, 0);
+  transient.context.setNetworkConnection('connecting');
+  assert.equal(transient.pill.textContent, 'Connecting…');
+  transient.context.setNetworkConnection('connected');
+  assert.equal(transient.state.networkMessage, '');
+  assert.equal(transient.pill.hidden, true);
+});
 
 const snapshot = (revision = 1, changes = {}) => ({
   code: 'ABC234', gameId: 'odd-laws-society', revision, phase: 'playing',

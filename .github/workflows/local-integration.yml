@@ -142,7 +142,8 @@ jobs:
 
   component-ui-at-head:
     name: WS3 rendered component suite at exact head
-    runs-on: ubuntu-latest
+    # Match WS3's pinned Playwright browser/dependency support.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:

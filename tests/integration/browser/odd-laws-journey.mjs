@@ -501,6 +501,9 @@ export async function playOddMatch(run, live, rules, { policy = 'rich', recovery
         await run.screenshot(live.tv, `${policy}-council-reveal-tv`);
         await assertTVFits(run, live.tv, `${policy}-reveal-1280x720`);
         for (const id of IDS) await assertTouchTargets(run, live.phones[id], '.ols-phone-actions button', 4, `${id} city actions`);
+      } else if (policy === 'rich' && councilCount % 2 === 1) {
+        await run.screenshot(live.tv, `${policy}-term-${room.state.term}-reveal-tv`);
+        await assertTVFits(run, live.tv, `${policy}-term-${room.state.term}-1280x720`);
       }
       continue;
     }
@@ -554,6 +557,7 @@ export async function playOddMatch(run, live, rules, { policy = 'rich', recovery
   for (const [page, name] of [[live.tv, 'tv'], ...IDS.map(id => [live.phones[id], id])]) {
     await noHorizontalOverflow(page);
     await run.screenshot(page, `${policy}-final-${name}`);
+    if (name === 'tv') await assertTVFits(run, page, `${policy}-final-1280x720`);
     for (const id of name === 'tv' ? IDS : [name]) {
       const expected = room.state.result.winner === id || room.state.result.winner === 'tie' ? 'celebrate' : 'disappointed';
       assert.equal(await page.locator(`[data-character="${id}"]`).first().getAttribute('data-character-state'), expected);

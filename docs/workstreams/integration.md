@@ -22,7 +22,7 @@ immutable head. A later head is a new candidate requiring affected checks again.
 | WS2 private platform | `feature/local-platform` | #7 — `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Included; ready handoff and owned CI verified |
 | WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — `87693dd61af1b6a011a26da814fc884f85bca809` | Included; ready handoff and owned CI verified |
 | WS4 media/music | `feature/odd-laws-media` | #8 — `be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85` | Included; ready handoff and owned CI verified |
-| WS5 Tauri | `feature/tauri-local` | #6 — observed `3a2bd4e0bc498042ed54581cef88e544855626af` | Draft; not incorporated |
+| WS5 Tauri | `feature/tauri-local` | #6 — observed `618fc837f2f24f55a3aad1477ea9cf35ff478faf` | Draft; not incorporated |
 
 Preferred review/merge order: WS1, WS2, WS3, WS4, WS5, then WS6. An aggregate WS6
 candidate depends on all included component PRs. This session does not merge
@@ -361,3 +361,39 @@ At prior integration head `46f2292e5dcdad2ebe836a9aeb242b389dd5dff9`,
 [Sofa rendered acceptance and production build](https://github.com/jonathanjie/sofa-arcade/actions/runs/44704790064),
 WS1, WS2, WS3 and legacy workflows passed; the missing media/package and
 all-components readiness gates correctly remained blocked.
+
+### First composed browser checkpoint — 5d329a4
+
+At `5d329a4ba30c304bb7fd951af96b27f1cc6ea2d7`,
+[the exact-head integration run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44706173236)
+passed protocol/package, reproducible committed ZIP, production/public-delivery,
+Node 22/24 component suites, WS2 insecure-HTTP browser clients, WS4 rendered
+media and all 15 Sofa Kingdoms browser checks. All four owner workflows and
+legacy Game checks passed. Odd Laws reached the real council with isolated
+authenticated TV/phones and no browser errors, missing assets or external
+requests, but failed the 1280×720 fit gate: board top 128px, bottom 732px.
+[Actual screenshots and reports](https://github.com/jonathanjie/sofa-arcade/actions/runs/44706173236/artifacts/14614837312)
+were inspected; this is a genuine 12px shared-shell overflow, not acceptance.
+The 1080p bounds passed and narrow-phone voting controls were readable.
+
+The shared short-TV spacing correction preserves component font/card/control
+sizes; the next rendered run must prove it. Screenshot output now defaults to
+the actual viewport and records PNG dimensions, with explicitly named full-page
+failure captures. Later-term markets and results receive the same TV fit gate.
+A separate extra WS3 browser job used unsupported Ubuntu 26.04 with the owner's
+pinned Playwright; the root job now matches its tested Ubuntu 24.04 environment.
+
+Independent shell review also found terminal polling errors overwrote the
+transport's actionable error with Offline/Reconnecting. Shared polling now
+preserves terminal status/message for 401/403/404/410, stops retries, and shows
+Needs attention while transient failures remain recoverable. Two focused tests
+exercise the actual production boundary for both games; 24 combined
+shell/audio/recovery/legacy-score checks pass in the working correction.
+Optional local Help and release instructions explain that changing the LAN
+address/port does not transfer browser-scoped phone seats.
+
+The independent WS5 artifact audit at `3a2bd4e` verified both native architectures,
+14 production checks each, actual WKWebView first/relaunch sessions, exact
+staged bytes, signatures and absent test-driver binary markers. See
+`tests/integration/evidence/ws5-3a2bd4-review.json`. The owner's final checkpoint
+`618fc837` is still draft while rerunning native CI and has not been included.
