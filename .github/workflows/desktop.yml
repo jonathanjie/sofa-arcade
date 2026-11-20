@@ -2,7 +2,7 @@ name: Desktop Mac checks
 
 on:
   push:
-    branches: [feature/tauri-local, feature/local-integration, main]
+    branches: [main]
     paths:
       - 'desktop/**'
       - '.github/workflows/desktop.yml'
