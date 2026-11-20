@@ -138,7 +138,7 @@ native code and certificate capabilities remain excluded.
 
 | Gate | Initial integrated working-tree result |
 | --- | --- |
-| GO7 protocol/UI/native host/package suites | 28 passed, zero skipped |
+| GO7 protocol/UI/native host/package suites | 31 passed, zero skipped at the first published candidate |
 | Existing root rules/rooms/LAN/controller/music | 81 passed |
 | Existing portable delivery/source closure | 5 passed |
 | Production build and public inventory | Passed; 182 declared public files |
@@ -170,6 +170,29 @@ all six owned component suites, real rendered campaign and both actual macOS
 WKWebView targets. Existing workflows retain old-game/private-vote/menu-audio
 journeys and production app/DMG builds. Artifacts retain exact source, viewport,
 screenshots, rates/RTT/overrun methods and native lifecycle results.
+
+### First published candidate and CI repairs
+
+The first published candidate was `2bf0354e6a987a5feafa424d4120e6a582e19a9a`,
+with verified tree `2f5e588300fdef8398a9b0a63b1f1db774bcce82`, identical to
+local checkpoint `aad0a36f0a1180cdb5dc26adb5a58fff6abb6e01`. The connected
+GitHub Git-data API published the tree and retained all six reviewed component
+heads as ordered parents because the shell had no Git push credential. The
+original local assembly remains preserved as a checkpoint; no component PR was
+rewritten.
+
+CI exposed two acceptance-infrastructure issues. GitHub rejects `runner.temp`
+in job-level environment expressions, so GO7 uses an ignored workspace evidence
+directory supported in that scope. The legacy shell test extracts polling code
+into a VM and needed the new unmounted `orchardGame: null` dependency; its
+terminal/transient assertions were retained unchanged. The complete legacy
+integration suite then passed all 53 tests. The first candidate's 31 GO7 tests
+and both strict component locks passed locally at the published SHA.
+
+Independent native review also corrected a status-mutex/UI-thread lock inversion
+before publication. Rejoin disposal and loopback QR selection corrections are
+covered by focused bridge/transport checks. All changes are in shared integration
+paths; GO1–GO6 exclusive source stays identical to the recorded heads.
 
 ### Reproduce
 

@@ -37,7 +37,7 @@ jobs:
       matrix:
         node: ['22.13.0', '24.22.3']
     env:
-      SOFA_GO7_EVIDENCE_DIR: ${{ runner.temp }}/go7-protocol
+      SOFA_GO7_EVIDENCE_DIR: ${{ github.workspace }}/tests/gravity-orchard-integration/evidence/protocol
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -69,7 +69,7 @@ jobs:
         if: always()
         with:
           name: go7-protocol-node-${{ matrix.node }}-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ runner.temp }}/go7-protocol/
+          path: ${{ github.workspace }}/tests/gravity-orchard-integration/evidence/protocol/
           if-no-files-found: ignore
 
   reviewed-component-suites:
@@ -100,8 +100,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      SOFA_GO7_EVIDENCE_DIR: ${{ runner.temp }}/go7-browser
-      SOFA_EVIDENCE_DIR: ${{ runner.temp }}/go7-browser
+      SOFA_GO7_EVIDENCE_DIR: ${{ github.workspace }}/tests/gravity-orchard-integration/evidence/browser
+      SOFA_EVIDENCE_DIR: ${{ github.workspace }}/tests/gravity-orchard-integration/evidence/browser
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -118,7 +118,7 @@ jobs:
         if: always()
         with:
           name: go7-browser-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ runner.temp }}/go7-browser/
+          path: ${{ github.workspace }}/tests/gravity-orchard-integration/evidence/browser/
           if-no-files-found: warn
 
   native-integrated:
