@@ -1,0 +1,6 @@
+node_modules/
+tests/report/
+tests/artifacts/
+tests/results.json
+tests/tested-commit.txt
+fixtures/evidence/
