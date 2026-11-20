@@ -1,0 +1,42 @@
+name: WS1 Odd Laws engine
+
+on:
+  push:
+    branches: [main, feature/odd-laws-engine]
+    paths:
+      - 'games/odd-laws-society/**'
+      - '.github/workflows/ws1-engine.yml'
+      - 'docs/workstreams/odd-laws-engine.md'
+      - 'docs/games/odd-laws-society.md'
+      - 'docs/LOCAL_IMPLEMENTATION_CONTRACT.md'
+  pull_request:
+    paths:
+      - 'games/odd-laws-society/**'
+      - '.github/workflows/ws1-engine.yml'
+      - 'docs/workstreams/odd-laws-engine.md'
+      - 'docs/games/odd-laws-society.md'
+      - 'docs/LOCAL_IMPLEMENTATION_CONTRACT.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rules-previews-privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+      # All WS1 modules and checks use Node built-ins; no dependency install.
+      - name: Engine, public previews, privacy, and contract suites
+        run: node --test games/odd-laws-society/tests/*.test.mjs
+      - name: Verify canonical projected fixtures
+        run: node games/odd-laws-society/tests/generate-fixtures.mjs --check
+      - name: Reproducible mirrored policy smoke sweep
+        run: node games/odd-laws-society/simulation/sweep.mjs --smoke

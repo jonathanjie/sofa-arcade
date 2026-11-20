@@ -1,0 +1,740 @@
+{
+  "tv": {
+    "schemaVersion": 1,
+    "gameId": "odd-laws-society",
+    "rulesVersion": "0.2",
+    "matchId": "fixture-full-city",
+    "phase": "finished",
+    "stage": "finished",
+    "phaseId": "fixture-full-city:s6:finished",
+    "session": 6,
+    "term": 3,
+    "chair": "lydia",
+    "chairSchedule": [
+      "jon",
+      "lydia",
+      "lydia",
+      "jon",
+      "jon",
+      "lydia"
+    ],
+    "activePlayer": null,
+    "actionIndex": null,
+    "actionsRemaining": {
+      "jon": 0,
+      "lydia": 0
+    },
+    "activeLaws": {
+      "economy": "public-grants",
+      "civic": "diversity-parade"
+    },
+    "agenda": [
+      {
+        "session": 1,
+        "category": "economy",
+        "lawIds": [
+          "small-shop-supremacy",
+          "honest-wages"
+        ]
+      },
+      {
+        "session": 2,
+        "category": "civic",
+        "lawIds": [
+          "diversity-parade",
+          "fashionable-streets"
+        ]
+      },
+      {
+        "session": 3,
+        "category": "economy",
+        "lawIds": [
+          "public-grants",
+          "workshop-week"
+        ]
+      },
+      {
+        "session": 4,
+        "category": "civic",
+        "lawIds": [
+          "shop-local",
+          "industrial-pride"
+        ]
+      },
+      {
+        "session": 5,
+        "category": "economy",
+        "lawIds": [
+          "everything-is-art",
+          "open-tender"
+        ]
+      },
+      {
+        "session": 6,
+        "category": "civic",
+        "lawIds": [
+          "public-service-day",
+          "mandatory-applause"
+        ]
+      }
+    ],
+    "council": null,
+    "market": [
+      {
+        "designId": "grand-bazaar",
+        "remaining": 2
+      },
+      {
+        "designId": "grand-clock",
+        "remaining": 2
+      },
+      {
+        "designId": "high-court",
+        "remaining": 2
+      },
+      {
+        "designId": "observatory",
+        "remaining": 2
+      },
+      {
+        "designId": "opera-house",
+        "remaining": 2
+      },
+      {
+        "designId": "lala-monument",
+        "remaining": 2
+      }
+    ],
+    "players": {
+      "jon": {
+        "coins": 21,
+        "influence": 6,
+        "city": [
+          {
+            "instanceId": "fixture-full-city:corner-shop:copy-2",
+            "designId": "corner-shop"
+          },
+          {
+            "instanceId": "fixture-full-city:button-workshop:copy-2",
+            "designId": "button-workshop"
+          },
+          {
+            "instanceId": "fixture-full-city:pocket-theatre:copy-1",
+            "designId": "pocket-theatre"
+          },
+          {
+            "instanceId": "fixture-full-city:tea-stall:copy-1",
+            "designId": "tea-stall"
+          },
+          {
+            "instanceId": "fixture-full-city:public-library:copy-1",
+            "designId": "public-library"
+          },
+          {
+            "instanceId": "fixture-full-city:clockwork-studio:copy-1",
+            "designId": "clockwork-studio"
+          },
+          {
+            "instanceId": "fixture-full-city:debate-hall:copy-1",
+            "designId": "debate-hall"
+          },
+          {
+            "instanceId": "fixture-full-city:night-market:copy-2",
+            "designId": "night-market"
+          },
+          {
+            "instanceId": "fixture-full-city:quilt-bridge:copy-2",
+            "designId": "quilt-bridge"
+          }
+        ],
+        "streetEvaluated": [
+          true,
+          true,
+          true
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": true,
+        "score": {
+          "buildings": 23,
+          "streets": 6,
+          "festivals": 8,
+          "civic": 9,
+          "treasury": 4,
+          "total": 50
+        }
+      },
+      "lydia": {
+        "coins": 21,
+        "influence": 6,
+        "city": [
+          {
+            "instanceId": "fixture-full-city:corner-shop:copy-1",
+            "designId": "corner-shop"
+          },
+          {
+            "instanceId": "fixture-full-city:button-workshop:copy-1",
+            "designId": "button-workshop"
+          },
+          {
+            "instanceId": "fixture-full-city:pocket-theatre:copy-2",
+            "designId": "pocket-theatre"
+          },
+          {
+            "instanceId": "fixture-full-city:tea-stall:copy-2",
+            "designId": "tea-stall"
+          },
+          {
+            "instanceId": "fixture-full-city:public-library:copy-2",
+            "designId": "public-library"
+          },
+          {
+            "instanceId": "fixture-full-city:clockwork-studio:copy-2",
+            "designId": "clockwork-studio"
+          },
+          {
+            "instanceId": "fixture-full-city:debate-hall:copy-2",
+            "designId": "debate-hall"
+          },
+          {
+            "instanceId": "fixture-full-city:night-market:copy-1",
+            "designId": "night-market"
+          },
+          {
+            "instanceId": "fixture-full-city:quilt-bridge:copy-1",
+            "designId": "quilt-bridge"
+          }
+        ],
+        "streetEvaluated": [
+          true,
+          true,
+          true
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": true,
+        "score": {
+          "buildings": 23,
+          "streets": 6,
+          "festivals": 8,
+          "civic": 9,
+          "treasury": 4,
+          "total": 50
+        }
+      }
+    },
+    "lastCouncil": {
+      "session": 6,
+      "phaseId": "fixture-full-city:s6:council",
+      "choices": {
+        "jon": {
+          "choiceId": "keep",
+          "bid": 0
+        },
+        "lydia": {
+          "choiceId": "keep",
+          "bid": 0
+        }
+      },
+      "adoptedLawId": "diversity-parade",
+      "category": "civic"
+    },
+    "result": {
+      "winner": "tie",
+      "scores": {
+        "jon": 50,
+        "lydia": 50
+      }
+    }
+  },
+  "jon": {
+    "schemaVersion": 1,
+    "gameId": "odd-laws-society",
+    "rulesVersion": "0.2",
+    "matchId": "fixture-full-city",
+    "phase": "finished",
+    "stage": "finished",
+    "phaseId": "fixture-full-city:s6:finished",
+    "session": 6,
+    "term": 3,
+    "chair": "lydia",
+    "chairSchedule": [
+      "jon",
+      "lydia",
+      "lydia",
+      "jon",
+      "jon",
+      "lydia"
+    ],
+    "activePlayer": null,
+    "actionIndex": null,
+    "actionsRemaining": {
+      "jon": 0,
+      "lydia": 0
+    },
+    "activeLaws": {
+      "economy": "public-grants",
+      "civic": "diversity-parade"
+    },
+    "agenda": [
+      {
+        "session": 1,
+        "category": "economy",
+        "lawIds": [
+          "small-shop-supremacy",
+          "honest-wages"
+        ]
+      },
+      {
+        "session": 2,
+        "category": "civic",
+        "lawIds": [
+          "diversity-parade",
+          "fashionable-streets"
+        ]
+      },
+      {
+        "session": 3,
+        "category": "economy",
+        "lawIds": [
+          "public-grants",
+          "workshop-week"
+        ]
+      },
+      {
+        "session": 4,
+        "category": "civic",
+        "lawIds": [
+          "shop-local",
+          "industrial-pride"
+        ]
+      },
+      {
+        "session": 5,
+        "category": "economy",
+        "lawIds": [
+          "everything-is-art",
+          "open-tender"
+        ]
+      },
+      {
+        "session": 6,
+        "category": "civic",
+        "lawIds": [
+          "public-service-day",
+          "mandatory-applause"
+        ]
+      }
+    ],
+    "council": null,
+    "market": [
+      {
+        "designId": "grand-bazaar",
+        "remaining": 2
+      },
+      {
+        "designId": "grand-clock",
+        "remaining": 2
+      },
+      {
+        "designId": "high-court",
+        "remaining": 2
+      },
+      {
+        "designId": "observatory",
+        "remaining": 2
+      },
+      {
+        "designId": "opera-house",
+        "remaining": 2
+      },
+      {
+        "designId": "lala-monument",
+        "remaining": 2
+      }
+    ],
+    "players": {
+      "jon": {
+        "coins": 21,
+        "influence": 6,
+        "city": [
+          {
+            "instanceId": "fixture-full-city:corner-shop:copy-2",
+            "designId": "corner-shop"
+          },
+          {
+            "instanceId": "fixture-full-city:button-workshop:copy-2",
+            "designId": "button-workshop"
+          },
+          {
+            "instanceId": "fixture-full-city:pocket-theatre:copy-1",
+            "designId": "pocket-theatre"
+          },
+          {
+            "instanceId": "fixture-full-city:tea-stall:copy-1",
+            "designId": "tea-stall"
+          },
+          {
+            "instanceId": "fixture-full-city:public-library:copy-1",
+            "designId": "public-library"
+          },
+          {
+            "instanceId": "fixture-full-city:clockwork-studio:copy-1",
+            "designId": "clockwork-studio"
+          },
+          {
+            "instanceId": "fixture-full-city:debate-hall:copy-1",
+            "designId": "debate-hall"
+          },
+          {
+            "instanceId": "fixture-full-city:night-market:copy-2",
+            "designId": "night-market"
+          },
+          {
+            "instanceId": "fixture-full-city:quilt-bridge:copy-2",
+            "designId": "quilt-bridge"
+          }
+        ],
+        "streetEvaluated": [
+          true,
+          true,
+          true
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": true,
+        "score": {
+          "buildings": 23,
+          "streets": 6,
+          "festivals": 8,
+          "civic": 9,
+          "treasury": 4,
+          "total": 50
+        }
+      },
+      "lydia": {
+        "coins": 21,
+        "influence": 6,
+        "city": [
+          {
+            "instanceId": "fixture-full-city:corner-shop:copy-1",
+            "designId": "corner-shop"
+          },
+          {
+            "instanceId": "fixture-full-city:button-workshop:copy-1",
+            "designId": "button-workshop"
+          },
+          {
+            "instanceId": "fixture-full-city:pocket-theatre:copy-2",
+            "designId": "pocket-theatre"
+          },
+          {
+            "instanceId": "fixture-full-city:tea-stall:copy-2",
+            "designId": "tea-stall"
+          },
+          {
+            "instanceId": "fixture-full-city:public-library:copy-2",
+            "designId": "public-library"
+          },
+          {
+            "instanceId": "fixture-full-city:clockwork-studio:copy-2",
+            "designId": "clockwork-studio"
+          },
+          {
+            "instanceId": "fixture-full-city:debate-hall:copy-2",
+            "designId": "debate-hall"
+          },
+          {
+            "instanceId": "fixture-full-city:night-market:copy-1",
+            "designId": "night-market"
+          },
+          {
+            "instanceId": "fixture-full-city:quilt-bridge:copy-1",
+            "designId": "quilt-bridge"
+          }
+        ],
+        "streetEvaluated": [
+          true,
+          true,
+          true
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": true,
+        "score": {
+          "buildings": 23,
+          "streets": 6,
+          "festivals": 8,
+          "civic": 9,
+          "treasury": 4,
+          "total": 50
+        }
+      }
+    },
+    "lastCouncil": {
+      "session": 6,
+      "phaseId": "fixture-full-city:s6:council",
+      "choices": {
+        "jon": {
+          "choiceId": "keep",
+          "bid": 0
+        },
+        "lydia": {
+          "choiceId": "keep",
+          "bid": 0
+        }
+      },
+      "adoptedLawId": "diversity-parade",
+      "category": "civic"
+    },
+    "result": {
+      "winner": "tie",
+      "scores": {
+        "jon": 50,
+        "lydia": 50
+      }
+    }
+  },
+  "lydia": {
+    "schemaVersion": 1,
+    "gameId": "odd-laws-society",
+    "rulesVersion": "0.2",
+    "matchId": "fixture-full-city",
+    "phase": "finished",
+    "stage": "finished",
+    "phaseId": "fixture-full-city:s6:finished",
+    "session": 6,
+    "term": 3,
+    "chair": "lydia",
+    "chairSchedule": [
+      "jon",
+      "lydia",
+      "lydia",
+      "jon",
+      "jon",
+      "lydia"
+    ],
+    "activePlayer": null,
+    "actionIndex": null,
+    "actionsRemaining": {
+      "jon": 0,
+      "lydia": 0
+    },
+    "activeLaws": {
+      "economy": "public-grants",
+      "civic": "diversity-parade"
+    },
+    "agenda": [
+      {
+        "session": 1,
+        "category": "economy",
+        "lawIds": [
+          "small-shop-supremacy",
+          "honest-wages"
+        ]
+      },
+      {
+        "session": 2,
+        "category": "civic",
+        "lawIds": [
+          "diversity-parade",
+          "fashionable-streets"
+        ]
+      },
+      {
+        "session": 3,
+        "category": "economy",
+        "lawIds": [
+          "public-grants",
+          "workshop-week"
+        ]
+      },
+      {
+        "session": 4,
+        "category": "civic",
+        "lawIds": [
+          "shop-local",
+          "industrial-pride"
+        ]
+      },
+      {
+        "session": 5,
+        "category": "economy",
+        "lawIds": [
+          "everything-is-art",
+          "open-tender"
+        ]
+      },
+      {
+        "session": 6,
+        "category": "civic",
+        "lawIds": [
+          "public-service-day",
+          "mandatory-applause"
+        ]
+      }
+    ],
+    "council": null,
+    "market": [
+      {
+        "designId": "grand-bazaar",
+        "remaining": 2
+      },
+      {
+        "designId": "grand-clock",
+        "remaining": 2
+      },
+      {
+        "designId": "high-court",
+        "remaining": 2
+      },
+      {
+        "designId": "observatory",
+        "remaining": 2
+      },
+      {
+        "designId": "opera-house",
+        "remaining": 2
+      },
+      {
+        "designId": "lala-monument",
+        "remaining": 2
+      }
+    ],
+    "players": {
+      "jon": {
+        "coins": 21,
+        "influence": 6,
+        "city": [
+          {
+            "instanceId": "fixture-full-city:corner-shop:copy-2",
+            "designId": "corner-shop"
+          },
+          {
+            "instanceId": "fixture-full-city:button-workshop:copy-2",
+            "designId": "button-workshop"
+          },
+          {
+            "instanceId": "fixture-full-city:pocket-theatre:copy-1",
+            "designId": "pocket-theatre"
+          },
+          {
+            "instanceId": "fixture-full-city:tea-stall:copy-1",
+            "designId": "tea-stall"
+          },
+          {
+            "instanceId": "fixture-full-city:public-library:copy-1",
+            "designId": "public-library"
+          },
+          {
+            "instanceId": "fixture-full-city:clockwork-studio:copy-1",
+            "designId": "clockwork-studio"
+          },
+          {
+            "instanceId": "fixture-full-city:debate-hall:copy-1",
+            "designId": "debate-hall"
+          },
+          {
+            "instanceId": "fixture-full-city:night-market:copy-2",
+            "designId": "night-market"
+          },
+          {
+            "instanceId": "fixture-full-city:quilt-bridge:copy-2",
+            "designId": "quilt-bridge"
+          }
+        ],
+        "streetEvaluated": [
+          true,
+          true,
+          true
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": true,
+        "score": {
+          "buildings": 23,
+          "streets": 6,
+          "festivals": 8,
+          "civic": 9,
+          "treasury": 4,
+          "total": 50
+        }
+      },
+      "lydia": {
+        "coins": 21,
+        "influence": 6,
+        "city": [
+          {
+            "instanceId": "fixture-full-city:corner-shop:copy-1",
+            "designId": "corner-shop"
+          },
+          {
+            "instanceId": "fixture-full-city:button-workshop:copy-1",
+            "designId": "button-workshop"
+          },
+          {
+            "instanceId": "fixture-full-city:pocket-theatre:copy-2",
+            "designId": "pocket-theatre"
+          },
+          {
+            "instanceId": "fixture-full-city:tea-stall:copy-2",
+            "designId": "tea-stall"
+          },
+          {
+            "instanceId": "fixture-full-city:public-library:copy-2",
+            "designId": "public-library"
+          },
+          {
+            "instanceId": "fixture-full-city:clockwork-studio:copy-2",
+            "designId": "clockwork-studio"
+          },
+          {
+            "instanceId": "fixture-full-city:debate-hall:copy-2",
+            "designId": "debate-hall"
+          },
+          {
+            "instanceId": "fixture-full-city:night-market:copy-1",
+            "designId": "night-market"
+          },
+          {
+            "instanceId": "fixture-full-city:quilt-bridge:copy-1",
+            "designId": "quilt-bridge"
+          }
+        ],
+        "streetEvaluated": [
+          true,
+          true,
+          true
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": true,
+        "score": {
+          "buildings": 23,
+          "streets": 6,
+          "festivals": 8,
+          "civic": 9,
+          "treasury": 4,
+          "total": 50
+        }
+      }
+    },
+    "lastCouncil": {
+      "session": 6,
+      "phaseId": "fixture-full-city:s6:council",
+      "choices": {
+        "jon": {
+          "choiceId": "keep",
+          "bid": 0
+        },
+        "lydia": {
+          "choiceId": "keep",
+          "bid": 0
+        }
+      },
+      "adoptedLawId": "diversity-parade",
+      "category": "civic"
+    },
+    "result": {
+      "winner": "tie",
+      "scores": {
+        "jon": 50,
+        "lydia": 50
+      }
+    }
+  }
+}

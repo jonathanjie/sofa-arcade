@@ -1,0 +1,554 @@
+{
+  "tv": {
+    "schemaVersion": 1,
+    "gameId": "odd-laws-society",
+    "rulesVersion": "0.2",
+    "matchId": "fixture-opening",
+    "phase": "playing",
+    "stage": "council",
+    "phaseId": "fixture-opening:s1:council",
+    "session": 1,
+    "term": 1,
+    "chair": "jon",
+    "chairSchedule": [
+      "jon",
+      "lydia",
+      "lydia",
+      "jon",
+      "jon",
+      "lydia"
+    ],
+    "activePlayer": null,
+    "actionIndex": null,
+    "actionsRemaining": {
+      "jon": 3,
+      "lydia": 3
+    },
+    "activeLaws": {
+      "economy": "economy-neutral",
+      "civic": "civic-neutral"
+    },
+    "agenda": [
+      {
+        "session": 1,
+        "category": "economy",
+        "lawIds": [
+          "small-shop-supremacy",
+          "honest-wages"
+        ]
+      },
+      {
+        "session": 2,
+        "category": "civic",
+        "lawIds": [
+          "diversity-parade",
+          "fashionable-streets"
+        ]
+      },
+      {
+        "session": 3,
+        "category": "economy",
+        "lawIds": [
+          "public-grants",
+          "workshop-week"
+        ]
+      },
+      {
+        "session": 4,
+        "category": "civic",
+        "lawIds": [
+          "shop-local",
+          "industrial-pride"
+        ]
+      },
+      {
+        "session": 5,
+        "category": "economy",
+        "lawIds": [
+          "everything-is-art",
+          "open-tender"
+        ]
+      },
+      {
+        "session": 6,
+        "category": "civic",
+        "lawIds": [
+          "public-service-day",
+          "mandatory-applause"
+        ]
+      }
+    ],
+    "council": {
+      "category": "economy",
+      "optionIds": [
+        "small-shop-supremacy",
+        "honest-wages",
+        "keep"
+      ],
+      "ready": {
+        "jon": false,
+        "lydia": true
+      },
+      "ownCommitment": null
+    },
+    "market": [
+      {
+        "designId": "corner-shop",
+        "remaining": 2
+      },
+      {
+        "designId": "tea-stall",
+        "remaining": 2
+      },
+      {
+        "designId": "button-workshop",
+        "remaining": 2
+      },
+      {
+        "designId": "petition-kiosk",
+        "remaining": 2
+      },
+      {
+        "designId": "pocket-theatre",
+        "remaining": 2
+      },
+      {
+        "designId": "community-garden",
+        "remaining": 2
+      }
+    ],
+    "players": {
+      "jon": {
+        "coins": 4,
+        "influence": 2,
+        "city": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "streetEvaluated": [
+          false,
+          false,
+          false
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": false,
+        "score": {
+          "buildings": 0,
+          "streets": 0,
+          "festivals": 0,
+          "civic": 0,
+          "treasury": 1,
+          "total": 1
+        }
+      },
+      "lydia": {
+        "coins": 4,
+        "influence": 2,
+        "city": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "streetEvaluated": [
+          false,
+          false,
+          false
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": false,
+        "score": {
+          "buildings": 0,
+          "streets": 0,
+          "festivals": 0,
+          "civic": 0,
+          "treasury": 1,
+          "total": 1
+        }
+      }
+    },
+    "lastCouncil": null,
+    "result": null
+  },
+  "jon": {
+    "schemaVersion": 1,
+    "gameId": "odd-laws-society",
+    "rulesVersion": "0.2",
+    "matchId": "fixture-opening",
+    "phase": "playing",
+    "stage": "council",
+    "phaseId": "fixture-opening:s1:council",
+    "session": 1,
+    "term": 1,
+    "chair": "jon",
+    "chairSchedule": [
+      "jon",
+      "lydia",
+      "lydia",
+      "jon",
+      "jon",
+      "lydia"
+    ],
+    "activePlayer": null,
+    "actionIndex": null,
+    "actionsRemaining": {
+      "jon": 3,
+      "lydia": 3
+    },
+    "activeLaws": {
+      "economy": "economy-neutral",
+      "civic": "civic-neutral"
+    },
+    "agenda": [
+      {
+        "session": 1,
+        "category": "economy",
+        "lawIds": [
+          "small-shop-supremacy",
+          "honest-wages"
+        ]
+      },
+      {
+        "session": 2,
+        "category": "civic",
+        "lawIds": [
+          "diversity-parade",
+          "fashionable-streets"
+        ]
+      },
+      {
+        "session": 3,
+        "category": "economy",
+        "lawIds": [
+          "public-grants",
+          "workshop-week"
+        ]
+      },
+      {
+        "session": 4,
+        "category": "civic",
+        "lawIds": [
+          "shop-local",
+          "industrial-pride"
+        ]
+      },
+      {
+        "session": 5,
+        "category": "economy",
+        "lawIds": [
+          "everything-is-art",
+          "open-tender"
+        ]
+      },
+      {
+        "session": 6,
+        "category": "civic",
+        "lawIds": [
+          "public-service-day",
+          "mandatory-applause"
+        ]
+      }
+    ],
+    "council": {
+      "category": "economy",
+      "optionIds": [
+        "small-shop-supremacy",
+        "honest-wages",
+        "keep"
+      ],
+      "ready": {
+        "jon": false,
+        "lydia": true
+      },
+      "ownCommitment": null
+    },
+    "market": [
+      {
+        "designId": "corner-shop",
+        "remaining": 2
+      },
+      {
+        "designId": "tea-stall",
+        "remaining": 2
+      },
+      {
+        "designId": "button-workshop",
+        "remaining": 2
+      },
+      {
+        "designId": "petition-kiosk",
+        "remaining": 2
+      },
+      {
+        "designId": "pocket-theatre",
+        "remaining": 2
+      },
+      {
+        "designId": "community-garden",
+        "remaining": 2
+      }
+    ],
+    "players": {
+      "jon": {
+        "coins": 4,
+        "influence": 2,
+        "city": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "streetEvaluated": [
+          false,
+          false,
+          false
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": false,
+        "score": {
+          "buildings": 0,
+          "streets": 0,
+          "festivals": 0,
+          "civic": 0,
+          "treasury": 1,
+          "total": 1
+        }
+      },
+      "lydia": {
+        "coins": 4,
+        "influence": 2,
+        "city": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "streetEvaluated": [
+          false,
+          false,
+          false
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": false,
+        "score": {
+          "buildings": 0,
+          "streets": 0,
+          "festivals": 0,
+          "civic": 0,
+          "treasury": 1,
+          "total": 1
+        }
+      }
+    },
+    "lastCouncil": null,
+    "result": null
+  },
+  "lydia": {
+    "schemaVersion": 1,
+    "gameId": "odd-laws-society",
+    "rulesVersion": "0.2",
+    "matchId": "fixture-opening",
+    "phase": "playing",
+    "stage": "council",
+    "phaseId": "fixture-opening:s1:council",
+    "session": 1,
+    "term": 1,
+    "chair": "jon",
+    "chairSchedule": [
+      "jon",
+      "lydia",
+      "lydia",
+      "jon",
+      "jon",
+      "lydia"
+    ],
+    "activePlayer": null,
+    "actionIndex": null,
+    "actionsRemaining": {
+      "jon": 3,
+      "lydia": 3
+    },
+    "activeLaws": {
+      "economy": "economy-neutral",
+      "civic": "civic-neutral"
+    },
+    "agenda": [
+      {
+        "session": 1,
+        "category": "economy",
+        "lawIds": [
+          "small-shop-supremacy",
+          "honest-wages"
+        ]
+      },
+      {
+        "session": 2,
+        "category": "civic",
+        "lawIds": [
+          "diversity-parade",
+          "fashionable-streets"
+        ]
+      },
+      {
+        "session": 3,
+        "category": "economy",
+        "lawIds": [
+          "public-grants",
+          "workshop-week"
+        ]
+      },
+      {
+        "session": 4,
+        "category": "civic",
+        "lawIds": [
+          "shop-local",
+          "industrial-pride"
+        ]
+      },
+      {
+        "session": 5,
+        "category": "economy",
+        "lawIds": [
+          "everything-is-art",
+          "open-tender"
+        ]
+      },
+      {
+        "session": 6,
+        "category": "civic",
+        "lawIds": [
+          "public-service-day",
+          "mandatory-applause"
+        ]
+      }
+    ],
+    "council": {
+      "category": "economy",
+      "optionIds": [
+        "small-shop-supremacy",
+        "honest-wages",
+        "keep"
+      ],
+      "ready": {
+        "jon": false,
+        "lydia": true
+      },
+      "ownCommitment": {
+        "choiceId": "honest-wages",
+        "bid": 0
+      }
+    },
+    "market": [
+      {
+        "designId": "corner-shop",
+        "remaining": 2
+      },
+      {
+        "designId": "tea-stall",
+        "remaining": 2
+      },
+      {
+        "designId": "button-workshop",
+        "remaining": 2
+      },
+      {
+        "designId": "petition-kiosk",
+        "remaining": 2
+      },
+      {
+        "designId": "pocket-theatre",
+        "remaining": 2
+      },
+      {
+        "designId": "community-garden",
+        "remaining": 2
+      }
+    ],
+    "players": {
+      "jon": {
+        "coins": 4,
+        "influence": 2,
+        "city": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "streetEvaluated": [
+          false,
+          false,
+          false
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": false,
+        "score": {
+          "buildings": 0,
+          "streets": 0,
+          "festivals": 0,
+          "civic": 0,
+          "treasury": 1,
+          "total": 1
+        }
+      },
+      "lydia": {
+        "coins": 4,
+        "influence": 2,
+        "city": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "streetEvaluated": [
+          false,
+          false,
+          false
+        ],
+        "buildsThisSession": 0,
+        "festivalUsed": false,
+        "score": {
+          "buildings": 0,
+          "streets": 0,
+          "festivals": 0,
+          "civic": 0,
+          "treasury": 1,
+          "total": 1
+        }
+      }
+    },
+    "lastCouncil": null,
+    "result": null
+  }
+}

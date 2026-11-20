@@ -1,0 +1,478 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": "0.2",
+  "policyVersion": "heuristics-1",
+  "seeds": 24,
+  "games": 768,
+  "transitions": 36864,
+  "seedPattern": "ws1-policy-{0..seeds-1}",
+  "mirrorMethod": "Every unordered policy pair, both seat assignments for distinct policies, both initial Chairs; common agenda per seed; swapped numerical ledgers asserted.",
+  "policyInputs": "Authenticated projected view only; both council choices computed before either commit.",
+  "caveat": "Deterministic heuristic diagnostics only. Mirrored games are correlated, policies are incomplete, thresholds are investigation flags, and no human balance or playtest claim is made. No rules were tuned.",
+  "scoreRange": {
+    "min": 41,
+    "max": 70
+  },
+  "ties": 210,
+  "openingChairResults": {
+    "wins": 318,
+    "losses": 240,
+    "ties": 210
+  },
+  "policies": {
+    "economy": {
+      "games": 384,
+      "wins": 152,
+      "ties": 100,
+      "losses": 132,
+      "actions": {
+        "build": 3456,
+        "work": 2292,
+        "lobby": 0,
+        "festival": 1164
+      },
+      "score": {
+        "buildings": 12212,
+        "streets": 2168,
+        "festivals": 4620,
+        "civic": 2564,
+        "treasury": 1092
+      },
+      "coins": {
+        "income": 9248,
+        "work": 7176,
+        "builds": 10574,
+        "festivals": 3492,
+        "end": 3894
+      },
+      "influence": {
+        "income": 1616,
+        "lobby": 0,
+        "builds": 856,
+        "bids": 1262,
+        "end": 1978
+      },
+      "bidHistogram": [
+        1246,
+        854,
+        204,
+        0
+      ],
+      "councilWins": 980,
+      "fullBySession": {
+        "4": 28,
+        "5": 328,
+        "6": 28
+      },
+      "fullCityWork": 982,
+      "scoreRange": {
+        "min": 44,
+        "mean": 59,
+        "max": 67
+      },
+      "means": {
+        "actions": {
+          "build": 9,
+          "work": 5.969,
+          "lobby": 0,
+          "festival": 3.031
+        },
+        "score": {
+          "buildings": 31.802,
+          "streets": 5.646,
+          "festivals": 12.031,
+          "civic": 6.677,
+          "treasury": 2.844
+        },
+        "coins": {
+          "income": 24.083,
+          "work": 18.688,
+          "builds": 27.536,
+          "festivals": 9.094,
+          "end": 10.141
+        },
+        "influence": {
+          "income": 4.208,
+          "lobby": 0,
+          "builds": 2.229,
+          "bids": 3.286,
+          "end": 5.151
+        }
+      }
+    },
+    "festival": {
+      "games": 384,
+      "wins": 144,
+      "ties": 110,
+      "losses": 130,
+      "actions": {
+        "build": 2658,
+        "work": 2200,
+        "lobby": 0,
+        "festival": 2054
+      },
+      "score": {
+        "buildings": 11522,
+        "streets": 1400,
+        "festivals": 8216,
+        "civic": 1836,
+        "treasury": 140
+      },
+      "coins": {
+        "income": 6724,
+        "work": 6822,
+        "builds": 8382,
+        "festivals": 6162,
+        "end": 538
+      },
+      "influence": {
+        "income": 1650,
+        "lobby": 0,
+        "builds": 654,
+        "bids": 1194,
+        "end": 1878
+      },
+      "bidHistogram": [
+        1184,
+        1046,
+        74,
+        0
+      ],
+      "councilWins": 984,
+      "fullBySession": {
+        "6": 28
+      },
+      "fullCityWork": 8,
+      "scoreRange": {
+        "min": 51,
+        "mean": 60.193,
+        "max": 70
+      },
+      "means": {
+        "actions": {
+          "build": 6.922,
+          "work": 5.729,
+          "lobby": 0,
+          "festival": 5.349
+        },
+        "score": {
+          "buildings": 30.005,
+          "streets": 3.646,
+          "festivals": 21.396,
+          "civic": 4.781,
+          "treasury": 0.365
+        },
+        "coins": {
+          "income": 17.51,
+          "work": 17.766,
+          "builds": 21.828,
+          "festivals": 16.047,
+          "end": 1.401
+        },
+        "influence": {
+          "income": 4.297,
+          "lobby": 0,
+          "builds": 1.703,
+          "bids": 3.109,
+          "end": 4.891
+        }
+      }
+    },
+    "civic": {
+      "games": 384,
+      "wins": 122,
+      "ties": 102,
+      "losses": 160,
+      "actions": {
+        "build": 3456,
+        "work": 2490,
+        "lobby": 0,
+        "festival": 966
+      },
+      "score": {
+        "buildings": 12162,
+        "streets": 2184,
+        "festivals": 3796,
+        "civic": 2902,
+        "treasury": 878
+      },
+      "coins": {
+        "income": 6756,
+        "work": 7862,
+        "builds": 10018,
+        "festivals": 2898,
+        "end": 3238
+      },
+      "influence": {
+        "income": 882,
+        "lobby": 0,
+        "builds": 2954,
+        "bids": 2960,
+        "end": 1644
+      },
+      "bidHistogram": [
+        458,
+        968,
+        642,
+        236
+      ],
+      "councilWins": 1690,
+      "fullBySession": {
+        "4": 52,
+        "5": 216,
+        "6": 116
+      },
+      "fullCityWork": 902,
+      "scoreRange": {
+        "min": 46,
+        "mean": 57.089,
+        "max": 65
+      },
+      "means": {
+        "actions": {
+          "build": 9,
+          "work": 6.484,
+          "lobby": 0,
+          "festival": 2.516
+        },
+        "score": {
+          "buildings": 31.672,
+          "streets": 5.688,
+          "festivals": 9.885,
+          "civic": 7.557,
+          "treasury": 2.286
+        },
+        "coins": {
+          "income": 17.594,
+          "work": 20.474,
+          "builds": 26.089,
+          "festivals": 7.547,
+          "end": 8.432
+        },
+        "influence": {
+          "income": 2.297,
+          "lobby": 0,
+          "builds": 7.693,
+          "bids": 7.708,
+          "end": 4.281
+        }
+      }
+    },
+    "efficient-building": {
+      "games": 384,
+      "wins": 140,
+      "ties": 108,
+      "losses": 136,
+      "actions": {
+        "build": 3456,
+        "work": 2320,
+        "lobby": 0,
+        "festival": 1136
+      },
+      "score": {
+        "buildings": 12948,
+        "streets": 2008,
+        "festivals": 4538,
+        "civic": 2554,
+        "treasury": 892
+      },
+      "coins": {
+        "income": 7924,
+        "work": 7254,
+        "builds": 10000,
+        "festivals": 3408,
+        "end": 3306
+      },
+      "influence": {
+        "income": 1432,
+        "lobby": 0,
+        "builds": 932,
+        "bids": 1130,
+        "end": 2002
+      },
+      "bidHistogram": [
+        1318,
+        842,
+        144,
+        0
+      ],
+      "councilWins": 954,
+      "fullBySession": {
+        "4": 30,
+        "5": 270,
+        "6": 84
+      },
+      "fullCityWork": 858,
+      "scoreRange": {
+        "min": 41,
+        "mean": 59.74,
+        "max": 69
+      },
+      "means": {
+        "actions": {
+          "build": 9,
+          "work": 6.042,
+          "lobby": 0,
+          "festival": 2.958
+        },
+        "score": {
+          "buildings": 33.719,
+          "streets": 5.229,
+          "festivals": 11.818,
+          "civic": 6.651,
+          "treasury": 2.323
+        },
+        "coins": {
+          "income": 20.635,
+          "work": 18.891,
+          "builds": 26.042,
+          "festivals": 8.875,
+          "end": 8.609
+        },
+        "influence": {
+          "income": 3.729,
+          "lobby": 0,
+          "builds": 2.427,
+          "bids": 2.943,
+          "end": 5.214
+        }
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "policies": [
+        "economy",
+        "economy"
+      ],
+      "games": 48,
+      "firstPolicyWins": 0,
+      "secondPolicyWins": 0,
+      "ties": 48,
+      "firstPolicyWinRate": 0,
+      "meanFirstPolicyMargin": 0
+    },
+    {
+      "policies": [
+        "economy",
+        "festival"
+      ],
+      "games": 96,
+      "firstPolicyWins": 50,
+      "secondPolicyWins": 46,
+      "ties": 0,
+      "firstPolicyWinRate": 0.521,
+      "meanFirstPolicyMargin": -1.792
+    },
+    {
+      "policies": [
+        "economy",
+        "civic"
+      ],
+      "games": 96,
+      "firstPolicyWins": 46,
+      "secondPolicyWins": 50,
+      "ties": 0,
+      "firstPolicyWinRate": 0.479,
+      "meanFirstPolicyMargin": -0.729
+    },
+    {
+      "policies": [
+        "economy",
+        "efficient-building"
+      ],
+      "games": 96,
+      "firstPolicyWins": 56,
+      "secondPolicyWins": 36,
+      "ties": 4,
+      "firstPolicyWinRate": 0.583,
+      "meanFirstPolicyMargin": -0.562
+    },
+    {
+      "policies": [
+        "festival",
+        "festival"
+      ],
+      "games": 48,
+      "firstPolicyWins": 0,
+      "secondPolicyWins": 0,
+      "ties": 48,
+      "firstPolicyWinRate": 0,
+      "meanFirstPolicyMargin": 0
+    },
+    {
+      "policies": [
+        "festival",
+        "civic"
+      ],
+      "games": 96,
+      "firstPolicyWins": 60,
+      "secondPolicyWins": 30,
+      "ties": 6,
+      "firstPolicyWinRate": 0.625,
+      "meanFirstPolicyMargin": 2.333
+    },
+    {
+      "policies": [
+        "festival",
+        "efficient-building"
+      ],
+      "games": 96,
+      "firstPolicyWins": 38,
+      "secondPolicyWins": 50,
+      "ties": 8,
+      "firstPolicyWinRate": 0.396,
+      "meanFirstPolicyMargin": 0.458
+    },
+    {
+      "policies": [
+        "civic",
+        "civic"
+      ],
+      "games": 48,
+      "firstPolicyWins": 0,
+      "secondPolicyWins": 0,
+      "ties": 48,
+      "firstPolicyWinRate": 0,
+      "meanFirstPolicyMargin": 0
+    },
+    {
+      "policies": [
+        "civic",
+        "efficient-building"
+      ],
+      "games": 96,
+      "firstPolicyWins": 42,
+      "secondPolicyWins": 54,
+      "ties": 0,
+      "firstPolicyWinRate": 0.438,
+      "meanFirstPolicyMargin": -0.542
+    },
+    {
+      "policies": [
+        "efficient-building",
+        "efficient-building"
+      ],
+      "games": 48,
+      "firstPolicyWins": 0,
+      "secondPolicyWins": 0,
+      "ties": 48,
+      "firstPolicyWinRate": 0,
+      "meanFirstPolicyMargin": 0
+    }
+  ],
+  "outliers": [
+    {
+      "type": "outside-provisional-score-range",
+      "observed": {
+        "min": 41,
+        "max": 70
+      },
+      "provisional": {
+        "min": 35,
+        "max": 60
+      }
+    }
+  ],
+  "digest": "88b0d3c82d304555d983fe511ba7840370138a718fd5dc890e44aea089d7dcb0"
+}
