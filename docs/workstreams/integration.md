@@ -574,3 +574,39 @@ before the final launch, proving explicit exit wins without depending on a timin
 race. Both architecture acceptance jobs and the production desktop jobs must pass
 on this correction before the final integration PR is merged. Physical-device
 and signing limitations remain unchanged.
+
+### Merge review: exercise normal Mac Quit before relaunch
+
+At corrected head `52e58122cb389d1051ce2f099400b76e48c1ef1a`, the full browser
+journeys, component suites and production build passed. The combined Intel
+native gate also passed all three processes. The ARM native gate restored the
+expected room, revision, game state and saved host credential, but failed its
+assertion for the random browser-storage marker written immediately before the
+first process ended. The final explicit-exit process was not reached on ARM.
+See [run 44712834050](https://github.com/jonathanjie/sofa-arcade/actions/runs/44712834050),
+job `136208792241`, and artifact `14618181967` (SHA-256
+`9690524edea81425beeafc978b5ce7979188250f0d2a55e5cbdc79306ec7c8e7`).
+
+Inspection of the integrity-verified, lockfile-pinned `@wdio/tauri-service`
+1.5.1 established that its launcher ends the embedded application with SIGTERM,
+then SIGKILL if necessary. This bypasses the app's normal Mac Quit lifecycle.
+The observed missing newest write is consistent with that teardown, but does
+not prove the internal WebKit flush timing or the exclusive cause of the older
+explicit-exit failure. No application code deletes the random marker, and the
+same-origin authenticated room restoration rules out a general lost-profile
+or SQLite-state explanation.
+
+The native test configuration now requests normal Mac Quit through the existing
+PID-specific `NSRunningApplication.terminate()` helper before the driver's
+fallback process cleanup. The helper is compiled before application startup;
+no artificial post-write delay is introduced. The hook validates the native
+executable and waits for the owned parent, sidecar and listener to stop. Hook
+failure fails acceptance. Pinned WDIO CLI 9.33.1 runs the user `onComplete`
+hook before service `onComplete`, after the browser session has ended.
+
+All marker, saved-credential, audio-preference, root-restore and explicit-exit
+assertions remain intact. The seeded stale-native-URL regression and separate
+forced-crash tests also remain. This changes the acceptance lifecycle, not the
+game authority, authentication, native permissions or production shutdown code.
+Both native architectures and the production desktop workflow must pass on the
+new correction before merging the final integration PR.

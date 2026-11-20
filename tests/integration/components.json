@@ -146,6 +146,13 @@
           "mode": "100644",
           "reason": "Open recreated native game windows at the stable bare loopback root so the shared shell saved-session pointer, including explicit Exit, owns resume. A sampled legacy room URL must not override a cleared session.",
           "verification": "The prior exact-head ARM three-process regression exposed the real stale-room restore; the existing regression now deliberately seeds a stale native lastPath before the final launch. Both combined architecture/native workflows must pass on this correction before merge."
+        },
+        {
+          "path": "desktop/wdio.native.mjs",
+          "blob": "96cc0a20064202091e278f78bfa82d3a7dd060ce",
+          "mode": "100644",
+          "reason": "Use the existing PID-specific native Quit helper before the pinned WebDriver service sends SIGTERM. Validate launcher/app/sidecar ownership and require actual parent, child and listener closure; preserve all recent-write, explicit-exit and crash assertions.",
+          "verification": "Pinned WDIO 9.33.1 hook order and service 1.5.1 signal cleanup independently inspected; syntax and failure/control-flow checks pass. Exact-head combined ARM/Intel native and production desktop workflows remain required before merge."
         }
       ],
       "review": {
