@@ -101,25 +101,48 @@ check blocks external requests and saves board/card-size screenshots.
 - **66 existing Node tests pass**, including the five existing audio checks;
   the existing production framework build also passes.
 - **Seven arrangement renders and ten effect cues pass** numeric synthesis
-  validation. No nonfinite samples or clipped samples. The loudest arrangement
-  peaks at **−12.735 dBFS**; the retained full-score preview peaks at
-  **−13.291 dBFS**, and the council preview at **−16.249 dBFS**. Exact source
-  hashes, synthesis assumptions, decoded MP3 measurements, and both maximum
-  and default volume levels are in `audio-evidence/render-report.json`.
+  validation. No nonfinite samples or clipped samples. Before the shared music
+  bus gain, the loudest arrangement peaks at **−12.735 dBFS**. The decoded
+  review MP3s peak at **−16.835 dBFS** (full score), **−19.789 dBFS** (council),
+  and **−20.601 dBFS** (effects). Exact source hashes, synthesis assumptions,
+  and both maximum and default volume levels are in
+  `audio-evidence/render-report.json`.
 - Original generations and optimized contact sheets were visually inspected.
   Buildings were reviewed at **96 px and 144 px**; character states at 144 px;
   law and guild symbols at their small display sizes. Saved contact sheets are
   in `public/assets/odd-laws-society/sources/{buildings,characters,laws,icons-props}/`.
-- The owned GitHub workflow also runs an isolated Chromium review: 1920 px
-  and 1280 px TV fixtures, 390 px and 360 px phone layouts, every decoded image,
-  external-request blocking, keyboard tabs, alpha surfaces, native MP3 playback,
-  and seeking into B. Browser screenshots and its report are uploaded as a CI
-  artifact. This browser gate is pending the first remote run at this checkpoint.
+- The owned GitHub workflow passed its isolated **Chromium 151.0.7922.34**
+  review: 1920 px and 1280 px TV fixtures, 390 px and 360 px phone layouts,
+  **105 displayed image instances decoded**, zero external requests or browser
+  errors, keyboard tabs, dark alpha surfaces, native MP3 playback, and seeking
+  into B. Both music files decode to 77.4 seconds including their release tails.
+- All **nine browser screenshots were visually inspected** with no material
+  layout, clipping, missing-image, label-overlap, or cohesion defects. Evidence
+  is retained in `ui/media/odd-laws-society/evidence/review/`, including
+  `browser-validation.json`, `manifest-validation.json`, and `review-run.json`.
+  The latter pins the source commit, CI merge checkout, artifact digest, and
+  each retained file's hash.
 
 The local environment could not launch Chromium, and its shared browser could
 not reach the loopback review server. Those attempts are not counted as passing
-browser tests. The PR pins the tested remote SHA and workflow result. The
-retained `evidence/review/manifest-validation.json` covers the complete pack.
+browser tests. The successful remote browser run is
+[WS4 media run 44703645565](https://github.com/jonathanjie/sofa-arcade/actions/runs/44703645565),
+testing source **`e4767f14b666a244057ad4c69d39ee3ebc64941b`** through PR merge
+checkout `30bee84d497eb3430716bbd4f64145e0873c68d8`. The existing Game checks
+workflow also passed. Subsequent report/evidence additions do not change the
+runtime pack or review code; the PR pins the final tested head and CI result.
+
+### Saved visual previews
+
+- `evidence/review/board-1920.png`: two 3×3 boroughs, laws, Lala, and six-card market.
+- `evidence/review/board-1280.png`: the narrower desktop review layout.
+- `evidence/review/catalog-144px.png`: all eighteen buildings at card size.
+- `evidence/review/character-states.png` and `alpha-on-dark.png`: all fourteen states.
+- `evidence/review/symbols.png`: all laws, guilds, and props.
+- `evidence/review/phone-390.png` and `phone-360.png`: narrow responsive catalog views.
+- `evidence/review/soundtrack.png`: score form and native playback controls.
+
+Paths above are relative to `ui/media/odd-laws-society/`.
 
 ## Provenance and limitations
 
@@ -134,5 +157,6 @@ approximates the inspected shared timbres; numeric levels and decoded playback
 do not establish actual listening quality on Jon's Mac, TV, or home speakers.
 Physical-phone/TV testing and final shared-engine audition belong to WS6.
 
-The PR remains a draft until the remote browser gate and screenshot inspection
-pass. No merge, deployment, or catalog enablement is part of WS4.
+The essential artwork, audio, manifest, offline preview, and CI gates are
+complete. This media pack is ready for WS6 integration. No merge, deployment,
+or catalog enablement is part of WS4.

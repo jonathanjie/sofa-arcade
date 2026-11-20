@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "e4767f14b666a244057ad4c69d39ee3ebc64941b",
+  "baseCommit": "e34b0015399cb9791b175987adf1fab1b542565a",
+  "checkoutMergeCommit": "30bee84d497eb3430716bbd4f64145e0873c68d8",
+  "workflowRunId": 44703645565,
+  "workflowRunUrl": "https://github.com/jonathanjie/sofa-arcade/actions/runs/44703645565",
+  "artifactId": 14614410844,
+  "artifactSha256": "54bba895718b67e3772c2a8ddf45e5f197b83aa5d02925fe28fbc52eb5802880",
+  "files": [
+    {
+      "file": "alpha-on-dark.png",
+      "bytes": 414768,
+      "sha256": "026e91dd41f15a638ad82d346848622358e7373a913b2f998e2b5c8948036d7d"
+    },
+    {
+      "file": "board-1280.png",
+      "bytes": 520866,
+      "sha256": "3803a6ad428b3c69773a6b5f9bc6e079d9eea695c22ea548dd253c1ff668b8e5"
+    },
+    {
+      "file": "board-1920.png",
+      "bytes": 520002,
+      "sha256": "2b5a9f80c188f933716686f525dfeb4dbe46b6d2d551c7e35d1ab5d916926888"
+    },
+    {
+      "file": "browser-validation.json",
+      "bytes": 2161,
+      "sha256": "42ad16f05c95c7adf2e3a3a93a70f5cb56ab57e9d1514d2663a0efeae1e9de20"
+    },
+    {
+      "file": "catalog-144px.png",
+      "bytes": 588937,
+      "sha256": "9cd84e46bd04ac6ad322c7e0aac844008fe9cd2375eef9e06724355aa1b73296"
+    },
+    {
+      "file": "character-states.png",
+      "bytes": 421147,
+      "sha256": "e02fc3b165b86533ba113505b90e33a9e2003ba6320a95bdd9da84aac88c36e5"
+    },
+    {
+      "file": "manifest-validation.json",
+      "bytes": 17494,
+      "sha256": "a89c2e42a0db599cbc0a1147416d257ba6e79f126138db712476f7733814161b"
+    },
+    {
+      "file": "phone-360.png",
+      "bytes": 115122,
+      "sha256": "0adde9c739b8a9e778e267bfe72ee2164f767379678357160ee164b06e82db26"
+    },
+    {
+      "file": "phone-390.png",
+      "bytes": 145026,
+      "sha256": "bd08a9ec1ae2fa6c8844c43201b294cecd5c317a9030a1661c7d7fdbab23915f"
+    },
+    {
+      "file": "soundtrack.png",
+      "bytes": 134812,
+      "sha256": "d214b8d92de956689c77e6a225ca0daa4f196f1ea600e5eb6c3110d4513b07fc"
+    },
+    {
+      "file": "symbols.png",
+      "bytes": 186986,
+      "sha256": "d7d3839761664c4bb0c1c9336e8716ddc8576778a6942a1ed65a66e6ba718fd9"
+    }
+  ],
+  "visualReview": "All nine screenshots inspected. No material missing-image, clipping, layout, alpha-edge, or cohesion defects found. 96 px board and 144 px market art were verified in Chromium.",
+  "limits": [
+    "Static media fixture; no WS3 UI integration or physical-device test.",
+    "Native audio decoding/playback/seeking and numerical level analysis passed; no human auditory evaluation.",
+    "Only report/evidence additions follow this source snapshot; the PR records final-head CI."
+  ]
+}
