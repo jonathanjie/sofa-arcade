@@ -10,7 +10,9 @@
 
 ## Delivery status
 
-All 49 required final visual assets have been produced and locally decoded/validated. Local baseline tests (81), media manifest/atlas tests (5) and the production build pass. Actual browser gallery and shared-scheduler offline audio rendering are being executed by the owned CI because this executor blocks Chromium's required Unix sockets and isolates loopback servers from the managed browser. The PR remains a draft until those render checks finish and their downloaded evidence has been inspected. Exact tested head and final evidence are recorded in the PR and the CI artifact named for that head; this paragraph is updated at final handoff.
+All 49 required final visual assets have been produced and decoded/validated. The initial owned CI passed all 16 media tests, 81 baseline tests, actual gallery rendering and shared-scheduler audio rendering on `642b77b7172da25932130676359d5d407301ef50` ([run 44777411670](https://github.com/jonathanjie/sofa-arcade/actions/runs/44777411670)). Downloaded screenshots were inspected at TV and phone dimensions; this review found and corrected a stretched secondary cover thumbnail, obscured moonlight labels and contradictory fallback captions. The next exact-head CI run verifies those corrections before the PR is marked ready. The four rendered MP3s and source-hashed audio report are retained under `sources/audio/`.
+
+This executor blocks Chromium's required Unix sockets and isolates loopback servers from the managed browser, so normal browser checks run in the owned GitHub CI. Local baseline tests and the production build pass. Exact final tested head and its complete CI artifact are recorded in the PR, avoiding a self-referential commit hash in this file.
 
 ## Final visual inventory
 
@@ -56,7 +58,7 @@ Each 1024×512 transparent WebP atlas contains eight distinct 256×256 drawings.
 
 `ui/media/gravity-orchard/runtime-files.json` lists the exact **55** runtime files, byte counts, SHA-256 hashes and total bytes. `MANIFEST.runtimeFiles` is the same explicit repo-relative list. There are no production dependencies. Runtime delivery consists of the canonical JSON, 49 image/atlas files, and five browser modules: `manifest.mjs`, `manifest-data.mjs`, `fallbacks.mjs`, `score.mjs`, `events.mjs`.
 
-Initial measured payload: **996,092 bytes** (about 973 KiB). The inventory is authoritative if subsequent code corrections change this total. The cover/backdrops account for 439,132 bytes and the three character atlases for 424,056 bytes. Runtime does not download audio recordings; the score is synthesized by the existing shared scheduler.
+Measured payload: **996,092 bytes** (about 973 KiB). The inventory is authoritative. The cover/backdrops account for 439,132 bytes and the three character atlases for 424,056 bytes. Runtime does not download audio recordings; the score is synthesized by the existing shared scheduler.
 
 Exclude all `ui/media/gravity-orchard/sources/**`, test files, nested package/lock files, `audio-preview.mjs`, `runtime-files.json`, development dependencies and this report from production delivery. `runtime-files.json` is packaging metadata; it need not be browser-served. Do not recursively copy either entire owned subtree. The public asset subtree itself contains only explicitly inventoried final media plus its manifest.
 
@@ -66,7 +68,7 @@ The existing `public/assets/characters.png`, Odd Laws cover and existing Jon/Lyd
 
 Jon's original generated background was corrected to true alpha. Lydia's second lean frame was corrected to preserve the stance direction across the animation. Character source sheets and final 80/128-pixel contacts were visually inspected. Environment originals are retained losslessly; optimized 1280×720 WebP outputs and a 320×180 cover contact were inspected.
 
-The 42 vector assets are original deterministic SVG drawings, reproduced by `sources/symbols/build.mjs`. No third-party art, icon fonts, external fonts, recordings or clip-art libraries were introduced. Scope and provenance notes are in each lane's authoring directory; no new repository-wide license is asserted.
+The 42 vector assets are original deterministic SVG drawings, reproduced by `sources/symbols/build.mjs`. The authoring-only `sources/symbols/inspect.mjs` renders a retained 32/64-pixel fruit and 76-pixel basket contact sheet on bright/dark surfaces, including grayscale recognition. No third-party art, icon fonts, external fonts, recordings or clip-art libraries were introduced. Scope and provenance notes are in each lane's authoring directory; no new repository-wide license is asserted.
 
 ## Original composition and cue contract
 
@@ -112,6 +114,25 @@ npm run build
 Open the review locally with `npm run preview --prefix ui/media/gravity-orchard` (loopback port 4195). The gallery covers collection-card size, 32-pixel fruit, all baskets on bright/dark backgrounds, three terrain arrangements, all 24 poses, normal/reduced motion, actual missing-URL fallback and the live/recorded audio preview. The preview has a strict explicit file allowlist and makes no external requests.
 
 The audio renderer uses an authoring-only OfflineAudioContext facade to exercise the unchanged shared scheduler and synthesis graph. It checks two full loops for each scene, phrase-boundary transitions, all cues, cue/music overlap, pre-compressor and final peaks/RMS, DC offset, clipping, voice bounds, quiet phone defaults, MP3 decoding and source hashes. It does not install a runtime audio engine. Saved MP3s and the report are review-only.
+
+### Measured audio acceptance
+
+The retained `sources/audio/render-report.json` records Chromium 157.0.8103.0, 32 kHz rendered samples, nine matching source hashes and four matching preview-file hashes. These are numerical and browser playback checks, not a claim of human listening.
+
+| Check | Result |
+| --- | --- |
+| Seven arrangements | Two complete loops each; one context and one scheduler interval |
+| Music peaks before shared compressor | −29.44 to −18.67 dBFS |
+| Music output peaks at full volume | −25.15 to −14.38 dBFS |
+| Stage 1 at the actual 45% default | Peak −22.33 dBFS; RMS −32.05 dBFS |
+| Music/effect overlap stress | Raw peak −17.43 dBFS; output peak −13.14 dBFS |
+| Oscillator concurrency | Music ≤5; individual cues ≤6; overlap ≤8 |
+| Clipping and finite samples | All 22 captures: zero clipped or non-finite samples before and after compression |
+| Loop boundary | All seven pre-compressor jumps below 10⁻⁹ at report precision; quiet preceding tails |
+| Scene changes | Stage 2 at bar 9; stage 3 at 17; paused at 25; celebrate at 29; cursor preserved |
+| Phone defaults | Zero scheduled bars/effects/voices and zero output; music unavailable, effects off |
+
+The retained full-loop Stage 1, Stage 3 and transition MP3s each decode to 73.891156 seconds (the 73.846-second score plus the scheduler's 45 ms start offset). The ten-cue reel is 16.353844 seconds. Their combined size is 2,384,096 bytes, excluded from runtime delivery. Browser checks also exercise live shared-scheduler unlocking, MP3 playback and seeking to 40 seconds.
 
 The owned CI installs locked nested tooling, checks reproducible assembly, runs actual audio renders, executes asset/score/baseline tests, captures browser evidence at 1280×720, 1920×1080, 360×800 and 390×844, and retains evidence against the exact head. It must not replace an essential missing-media gate with a success flag.
 

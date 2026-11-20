@@ -20,7 +20,7 @@ const image=(key,className='')=>`<img src="${bitmap.get(key).src}" alt="${ASSETS
 $('#overview').innerHTML=`<div class="overview-grid"><div class="hero-frame">${image('cover')}<div class="card-caption"><span>A COOPERATIVE PICNIC FOR TWO</span><strong>Gravity Orchard</strong></div></div><aside class="overview-aside"><p class="eyebrow">THE NEXT LITTLE ADVENTURE</p><h2>Pass a pear.<br>Make a picnic.</h2><p>Jon and Lydia tend two floating gardens. Lala has big plans for lunch. A warm illustrated world, with every gameplay shape kept clear.</p><div class="thumbnail">${image('cover')}</div><div class="micro">Collection thumbnail · 320 × 180</div></aside></div><div class="chapter-row">${STAGE_IDS.map((stage,index)=>`<div class="chapter">${image(`environment-${stage}`)}<div><strong>0${index+1} · ${labels[stage]}</strong><small>${['Sunlit grass & honey wood','Deep hedges & warm earth','Teal dusk & lantern gold'][index]}</small></div></div>`).join('')}</div>`;
 $('#symbols').innerHTML=`<div class="section-heading"><div><h2>Four fruits. Four familiar homes.</h2><p>Fruit: 32 / 48 / 64 px on desktop, 32 / 40 / 52 px on phones. Baskets: 76 px on desktop, 60 px on phones.</p></div><span class="pill">BRIGHT · DARK · GRAYSCALE</span></div><div class="symbols-grid">${FRUIT_TYPES.map(type=>`<article class="identity-card"><div class="identity-header"><h3>${type}</h3><p>${descriptions[type]}</p></div>${['',' dark'].map(surface=>`<div class="surface${surface}"><div class="fruit-showcase">${[32,48,64].map(size=>image(`fruit-${type}`,`fruit-${size}`)).join('')}</div><p class="size-caption"><span class="desktop-sizes">32 / 48 / 64 px</span><span class="phone-sizes">32 / 40 / 52 px</span></p><div class="basket-states">${['ordinary','accepting','rejecting','full'].map(state=>`<figure>${image(`basket-${type}-${state}`)}<figcaption>${state}</figcaption></figure>`).join('')}</div></div>`).join('')}</article>`).join('')}</div><div class="compare-strip"><p>Colour-independent identity check<br><small>The same four silhouettes, at 32 pixels.</small></p>${FRUIT_TYPES.map(type=>image(`fruit-${type}`,'grayscale')).join('')}</div><div class="cue-grid">${['gate-open','gate-forecast','gate-closed','gust-forecast','gust-active','compost','effect-impact','effect-capture','effect-compost','effect-order'].map(key=>`<div class="cue-card">${image(key)}<p>${ASSETS[key].alt}</p></div>`).join('')}</div>`;
 $('#characters').innerHTML=`<div class="section-heading"><div><h2>Small gestures, full of character</h2><p>Real alternate poses at 112 pixels. The two source poses beneath each player make frame changes reviewable.</p></div><span class="pill">24 POSES · 12 STATES</span></div>${Object.entries(CHARACTER_STATES).map(([actor,states],index)=>`<div class="cast-row ${index===1?'dark':''}"><div class="cast-title"><h3>${actor}</h3><span>${actor==='lala'?'Picnic host & weather maker':'Garden keeper · stable foot pivot'}</span></div><div class="states">${Object.entries(states).map(([state,record])=>`<figure class="state-card"><canvas class="state-canvas" width="224" height="224" data-character="${actor}" data-state="${state}" role="img" aria-label="${actor} ${state} animation"></canvas><figcaption>${state}</figcaption><div class="pose-pair">${record.frames.map(name=>`<canvas width="112" height="112" data-still-actor="${actor}" data-still-state="${state}" data-still-frame="${name}" role="img" aria-label="${actor} ${name} source pose"></canvas>`).join('')}</div><span class="micro">distinct drawn poses</span></figure>`).join('')}</div></div>`).join('')}<div class="motion-comparison"><div class="motion-sample"><canvas width="168" height="168" data-character="jon" data-state="cheer" data-motion-sample="normal" aria-label="Jon cheering with full motion" role="img"></canvas><div><strong>Normal motion</strong><small>Frame changes + a small local bounce.<br>The board never tilts.</small></div></div><div class="motion-sample"><canvas width="168" height="168" data-character="jon" data-state="cheer" data-motion-sample="reduced" aria-label="Jon cheering in reduced motion" role="img"></canvas><div><strong>Reduced motion</strong><small>One clear cheer pose.<br>Feedback remains visible.</small></div></div></div>`;
-$('#fallbacks').innerHTML=`<div class="section-heading"><div><h2>A missed file should not hide the fruit</h2><p>Error-only symbols preserve silhouette and contrast. Missing final assets still fail the production checks.</p></div></div><div class="fallback-grid">${FRUIT_TYPES.map(type=>`<div class="fallback-card">${image(`fruit-${type}`)}<span>${type} · final artwork</span></div>`).join('')}</div><button id="simulate-missing" type="button">Simulate unavailable fruit assets</button><p id="fallback-status" role="status">All final fruit images decoded. No fallback is currently active.</p>`;
+$('#fallbacks').innerHTML=`<div class="section-heading"><div><h2>A missed file should not hide the fruit</h2><p>Error-only symbols preserve silhouette and contrast. Missing final assets still fail the production checks.</p></div></div><div class="fallback-grid">${FRUIT_TYPES.map(type=>`<div class="fallback-card">${image(`fruit-${type}`)}<span data-fallback-caption="fruit-${type}"></span></div>`).join('')}</div><button id="simulate-missing" type="button">Simulate unavailable fruit assets</button><p id="fallback-status" role="status">Checking final fruit image availability…</p>`;
 const audioPreview=mountAudioPreview($('#audio-preview'));
 let activeTab='overview',stage=STAGE_IDS.includes(query.get('stage'))?query.get('stage'):STAGE_IDS[0];
 let reduced=query.get('motion')==='reduce'||matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -50,16 +50,52 @@ function terrainCatalog(){
   $('#terrain-catalog').innerHTML=keys.map(key=>`<div class="material">${image(key)}<span>${key.replace(`-${stage}`,'')}</span></div>`).join('');
 }
 $('#stage').addEventListener('change',()=>{stage=$('#stage').value;terrainCatalog();draw(performance.now());});terrainCatalog();
-let simulated=false;
-$('#simulate-missing').addEventListener('click',()=>{
-  simulated=!simulated;
+let simulated=false, fallbackRevision=0;
+const unavailableFruit=FRUIT_TYPES.filter(type=>decodeFailures.some(failure=>failure.key===`fruit-${type}`));
+const unavailableKeys=new Set(unavailableFruit.map(type=>`fruit-${type}`));
+function fallbackCaption(img,simulation=false){
+  const key=img.dataset.asset, type=key.slice('fruit-'.length), unavailable=unavailableKeys.has(key);
+  const description=simulation?(unavailable?'native fallback (simulated failure; file also unavailable)':'native fallback (simulated failure)'):
+    unavailable?'native fallback (file unavailable)':'final artwork';
+  $(`[data-fallback-caption="${key}"]`).textContent=`${type} · ${description}`;
+  img.alt=simulation||unavailable?`${type} native silhouette fallback`:ASSETS[key].alt;
+}
+function updateFallbackStatus(){
+  if(simulated){
+    const count=[...$('#fallbacks').querySelectorAll('img')].filter(img=>img.dataset.fallback==='true').length;
+    const actual=unavailableFruit.length?` ${unavailableFruit.length} actual fruit file${unavailableFruit.length===1?' is':'s are'} also unavailable (${unavailableFruit.join(', ')}); ending simulation retains ${unavailableFruit.length===1?'its':'their'} fallback.`:'';
+    $('#fallback-status').textContent=`Simulation active: ${count} of four fruit images use native fallbacks.${actual}`;
+  } else if(unavailableFruit.length){
+    const count=unavailableFruit.length;
+    $('#fallback-status').textContent=`${count} final fruit image${count===1?'':'s'} unavailable (${unavailableFruit.join(', ')}). ${count} native fallback${count===1?'':'s'} active; ${FRUIT_TYPES.length-count} final fruit images decoded.`;
+  } else $('#fallback-status').textContent='All final fruit images decoded. No fallback is currently active.';
+  $('#simulate-missing').textContent=simulated?'End simulated failure':'Simulate unavailable fruit assets';
+}
+function restoreDetectedFruit(){
   for(const img of $('#fallbacks').querySelectorAll('img')){
-    // The normal error handler is exercised through a deliberately invalid local data image.
-    img.onerror=()=>{img.onerror=null;img.src=fallbackDataUrl(img.dataset.asset);img.dataset.fallback='true';};
-    img.dataset.fallback='false';img.src=simulated?'data:image/png;base64,broken':ASSETS[img.dataset.asset].src;
+    const unavailable=unavailableKeys.has(img.dataset.asset);
+    img.onerror=null;img.dataset.fallback=String(unavailable);img.dataset.fallbackReason=unavailable?'unavailable':'';
+    // Restore the sources actually decoded on entry, including genuine missing-file fallbacks.
+    img.src=bitmap.get(img.dataset.asset).src;fallbackCaption(img);
   }
-  $('#fallback-status').textContent=simulated?'Four final images deliberately failed decoding; four distinct native symbols take their place.':'Final artwork restored and decoded.';
-  $('#simulate-missing').textContent=simulated?'Restore final artwork':'Simulate unavailable fruit assets';
+  updateFallbackStatus();
+}
+restoreDetectedFruit();
+$('#simulate-missing').addEventListener('click',()=>{
+  simulated=!simulated;const revision=++fallbackRevision;
+  if(!simulated){restoreDetectedFruit();return;}
+  for(const img of $('#fallbacks').querySelectorAll('img')){
+    // Deliberately invalid image decoding exercises the error handler without changing real availability.
+    img.onerror=()=>{
+      if(!simulated||revision!==fallbackRevision)return;
+      img.onerror=null;img.src=fallbackDataUrl(img.dataset.asset);img.dataset.fallback='true';img.dataset.fallbackReason='simulated';
+      fallbackCaption(img,true);updateFallbackStatus();
+    };
+    img.dataset.fallback='false';img.dataset.fallbackReason='pending-simulation';
+    $(`[data-fallback-caption="${img.dataset.asset}"]`).textContent=`${img.dataset.asset.slice('fruit-'.length)} · simulating file failure`;
+    img.src='data:image/png;base64,broken';
+  }
+  updateFallbackStatus();
 });
 function paintCharacter(canvas,actor,state,time,forceReduced=false,explicitFrame=null){
   const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -89,13 +125,13 @@ function drawBoard(time){
   rr(1100,41,116,38,19,'#e2e8cf');text('01:30',1158,68,23,'#34543e',600,'center');
   for(const [x,key] of [[60,'jon'],[710,'lydia']]){
     stamp(`tray-${stage}`,x,177,510,394);rr(x+8,185,494,374,24,null,stage==='moonlight-picnic'?'#577a68':'#798d58');
-    text(key==='jon'?'JON’S GARDEN':'LYDIA’S GARDEN',x+145,156,14,'#345641',700);
+    text(key==='jon'?'JON’S GARDEN':'LYDIA’S GARDEN',x+145,156,14,stage==='moonlight-picnic'?'#fff4db':'#345641',700);
   }
   stamp(`bridge-${stage}`,560,324,160,102);
   ctx.setLineDash([6,7]);ctx.strokeStyle='#fff5d9';ctx.lineWidth=2;ctx.strokeRect(570,332,140,84);ctx.setLineDash([]);
   cast('jon','lean',74,82,102,time);cast('lydia','brace',1072,82,102,time);
   const basketPositions=[['apple',98,459],['plum',436,459],['pear',746,459],['starfruit',1084,459]];
-  for(const [type,x,y] of basketPositions){stamp(`basket-${type}-${type==='pear'?'accepting':'ordinary'}`,x,y,82);text(type.toUpperCase(),x+41,y+102,13,'#39513f',700,'center');}
+  for(const [type,x,y] of basketPositions){stamp(`basket-${type}-${type==='pear'?'accepting':'ordinary'}`,x,y,82);text(type.toUpperCase(),x+41,y+88,13,'#39513f',700,'center');}
   stamp(`bumper-${stage}`,246,275,68);stamp(`bumper-${stage}`,1024,270,68);
   if(stage!=='morning-delivery'){
     stamp(`hedge-${stage}`,297,354,182,54);stamp(`hedge-${stage}`,814,306,182,54);
@@ -107,7 +143,7 @@ function drawBoard(time){
     stamp(`fruit-${type}`,x+dx,y+dy,36); // Explicit 36-world-unit sprite, not a collision radius.
   });
   cast('lala',stage==='moonlight-picnic'?'forecast':'pleased',582,532,116,time);
-  if(stage==='moonlight-picnic'){rr(853,112,268,49,16,'#fdf1d8e8');stamp('gust-forecast',870,114,66,42);text('GUST IN 3 SECONDS',954,143,13,'#5b6650',700);}
+  if(stage==='moonlight-picnic'){rr(506,112,268,49,16,'#fdf1d8e8');stamp('gust-forecast',523,114,66,42);text('GUST IN 3 SECONDS',607,143,13,'#5b6650',700);}
   rr(339,647,602,43,20,'#fff8e8e8');text('FRUIT AT 36 px  ·  BASKETS AT 82 px  ·  ARTWORK REVIEW',640,674,11,'#65725a',600,'center');
 }
 function draw(time){

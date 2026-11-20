@@ -9,7 +9,7 @@ on:
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
       - '.github/workflows/go5-media.yml'
   push:
-    branches: [main, feature/gravity-orchard-media]
+    branches: [main]
     paths:
       - 'public/assets/gravity-orchard/**'
       - 'ui/media/gravity-orchard/**'

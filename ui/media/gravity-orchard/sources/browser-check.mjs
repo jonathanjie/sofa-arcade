@@ -11,7 +11,7 @@ await mkdir(directory,{recursive:true});
 const assetReport=await validateAssets();
 await writeFile(`${directory}/asset-validation.json`,JSON.stringify(assetReport,null,2)+'\n');
 const server=await startPreview();let browser;
-const failures=[],externalRequests=[],shots=[],audioPlayback=[];
+const failures=[],externalRequests=[],shots=[],audioPlayback=[],thumbnailChecks=[];
 try{
   browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
   const context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1,reducedMotion:'no-preference'});
@@ -36,6 +36,15 @@ try{
     await page.setViewportSize({width,height});await page.locator(`[data-tab="${tab}"]`).click();
     await page.evaluate(()=>window.scrollTo(0,0));
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${name} horizontal overflow`);
+    if(tab==='overview'){
+      // Width alone misses a retained HTML height that stretches a 320px image to 720px tall.
+      const thumbnail=await page.locator('.thumbnail img').evaluate(image=>{
+        const {width,height}=image.getBoundingClientRect();return {width,height,ratio:width/height};
+      });
+      assert.ok(thumbnail.width>0&&thumbnail.height>0,`${name} visible cover thumbnail`);
+      assert.ok(Math.abs(thumbnail.ratio-16/9)<.01,`${name} thumbnail must preserve 16:9, got ${thumbnail.width} x ${thumbnail.height}`);
+      thumbnailChecks.push({name,viewportWidth:width,...thumbnail});
+    }
     await page.screenshot({path:`${directory}/${name}.png`,fullPage});shots.push({name:`${name}.png`,tab,width,height,fullPage});
   }
   await capture('collection-1280','overview',1280,720,false);
@@ -86,10 +95,15 @@ try{
     if(i<2){await audio.evaluate(node=>{node.currentTime=40;});await page.waitForFunction(index=>{const a=document.querySelectorAll('audio')[index];return !a.seeking&&a.currentTime>=40&&a.readyState>=2;},i);}
   }
   await capture('fallbacks-final','fallbacks',1280,720,false);
+  assert.equal(await page.locator('#fallback-status').textContent(),'All final fruit images decoded. No fallback is currently active.');
   await page.locator('#simulate-missing').click();await page.waitForFunction(()=>[...document.querySelectorAll('#fallbacks img')].every(img=>img.dataset.fallback==='true'&&img.complete&&img.naturalWidth>0));
   const fallbackSources=await page.locator('#fallbacks img').evaluateAll(nodes=>nodes.map(node=>node.src));assert.equal(new Set(fallbackSources).size,4);
+  assert.match(await page.locator('#fallback-status').textContent(),/Simulation active: 4 of four fruit images use native fallbacks/);
+  assert.ok((await page.locator('[data-fallback-caption]').allTextContents()).every(text=>text.includes('simulated failure')));
   await page.screenshot({path:`${directory}/fallbacks-unavailable.png`,fullPage:false});
   await page.locator('#simulate-missing').click();await page.waitForFunction(()=>[...document.querySelectorAll('#fallbacks img')].every(img=>img.dataset.fallback==='false'&&img.complete&&img.naturalWidth===128));
+  assert.equal(await page.locator('#fallback-status').textContent(),'All final fruit images decoded. No fallback is currently active.');
+  assert.ok((await page.locator('[data-fallback-caption]').allTextContents()).every(text=>text.endsWith('final artwork')));
   await page.locator('[data-tab="overview"]').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('[data-tab="symbols"]').getAttribute('aria-selected'),'true');
   for(const stage of ['morning-delivery','switchback-grove','moonlight-picnic'])for(const [width,height] of [[1280,720],[1920,1080]]){
     await page.setViewportSize({width,height});await page.goto(`${server.origin}/?tab=gardens&capture=1&motion=reduce&stage=${stage}`);await ready();
@@ -101,7 +115,22 @@ try{
   assert.deepEqual(await blocked.evaluate(()=>window.goMediaReview.decodeFailures.map(x=>x.key)),['fruit-apple']);
   assert.equal(await blocked.getAttribute('html','data-assets-valid'),'false','Missing final artwork is reported as failure, never completeness');
   assert.ok((await blocked.locator('#fallbacks [data-asset="fruit-apple"]').getAttribute('src')).startsWith('data:image/svg+xml'));
-  await blocked.screenshot({path:`${directory}/fallback-real-missing-url.png`,fullPage:false});await blocked.close();
+  const actualMissingStatus='1 final fruit image unavailable (apple). 1 native fallback active; 3 final fruit images decoded.';
+  assert.equal(await blocked.locator('[data-fallback-caption="fruit-apple"]').textContent(),'apple · native fallback (file unavailable)');
+  assert.equal(await blocked.locator('#fallback-status').textContent(),actualMissingStatus);
+  await blocked.screenshot({path:`${directory}/fallback-real-missing-url.png`,fullPage:false});
+  await blocked.locator('#simulate-missing').click();
+  await blocked.waitForFunction(()=>[...document.querySelectorAll('#fallbacks img')].every(img=>img.dataset.fallback==='true'&&img.complete&&img.naturalWidth>0));
+  assert.match(await blocked.locator('[data-fallback-caption="fruit-apple"]').textContent(),/simulated failure; file also unavailable/);
+  assert.match(await blocked.locator('#fallback-status').textContent(),/1 actual fruit file is also unavailable \(apple\)/);
+  await blocked.locator('#simulate-missing').click();
+  await blocked.waitForFunction(()=>[...document.querySelectorAll('#fallbacks img')].every(img=>img.complete&&img.naturalWidth>0&&img.dataset.fallback===(img.dataset.asset==='fruit-apple'?'true':'false')));
+  assert.equal(await blocked.locator('[data-fallback-caption="fruit-apple"]').textContent(),'apple · native fallback (file unavailable)');
+  assert.equal(await blocked.locator('#fallback-status').textContent(),actualMissingStatus,'Ending simulation must retain the real missing-file notice');
+  assert.equal(await blocked.locator('#fallbacks [data-asset="fruit-apple"]').getAttribute('data-fallback-reason'),'unavailable');
+  assert.equal(await blocked.getAttribute('html','data-assets-valid'),'false','Simulation cannot erase real asset failures');
+  for(const type of ['plum','pear','starfruit'])assert.equal(await blocked.locator(`[data-fallback-caption="fruit-${type}"]`).textContent(),`${type} · final artwork`);
+  await blocked.close();
   const missingAtlas=await context.newPage();await missingAtlas.route('**/assets/gravity-orchard/characters/jon-atlas.webp',route=>route.abort());
   await missingAtlas.goto(server.origin+'/?tab=characters');await missingAtlas.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   assert.deepEqual(await missingAtlas.evaluate(()=>window.goMediaReview.decodeFailures.map(x=>x.key)),['character-jon']);
@@ -111,7 +140,7 @@ try{
   await missingAtlas.screenshot({path:`${directory}/fallback-real-missing-atlas.png`,fullPage:true});await missingAtlas.close();
   assert.deepEqual(externalRequests,[]);assert.deepEqual(failures,[]);
   const report={schemaVersion:1,status:'passed',testedSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),browser:await browser.version(),assetCount:assetReport.assetCount,
-    externalRequests,consoleErrors:failures,screenshots:shots,audioDecodeAndPlayback:audioPlayback,realMissingUrlFallback:true,realMissingAtlasFallback:true,liveSharedSchedulerUnlocked:true,reducedMotionFreezesAllSamples:true,
+    externalRequests,consoleErrors:failures,screenshots:shots,thumbnailChecks,audioDecodeAndPlayback:audioPlayback,realMissingUrlFallback:true,realMissingUrlCaptionsAndRestore:true,realMissingAtlasFallback:true,liveSharedSchedulerUnlocked:true,reducedMotionFreezesAllSamples:true,
     notes:['Browser rendering, decode and shared-scheduler playback only; no human speaker audition.','Material review fixture, not the integrated game or physical phones/TV.']};
   await writeFile(`${directory}/browser-validation.json`,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));await context.close();
 }finally{await browser?.close();await server.close();}
