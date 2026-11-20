@@ -2,7 +2,7 @@
 
 Agreed dispatch baseline, 20 November 2026. These are **implementation contracts to build**, not a claim that the interfaces already exist. The authoritative game rules are [Odd Laws Society v0.2](games/odd-laws-society.md). The six self-contained assignments and ownership rules are in [DISPATCH_LOCAL.md](DISPATCH_LOCAL.md).
 
-Jon selected **Tauri on his Apple Silicon Mac, with two ordinary phone browsers on the same LAN**. Retain the existing playable Sofa Kingdoms and browser/LAN workflow. No hosted WebSocket service, Pages migration, replacement Site, or cloud deployment is part of these assignments. The existing LAN HTTP-action/SSE-update model already supplies immediate push.
+Jon selected **Tauri on his Mac, with two ordinary phone browsers on the same LAN**. Apple Silicon is the initial build target, an assumption rather than a verified fact about Jon's device; WS5 verifies its actual tested architecture and reports Intel support separately. Retain the existing playable Sofa Kingdoms and browser/LAN workflow. No hosted WebSocket service, Pages migration, replacement Site, or cloud deployment is part of these assignments. The existing LAN HTTP-action/SSE-update model already supplies immediate push.
 
 ## Coordination and ownership
 

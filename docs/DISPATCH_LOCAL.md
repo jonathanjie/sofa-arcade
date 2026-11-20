@@ -33,7 +33,7 @@ You are implementing WS1, the Odd Laws Society rules engine, for Jon and Lydia's
 Repository: https://github.com/jonathanjie/sofa-arcade
 Create an isolated clone/worktree and branch feature/odd-laws-engine from the latest main. Record the base commit; inspect existing work before editing. This is an implementation assignment: finish the owned scope, test it, fix defects, and open a GitHub PR.
 
-Context: Sofa Arcade is one collection/repository. Sofa Kingdoms is already playable. Jon has chosen a local-first Tauri app on an Apple Silicon Mac, with the TV displaying the board and two ordinary phone browsers as controllers. We are now building Odd Laws Society at roughly Citadels / 7 Wonders decision weight. No cloud migration or deployment is part of this task.
+Context: Sofa Arcade is one collection/repository. Sofa Kingdoms is already playable. Jon has chosen a local-first Tauri app on a Mac, with the TV displaying the board and two ordinary phone browsers as controllers. We are now building Odd Laws Society at roughly Citadels / 7 Wonders decision weight. No cloud migration or deployment is part of this task.
 
 Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, and docs/HANDOFF.md. The full v0.2 city-building specification supersedes the old movement game. Preserve its exact starting rules; numerical balance is unproven.
 
@@ -87,7 +87,7 @@ You are implementing WS3, the complete TV and phone experience for Odd Laws Soci
 Repository: https://github.com/jonathanjie/sofa-arcade
 Start an isolated clone/worktree on feature/odd-laws-ui from latest main and record the SHA. Build the working interface, verify it in a browser, fix defects, and open a GitHub PR.
 
-Context: Jon and Lydia play from their living-room sofa. A local-first Tauri app on an Apple Silicon Mac displays/casts the shared board; their two phones are browser controllers. Odd Laws is a deeper two-player city builder: 3×3 boroughs, six sessions, a shared six-stack market, four actions, and two shared laws decided through private influence bids. Instructions belong in an optional tutorial/Help; ordinary TV and phone screens should maximize board and control space. Characters should feel alive and audio should remain composed and restrained.
+Context: Jon and Lydia play from their living-room sofa. A local-first Tauri app on a Mac displays/casts the shared board; their two phones are browser controllers. Odd Laws is a deeper two-player city builder: 3×3 boroughs, six sessions, a shared six-stack market, four actions, and two shared laws decided through private influence bids. Instructions belong in an optional tutorial/Help; ordinary TV and phone screens should maximize board and control space. Characters should feel alive and audio should remain composed and restrained.
 
 Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, and relevant existing ui/ files. Implement the new city game, not the old movement prototype.
 
@@ -147,7 +147,7 @@ You are implementing WS5, the local Tauri Mac application for Sofa Arcade.
 Repository: https://github.com/jonathanjie/sofa-arcade
 Use a separate clone/worktree and feature/tauri-local from latest main; record the base SHA. Deliver a functioning packaged application, meaningful native tests, and a GitHub PR.
 
-Context: Jon selected Tauri and local play. He uses an Apple Silicon Mac. The Mac app displays/casts the board, and two ordinary phone browsers join over the same LAN. After installation, gameplay must not require internet, a separately installed Node runtime, Terminal, or a phone app. The existing Sofa Kingdoms is playable now, so package and test it immediately; do not wait for Odd Laws. Later integration includes that game through the same shared runtime.
+Context: Jon selected Tauri and local play. Target Apple Silicon first as a build assumption, verify the actual target architecture, and report Intel support separately; Jon's Mac architecture has not been confirmed. The Mac app displays/casts the board, and two ordinary phone browsers join over the same LAN. After installation, gameplay must not require internet, a separately installed Node runtime, Terminal, or a phone app. The existing Sofa Kingdoms is playable now, so package and test it immediately; do not wait for Odd Laws. Later integration includes that game through the same shared runtime.
 
 Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/DEPLOYMENT_OPTIONS.md, docs/LAN.md, server/lan.mjs, and scripts/lan-server.mjs.
 
@@ -176,7 +176,7 @@ You are WS6, the final integrator and acceptance-test owner for Sofa Arcade's lo
 Repository: https://github.com/jonathanjie/sofa-arcade
 Use a dedicated clone/worktree and feature/local-integration from current main. Record the base SHA. Your goal is a complete tested combination of the five component workstreams, delivered as a final GitHub PR.
 
-Context: Jon and Lydia want one local-first collection on an Apple Silicon Mac/Tauri host, a TV board, and two browser phones on the LAN. Sofa Kingdoms already works; Odd Laws Society is the new six-session strategy city builder. Five parallel sessions deliver WS1 engine, WS2 private multiplayer, WS3 TV/phone UI, WS4 art/music, and WS5 Tauri packaging. This task integrates those components and proves the actual player journey. Do not build another cloud service or publish Sites/Pages.
+Context: Jon and Lydia want one local-first collection on a Mac/Tauri host, a TV board, and two browser phones on the LAN. Sofa Kingdoms already works; Odd Laws Society is the new six-session strategy city builder. Five parallel sessions deliver WS1 engine, WS2 private multiplayer, WS3 TV/phone UI, WS4 art/music, and WS5 Tauri packaging. This task integrates those components and proves the actual player journey. Do not build another cloud service or publish Sites/Pages.
 
 Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, docs/DEPLOYMENT_OPTIONS.md, and every available docs/workstreams report. Discover component PRs by their WS1–WS5 titles/branches; inspect their changes, tests, and immutable head SHAs rather than trusting summaries.
 
