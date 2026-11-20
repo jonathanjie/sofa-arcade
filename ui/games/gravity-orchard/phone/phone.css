@@ -92,6 +92,9 @@
 .go3-phone .go3-brake[data-held='true'] { background: #293f2d; box-shadow: inset 0 3px 0 #172b1e; border-color: #243d28; }
 .go3-phone .go3-brake[aria-disabled='true'] { color: #53634d; background: #dce2cc; border-color: #aebc9b; box-shadow: 0 4px 0 #c1cbb3; }
 .go3-phone .go3-brake[aria-disabled='true'] > span { color: #53634d; }
+/* Live play keeps controls only. Preserve spacing and accessible descriptions. */
+.go3-phone[data-phase='playing'] .go3-steering-caption,
+.go3-phone[data-phase='playing'] .go3-brake > span { opacity: 0; }
 .go3-phone .go3-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 17px; }
 .go3-phone .go3-tools .go3-secondary { min-height: 50px; }
 .go3-phone .go3-ready-panel { padding-top: 20px; }
