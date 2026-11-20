@@ -1,0 +1,60 @@
+name: WS4 media
+
+on:
+  pull_request:
+    paths:
+      - 'public/assets/odd-laws-society/**'
+      - 'ui/media/odd-laws-society/**'
+      - 'ui/audio.js'
+      - 'ui/score.mjs'
+      - 'docs/games/odd-laws-society.md'
+      - 'docs/LOCAL_IMPLEMENTATION_CONTRACT.md'
+      - '.github/workflows/ws4-media.yml'
+  push:
+    branches: [main, feature/odd-laws-media]
+    paths:
+      - 'public/assets/odd-laws-society/**'
+      - 'ui/media/odd-laws-society/**'
+      - '.github/workflows/ws4-media.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  artwork-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/media/odd-laws-society/package-lock.json
+      - name: Install isolated preview and image validation tools
+        run: npm ci --prefix ui/media/odd-laws-society --no-audit --no-fund
+      - name: Check manifest assembly is reproducible
+        run: |
+          node ui/media/odd-laws-society/assemble-manifest.mjs
+          git diff --exit-code -- public/assets/odd-laws-society/manifest.json ui/media/odd-laws-society/runtime-files.json
+      - name: Validate image catalog, decoded dimensions, alpha, states and score
+        run: npm test --prefix ui/media/odd-laws-society
+      - name: Check all arrangements and effect render levels
+        run: node ui/media/odd-laws-society/audio-preview.mjs --verify
+      - name: Preserve existing game and audio contracts
+        run: npm test
+      - name: Install Chromium for offline media review
+        run: node ui/media/odd-laws-society/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Render TV and phone-size contact sheets and decode audio
+        run: node ui/media/odd-laws-society/browser-check.mjs
+      - name: Upload media validation and screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odd-laws-media-evidence-${{ github.sha }}
+          path: |
+            ui/media/odd-laws-society/evidence/latest/
+            ui/media/odd-laws-society/audio-evidence/render-report.json
+          if-no-files-found: error
+          retention-days: 14

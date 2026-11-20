@@ -1,0 +1,524 @@
+[
+  {
+    "id": "corner-shop",
+    "alt": "Amber-awning corner shop with cream walls, a sage roof, and fruit baskets.",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society, a cozy civic city-building game. Use the two provided images only as style reference: their warm watercolor and colored-pencil texture, soft cream paper feel, fine dark umber contours, gentle amber light; do not include their characters or background. SUBJECT: Corner Shop, a small cozy two-storey cream-plaster shop with sage-green pitched roof, amber-and-cream striped awning, two simple fruit baskets, warm window and stout wooden door. Tiny whimsical architectural details, convincingly miniature, single unified building and small cobbled ground footprint only. CAMERA: three-quarter view with front and right wall visible, elevated about 20 degrees, no perspective exaggeration. COMPOSITION: square 1024 x 1024, building centered and about 84 percent of canvas, complete roof and cobbled footprint with generous transparent padding. Bold silhouette readable when reduced to 96 pixels. No characters. No text, lettering, logos, numbers, prices, signs with writing, borders, card frame, scenery, or paper background. Render real alpha transparency. Original art only, no resemblance to commercial board-game artwork.",
+    "sourceSha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e",
+    "shippedSha256": "f48fc05e69d77524beeeb4c88d8b04934353ca912c4def1975ed2105c7a91790",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 70702,
+    "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "tea-stall",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference, and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Tea Stall: a low open-sided timber tea stall with an amber-and-cream canvas awning, a large jade ceramic teapot on the counter, two tea cups, one large curled steam wisp and a tiny herb planter. One storey, intimate and squat, clearly different from the two-storey Corner Shop. Single unified miniature building with small cobbled footprint only. CAMERA: front and right wall visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject, about 84 percent canvas occupancy with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Amber-awning tea stall with a jade teapot and curling steam.",
+    "sourceSha256": "10bca32d4d07ff211789df26042325f98b1d3a084cfc1bc9b5d48e4529b7db54",
+    "shippedSha256": "ab437cc56fa84b1481c1f350543e14f4c0202568e1e6bd251ba51c353e149e8d",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 59520,
+    "sourceFile": "exec-7c6eac92-a3ae-4395-bbc0-3ad0904bfa07.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "button-workshop",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference, and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Button Workshop: a squat coral-roofed cream-and-timber workshop with a very large wooden button emblem with four holes above its door, a simple external sewing wheel and thread spool, warm window. Clearly readable button and gear-like sewing wheel, no chimney smoke. Single unified miniature building with small cobbled footprint only. CAMERA: front and right wall visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject, about 84 percent canvas occupancy with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Coral-roofed button workshop with a large button and sewing wheel.",
+    "sourceSha256": "bbcf062e45e5cc6b99178a648f2d4fd969303e1771cd75fb35ce2b9affa0a47c",
+    "shippedSha256": "e47cac54fe77a66bd8cb8d819f4166bc28c2fa7fb9101ab95d270e610bf48011",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 66834,
+    "sourceFile": "exec-4cafa9b8-0727-427b-ac24-da2aeabd35dc.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "petition-kiosk",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference, and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Petition Kiosk: a small freestanding teal-roofed civic kiosk on cream stone steps, broad counter with a blank parchment scroll, a quill and closed teal seal case. Neat upright cream pillars and teal pinboard with blank papers only. A civic desk pavilion, not a shop. Single unified miniature building with small cobbled footprint only. CAMERA: front and right wall visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject, about 84 percent canvas occupancy with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Teal civic petition kiosk with a quill, scroll, and blank notice board.",
+    "sourceSha256": "30cede8d0285b8579d67d7f598cb9bc7bbc163ed43603551f6bc3339293da582",
+    "shippedSha256": "5e93efec678a20995c271bc9dbc4afc57164a5f153edd2b0f4877d6d0bb9694e",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 58040,
+    "sourceFile": "exec-c1e09062-e03d-4476-8182-88ca0500f935.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "pocket-theatre",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Pocket Theatre: a charming miniature plum-roofed theatre with a broad little open proscenium, tied-back plum velvet curtains, amber trim, a simple tiny stage and a mask-shaped decorative crest without lettering. The theatre facade is wider than it is tall, one compact tier, no shopfront or merchandise. Single unified miniature building or plot with a small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Plum-curtained pocket theatre with a small stage and mask crest.",
+    "sourceSha256": "0b2cb9934bdb0cc3cce484d73c15b4d2cca0bc1ae82cfb8a3d2558f39f3c20cf",
+    "shippedSha256": "52254893f8e6de0ca0e45660d97e97043a4aae0613fe37b7accdd852e65ea93a",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 58408,
+    "sourceFile": "exec-0878c47e-de65-47aa-8987-a9a26e19c078.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "community-garden",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Community Garden: an open-air compact garden plot with three large raised timber beds, broad cream and plum flowers, leafy green vegetables, a low curved picket gate and a sage trellis arch; one cream watering can. No house or roof. Strong low, broad garden silhouette. Single unified miniature building or plot with a small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Community garden with raised beds, flowering trellis, and a watering can.",
+    "sourceSha256": "0cfd34fbc1906386dff06d9c7780dc09173042ac3afd2ebeb8aa23e2dd36ed5f",
+    "shippedSha256": "ed83cd5971dd6bde8a28f35604bc42f1ce18c42271b56bf1c20a49fb19d2213b",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 81818,
+    "sourceFile": "exec-cb1d717c-5729-4fde-9a32-7becfbd653e6.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "night-market",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Night Market: a group of three connected small amber-roofed vendor stalls on ONE compact cobbled footprint, a high central lantern post, warm amber paper lanterns suspended along a simple curved string, sage-and-cream awnings, jars and baskets. NO dark sky, no background; warm lanterns on transparent cutout. Different silhouette from a single shop. Single unified miniature building or plot with a small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Three lantern-lit market stalls with amber roofs and sage awnings.",
+    "sourceSha256": "2a591980b1a1aa21eae9b764fe633a799cf5f16773d59cf7ed0837409bb3f5cc",
+    "shippedSha256": "323ec33291c726b592ae32a7a141430c7ff2c18eda16673002392d561a1d68ae",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 81262,
+    "sourceFile": "exec-6449a3e2-3b3f-49da-a0e6-bd6eabdf45b4.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "clockwork-studio",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Clockwork Studio: coral-roofed low workshop with a prominent large pair of interlocking brass clockwork gears attached to the right wall, a tall narrow bay window and a chimney capped by a tiny cog weather vane. Warm lit window and sturdy double wooden doors. Mechanical workshop, no clock numbers. Single unified miniature building or plot with a small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Clockwork studio with coral roof and interlocking brass gears.",
+    "sourceSha256": "61ce38ae6fef14a109a8230d0614c31f0ac829728101af470c745937694649e5",
+    "shippedSha256": "416811564c6f9bf05c2eb21f2e0a1779c0166a19c6c439b46869cc3be73149c8",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 71914,
+    "sourceFile": "exec-869d1175-ba7e-4eaf-a0d9-07980b12cc90.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "public-library",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. The supplied Corner Shop is the exact visual-style/camera reference and sofa-room image is supporting watercolor texture reference. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Public Library: dignified modest cream-stone public library with a teal mansard roof, broad arched windows showing simple colorful book spines, large open-book architectural crest above two doors, two warm amber lamps at the entrance. Elegant civic reading room, no lettering on books or signs. Single unified miniature building or plot with a small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas with clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No characters. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Teal-roofed library with an open-book crest and two entrance lamps.",
+    "sourceSha256": "112dcb13378ad17f93c42bf3f72a4b14cfc6ec8847a2c524236eeac2d0882afd",
+    "shippedSha256": "acb7a89b9051f479e5cc1c6e4f7bd5045bbdc17d7ba736b3f2dd7e32ed40d8f1",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 66412,
+    "sourceFile": "exec-a8786ad8-9733-491b-84c5-0a09018c952d.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      }
+    ]
+  },
+  {
+    "id": "debate-hall",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Debate Hall: a compact cream civic hall with a steep teal roof and a broad arched doorway; two facing wooden lecterns on its little open entrance porch, teal blank banners and one brass speaking-trumpet-shaped decorative finial. Symmetrical debating porch with a clearly visible right wall, no shop counters. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Teal civic debate hall with two lecterns and a tiny cat statue.",
+    "sourceSha256": "f8926b1aa5a1a6fbdc11322d4126f57908c06c533dfd670b22aa35bd8cbb563c",
+    "shippedSha256": "e7a4e8657eb12fb1ec3e14cd3cedb917633eed72e200cb9095c80f44d30b7380",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 66400,
+    "sourceFile": "exec-78bd6dea-7668-42b6-8e47-ae1495d0c69c.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "concert-pavilion",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Concert Pavilion: an open-sided octagonal cream bandstand, rounded plum canopy, slender golden wooden posts, a short semicircular stage, one large simple upright cello and music stand with blank sheet. Hanging amber lanterns, no enclosing house, clear open gazebo silhouette. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Open plum-roofed concert pavilion with a cello and music stand.",
+    "sourceSha256": "7c85aa67ec03f3ed3ad4af54ad0e19afea38e1fa502a0fc5a259ea940b30dd3a",
+    "shippedSha256": "f47c3eb6608aaa4d9fe37787b1671c47a34d687e92cb7fccc60f89164abd3cd0",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 78364,
+    "sourceFile": "exec-363e1363-535c-40f2-8dc3-905f34e0047e.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "quilt-bridge",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Quilt Bridge: one short broad stone-and-timber arch footbridge with coral handrails and a beautiful patchwork quilt draped over its near rail, large clean squares in cream sage coral and plum, arched opening clearly visible, two simple stone piers and tiny flower pots. No river or scenery. Low horizontal bridge silhouette on small cobbled footprint. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Coral-railed arched bridge draped with a patchwork quilt and a carved cat finial.",
+    "sourceSha256": "89ce5d82ae3c09365b243841148604668daf908e59bb3809bfeba4b76f76eb71",
+    "shippedSha256": "43e7b7b97fc9aeae3731ced9af2314d8b14c0dd3308effb84ec6bcc02402f1d2",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 52342,
+    "sourceFile": "exec-7b186b90-6bb1-4a4d-8b74-af1fd65e5294.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "grand-bazaar",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Grand Bazaar: a lavish broad two-storey amber-domed market hall with three curved amber roof cupolas, cream colonnades, sage-and-cream striped awnings along its arcade, tiny neat baskets and fabric bolts. Grand public trading hall, materially larger and more ornate than a small shop but one cohesive compact miniature. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Grand amber-domed bazaar with cream colonnades and striped awnings.",
+    "sourceSha256": "5ce2be3a489657a1e036442c5f455ffb215bc10781c5f4d8f9de8071db6f3670",
+    "shippedSha256": "fd8e1ec6dc5b6205f656d19d275c10fe67c98840d9a0da0961c6a46810015add",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 76144,
+    "sourceFile": "exec-919abb0e-4da3-4927-b339-9bc10bf7d359.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "grand-clock",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Grand Clock: a proud tall freestanding cream stone clock tower with a coral peaked cap, one enormous ivory clock face with brass hands and simple unnumbered tick marks only, broad brass pendulum visible below, small spiral stair and short cobbled base. Tall narrow vertical tower silhouette, no cottage facade. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Tall coral-capped clock tower with brass hands, tick marks, and pendulum.",
+    "sourceSha256": "8743292ce2bf55cc63c3583b8f94fc4925e97a37cbeb686ab577d2975b9646d7",
+    "shippedSha256": "d79644870645fce2af2c7d59a62a097b0649f9c88e11dc72e7c75372ebea759f",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 54386,
+    "sourceFile": "exec-31d0c2d6-120d-405e-88a6-6329ca3145d4.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "high-court",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: High Court: a dignified cream classical courthouse with teal triangular pediment, four stout columns, broad shallow steps, closed double doors and a single large balanced brass scales sculpture above the roof; small teal pennants, no symbols or words carved in facade. Wide low civic landmark silhouette. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Teal-pediment courthouse with four columns and balanced brass scales.",
+    "sourceSha256": "47956d46bc87f6b1c9d214a5443814d0d7b8ffcbbef5d6f4f028064bb4cd7e11",
+    "shippedSha256": "e7d94cb4d0327c800b2a5cb4cc8a2105bfc3842e2ab51c4ad0955c7cca806ed0",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 69686,
+    "sourceFile": "exec-501c9e34-6028-4392-9c42-9fc77f05e779.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "observatory",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Observatory: an elegant cream circular astronomical observatory with a large patinated teal hemispherical dome opened to show a brass telescope pointing upward to the right, small arched windows, curving entry steps and brass star finial. Round dome silhouette, no detached stars or sky. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Round teal-domed observatory with a projecting brass telescope.",
+    "sourceSha256": "5ade598bb7469790e902288e0f7ccfcefd0fe54cede39342d56552517f4d0ac6",
+    "shippedSha256": "9dfdd80b26a66bb0d8a6437d36fa1c49d7225f833d7194dd941b9728883bd787",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 60300,
+    "sourceFile": "exec-2349e2bd-44ff-4e55-90a6-eb35622e8056.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "opera-house",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Opera House: an overly dignified grand cream opera house, wide curved facade, plum mansard roof with a small central cupola, twin arched entrances with rich plum curtains, amber gilded trim and large lyre crest. Refined theatrical landmark distinct from a small pocket theatre: two-tier civic palace with grand steps. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Grand plum-roofed opera house with gilded lyre and curtained entrances.",
+    "sourceSha256": "11f1869bd917a365ee00d525574a4e410635eb79addd8b4c68054dd282e8887d",
+    "shippedSha256": "1206a1b60049e341f69042f44f8603600e9fbb3e8e63e2ec442a7d72d24ca883",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 73276,
+    "sourceFile": "exec-8ebd40cf-c6d0-4ba2-b380-03cdcd7e3803.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  },
+  {
+    "id": "lala-monument",
+    "prompt": "Use case: illustration-story. Asset: one original transparent square building cutout for Odd Laws Society. First supplied Corner Shop is exact visual-style/camera reference; second sofa-room image is watercolor texture reference; third image is character identity reference only if needed. Match cream surfaces, fine dark umber contours, soft watercolor and colored-pencil texture, muted sage, coral, amber, teal and plum palette. SUBJECT: Lala Monument: a grand gently comic golden-orange stone statue of Lala the orange tabby cat sitting proudly on a broad tiered cream civic plinth, curved tail around her paws, round cream muzzle, cheeky contented eyes and recognizable tabby forehead stripes etched subtly. Lala is the orange cat on the RIGHT of third reference image. Her statue wears a tiny teal ceremonial ribbon, not a crown. One small laurel garland around plinth. No lettering or engraving, no other characters. Entire plinth and ears visible. Single unified miniature building or plot with small cobbled footprint only. CAMERA: front and right side visible, elevated about 20 degrees, same as reference. COMPOSITION: centered square, complete subject about 84 percent of canvas, generous clear transparent padding on every edge. Broad distinctive forms readable at 96 pixels. Keep all objects attached to footprint. No living characters except the requested cat STATUE. No text, lettering, logos, numbers, price/score symbols, writing on papers/signs, borders, card frame, scene background, fake checkerboard. Real alpha transparency. Original illustration.",
+    "alt": "Golden-orange statue of Lala the tabby cat on a cream civic plinth.",
+    "sourceSha256": "212344427350cf1167359ca375bd39d120071f9f5556e396fddd4011e91d752d",
+    "shippedSha256": "41297375e1c08a479ee74f979e6030f91f021858e6cad7bf252c702b0480fa3f",
+    "sourceDimensions": [
+      1254,
+      1254
+    ],
+    "shippedBytes": 52010,
+    "sourceFile": "exec-df82d735-5e91-4c3c-bf88-464169ef64e7.png",
+    "tool": "image_gen.imagegen",
+    "generatedOn": "2026-11-20",
+    "transparentBackgroundRequested": true,
+    "status": "final",
+    "references": [
+      {
+        "sourceFile": "exec-02a49ab4-faa7-423d-b716-aecf1e5dceb3.png",
+        "sha256": "90beb91892c76ff306d4f92f628481a1971cd5da98ad10ef2b9419f07f4d0a5e"
+      },
+      {
+        "path": "public/assets/sofa-room.png",
+        "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+      },
+      {
+        "path": "public/assets/characters.png",
+        "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+      }
+    ]
+  }
+]

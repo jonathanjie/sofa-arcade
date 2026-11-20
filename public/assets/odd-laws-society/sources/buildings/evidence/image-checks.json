@@ -1,0 +1,258 @@
+{
+  "images": [
+    {
+      "id": "corner-shop",
+      "width": 512,
+      "height": 512,
+      "bytes": 70702,
+      "alphaBounds": {
+        "x": 24,
+        "y": 36,
+        "width": 437,
+        "height": 443
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "tea-stall",
+      "width": 512,
+      "height": 512,
+      "bytes": 59520,
+      "alphaBounds": {
+        "x": 40,
+        "y": 24,
+        "width": 437,
+        "height": 445
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "button-workshop",
+      "width": 512,
+      "height": 512,
+      "bytes": 66834,
+      "alphaBounds": {
+        "x": 37,
+        "y": 30,
+        "width": 421,
+        "height": 452
+      },
+      "transparentBorder": 30,
+      "status": "final"
+    },
+    {
+      "id": "petition-kiosk",
+      "width": 512,
+      "height": 512,
+      "bytes": 58040,
+      "alphaBounds": {
+        "x": 24,
+        "y": 29,
+        "width": 464,
+        "height": 453
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "pocket-theatre",
+      "width": 512,
+      "height": 512,
+      "bytes": 58408,
+      "alphaBounds": {
+        "x": 37,
+        "y": 31,
+        "width": 440,
+        "height": 422
+      },
+      "transparentBorder": 31,
+      "status": "final"
+    },
+    {
+      "id": "community-garden",
+      "width": 512,
+      "height": 512,
+      "bytes": 81818,
+      "alphaBounds": {
+        "x": 24,
+        "y": 32,
+        "width": 460,
+        "height": 450
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "night-market",
+      "width": 512,
+      "height": 512,
+      "bytes": 81262,
+      "alphaBounds": {
+        "x": 35,
+        "y": 34,
+        "width": 443,
+        "height": 447
+      },
+      "transparentBorder": 31,
+      "status": "final"
+    },
+    {
+      "id": "clockwork-studio",
+      "width": 512,
+      "height": 512,
+      "bytes": 71914,
+      "alphaBounds": {
+        "x": 39,
+        "y": 31,
+        "width": 431,
+        "height": 446
+      },
+      "transparentBorder": 31,
+      "status": "final"
+    },
+    {
+      "id": "public-library",
+      "width": 512,
+      "height": 512,
+      "bytes": 66412,
+      "alphaBounds": {
+        "x": 24,
+        "y": 34,
+        "width": 436,
+        "height": 446
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "debate-hall",
+      "width": 512,
+      "height": 512,
+      "bytes": 66400,
+      "alphaBounds": {
+        "x": 24,
+        "y": 28,
+        "width": 442,
+        "height": 460
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "concert-pavilion",
+      "width": 512,
+      "height": 512,
+      "bytes": 78364,
+      "alphaBounds": {
+        "x": 24,
+        "y": 31,
+        "width": 444,
+        "height": 451
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "quilt-bridge",
+      "width": 512,
+      "height": 512,
+      "bytes": 52342,
+      "alphaBounds": {
+        "x": 24,
+        "y": 37,
+        "width": 453,
+        "height": 448
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "grand-bazaar",
+      "width": 512,
+      "height": 512,
+      "bytes": 76144,
+      "alphaBounds": {
+        "x": 34,
+        "y": 29,
+        "width": 445,
+        "height": 451
+      },
+      "transparentBorder": 29,
+      "status": "final"
+    },
+    {
+      "id": "grand-clock",
+      "width": 512,
+      "height": 512,
+      "bytes": 54386,
+      "alphaBounds": {
+        "x": 24,
+        "y": 24,
+        "width": 450,
+        "height": 459
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "high-court",
+      "width": 512,
+      "height": 512,
+      "bytes": 69686,
+      "alphaBounds": {
+        "x": 33,
+        "y": 36,
+        "width": 454,
+        "height": 449
+      },
+      "transparentBorder": 25,
+      "status": "final"
+    },
+    {
+      "id": "observatory",
+      "width": 512,
+      "height": 512,
+      "bytes": 60300,
+      "alphaBounds": {
+        "x": 24,
+        "y": 28,
+        "width": 450,
+        "height": 450
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "opera-house",
+      "width": 512,
+      "height": 512,
+      "bytes": 73276,
+      "alphaBounds": {
+        "x": 24,
+        "y": 30,
+        "width": 445,
+        "height": 453
+      },
+      "transparentBorder": 24,
+      "status": "final"
+    },
+    {
+      "id": "lala-monument",
+      "width": 512,
+      "height": 512,
+      "bytes": 52010,
+      "alphaBounds": {
+        "x": 45,
+        "y": 41,
+        "width": 415,
+        "height": 440
+      },
+      "transparentBorder": 31,
+      "status": "final"
+    }
+  ],
+  "totalBytes": 1197818,
+  "note": "Structural checks plus exact-size contact sheets. No atlas used; every building is a standalone alpha WebP."
+}

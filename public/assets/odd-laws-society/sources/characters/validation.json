@@ -1,0 +1,508 @@
+{
+  "schemaVersion": 1,
+  "tool": "sharp",
+  "version": "0.35.5",
+  "processing": {
+    "resize": {
+      "width": 480,
+      "height": 480,
+      "fit": "contain",
+      "background": "transparent"
+    },
+    "padding": 16,
+    "output": {
+      "format": "webp",
+      "width": 512,
+      "height": 512,
+      "quality": 88,
+      "alphaQuality": 100,
+      "effort": 6
+    }
+  },
+  "originalImagesIncluded": false,
+  "originalsNote": "Oversized generation intermediates are deliberately excluded. The optimized original illustrations are the shipped sources; exact prompts and hashes are retained.",
+  "referenceFiles": {
+    "public/assets/characters.png": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736",
+    "public/assets/sofa-room.png": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+  },
+  "images": [
+    {
+      "id": "jon-idle",
+      "output": "characters/jon-idle.webp",
+      "sourceFile": "exec-e432d7f2-9633-4ff4-97ea-34220a6199b5.png",
+      "sourceSha256": "4cfbe34f77c063d1aca1acf31786bd4b3b8c31f43b6c872d2cda1160f0415446",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "e444de2e8b4ef6381777b2c719b44ec31e1016b57192531a1922317a7bf3d733",
+      "bytes": 48318,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 181795,
+      "opaquePixels": 76295,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        104,
+        29,
+        379,
+        478
+      ],
+      "references": [
+        {
+          "generation": "jon-thinking",
+          "role": "identity and civic costume",
+          "sha256": "7dfd1227dc8b2d85e529cfbf0474ec1a0398895025937c59c722ef325615d53b"
+        }
+      ]
+    },
+    {
+      "id": "jon-thinking",
+      "output": "characters/jon-thinking.webp",
+      "sourceFile": "exec-d7fdc2d4-943c-4b04-9177-03d44d05fef2.png",
+      "sourceSha256": "7dfd1227dc8b2d85e529cfbf0474ec1a0398895025937c59c722ef325615d53b",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "f334893a5d13a771eb9a241682a049f24099aa18be1a77c785948ee11aabcfcc",
+      "bytes": 53646,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 174047,
+      "opaquePixels": 84147,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        96,
+        25,
+        392,
+        472
+      ],
+      "references": [
+        {
+          "repoPath": "public/assets/characters.png",
+          "role": "identity",
+          "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+        },
+        {
+          "repoPath": "public/assets/sofa-room.png",
+          "role": "style",
+          "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+        }
+      ]
+    },
+    {
+      "id": "jon-acting",
+      "output": "characters/jon-acting.webp",
+      "sourceFile": "exec-2c05b798-8786-49af-bfae-ab3d2fe3ed23.png",
+      "sourceSha256": "f06d88d338438a4ff3f7f868327030602aa9308fd48b1968a654d279faf3569f",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "c4c89e37cc4f4874f12273f27ae932dd23280d5d39f4873c9c97a54092ac2796",
+      "bytes": 53440,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 178424,
+      "opaquePixels": 79208,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        76,
+        27,
+        431,
+        477
+      ],
+      "references": [
+        {
+          "generation": "jon-idle",
+          "role": "identity and civic costume",
+          "sha256": "4cfbe34f77c063d1aca1acf31786bd4b3b8c31f43b6c872d2cda1160f0415446"
+        }
+      ]
+    },
+    {
+      "id": "jon-celebrate",
+      "output": "characters/jon-celebrate.webp",
+      "sourceFile": "exec-080472b8-f259-47cb-b16c-3eea10876db9.png",
+      "sourceSha256": "1c4777b66e2df59dc53ea59ced20a6d0e9857038a3478f3665975f74e1cdfccc",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "ccff78475da816c2109b8a887755c1f8ba79596afc976684f03b86fd54f00722",
+      "bytes": 46338,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 183923,
+      "opaquePixels": 74240,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        112,
+        26,
+        378,
+        480
+      ],
+      "references": [
+        {
+          "generation": "jon-idle",
+          "role": "identity and civic costume",
+          "sha256": "4cfbe34f77c063d1aca1acf31786bd4b3b8c31f43b6c872d2cda1160f0415446"
+        }
+      ]
+    },
+    {
+      "id": "jon-disappointed",
+      "output": "characters/jon-disappointed.webp",
+      "sourceFile": "exec-10208a57-531d-48d0-b75c-ba68489faf64.png",
+      "sourceSha256": "74f5e16e208fe877c84a01337e86c4befdc3bd0862666c6fd3125d32e2b7caa5",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "f5820757416b686892c142f2c06b03c8b3734cadb7173f0c28939043b7d5a18b",
+      "bytes": 41926,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 191736,
+      "opaquePixels": 66949,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        107,
+        29,
+        378,
+        478
+      ],
+      "references": [
+        {
+          "generation": "jon-idle",
+          "role": "identity and civic costume",
+          "sha256": "4cfbe34f77c063d1aca1acf31786bd4b3b8c31f43b6c872d2cda1160f0415446"
+        }
+      ]
+    },
+    {
+      "id": "lydia-idle",
+      "output": "characters/lydia-idle.webp",
+      "sourceFile": "exec-fc3b72e2-8fba-4007-b211-4585ad865ea5.png",
+      "sourceSha256": "3c66a8d3f1424431ec4fa8ed24ab038a71f4baa78658c8f8f038af21e388292b",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "7882bf16b2b99cd1e7603039f336c84520bb893bcc128739f19e17c9e480a6ff",
+      "bytes": 60878,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 158264,
+      "opaquePixels": 99474,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        93,
+        23,
+        399,
+        483
+      ],
+      "references": [
+        {
+          "repoPath": "public/assets/characters.png",
+          "role": "identity",
+          "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+        },
+        {
+          "repoPath": "public/assets/sofa-room.png",
+          "role": "style",
+          "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+        }
+      ]
+    },
+    {
+      "id": "lydia-thinking",
+      "output": "characters/lydia-thinking.webp",
+      "sourceFile": "exec-29188770-bb12-4246-83f7-36990e977a7b.png",
+      "sourceSha256": "f31f720142c2d03488af5779c7eb5bf1db575f0f24e03fc02339064607df777e",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "b34281b86de8d2d592060419c43d85eb15abb39d0a5d708a88d0ea5382fed40f",
+      "bytes": 55300,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 161996,
+      "opaquePixels": 95823,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        94,
+        23,
+        394,
+        483
+      ],
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume",
+          "sha256": "3c66a8d3f1424431ec4fa8ed24ab038a71f4baa78658c8f8f038af21e388292b"
+        }
+      ]
+    },
+    {
+      "id": "lydia-acting",
+      "output": "characters/lydia-acting.webp",
+      "sourceFile": "exec-a97b5d68-f1af-42fd-b6fd-e41e193c3dcb.png",
+      "sourceSha256": "1b7c43509680eff7bba715bab4abc5dcc59851ffbddcc0c3b73b4a7b5de59868",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "751b672f1c4b0bf4b63feba777a49afba4e47759fcae724bfd042177530b4cb5",
+      "bytes": 60432,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 159227,
+      "opaquePixels": 98151,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        88,
+        23,
+        443,
+        484
+      ],
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume",
+          "sha256": "3c66a8d3f1424431ec4fa8ed24ab038a71f4baa78658c8f8f038af21e388292b"
+        }
+      ]
+    },
+    {
+      "id": "lydia-celebrate",
+      "output": "characters/lydia-celebrate.webp",
+      "sourceFile": "exec-59cef982-7c96-4996-8068-d9553b963d53.png",
+      "sourceSha256": "f41259f93ea44c244f4ba5832675b55c89dc26e45b9b50793c603fd7a114eaa2",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "f46d3354293fc75d82424f33c0177c335b94bc4e330109f0612ffdc6e4b94912",
+      "bytes": 55318,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 162249,
+      "opaquePixels": 95392,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        95,
+        25,
+        404,
+        483
+      ],
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume",
+          "sha256": "3c66a8d3f1424431ec4fa8ed24ab038a71f4baa78658c8f8f038af21e388292b"
+        }
+      ]
+    },
+    {
+      "id": "lydia-disappointed",
+      "output": "characters/lydia-disappointed.webp",
+      "sourceFile": "exec-4997b4ac-551f-4f67-9c3a-6434ce0c29b5.png",
+      "sourceSha256": "de1b5f795100143f0de2f86242d01325da95a29171dc6cb1cc1f6ae07c095eef",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "4d9822f14cdfed18f15f51e826f07a76bb971e0da06d654f25ca73f4e086cfd7",
+      "bytes": 57992,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 164463,
+      "opaquePixels": 93042,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        95,
+        28,
+        386,
+        482
+      ],
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume",
+          "sha256": "3c66a8d3f1424431ec4fa8ed24ab038a71f4baa78658c8f8f038af21e388292b"
+        }
+      ]
+    },
+    {
+      "id": "lala-idle",
+      "output": "characters/lala-idle.webp",
+      "sourceFile": "exec-815f5eee-b3eb-47b7-a0e4-1f9184195402.png",
+      "sourceSha256": "74cd4842214afd94e7c9c137d315242ce84463aead863b997a320d8ec091ef46",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "ba4ddd2f699c06ee5550fa13444de15e920de3bcec87e6567809aa5fe210e753",
+      "bytes": 56784,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 150680,
+      "opaquePixels": 108038,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        64,
+        48,
+        443,
+        473
+      ],
+      "references": [
+        {
+          "repoPath": "public/assets/characters.png",
+          "role": "identity",
+          "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+        },
+        {
+          "repoPath": "public/assets/sofa-room.png",
+          "role": "style",
+          "sha256": "303dc1651552aa9bebc45035068af434522f47627ec4e2c308e810ca7e716c3f"
+        }
+      ]
+    },
+    {
+      "id": "lala-thinking",
+      "output": "characters/lala-thinking.webp",
+      "sourceFile": "exec-a214464c-7869-494b-b80f-b25e340c3647.png",
+      "sourceSha256": "49ef9747dcfa22a4899d335dbf18b76bdf032007f81a92016eabcd6d7a2de480",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "729dc2b2c4c10391a936a6fc080fa54d7d8a897462177c9ad2b67c7a0083b5f0",
+      "bytes": 51130,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 149439,
+      "opaquePixels": 109345,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        66,
+        43,
+        443,
+        474
+      ],
+      "references": [
+        {
+          "generation": "lala-idle",
+          "role": "identity and civic costume",
+          "sha256": "74cd4842214afd94e7c9c137d315242ce84463aead863b997a320d8ec091ef46"
+        }
+      ]
+    },
+    {
+      "id": "lala-stamp",
+      "output": "characters/lala-stamp.webp",
+      "sourceFile": "exec-c0a5ca8a-3855-43e7-bc46-3f903b30a4e2.png",
+      "sourceSha256": "5687c9e577d688092ffcd3eb6bdcfd28ea778adeedb7b7c91e3c73ba52c9699c",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "b200909f202e15254297a6576c17be4d60c44a385599e39fbec80e2674884978",
+      "bytes": 58384,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 141417,
+      "opaquePixels": 116928,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        41,
+        42,
+        479,
+        481
+      ],
+      "references": [
+        {
+          "generation": "lala-idle",
+          "role": "identity and civic costume",
+          "sha256": "74cd4842214afd94e7c9c137d315242ce84463aead863b997a320d8ec091ef46"
+        }
+      ]
+    },
+    {
+      "id": "lala-celebrate",
+      "output": "characters/lala-celebrate.webp",
+      "sourceFile": "exec-b8f9130d-0477-4203-95ed-26e05c26b372.png",
+      "sourceSha256": "086ec80f74e07d6041aec1ebbdbb5b4aac3b259c3b80f031c79be2a43eca3910",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "outputSha256": "7386272e132026a66502fcebbfe50c69d114d5bc3a303bf065a7502b61a3365c",
+      "bytes": 56478,
+      "dimensions": [
+        512,
+        512
+      ],
+      "hasAlpha": true,
+      "transparentPixels": 147875,
+      "opaquePixels": 110489,
+      "borderNontransparentPixels": 0,
+      "opaqueBounds": [
+        69,
+        45,
+        449,
+        469
+      ],
+      "references": [
+        {
+          "generation": "lala-idle",
+          "role": "identity and civic costume",
+          "sha256": "74cd4842214afd94e7c9c137d315242ce84463aead863b997a320d8ec091ef46"
+        }
+      ]
+    }
+  ],
+  "totalBytes": 756364
+}

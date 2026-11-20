@@ -1,0 +1,322 @@
+{
+  "jon": {
+    "medium": "AI-generated watercolor raster",
+    "representation": "independent flat state cutouts",
+    "animation": {
+      "type": "state-cutouts",
+      "frameByFrame": false,
+      "poseReuse": false,
+      "notes": "Each required state has a distinct generated illustration. UI may swap states, translate, tilt or scale the whole image around the foot anchor. No separated body-part rig or animation loop is supplied."
+    },
+    "states": {
+      "idle": {
+        "src": "characters/jon-idle.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Jon mouse stands at ease with a blank civic folio, navy rectangular glasses, teal scarf and gold seal pin.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "jon-idle",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.52,
+            0.9316
+          ],
+          "face": [
+            0.56,
+            0.35
+          ]
+        }
+      },
+      "thinking": {
+        "src": "characters/jon-thinking.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Jon mouse rests a paw thoughtfully at his chin while holding a civic folio, in navy glasses and a teal scarf.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "jon-thinking",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.52,
+            0.9199
+          ],
+          "face": [
+            0.56,
+            0.35
+          ]
+        }
+      },
+      "acting": {
+        "src": "characters/jon-acting.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Jon mouse presents a blank rolled plan with an open-paw gesture and an enthusiastic smile.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "jon-acting",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.52,
+            0.9297
+          ],
+          "face": [
+            0.56,
+            0.35
+          ]
+        }
+      },
+      "celebrate": {
+        "src": "characters/jon-celebrate.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Jon mouse celebrates with lifted paws and a happy closed-eye smile, wearing his teal scarf and civic pin.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "jon-celebrate",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.52,
+            0.9355
+          ],
+          "face": [
+            0.56,
+            0.35
+          ]
+        }
+      },
+      "disappointed": {
+        "src": "characters/jon-disappointed.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Jon mouse lowers his gaze and holds his folio with both paws in mild, good-natured disappointment.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "jon-disappointed",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.52,
+            0.9316
+          ],
+          "face": [
+            0.56,
+            0.35
+          ]
+        }
+      }
+    }
+  },
+  "lydia": {
+    "medium": "AI-generated watercolor raster",
+    "representation": "independent flat state cutouts",
+    "animation": {
+      "type": "state-cutouts",
+      "frameByFrame": false,
+      "poseReuse": false,
+      "notes": "Each required state has a distinct generated illustration. UI may swap states, translate, tilt or scale the whole image around the foot anchor. No separated body-part rig or animation loop is supplied."
+    },
+    "states": {
+      "idle": {
+        "src": "characters/lydia-idle.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lydia mouse stands attentively with a civic folio, round glasses, chestnut ponytail, coral scarf and gold leaf pin.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lydia-idle",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.51,
+            0.9414
+          ],
+          "face": [
+            0.55,
+            0.35
+          ]
+        }
+      },
+      "thinking": {
+        "src": "characters/lydia-thinking.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lydia mouse looks upward with a paw to her chin, considering her civic folio thoughtfully.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lydia-thinking",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.51,
+            0.9414
+          ],
+          "face": [
+            0.55,
+            0.35
+          ]
+        }
+      },
+      "acting": {
+        "src": "characters/lydia-acting.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lydia mouse presents an open blank civic folio with a welcoming open-paw gesture.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lydia-acting",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.51,
+            0.9434
+          ],
+          "face": [
+            0.55,
+            0.35
+          ]
+        }
+      },
+      "celebrate": {
+        "src": "characters/lydia-celebrate.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lydia mouse claps happily with a closed-eye smile, keeping her round glasses and coral scarf.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lydia-celebrate",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.51,
+            0.9414
+          ],
+          "face": [
+            0.55,
+            0.35
+          ]
+        }
+      },
+      "disappointed": {
+        "src": "characters/lydia-disappointed.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lydia mouse gives a small resigned shrug while holding her civic folio, with a gently lowered gaze.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lydia-disappointed",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.51,
+            0.9395
+          ],
+          "face": [
+            0.55,
+            0.35
+          ]
+        }
+      }
+    }
+  },
+  "lala": {
+    "medium": "AI-generated watercolor raster",
+    "representation": "independent flat state cutouts",
+    "animation": {
+      "type": "state-cutouts",
+      "frameByFrame": false,
+      "poseReuse": false,
+      "notes": "Each required state has a distinct generated illustration. UI may swap states, translate, tilt or scale the whole image around the foot anchor. No separated body-part rig or animation loop is supplied."
+    },
+    "states": {
+      "idle": {
+        "src": "characters/lala-idle.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lala the orange tabby sits proudly as council Chair, wearing a teal and plum sash with a brass medallion.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lala-idle",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.43,
+            0.9219
+          ],
+          "face": [
+            0.43,
+            0.37
+          ]
+        }
+      },
+      "thinking": {
+        "src": "characters/lala-thinking.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lala the orange tabby Chair considers a decision with one paw beneath her chin and curious upturned eyes.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lala-thinking",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.43,
+            0.9238
+          ],
+          "face": [
+            0.43,
+            0.37
+          ]
+        }
+      },
+      "stamp": {
+        "src": "characters/lala-stamp.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lala the orange tabby Chair presses a wooden council stamp onto a blank cream sheet with a proud smile.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lala-stamp",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.49,
+            0.9
+          ],
+          "face": [
+            0.43,
+            0.37
+          ],
+          "stamp": [
+            0.24,
+            0.88
+          ]
+        }
+      },
+      "celebrate": {
+        "src": "characters/lala-celebrate.webp",
+        "width": 512,
+        "height": 512,
+        "alt": "Lala the orange tabby Chair raises her front paws and smiles with joy, her striped tail curled beside her.",
+        "status": "final",
+        "medium": "AI-generated watercolor raster",
+        "poseId": "lala-celebrate",
+        "poseReuse": false,
+        "anchors": {
+          "foot": [
+            0.43,
+            0.9141
+          ],
+          "face": [
+            0.43,
+            0.37
+          ]
+        }
+      }
+    }
+  }
+}

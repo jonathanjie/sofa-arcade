@@ -1,0 +1,808 @@
+{
+  "schemaVersion": 1,
+  "gameId": "odd-laws-society",
+  "buildings": {
+    "corner-shop": {
+      "src": "buildings/corner-shop.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Amber-awning corner shop with cream walls, a sage roof, and fruit baskets.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "tea-stall": {
+      "src": "buildings/tea-stall.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Amber-awning tea stall with a jade teapot and curling steam.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "button-workshop": {
+      "src": "buildings/button-workshop.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Coral-roofed button workshop with a large button and sewing wheel.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "petition-kiosk": {
+      "src": "buildings/petition-kiosk.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Teal civic petition kiosk with a quill, scroll, and blank notice board.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "pocket-theatre": {
+      "src": "buildings/pocket-theatre.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Plum-curtained pocket theatre with a small stage and mask crest.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "community-garden": {
+      "src": "buildings/community-garden.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Community garden with raised beds, flowering trellis, and a watering can.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "night-market": {
+      "src": "buildings/night-market.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Three lantern-lit market stalls with amber roofs and sage awnings.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "clockwork-studio": {
+      "src": "buildings/clockwork-studio.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Clockwork studio with coral roof and interlocking brass gears.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "public-library": {
+      "src": "buildings/public-library.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Teal-roofed library with an open-book crest and two entrance lamps.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "debate-hall": {
+      "src": "buildings/debate-hall.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Teal civic debate hall with two lecterns and a tiny cat statue.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "concert-pavilion": {
+      "src": "buildings/concert-pavilion.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Open plum-roofed concert pavilion with a cello and music stand.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "quilt-bridge": {
+      "src": "buildings/quilt-bridge.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Coral-railed arched bridge draped with a patchwork quilt and a carved cat finial.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "grand-bazaar": {
+      "src": "buildings/grand-bazaar.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Grand amber-domed bazaar with cream colonnades and striped awnings.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "grand-clock": {
+      "src": "buildings/grand-clock.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Tall coral-capped clock tower with brass hands, tick marks, and pendulum.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "high-court": {
+      "src": "buildings/high-court.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Teal-pediment courthouse with four columns and balanced brass scales.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "observatory": {
+      "src": "buildings/observatory.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Round teal-domed observatory with a projecting brass telescope.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "opera-house": {
+      "src": "buildings/opera-house.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Grand plum-roofed opera house with gilded lyre and curtained entrances.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    },
+    "lala-monument": {
+      "src": "buildings/lala-monument.webp",
+      "width": 512,
+      "height": 512,
+      "alt": "Golden-orange statue of Lala the tabby cat on a cream civic plinth.",
+      "status": "final",
+      "medium": "AI-generated watercolor illustration",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "transparent": true
+    }
+  },
+  "laws": {
+    "small-shop-supremacy": {
+      "src": "laws/small-shop-supremacy.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "An amber corner shop beneath a crown, the emblem for Small-Shop Supremacy.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "workshop-week": {
+      "src": "laws/workshop-week.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "A coral workshop hammer on a blank calendar, the emblem for Workshop Week.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "public-grants": {
+      "src": "laws/public-grants.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "An amber grant coin above an open teal civic book, the emblem for Public Grants.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "everything-is-art": {
+      "src": "laws/everything-is-art.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "A plum painter’s palette with a broad brush, the emblem for Everything Is Art.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "open-tender": {
+      "src": "laws/open-tender.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "An unrolled cream construction plan with an open doorway, the emblem for Open Tender.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "honest-wages": {
+      "src": "laws/honest-wages.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "A coral-sleeved open hand receiving a sprout coin, the emblem for Honest Wages.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "shop-local": {
+      "src": "laws/shop-local.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Two amber neighborhood shops under a warm heart, the emblem for Shop Local.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "industrial-pride": {
+      "src": "laws/industrial-pride.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "A coral gear and hammer on a pride ribbon, the emblem for Industrial Pride.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "public-service-day": {
+      "src": "laws/public-service-day.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "A teal civic pennant bearing an open book and a laurel, the emblem for Public Service Day.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "mandatory-applause": {
+      "src": "laws/mandatory-applause.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Two cream clapping paws with plum cuffs and golden rays, the emblem for Mandatory Applause.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "fashionable-streets": {
+      "src": "laws/fashionable-streets.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Three distinct buildings joined by a golden street beneath a spark, the emblem for Fashionable Streets.",
+      "status": "final",
+      "medium": "original SVG"
+    },
+    "diversity-parade": {
+      "src": "laws/diversity-parade.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Four differently shaped amber, coral, teal and plum parade pennants on one standard, the emblem for Diversity Parade.",
+      "status": "final",
+      "medium": "original SVG"
+    }
+  },
+  "guilds": {
+    "commerce": {
+      "src": "guilds/commerce.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Commerce guild: an amber shop with a striped awning and open doorway.",
+      "status": "final",
+      "medium": "original SVG",
+      "color": "#bb7a26",
+      "silhouette": "shop with striped awning"
+    },
+    "craft": {
+      "src": "guilds/craft.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Craft guild: a coral hammer crossed with a broad spanner.",
+      "status": "final",
+      "medium": "original SVG",
+      "color": "#be614b",
+      "silhouette": "crossed hammer and spanner"
+    },
+    "civic": {
+      "src": "guilds/civic.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Civic guild: a teal open book with a round seal and ribbon.",
+      "status": "final",
+      "medium": "original SVG",
+      "color": "#387d76",
+      "silhouette": "open book with civic seal"
+    },
+    "culture": {
+      "src": "guilds/culture.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Culture guild: a plum theatre mask with a broad smile and ribbon.",
+      "status": "final",
+      "medium": "original SVG",
+      "color": "#82536e",
+      "silhouette": "smiling theatre mask"
+    }
+  },
+  "characters": {
+    "jon": {
+      "medium": "AI-generated watercolor raster",
+      "representation": "independent flat state cutouts",
+      "animation": {
+        "type": "state-cutouts",
+        "frameByFrame": false,
+        "poseReuse": false,
+        "notes": "Each required state has a distinct generated illustration. UI may swap states, translate, tilt or scale the whole image around the foot anchor. No separated body-part rig or animation loop is supplied."
+      },
+      "states": {
+        "idle": {
+          "src": "characters/jon-idle.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Jon mouse stands at ease with a blank civic folio, navy rectangular glasses, teal scarf and gold seal pin.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "jon-idle",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.52,
+              0.9316
+            ],
+            "face": [
+              0.56,
+              0.35
+            ]
+          }
+        },
+        "thinking": {
+          "src": "characters/jon-thinking.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Jon mouse rests a paw thoughtfully at his chin while holding a civic folio, in navy glasses and a teal scarf.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "jon-thinking",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.52,
+              0.9199
+            ],
+            "face": [
+              0.56,
+              0.35
+            ]
+          }
+        },
+        "acting": {
+          "src": "characters/jon-acting.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Jon mouse presents a blank rolled plan with an open-paw gesture and an enthusiastic smile.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "jon-acting",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.52,
+              0.9297
+            ],
+            "face": [
+              0.56,
+              0.35
+            ]
+          }
+        },
+        "celebrate": {
+          "src": "characters/jon-celebrate.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Jon mouse celebrates with lifted paws and a happy closed-eye smile, wearing his teal scarf and civic pin.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "jon-celebrate",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.52,
+              0.9355
+            ],
+            "face": [
+              0.56,
+              0.35
+            ]
+          }
+        },
+        "disappointed": {
+          "src": "characters/jon-disappointed.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Jon mouse lowers his gaze and holds his folio with both paws in mild, good-natured disappointment.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "jon-disappointed",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.52,
+              0.9316
+            ],
+            "face": [
+              0.56,
+              0.35
+            ]
+          }
+        }
+      }
+    },
+    "lydia": {
+      "medium": "AI-generated watercolor raster",
+      "representation": "independent flat state cutouts",
+      "animation": {
+        "type": "state-cutouts",
+        "frameByFrame": false,
+        "poseReuse": false,
+        "notes": "Each required state has a distinct generated illustration. UI may swap states, translate, tilt or scale the whole image around the foot anchor. No separated body-part rig or animation loop is supplied."
+      },
+      "states": {
+        "idle": {
+          "src": "characters/lydia-idle.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lydia mouse stands attentively with a civic folio, round glasses, chestnut ponytail, coral scarf and gold leaf pin.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lydia-idle",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.51,
+              0.9414
+            ],
+            "face": [
+              0.55,
+              0.35
+            ]
+          }
+        },
+        "thinking": {
+          "src": "characters/lydia-thinking.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lydia mouse looks upward with a paw to her chin, considering her civic folio thoughtfully.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lydia-thinking",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.51,
+              0.9414
+            ],
+            "face": [
+              0.55,
+              0.35
+            ]
+          }
+        },
+        "acting": {
+          "src": "characters/lydia-acting.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lydia mouse presents an open blank civic folio with a welcoming open-paw gesture.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lydia-acting",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.51,
+              0.9434
+            ],
+            "face": [
+              0.55,
+              0.35
+            ]
+          }
+        },
+        "celebrate": {
+          "src": "characters/lydia-celebrate.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lydia mouse claps happily with a closed-eye smile, keeping her round glasses and coral scarf.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lydia-celebrate",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.51,
+              0.9414
+            ],
+            "face": [
+              0.55,
+              0.35
+            ]
+          }
+        },
+        "disappointed": {
+          "src": "characters/lydia-disappointed.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lydia mouse gives a small resigned shrug while holding her civic folio, with a gently lowered gaze.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lydia-disappointed",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.51,
+              0.9395
+            ],
+            "face": [
+              0.55,
+              0.35
+            ]
+          }
+        }
+      }
+    },
+    "lala": {
+      "medium": "AI-generated watercolor raster",
+      "representation": "independent flat state cutouts",
+      "animation": {
+        "type": "state-cutouts",
+        "frameByFrame": false,
+        "poseReuse": false,
+        "notes": "Each required state has a distinct generated illustration. UI may swap states, translate, tilt or scale the whole image around the foot anchor. No separated body-part rig or animation loop is supplied."
+      },
+      "states": {
+        "idle": {
+          "src": "characters/lala-idle.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lala the orange tabby sits proudly as council Chair, wearing a teal and plum sash with a brass medallion.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lala-idle",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.43,
+              0.9219
+            ],
+            "face": [
+              0.43,
+              0.37
+            ]
+          }
+        },
+        "thinking": {
+          "src": "characters/lala-thinking.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lala the orange tabby Chair considers a decision with one paw beneath her chin and curious upturned eyes.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lala-thinking",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.43,
+              0.9238
+            ],
+            "face": [
+              0.43,
+              0.37
+            ]
+          }
+        },
+        "stamp": {
+          "src": "characters/lala-stamp.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lala the orange tabby Chair presses a wooden council stamp onto a blank cream sheet with a proud smile.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lala-stamp",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.49,
+              0.9
+            ],
+            "face": [
+              0.43,
+              0.37
+            ],
+            "stamp": [
+              0.24,
+              0.88
+            ]
+          }
+        },
+        "celebrate": {
+          "src": "characters/lala-celebrate.webp",
+          "width": 512,
+          "height": 512,
+          "alt": "Lala the orange tabby Chair raises her front paws and smiles with joy, her striped tail curled beside her.",
+          "status": "final",
+          "medium": "AI-generated watercolor raster",
+          "poseId": "lala-celebrate",
+          "poseReuse": false,
+          "anchors": {
+            "foot": [
+              0.43,
+              0.9141
+            ],
+            "face": [
+              0.43,
+              0.37
+            ]
+          }
+        }
+      }
+    }
+  },
+  "props": {
+    "envelope-sealed": {
+      "src": "props/envelope-sealed.svg",
+      "width": 256,
+      "height": 192,
+      "alt": "A closed cream council envelope sealed with a coral paw-print wax seal.",
+      "status": "final",
+      "medium": "original SVG",
+      "anchors": {
+        "center": [
+          0.5,
+          0.5
+        ],
+        "seal": [
+          0.5,
+          0.61
+        ]
+      }
+    },
+    "envelope-open": {
+      "src": "props/envelope-open.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "An opened cream council envelope with a blank paper rising from it.",
+      "status": "final",
+      "medium": "original SVG",
+      "anchors": {
+        "center": [
+          0.5,
+          0.58
+        ],
+        "paper": [
+          0.5,
+          0.32
+        ]
+      }
+    },
+    "stamp": {
+      "src": "props/stamp.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "Lala’s wooden council stamp with a broad plum rubber base and a brass paw medallion.",
+      "status": "final",
+      "medium": "original SVG",
+      "anchors": {
+        "handle": [
+          0.5,
+          0.3
+        ],
+        "impact": [
+          0.5,
+          0.89
+        ]
+      }
+    },
+    "coin": {
+      "src": "props/coin.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "A round amber coin embossed with a sprouting leaf, without a numeric denomination.",
+      "status": "final",
+      "medium": "original SVG",
+      "anchors": {
+        "center": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    "influence": {
+      "src": "props/influence.svg",
+      "width": 256,
+      "height": 256,
+      "alt": "A plum hexagonal influence seal with a cream quill, distinct from the round coin.",
+      "status": "final",
+      "medium": "original SVG",
+      "anchors": {
+        "center": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    "street-glow": {
+      "src": "props/street-glow.svg",
+      "width": 640,
+      "height": 160,
+      "alt": "A golden horizontal glow connecting three street plots, with three small celebratory sparks.",
+      "status": "final",
+      "medium": "original SVG",
+      "anchors": {
+        "center": [
+          0.5,
+          0.5
+        ],
+        "left": [
+          0.08,
+          0.5
+        ],
+        "right": [
+          0.92,
+          0.5
+        ]
+      }
+    }
+  }
+}

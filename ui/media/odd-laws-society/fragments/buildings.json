@@ -1,0 +1,236 @@
+{
+  "corner-shop": {
+    "src": "buildings/corner-shop.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Amber-awning corner shop with cream walls, a sage roof, and fruit baskets.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "tea-stall": {
+    "src": "buildings/tea-stall.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Amber-awning tea stall with a jade teapot and curling steam.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "button-workshop": {
+    "src": "buildings/button-workshop.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Coral-roofed button workshop with a large button and sewing wheel.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "petition-kiosk": {
+    "src": "buildings/petition-kiosk.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Teal civic petition kiosk with a quill, scroll, and blank notice board.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "pocket-theatre": {
+    "src": "buildings/pocket-theatre.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Plum-curtained pocket theatre with a small stage and mask crest.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "community-garden": {
+    "src": "buildings/community-garden.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Community garden with raised beds, flowering trellis, and a watering can.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "night-market": {
+    "src": "buildings/night-market.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Three lantern-lit market stalls with amber roofs and sage awnings.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "clockwork-studio": {
+    "src": "buildings/clockwork-studio.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Clockwork studio with coral roof and interlocking brass gears.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "public-library": {
+    "src": "buildings/public-library.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Teal-roofed library with an open-book crest and two entrance lamps.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "debate-hall": {
+    "src": "buildings/debate-hall.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Teal civic debate hall with two lecterns and a tiny cat statue.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "concert-pavilion": {
+    "src": "buildings/concert-pavilion.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Open plum-roofed concert pavilion with a cello and music stand.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "quilt-bridge": {
+    "src": "buildings/quilt-bridge.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Coral-railed arched bridge draped with a patchwork quilt and a carved cat finial.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "grand-bazaar": {
+    "src": "buildings/grand-bazaar.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Grand amber-domed bazaar with cream colonnades and striped awnings.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "grand-clock": {
+    "src": "buildings/grand-clock.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Tall coral-capped clock tower with brass hands, tick marks, and pendulum.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "high-court": {
+    "src": "buildings/high-court.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Teal-pediment courthouse with four columns and balanced brass scales.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "observatory": {
+    "src": "buildings/observatory.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Round teal-domed observatory with a projecting brass telescope.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "opera-house": {
+    "src": "buildings/opera-house.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Grand plum-roofed opera house with gilded lyre and curtained entrances.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  },
+  "lala-monument": {
+    "src": "buildings/lala-monument.webp",
+    "width": 512,
+    "height": 512,
+    "alt": "Golden-orange statue of Lala the tabby cat on a cream civic plinth.",
+    "status": "final",
+    "medium": "AI-generated watercolor illustration",
+    "anchor": {
+      "x": 0.5,
+      "y": 0.92
+    },
+    "transparent": true
+  }
+}

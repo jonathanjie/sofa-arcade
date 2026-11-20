@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "created": "2026-11-20",
+  "medium": "original AI-generated watercolor raster, output adapted for original Sofa Arcade characters",
+  "generationMode": "built-in image_gen.imagegen",
+  "records": [
+    {
+      "id": "jon-thinking",
+      "sourceFile": "exec-d7fdc2d4-943c-4b04-9177-03d44d05fef2.png",
+      "references": [
+        {
+          "repoPath": "public/assets/characters.png",
+          "role": "identity"
+        },
+        {
+          "repoPath": "public/assets/sofa-room.png",
+          "role": "style"
+        }
+      ],
+      "note": "First requested as a relaxed idle; the delivered paw-to-chin pose was assessed and assigned to thinking.",
+      "prompt": "Use case: illustration-story\nAsset type: transparent game character cutout, one flat civic idle pose for Jon in Odd Laws Society.\nInput image 1 is the existing owned character atlas: Jon is the male mouse at LEFT; use his exact design as identity reference. Image 2 is the owned sofa illustration: style/palette reference only.\nCreate ONE full-body Jon mouse, alone, seated nowhere, in a relaxed standing idle pose with one paw resting on a tidy blank civic folio tucked under an arm. Friendly thoughtful open eyes, small closed-mouth smile. Same cream fur, pink round ears, tousled swept dark brown hair, navy rectangular glasses, dark small waistcoat, cream rolled sleeves, teal scarf, bare mouse feet, long pink tail as the reference. A small round gold seal pin on his waistcoat is enough to indicate civic role; remove hiking pack and crumb. No other character.\nStyle: warm hand-painted watercolor storybook, brown ink contour, gently textured gouache on the character itself, softly shaded, precise clean exterior silhouette, matches supplied art, charming and adult-friendly. Camera near-front gentle three-quarter facing right, full body head-to-feet, 8% clear padding around every part including tail. Character grounded at 91% canvas height and centered horizontally, no ground plate or cast shadow. Square composition at 1024x1024. Wide readable silhouette for 128px UI use.\nTransparent empty background with genuine alpha. No scenery, no labels, no words, no letters, no numerals, no speech bubbles, no watermark. Preserve mouse identity and scarf/glasses colors. Not 3D, not pixel art.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/jon-thinking.webp"
+    },
+    {
+      "id": "jon-idle",
+      "sourceFile": "exec-e432d7f2-9633-4ff4-97ea-34220a6199b5.png",
+      "references": [
+        {
+          "generation": "jon-thinking",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the reference civic Jon pose (identity, clothing, style). Change the pose only. Full-body Jon mouse with cream fur, pink round ears, swept tousled dark brown hair, NAVY RECTANGULAR GLASSES, cream rolled sleeves, brown buttoned waistcoat with small round gold civic seal pin, teal scarf, bare mouse feet, long pink tail. Stand at ease, looking ahead with friendly calm open eyes and small closed-mouth smile, both hands held DOWN: left paw rests on a closed blank folio tucked at hip, right paw rests casually at side. His paw must NOT touch his face; no thinking gesture. No hiking pack. Keep all body and tail visible. Flat idle pose for UI animation.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/jon-idle.webp"
+    },
+    {
+      "id": "lydia-idle",
+      "sourceFile": "exec-fc3b72e2-8fba-4007-b211-4585ad865ea5.png",
+      "references": [
+        {
+          "repoPath": "public/assets/characters.png",
+          "role": "identity"
+        },
+        {
+          "repoPath": "public/assets/sofa-room.png",
+          "role": "style"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the atlas: Lydia is the female mouse in the MIDDLE. Image 2 is style reference. Create ONE civic Lydia mouse keeping her exact cream fur, round pink ears, chestnut ponytail/swept hair, round brown glasses, cream cardigan with brown buttons, coral scarf, brown skirt, small leather satchel, bare mouse feet, long pink tail. Small gold leaf-shaped civic pin on cardigan. A neat blank civic folio tucked under left arm, right paw resting at side; relaxed standing idle pose, attentive open eyes, gentle smile, facing slightly left. No extra character.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lydia-idle.webp"
+    },
+    {
+      "id": "lala-idle",
+      "sourceFile": "exec-815f5eee-b3eb-47b7-a0e4-1f9184195402.png",
+      "references": [
+        {
+          "repoPath": "public/assets/characters.png",
+          "role": "identity"
+        },
+        {
+          "repoPath": "public/assets/sofa-room.png",
+          "role": "style"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the atlas: Lala is the orange tabby CAT at RIGHT. Image 2 is style reference. Create ONE civic Lala as council Chair, preserving plump orange tabby body, cream muzzle/chest/paws, clear stripes on forehead and tail, small pink nose, soft whiskers. She sits upright with forepaws neatly together and thick tail curling beside her, facing slightly left, calmly confident OPEN EYES, a tiny pleased smile. Wear a dignified narrow deep-teal-and-plum sash with a small round brass medallion, no text. No crown, no human wig, no chair furniture, no envelope or stamp in this idle pose. Playfully overqualified cat, warm friendly expression.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lala-idle.webp"
+    },
+    {
+      "id": "jon-acting",
+      "sourceFile": "exec-2c05b798-8786-49af-bfae-ab3d2fe3ed23.png",
+      "references": [
+        {
+          "generation": "jon-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nJon mouse is enthusiastically presenting a small blank rolled plan with one paw and gesturing toward an imagined building with the other, slightly forward-leaning as a civic planner, both feet on ground, alert bright eyes and a friendly open smile. He holds no book now; the rolled plan is completely blank. Use the same dark waistcoat, navy rectangular glasses, teal scarf, gold seal pin. Full tail visible.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/jon-acting.webp"
+    },
+    {
+      "id": "jon-celebrate",
+      "sourceFile": "exec-080472b8-f259-47cb-b16c-3eea10876db9.png",
+      "references": [
+        {
+          "generation": "jon-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nJon mouse gives a small delighted celebration, both empty paws lifted beside his chest, eyes joyfully closed into upward arcs, wide warm smile, tiny proud bounce pose with both feet still visible, long tail curls up. Same navy rectangular glasses, dark waistcoat, gold pin, teal scarf, no book or scroll. Restrained joy; no confetti or floating symbols.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/jon-celebrate.webp"
+    },
+    {
+      "id": "jon-disappointed",
+      "sourceFile": "exec-10208a57-531d-48d0-b75c-ba68489faf64.png",
+      "references": [
+        {
+          "generation": "jon-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nJon mouse mildly disappointed after a lost council vote: shoulders gently lowered, eyes look down through his navy rectangular glasses, brows tilted up in middle, small resigned closed mouth. Hold the same blank folio against lower belly with both paws, ears slightly lowered without deforming anatomy, standing upright. Teal scarf, waistcoat, gold pin. Gentle comic disappointment, not crying or devastated; no tears or floating symbols.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/jon-disappointed.webp"
+    },
+    {
+      "id": "lydia-thinking",
+      "sourceFile": "exec-29188770-bb12-4246-83f7-36990e977a7b.png",
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nLydia mouse thinking carefully at council, one paw resting at her chin and the other cradling the same closed blank folio, inquisitive eyes look upward through round glasses, a small thoughtful smile. Exactly preserve chestnut ponytail, cream knitted cardigan, coral scarf, brown skirt/satchel, gold leaf pin. Same near-front pose direction and full tail.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lydia-thinking.webp"
+    },
+    {
+      "id": "lydia-acting",
+      "sourceFile": "exec-a97b5d68-f1af-42fd-b6fd-e41e193c3dcb.png",
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nLydia mouse makes an articulate civic presentation: one paw extends outward palm open while the other holds an open blank folio at chest height; alert friendly eyes behind her round glasses, encouraging open smile. Exactly preserve chestnut ponytail, cream cardigan, coral scarf, skirt/satchel, gold leaf pin. No writing or letters on the folio, no floating symbols.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lydia-acting.webp"
+    },
+    {
+      "id": "lydia-celebrate",
+      "sourceFile": "exec-59cef982-7c96-4996-8068-d9553b963d53.png",
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape if present, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nLydia mouse applauds happily, both paws together in a small delighted clap at chest height, eyes gently closed into upward arcs behind her round glasses and warm wide smile. Standing with both bare feet visible and full long tail curled behind. Exactly preserve chestnut ponytail, cream cardigan, coral scarf, brown skirt/satchel and gold leaf pin. No book, no confetti, no floating symbols.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lydia-celebrate.webp"
+    },
+    {
+      "id": "lydia-disappointed",
+      "sourceFile": "exec-4997b4ac-551f-4f67-9c3a-6434ce0c29b5.png",
+      "references": [
+        {
+          "generation": "lydia-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape if present, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nLydia mouse reacts with gentle comic disappointment: a small one-paw shrug, her other paw holds the same closed blank folio low at her side, shoulders slightly dropped, eyebrows subtly tilted up in the middle, eyes glance down through her round glasses, small resigned closed smile. Keep ponytail, cream cardigan, coral scarf, brown skirt/satchel, gold leaf pin and full tail. Mild emotion without tears or devastation. No floating symbols.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lydia-disappointed.webp"
+    },
+    {
+      "id": "lala-thinking",
+      "sourceFile": "exec-a214464c-7869-494b-b80f-b25e340c3647.png",
+      "references": [
+        {
+          "generation": "lala-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape if present, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nLala the plump orange tabby council Chair deliberates solemnly: sitting upright, one cream front paw tucked lightly under chin, other forepaw on ground, eyes tilted upward with curious brow, thoughtful little closed-mouth smile. Keep exact orange tabby stripe pattern and broad cream muzzle/chest, same deep-teal sash edged plum and brass medallion; thick tail fully visible curled beside. No prop, no thought bubbles, no crown or wig.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lala-thinking.webp"
+    },
+    {
+      "id": "lala-stamp",
+      "sourceFile": "exec-c0a5ca8a-3855-43e7-bc46-3f903b30a4e2.png",
+      "references": [
+        {
+          "generation": "lala-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape if present, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nLala the plump orange tabby council Chair earnestly presses a small wooden rubber stamp using one cream front paw; her paw firmly grips the rounded brown handle, pressing broad PLUM rubber base on one small blank cream paper sheet beside her. Other front paw rests on ground. Seated posture, slight forward lean, focused bright eyes and proud open smile. Keep exactly the reference deep-teal sash with plum edges/brass medallion, orange striped tail fully visible curling at side. Stamp is wooden bulb handle with small gold paw medallion and rectangular plum base, not a gavel. No words, letters, numbers, ink writing, or motion marks. Single self-contained full-body character with stamp and blank paper; fully transparent surroundings.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lala-stamp.webp"
+    },
+    {
+      "id": "lala-celebrate",
+      "sourceFile": "exec-b8f9130d-0477-4203-95ed-26e05c26b372.png",
+      "references": [
+        {
+          "generation": "lala-idle",
+          "role": "identity and civic costume"
+        }
+      ],
+      "prompt": "Use case: illustration-story. Asset type: original transparent game character cutout for Odd Laws Society. Warm hand-painted watercolor storybook illustration matching the supplied owned Sofa Arcade references: chocolate-brown contour, softly textured paper on the character only, cream highlights, muted amber/teal/coral/plum accents. ONE character full-body including feet and complete tail, clear readable silhouette, near-frontal gentle three-quarter view, centered in a square 1024x1024 composition with 8% padding all sides. True transparent background. No ground plate, no scenery, no shadow backdrop. No text, letters, numerals, labels, speech bubbles, watermark, or UI. Preserve character identity.\nImage 1 is the definitive civic character reference for this game. Preserve exactly its character identity, costume, fur markings, glasses shape if present, hairstyle, accessories, colors, watercolor finish and scale; only change the pose and facial expression requested. Keep one full-body character alone with true transparent background and generous padding; no labels or decorative text.\nLala the plump orange tabby council Chair celebrates with both cream front paws raised just below her happy face while still seated, eyes closed into joyful upward arcs, warm open smile, thick striped tail curling cheerfully beside her. Preserve same orange stripe pattern, cream muzzle/chest/paws, deep-teal sash edged plum with small brass medallion. No stamp, no paper, no confetti, no floating symbols, no crown, no wig. Full body and tail unobscured.",
+      "transparentBackground": true,
+      "tool": "image_gen.imagegen",
+      "output": "characters/lala-celebrate.webp"
+    }
+  ]
+}
