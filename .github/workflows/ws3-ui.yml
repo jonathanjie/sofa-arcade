@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   fixture-and-browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:
@@ -36,15 +36,15 @@ jobs:
           cache-dependency-path: ui/games/odd-laws-society/package-lock.json
       - name: Install isolated test dependencies
         run: npm ci
-      - name: Install headless Chromium
-        run: npx playwright install --with-deps chromium
       - name: Test projected fixtures, public previews, tutorial, and motion
         run: npm test
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
       - name: Test rendered TV and phone interactions
         run: npm run test:browser
       - name: Preserve rendered screenshots and failure traces
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ws3-ui-browser-evidence
           path: ui/games/odd-laws-society/test-results/
