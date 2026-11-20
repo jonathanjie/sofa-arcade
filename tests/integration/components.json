@@ -139,6 +139,13 @@
           "mode": "100644",
           "reason": "Append exactly79 reviewed game/client/UI/media runtime entries to the existing25-file manifest. No native code, build settings, owned tests, or workflow changes.",
           "verification": "104-file Linux stage and independent manifest closure pass; bundled Node24.22.3 executes ESM/SQLite with no Node on PATH;12 desktop tests pass. Final combined macOS workflows remain required."
+        },
+        {
+          "path": "desktop/src-tauri/src/native.rs",
+          "blob": "e25b0c5aee1d3742e76b704d5b4b2b387d336fb7",
+          "mode": "100644",
+          "reason": "Open recreated native game windows at the stable bare loopback root so the shared shell saved-session pointer, including explicit Exit, owns resume. A sampled legacy room URL must not override a cleared session.",
+          "verification": "The prior exact-head ARM three-process regression exposed the real stale-room restore; the existing regression now deliberately seeds a stale native lastPath before the final launch. Both combined architecture/native workflows must pass on this correction before merge."
         }
       ],
       "review": {

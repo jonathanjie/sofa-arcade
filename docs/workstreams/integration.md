@@ -542,3 +542,35 @@ only after enablement and must pass on both matching Mac architectures. The
 aggregate PR remains draft until those exact-head gates pass. `main` was checked
 again and is still the recorded base; no owner branch was changed or merged
 into `main`.
+
+### Merge review: durable explicit exit on native relaunch
+
+The user authorized review and merging of all workstream PRs. WS1 #4, WS2 #7,
+WS3 #5, WS4 #8, and WS5 #6 are now merged, ending at
+`d4c982dc029f69539622472c72c495858c2bbc90`. Merging that main into the
+`6aa4149` integration candidate required no source conflict or content change.
+Independent reviews and focused suites passed for all five components; the
+strict combined local runner again passed 52 tests with zero skips.
+
+The enabled candidate's [ARM native acceptance run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44711297677)
+passed its first-launch and saved-game-restoration processes, then failed its
+third-process explicit-exit check. Its diagnostic and screenshot show the old
+Odd Laws room actually reopened. The prior phase had verified that Exit cleared
+the shell's saved session. Native `config.lastPath` was a second source of
+resume routing; its periodically sampled room URL could override the shell's
+cleared state on the next launch. The exact sampling/teardown timing was not
+captured, so it is not claimed as observed.
+
+The targeted post-handoff correction in `desktop/src-tauri/src/native.rs` opens
+new game windows at the stable bare loopback root. The shared shell already
+restores both games from its own saved LAN session, and explicitly clearing that
+session now remains authoritative. The native stable port, credential storage,
+owned-child lifecycle, and security controls are unchanged. The component lock
+records this second native correction with its exact blob and mode.
+
+The three-process native regression remains required. Its runner now deliberately
+seeds a stale legacy native room URL in the stopped, disposable test profile
+before the final launch, proving explicit exit wins without depending on a timing
+race. Both architecture acceptance jobs and the production desktop jobs must pass
+on this correction before the final integration PR is merged. Physical-device
+and signing limitations remain unchanged.

@@ -1,7 +1,7 @@
 /** Separate actual macOS processes for the integrated Odd Laws WKWebView gate. */
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -28,6 +28,17 @@ try {
   assert.ok(process.env.SOFA_APP_PATH?.endsWith('.app'), 'SOFA_APP_PATH must name the instrumented native-e2e app bundle');
   await mkdir(evidenceDir, { recursive: true });
   for (const phase of ['first', 'relaunch', 'exited']) {
+    if (phase === 'exited') {
+      // Reproduce a stale native URL deterministically after the previous
+      // process proved that Exit cleared the browser's saved session. Only
+      // this runner's fresh, stopped disposable profile is modified.
+      const saved = JSON.parse(await readFile(fixture, 'utf8'));
+      assert.match(saved.code, /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/);
+      const filename = path.join(dataDir, 'config.json');
+      const config = JSON.parse(await readFile(filename, 'utf8'));
+      assert.equal(config.port, Number(new URL(saved.origin).port));
+      await writeFile(filename, JSON.stringify({ ...config, lastPath: `/?room=${saved.code}` }, null, 2) + '\n', { mode: 0o600 });
+    }
     const result = await new Promise((resolve, reject) => {
       runner = spawn(process.execPath, [
         path.join(desktopDir, 'node_modules/@wdio/cli/bin/wdio.js'),
