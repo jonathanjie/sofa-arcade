@@ -439,6 +439,29 @@ unit tests stub the interface list; TLS, hostname verification, HTTP/WSS and soc
 cleanup tests use real loopback sockets. No physical device or wildcard LAN
 reachability claim is inferred from those tests.
 
+### Inherited integration checkpoint requires GO7 review records
+
+At the tested implementation/evidence head
+`fba51ec3badfe06eb0cd0db68d28250cfa076e0b`, the inherited
+[Local integration acceptance run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44779591452)
+failed `component-readiness` and `protocol-and-package` at the same legacy
+component lock. `tests/integration/components.json` protects all of `desktop`
+under the original WS5 handoff. The verifier reports exactly 29 unrecorded
+post-handoff additions, all inside this workstream's `desktop/secure-lan/**`.
+There are no missing component handoffs. The dependent integrated WKWebView
+jobs are skipped. This is a real inherited CI blocker, not a passing result;
+the independent GO6 suites and existing staged runtime tests remain separately
+reported. The shared verifier, lock and workflow are outside GO6's write set.
+
+GO7 must record those reviewed additions in WS5's `postHandoffCorrections` in
+`tests/integration/components.json`, preserving the original WS5 SHA, protected
+paths and existing records. Each entry needs the exact `path`, final candidate
+Git `blob` SHA, `mode`, `reason` and `verification`. Obtain hashes/modes from
+`git ls-tree -r HEAD -- desktop/secure-lan`, then rerun
+`npm run verify:components` on the committed integrated candidate. Do not remove
+the gate, add broad exclusions or add GO6 to this legacy array: the verifier
+expects exactly WS1–WS5. The PR/checks record subsequent final-head outcomes.
+
 ## Concrete GO7 composition checklist
 
 1. Extract the existing application handler around one `DB`/room API/SSE state;
