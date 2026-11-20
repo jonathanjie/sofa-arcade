@@ -110,6 +110,7 @@ try {
   await page.keyboard.press('r');
   const practice = await advance(6000);
   assert.equal(practice.mode, 'practice'); assert.equal(practice.phase, 'playing'); assert.equal(practice.timeRemainingTicks, null); assert.equal(practice.gust, null);
+  assert.equal(await page.locator('#mode').inputValue(), 'practice', 'Diagnostic mode selector must describe the live run.');
   await screenshot('untimed-practice-1920x1080');
   assert.deepEqual(errors, []);
 

@@ -1,7 +1,7 @@
 import { createRun, normalizeInput, step, applyCommand, pauseForSystem, project } from '../engine.mjs';
 import { getLevel } from '../geometry.mjs';
 import { FRUIT_TYPES, STAGES, RULES } from '../catalog.mjs';
-import { bridgeWeights, forceAt } from '../public.mjs';
+import { bridgeWeights, forceAt, summarizeResults } from '../public.mjs';
 import { terrainColliders } from '../physics.mjs';
 import { createPilot } from '../validation/pilot.mjs';
 
@@ -48,6 +48,8 @@ function newRun(seed = el('seed').value, mode = el('mode').value) {
   const cleanSeed = seed.trim() || 'orchard-proof-1';
   const matchId = `diagnostic-${++matchSequence}`;
   state = createRun({ seed: cleanSeed, matchId, options: { mode } });
+  el('seed').value = cleanSeed;
+  el('mode').value = mode;
   transcript = [{ kind: 'create', seed: cleanSeed, matchId, mode }];
   pilot.reset(); keys.clear(); contacts = []; eventHistory = []; seenEvents.clear(); controlsOverride = null;
   maxWork = { substeps: 0, iterations: 0, checks: 0 };
@@ -166,8 +168,13 @@ function drawWorld(level) {
     if (bumper.kind === 'circle') { ctx.beginPath(); ctx.arc(bumper.x, bumper.y, bumper.radius, 0, Math.PI * 2); }
     else roundedRect(bumper.x, bumper.y, bumper.width, bumper.height, 6);
     ctx.fill(); ctx.stroke();
-    const cx = bumper.x + (bumper.width || 0) / 2, cy = bumper.y + (bumper.height || 0) / 2;
-    text(bumper.id, cx, cy, 10, '#eef3d3', 600);
+    const cx = bumper.x + (bumper.width || 0) / 2;
+    const labelY = bumper.y - (bumper.radius || 0) - 20;
+    ctx.save(); ctx.font = '600 11px system-ui, sans-serif';
+    const labelWidth = ctx.measureText(bumper.id).width + 12;
+    roundedRect(cx - labelWidth / 2, labelY - 9, labelWidth, 18, 4);
+    ctx.fillStyle = '#223d33'; ctx.fill();
+    text(bumper.id, cx, labelY, 11, '#eef3d3', 600); ctx.restore();
   }
   for (const hole of level.compost) {
     roundedRect(hole.x, hole.y, hole.width, hole.height, 4); ctx.fillStyle = '#655343'; ctx.fill(); ctx.strokeStyle = '#d3a979'; ctx.lineWidth = 3; ctx.stroke();
@@ -265,8 +272,8 @@ function updatePanels() {
   el('hazard').textContent = view.gust ? `Gust ${view.gust.phase} · ${(view.gust.ticksRemaining / 60).toFixed(1)}s` : view.gateStates.length ? view.gateStates.map(gate => `Gate ${gate.closureDeferred ? 'waiting for fruit' : gate.state}`).join(' · ') : 'No active hazard';
   const work = state.diagnostics?.work || { substeps: 0, iterations: 0, checks: 0 };
   el('work').textContent = `substeps ${work.substeps} · iterations ${work.iterations} · checks ${work.checks} (max ${maxWork.checks})`;
-  const stars = view.results.reduce((n, result) => n + result.stars, 0), orders = view.results.reduce((n, result) => n + result.ordersCompleted, 0);
-  el('result').textContent = view.results.length ? `${orders} orders · ${stars} stars${view.phase === 'finished' && orders === 12 && view.results.every(result => result.composted === 0) ? ' · Perfect Picnic' : ''}` : '';
+  const summary = summarizeResults(view);
+  el('result').textContent = view.results.length ? `${summary.ordersCompleted} orders · ${summary.stars} stars${summary.perfectPicnic ? ' · Perfect Picnic' : summary.practice ? ' · practice' : ''}` : '';
   el('event-count').textContent = `${view.events.length} / 64`;
   el('events').replaceChildren(...view.events.slice(-8).reverse().map(event => { const row = document.createElement('li'); row.textContent = `${event.tick} · ${event.kind}${event.entityId ? ` · ${smallId(event.entityId)}` : ''}`; row.title = event.id; return row; }));
   for (const id of ['jon', 'lydia']) { el(`ready-${id}`).disabled = !['waiting', 'paused', 'interlude'].includes(view.phase); el(`ready-${id}`).textContent = `${id === 'jon' ? 'Jon' : 'Lydia'} ${view.ready[id] ? '✓ ready' : 'ready'}`; }

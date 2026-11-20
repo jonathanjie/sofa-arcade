@@ -52,7 +52,8 @@ jobs:
         with:
           name: go1-engine-node-${{ matrix.node }}
           path: games/gravity-orchard/.evidence/
-          if-no-files-found: warn
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 30
 
   graphical-harness:
@@ -79,7 +80,8 @@ jobs:
         with:
           name: go1-graphical-harness
           path: games/gravity-orchard/.evidence/browser/
-          if-no-files-found: warn
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 30
 
   collection-regression-build:
