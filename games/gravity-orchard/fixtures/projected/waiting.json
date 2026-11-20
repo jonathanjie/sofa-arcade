@@ -1,0 +1,120 @@
+{
+  "gameId": "gravity-orchard",
+  "schemaVersion": 1,
+  "matchId": "go1-public-fixtures-v1",
+  "runEpoch": 0,
+  "tick": 0,
+  "phase": "waiting",
+  "mode": "campaign",
+  "stageIndex": 0,
+  "levelId": "morning-delivery",
+  "timeRemainingTicks": 5400,
+  "countdownTicks": 0,
+  "ready": {
+    "jon": false,
+    "lydia": false
+  },
+  "pauseReason": null,
+  "fruits": [],
+  "baskets": {
+    "apple": {
+      "count": 0,
+      "capacity": 3
+    },
+    "plum": {
+      "count": 0,
+      "capacity": 3
+    },
+    "pear": {
+      "count": 0,
+      "capacity": 3
+    },
+    "starfruit": {
+      "count": 0,
+      "capacity": 3
+    }
+  },
+  "orders": {
+    "recipes": [
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:apple-picnic",
+        "recipeType": "apple-picnic",
+        "needs": {
+          "apple": 2,
+          "plum": 0,
+          "pear": 1,
+          "starfruit": 0
+        }
+      },
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:plum-picnic",
+        "recipeType": "plum-picnic",
+        "needs": {
+          "apple": 0,
+          "plum": 2,
+          "pear": 0,
+          "starfruit": 1
+        }
+      },
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:sunlit-mix",
+        "recipeType": "sunlit-mix",
+        "needs": {
+          "apple": 1,
+          "plum": 0,
+          "pear": 1,
+          "starfruit": 1
+        }
+      },
+      {
+        "id": "go1-public-fixtures-v1:s0:a0:moonlit-mix",
+        "recipeType": "moonlit-mix",
+        "needs": {
+          "apple": 0,
+          "plum": 1,
+          "pear": 1,
+          "starfruit": 1
+        }
+      }
+    ],
+    "activeIndex": 0,
+    "completedIds": []
+  },
+  "gateStates": [],
+  "gust": null,
+  "players": {
+    "jon": {
+      "input": {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    },
+    "lydia": {
+      "input": {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    }
+  },
+  "results": [],
+  "events": [
+    {
+      "id": "go1-public-fixtures-v1:e1",
+      "kind": "phase-change",
+      "tick": 0,
+      "data": {
+        "phase": "waiting",
+        "reason": null
+      }
+    }
+  ],
+  "summary": {
+    "ordersCompleted": 0,
+    "stars": 0,
+    "composted": 0,
+    "perfectPicnic": false,
+    "recordEligible": true
+  }
+}

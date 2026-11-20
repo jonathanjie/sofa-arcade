@@ -1,0 +1,7 @@
+node_modules/
+evidence/
+artifacts/
+output/
+playwright-report/
+test-results/
+.cache/
