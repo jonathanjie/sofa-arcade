@@ -1,0 +1,32 @@
+{
+  "name": "sofa-arcade-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tauri Mac packaging and native validation for the existing Sofa Arcade LAN runtime",
+  "engines": {
+    "node": ">=24.22.3"
+  },
+  "scripts": {
+    "stage": "node scripts/prepare.mjs",
+    "licenses": "node scripts/licenses.mjs",
+    "test": "node --test tests/runtime*.test.mjs tests/host*.test.mjs",
+    "test:rust": "cargo test --locked --manifest-path src-tauri/Cargo.toml --no-default-features",
+    "test:native:release": "node tests/native/packaged.mjs",
+    "test:native:ui": "node tests/native/run-ui.mjs",
+    "tauri": "tauri",
+    "build:mac:arm64": "node scripts/prepare.mjs --target aarch64-apple-darwin && node scripts/licenses.mjs --target aarch64-apple-darwin && tauri build --ci --target aarch64-apple-darwin --bundles app,dmg -- --locked",
+    "build:mac:intel": "node scripts/prepare.mjs --target x86_64-apple-darwin && node scripts/licenses.mjs --target x86_64-apple-darwin && tauri build --ci --target x86_64-apple-darwin --bundles app,dmg -- --locked",
+    "build:native:arm64": "node scripts/prepare.mjs --target aarch64-apple-darwin && node scripts/licenses.mjs --target aarch64-apple-darwin && tauri build --ci --target aarch64-apple-darwin --features native-e2e --bundles app -- --locked",
+    "build:native:intel": "node scripts/prepare.mjs --target x86_64-apple-darwin && node scripts/licenses.mjs --target x86_64-apple-darwin && tauri build --ci --target x86_64-apple-darwin --features native-e2e --bundles app -- --locked"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.6",
+    "@wdio/cli": "9.33.1",
+    "@wdio/globals": "9.33.1",
+    "@wdio/local-runner": "9.33.1",
+    "@wdio/mocha-framework": "9.33.1",
+    "@wdio/spec-reporter": "9.33.1",
+    "@wdio/tauri-service": "1.5.1"
+  }
+}

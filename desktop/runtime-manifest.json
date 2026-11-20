@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    { "path": "desktop/host/entry.mjs" },
+    { "path": "desktop/host/lifecycle.mjs" },
+    { "path": "server/lan.mjs" },
+    { "path": "server/rooms.mjs" },
+    { "path": "game/engine.mjs" },
+    { "path": "games/catalog.mjs" },
+    { "path": "games/registry.mjs" },
+    { "path": "ui/index.html" },
+    { "path": "ui/app.js" },
+    { "path": "ui/styles.css" },
+    { "path": "ui/audio.js" },
+    { "path": "ui/score.mjs" },
+    { "path": "ui/motion.js" },
+    { "path": "ui/motion.css" },
+    { "path": "ui/board-view.mjs" },
+    { "path": "ui/board-view.css" },
+    { "path": "ui/action-queue.mjs" },
+    { "path": "ui/transport.mjs" },
+    { "path": "public/assets/characters.png" },
+    { "path": "public/assets/sofa-room.png" },
+    { "path": "public/assets/qrcode.js" },
+    { "path": "public/assets/qrcode-LICENSE.txt" },
+    { "path": "public/favicon.svg" },
+    { "path": "public/manifest.webmanifest" },
+    { "path": "drizzle/0000_green_thunderbolts.sql" }
+  ]
+}
