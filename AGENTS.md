@@ -5,6 +5,7 @@ Read [README.md](README.md) for the product and [docs/HANDOFF.md](docs/HANDOFF.m
 ## Product direction
 
 - Keep the entire game collection in this repository and this Site. Sofa Kingdoms is the first playable game; the other catalog entries are planned.
+- **Current implementation priority (20 November): local Tauri on Jon's Mac, with two phone browsers over LAN.** Follow [docs/DISPATCH_LOCAL.md](docs/DISPATCH_LOCAL.md) and [docs/LOCAL_IMPLEMENTATION_CONTRACT.md](docs/LOCAL_IMPLEMENTATION_CONTRACT.md). The six local workstream assignments supersede overlapping broad ownership descriptions below and in the older parallel guide. Preserve the existing Site, but do not deploy it, migrate to Pages, or build a hosted WebSocket service as part of these local assignments.
 - The living-room TV shows the board, usually through a Mac browser cast to the TV. Two phones control Jon and Lydia. Lala is their orange cat and the playful board disruptor.
 - Preserve the warm illustrated character style and dynamic motion. Keep regular TV and phone screens uncluttered; explanations belong in the optional tutorial or Help.
 - Music belongs on the host/practice screen. Phone controllers start quiet. Retain independent music/effects settings, gesture-based audio unlocking, and reduced-motion support.
@@ -14,6 +15,7 @@ Read [README.md](README.md) for the product and [docs/HANDOFF.md](docs/HANDOFF.m
 - Use **https://github.com/jonathanjie/sofa-arcade**, branch `main`, as the source of truth from now on. Fetch/reconcile its latest state before implementation. Do not assume a Sites checkout is current when another session may have updated GitHub.
 - Read [docs/GITHUB_WORKFLOW.md](docs/GITHUB_WORKFLOW.md). Keep the existing public Site as hosting, with a separate deployment mirror when its managed Git workflow requires it. Verify reviewed GitHub source and deployed source trees agree; different commit IDs do not imply matching contents. Do not claim pushes automatically deploy.
 - Use one `feature/<game-id>` branch per game and follow [docs/PARALLEL_DEVELOPMENT.md](docs/PARALLEL_DEVELOPMENT.md). Start from the relevant [game PRD](docs/games/README.md); these proposed contracts are not all implemented. A shared-platform integrator owns catalog/registry, room APIs, shell routing, and delivery allowlists.
+- For the current local release, use the finer WS1–WS6 branches and exclusive paths in the dispatch pack. Each session uses its own worktree/clone, writes only its owned workstream report, tests its component, and opens a PR. Shared wiring and final acceptance belong to WS6; component sessions do not self-merge or publish. Use fixtures/injection/existing Sofa Kingdoms to avoid waiting on unfinished components.
 
 ## Source and development
 
