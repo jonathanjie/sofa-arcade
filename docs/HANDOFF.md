@@ -9,8 +9,8 @@ WS6 works on `feature/local-integration` from base
 [the frozen component matrix](../tests/integration/components.json),
 [the executed acceptance report](workstreams/integration.md), and
 [local setup/build instructions](LOCAL_RELEASE.md) before continuing.
-WS1–WS4 ready heads are included by merge ancestry. Outstanding essential
-native handoff and final product acceptance keep the aggregate PR draft and Odd Laws planned.
+All five ready component heads are included by merge ancestry. Final rendered
+and combined native acceptance keep the aggregate PR draft and Odd Laws planned.
 Do not combine moving owner-branch tips or copy unfinished component files.
 
 Shared production and portable inputs now live in `scripts/runtime-files.mjs`.

@@ -1,0 +1,179 @@
+name: Desktop Mac checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop.yml'
+      - 'server/**'
+      - 'game/**'
+      - 'games/**'
+      - 'ui/**'
+      - 'public/assets/**'
+      - 'drizzle/**'
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop.yml'
+      - 'server/**'
+      - 'game/**'
+      - 'games/**'
+      - 'ui/**'
+      - 'public/assets/**'
+      - 'drizzle/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  packaged-runtime:
+    name: Staged runtime and lifecycle unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: desktop
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.22.3'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Install locked desktop tooling only
+        run: npm ci --ignore-scripts
+      - name: Stage verified Linux Node for portable host tests
+        run: node scripts/prepare.mjs --target x86_64-unknown-linux-gnu
+      - name: Test manifest, staged host, shutdown, SQLite and real SSE
+        run: npm test
+      - name: Test native protocol and configuration without GUI dependencies
+        run: |
+          rustup toolchain install 1.100.0 --profile minimal
+          cargo +1.100.0 test --locked --manifest-path src-tauri/Cargo.toml --no-default-features
+      - name: Existing game and room regressions
+        working-directory: .
+        run: npm test
+
+  mac-native:
+    name: Native ${{ matrix.arch }} build and launch
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+            node_arch: arm64
+            target: aarch64-apple-darwin
+            build_suffix: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+            node_arch: x64
+            target: x86_64-apple-darwin
+            build_suffix: intel
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    env:
+      SOFA_TEST_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOFA_EVIDENCE_DIR: ${{ github.workspace }}/desktop/evidence
+      CARGO_TERM_COLOR: never
+    defaults:
+      run:
+        working-directory: desktop
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.22.3'
+          architecture: ${{ matrix.node_arch }}
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Verify real runner and Rust target architecture
+        run: |
+          test "$(uname -m)" = '${{ matrix.arch }}'
+          test "$(node -p process.arch)" = '${{ matrix.node_arch }}'
+          rustup toolchain install 1.100.0 --profile minimal --target '${{ matrix.target }}'
+          test "$(rustc +1.100.0 -vV | sed -n 's/^host: //p')" = '${{ matrix.target }}'
+          mkdir -p evidence artifacts/production
+          git rev-parse HEAD > evidence/tested-commit.txt
+          uname -a > evidence/runner.txt
+          sw_vers >> evidence/runner.txt
+          rustc +1.100.0 -vV >> evidence/runner.txt
+          node --version >> evidence/runner.txt
+          xcodebuild -version >> evidence/runner.txt
+      - name: Install locked desktop tooling only
+        run: npm ci --ignore-scripts
+      - name: Build production app and DMG without native test feature
+        id: build-production
+        env:
+          RUSTUP_TOOLCHAIN: '1.100.0'
+          # Local ad-hoc signing requires no credentials. This is not Developer ID
+          # signing or notarization, and does not change Gatekeeper policy.
+          APPLE_SIGNING_IDENTITY: '-'
+        run: npm run build:mac:${{ matrix.build_suffix }}
+      - name: Preserve production bundle and inspect its signature
+        id: preserve-production
+        run: |
+          ditto 'src-tauri/target/${{ matrix.target }}/release/bundle/macos/Sofa Arcade.app' 'artifacts/production/Sofa Arcade.app'
+          codesign --verify --deep --strict 'artifacts/production/Sofa Arcade.app'
+          codesign -dv --verbose=4 'artifacts/production/Sofa Arcade.app' 2> evidence/signature.txt
+          ditto -c -k --sequesterRsrc --keepParent 'artifacts/production/Sofa Arcade.app' 'artifacts/sofa-arcade-${{ matrix.target }}.app.zip'
+          cp src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg artifacts/
+          shasum -a 256 artifacts/*.zip artifacts/*.dmg > evidence/production-sha256.txt
+          cargo +1.100.0 tree --locked --manifest-path src-tauri/Cargo.toml --edges normal > evidence/production-dependencies.txt
+          if rg 'tauri-plugin-wdio' evidence/production-dependencies.txt; then
+            exit 1
+          fi
+      - name: Native production startup, two seats, SSE, persistence and failure cases
+        run: npm run test:native:release -- --app "$GITHUB_WORKSPACE/desktop/artifacts/production/Sofa Arcade.app"
+      - name: Build separate instrumented native acceptance app
+        if: ${{ !cancelled() && steps.preserve-production.outcome == 'success' }}
+        id: build-instrumented
+        env:
+          RUSTUP_TOOLCHAIN: '1.100.0'
+          APPLE_SIGNING_IDENTITY: '-'
+        run: npm run build:native:${{ matrix.build_suffix }}
+      - name: Native WKWebView collection, room and persistent-credential screenshots
+        if: ${{ !cancelled() && steps.build-instrumented.outcome == 'success' }}
+        env:
+          SOFA_APP_PATH: ${{ github.workspace }}/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/Sofa Arcade.app
+        run: npm run test:native:ui
+      - name: Upload production builds and native evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sofa-arcade-${{ matrix.target }}-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            desktop/artifacts/*.zip
+            desktop/artifacts/*.dmg
+            desktop/evidence/*.json
+            desktop/evidence/*.txt
+            desktop/evidence/*.png
+            desktop/stage/runtime-inventory.json
+            desktop/stage/licenses/NODE-PROVENANCE.json
+      - name: Native acceptance summary
+        if: always()
+        run: |
+          {
+            echo '## Sofa Arcade macOS acceptance'
+            echo 'Target: `${{ matrix.target }}`; runner: `${{ matrix.runner }}`.'
+            echo 'Exact tested source: `${{ github.event.pull_request.head.sha || github.sha }}`.'
+            echo 'Production app/DMG are separate from the instrumented native WebDriver build.'
+            echo 'See artifact JSON and screenshots for completed checks; a missing or failed report is not a passing launch.'
+            echo 'Hardware/distribution gates: physical phones and Wi-Fi, real disconnected internet, TV casting, device audio, physical sleep/wake, Developer ID/notarization and downloaded-app Gatekeeper acceptance.'
+          } >> "$GITHUB_STEP_SUMMARY"

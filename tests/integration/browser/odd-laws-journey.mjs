@@ -96,14 +96,30 @@ async function assertTouchTargets(run, page, selector, expectedCount, name) {
   assert.deepEqual(small, [], `${name}: primary controls must be at least 44×44 CSS pixels`);
 }
 
-async function assertTVFits(run, page, name) {
+async function assertTVFits(run, page, name, { rematch = false } = {}) {
   const bounds = await page.evaluate(() => {
     const rect = document.querySelector('.ols-tv').getBoundingClientRect();
-    return { viewport: { width: innerWidth, height: innerHeight }, top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, height: rect.height, scrollY };
+    const sharedControls = [...document.querySelectorAll('#collection-chrome button, #collection-room-actions button, #collection-room-actions a, #collection-room-actions input, #collection-room-actions select')].map(node => {
+      const rect = node.getBoundingClientRect(), style = getComputedStyle(node);
+      return {
+        action: node.dataset.action, top: rect.top, bottom: rect.bottom,
+        left: rect.left, right: rect.right, width: rect.width, height: rect.height,
+        visible: !!node.getClientRects().length && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0',
+      };
+    });
+    return { viewport: { width: innerWidth, height: innerHeight }, top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, height: rect.height, scrollY, sharedControls };
   });
   (run.evidence.tvLayouts ||= []).push({ name, ...bounds });
   assert.ok(bounds.top >= -1 && bounds.bottom <= bounds.viewport.height + 1 && bounds.left >= -1 && bounds.right <= bounds.viewport.width + 1,
     `The full TV board including active laws must fit without scrolling (${name}): ${JSON.stringify(bounds)}`);
+  const visible = bounds.sharedControls.filter(control => control.visible);
+  if (rematch) {
+    const controls = visible.filter(control => control.action === 'rematch');
+    assert.equal(controls.length, 1, 'The finished host screen exposes one visible shared rematch control');
+    assert.ok(controls[0].width >= 44 && controls[0].height >= 44, 'Fitting the shared rematch control preserves a 44px minimum target');
+  }
+  const clipped = visible.filter(control => control.top < -1 || control.bottom > bounds.viewport.height + 1 || control.left < -1 || control.right > bounds.viewport.width + 1);
+  assert.deepEqual(clipped, [], `Shared TV controls, including rematch, must fit completely without scrolling (${name})`);
 }
 
 async function assertSealedProjections(run, live, before, first, vote) {
@@ -520,6 +536,7 @@ export async function playOddMatch(run, live, rules, { policy = 'rich', recovery
         await phone.locator(`[data-action="phone-law"][data-choice-id="${votes[id].choiceId}"]`).click();
         await phone.locator(`[data-action="phone-bid"][data-bid="${votes[id].bid}"]`).click();
         const accepted = await clickCommand(run, live, phone, '[data-action="phone-seal"]', policy);
+        assert.equal(accepted.command.action.type, 'commitCouncil');
         if (id === first) {
           await assertSealedProjections(run, live, room, first, votes[first]);
           const retry = await request(run, actionPath(live.code), { token: live.tokens[first], body: accepted.command });
@@ -567,6 +584,7 @@ export async function playOddMatch(run, live, rules, { policy = 'rich', recovery
       selector = '[data-action="phone-confirm-build"]';
     }
     const accepted = await clickCommand(run, live, phone, selector, policy);
+    assert.deepEqual(accepted.command.action, selected, 'The actual rendered control submits exactly the public-state decision');
     if (view.session === 1 && view.actionIndex === 0) staleCommand = accepted.command;
     assert.equal(accepted.room.revision, room.revision + 1);
     if (selected.type === 'build' && accepted.room.state.session === view.session) {
@@ -595,7 +613,7 @@ export async function playOddMatch(run, live, rules, { policy = 'rich', recovery
   for (const [page, name] of [[live.tv, 'tv'], ...IDS.map(id => [live.phones[id], id])]) {
     await noHorizontalOverflow(page);
     await run.screenshot(page, `${policy}-final-${name}`);
-    if (name === 'tv') await assertTVFits(run, page, `${policy}-final-1280x720`);
+    if (name === 'tv') await assertTVFits(run, page, `${policy}-final-1280x720`, { rematch: true });
     for (const id of name === 'tv' ? IDS : [name]) {
       const expected = room.state.result.winner === id || room.state.result.winner === 'tie' ? 'celebrate' : 'disappointed';
       assert.equal(await page.locator(`[data-character="${id}"]`).first().getAttribute('data-character-state'), expected);

@@ -57,9 +57,9 @@ include it in an archive, screenshot bundle, or bug report.
 
 ## Native Mac application
 
-The native component is supplied by WS5. Until its ready head is included in
-the component matrix, this is a pending delivery path, not a downloadable
-accepted release. A completed Tauri app starts its bundled local host itself;
+The tested WS5 component is included in the component matrix. The combined
+Mac artifacts must still pass final acceptance before becoming an accepted
+release. The Tauri app starts its bundled local host itself;
 players do not install Node or keep Terminal open. Its saved origin and private
 application-data database allow quit/relaunch recovery.
 
@@ -79,7 +79,7 @@ room route. Host and phone credentials remain in their respective webview or
 browser storage. The portable `.sofa-lan` store and native application-data
 store are separate; switching packages does not migrate an in-progress room.
 
-After the tested WS5 handoff is incorporated, use the commands in
+For the incorporated tested WS5 component, use the commands in
 `desktop/README.md` on the matching Mac architecture. The owner currently
 targets macOS 13.5 or newer, Apple Silicon and Intel, with a pinned Node
 24.22.3 runtime and locked nested build dependencies. Development requires

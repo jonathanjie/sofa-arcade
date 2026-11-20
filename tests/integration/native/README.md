@@ -35,7 +35,7 @@ npm --prefix desktop ci --ignore-scripts
 rustup toolchain install 1.100.0 --profile minimal --target aarch64-apple-darwin
 RUSTUP_TOOLCHAIN=1.100.0 APPLE_SIGNING_IDENTITY=- npm --prefix desktop run build:native:arm64
 SOFA_APP_PATH="$GITHUB_WORKSPACE/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Sofa Arcade.app" \
-SOFA_TEST_COMMIT="$GITHUB_SHA" \
+SOFA_TEST_COMMIT="$(git rev-parse HEAD)" \
 SOFA_EVIDENCE_DIR="$GITHUB_WORKSPACE/tests/integration/evidence/native" \
 node tests/integration/native/run.mjs
 ```
@@ -62,9 +62,9 @@ internet-disconnected hardware, trusted physical audio-unlock gestures, device
 audio, sleep/wake, TV casting, Developer
 ID/notarization and downloaded-app Gatekeeper behavior remain separately reported.
 
-Current preparation was source-reviewed against WS5 draft
-`3a2bd4e0bc498042ed54581cef88e544855626af`, including its fresh-DOM visibility
-wait correction; syntax checks pass. A prepared test is
+Current preparation was source-reviewed against the ready WS5 head
+`618fc837f2f24f55a3aad1477ea9cf35ff478faf`, including its fresh-DOM visibility
+wait correction and the exact locked driver input implementation; syntax checks pass. A prepared test is
 not a native pass. Recheck the delivered WS5 setup contract and run this suite
 at the proposed final integration commit before counting acceptance.
 

@@ -5,11 +5,12 @@
 Work is on `feature/local-integration` in a dedicated clone. Base `main` is
 `e34b0015399cb9791b175987adf1fab1b542565a` (20 November 2026).
 
-**Status: assembling reviewed components; not a complete local release.** WS1–WS4
-are included at their explicitly ready, tested heads. WS5 has a draft PR with
-an outstanding final native gate and handoff. No component
-code is copied from an unfinished working tree. Odd Laws Society remains planned
-until real end-to-end acceptance passes.
+**Status: all five reviewed components assembled; final release acceptance pending.**
+WS1–WS5 are included at their explicitly ready, tested heads. The complete
+browser game journeys have passed, but inspection found a shared 720p rematch
+control clipping below the viewport; the corrected final geometry gate and
+combined native acceptance remain pending. Odd Laws stays planned until that
+rendered candidate is accepted. No unfinished component branch tip is included.
 
 The machine-readable checkpoint is
 [`tests/integration/components.json`](../../tests/integration/components.json).
@@ -22,7 +23,7 @@ immutable head. A later head is a new candidate requiring affected checks again.
 | WS2 private platform | `feature/local-platform` | #7 — `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Included; ready handoff and owned CI verified |
 | WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — `87693dd61af1b6a011a26da814fc884f85bca809` | Included; ready handoff and owned CI verified |
 | WS4 media/music | `feature/odd-laws-media` | #8 — `be49b175a9e87a6f3e3cb109a48c1d8b2b71ca85` | Included; ready handoff and owned CI verified |
-| WS5 Tauri | `feature/tauri-local` | #6 — observed `618fc837f2f24f55a3aad1477ea9cf35ff478faf` | Draft; not incorporated |
+| WS5 Tauri | `feature/tauri-local` | #6 — `618fc837f2f24f55a3aad1477ea9cf35ff478faf` | Included; ready handoff and both native architectures verified |
 
 Preferred review/merge order: WS1, WS2, WS3, WS4, WS5, then WS6. An aggregate WS6
 candidate depends on all included component PRs. This session does not merge
@@ -430,3 +431,71 @@ accurately. It checks the real WKWebView AudioContext running state and saved
 preferences, but does not label scripted events as trusted OS gestures.
 Trusted physical gesture unlocking and audible speaker output remain explicit
 hardware checks. No component-owned native source was changed.
+
+### Complete gameplay candidate and WS5 tested handoff
+
+At `ab9a2a134b1e37a714d7b91a56695c4b7efd7273`,
+[run 44708658794](https://github.com/jonathanjie/sofa-arcade/actions/runs/44708658794)
+passed every runnable protocol, package, build, component and browser job.
+Independent inspection of
+[46 viewport screenshots and three browser reports](https://github.com/jonathanjie/sofa-arcade/actions/runs/44708658794/artifacts/14615953252)
+confirmed clean exact source, with no browser exceptions, static failures or
+external requests. Both initial Chairs completed rich matches (54–51 and 49–46),
+then a 4–4 tie and a 31–31 full-city/exhausted-stock rematch: **144 actual city
+actions and 48 council commands**. Each rich match emitted 18 Build, 8 Work,
+5 Festival and 5 Lobby commands. The full-city match built 18 plots, worked
+18 times and exhausted nine stacks. The dedicated tie used 36 Work actions.
+The 191 ordinary command observations record HTTP 200 and exactly one revision
+advance; the remaining seal is covered by the explicit four dropped
+acknowledgments and one recovery test.
+
+Of those command observations, 176 response bodies were read directly and
+15 used the narrowly recorded CDP cache fallback. The 191 browser observations
+per viewer measured TV median **31.73 ms / p95 52.03 ms**, Jon **31.27 / 50.41 ms**
+and Lydia **31.53 / 49.14 ms**. These include loopback HTTP/SSE, rendering,
+driver scheduling, up to 40 ms observation polling and any extra authenticated
+GET. They are not device, Wi-Fi or casting measurements.
+[Independent protocol evidence](https://github.com/jonathanjie/sofa-arcade/actions/runs/44708658794/artifacts/14615743809)
+contains 504 numeric viewer observations on clean Node 24.22.3 / Linux x64;
+all statistics recompute. Odd Laws p95 was **6.877–10.445 ms** for POST start to
+parsed SSE only. Protocol p50 uses nearest rank; browser median averages the
+middle values. The root job passed **81 baseline and 51 integration tests**,
+with only the then-missing WS5 manifest skipped. These results do not establish
+native acceptance.
+
+Visual inspection caught a gap in the otherwise passing browser gate: it
+measured the game board, but the shared final rematch button extended to about
+y=733 on 720p. The shared results-only spacing fix recovers 18 px while retaining
+the complete button and font size. The next gate measures every visible shared
+TV control and requires the final rematch target to remain at least 44×44 px.
+The catalog remains planned until that rerun passes.
+
+WS5 PR #6 is now explicitly ready at
+`618fc837f2f24f55a3aad1477ea9cf35ff478faf`.
+[Final native component CI](https://github.com/jonathanjie/sofa-arcade/actions/runs/44706214389)
+and [Game checks](https://github.com/jonathanjie/sofa-arcade/actions/runs/44706214344)
+passed. Both matching architecture jobs built and launched production bundles,
+passed 14 production checks and two WKWebView sessions.
+The [ARM artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44706214389/artifacts/14615377834)
+and [Intel artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44706214389/artifacts/14615508290)
+are component evidence; final combined artifacts are still required.
+
+The sole native correction appends 79 explicit runtime entries to
+`desktop/runtime-manifest.json`, for **104 total**. Working-candidate Linux
+staging, all **12 desktop tests** and runtime verification pass with the
+checksum-verified Node 24.22.3 executable, ESM and SQLite, including no Node on
+PATH. All **five portable/derived/runtime closure tests** now pass with no skips.
+Rust is not installed in this integration container; its 11 tests run in the
+exact-head desktop workflow. Native files other than the manifest remain
+identical to the owner's accepted head.
+
+The strict release runner and native dependency gate also require Odd Laws to
+be enabled after rendered acceptance. Including all five components alone
+cannot qualify a game whose acceptance is incomplete as release ready.
+
+The owner Mac workflow's optional dependency-text guard used `rg`, which is not
+present on the observed runner. Its separate production binary checks and the
+independent artifact inspection passed. The root native workflow adds an
+explicit default-production dependency-graph check using the available standard
+`grep` before building the separate instrumented app. No owner workflow is
+modified; production artifacts still undergo the owner's binary checks.

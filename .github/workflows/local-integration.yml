@@ -211,6 +211,13 @@ jobs:
           node-version: '22'
       - name: All five tested handoffs must be included before release readiness
         run: npm run verify:components
+      - name: Odd Laws must pass the rendered candidate and be enabled before native release acceptance
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { getGame } from './games/catalog.mjs';
+          assert.equal(getGame('odd-laws-society')?.status, 'playable', 'Odd Laws remains planned pending complete rendered acceptance.');
+          NODE
 
   native-integrated:
     name: Integrated WKWebView (${{ matrix.arch }})
@@ -260,6 +267,13 @@ jobs:
           sw_vers >> tests/integration/evidence/native/runner.txt
       - name: Install only locked desktop acceptance tooling
         run: npm --prefix desktop ci --ignore-scripts
+      - name: Verify the production dependency graph excludes the embedded test driver
+        run: |
+          cargo tree --locked --manifest-path desktop/src-tauri/Cargo.toml --edges normal > tests/integration/evidence/native/production-dependencies.txt
+          if grep -q 'tauri-plugin-wdio' tests/integration/evidence/native/production-dependencies.txt; then
+            echo 'The default production dependency graph includes the native test driver.' >&2
+            exit 1
+          fi
       - name: Build separate instrumented native acceptance app
         run: npm --prefix desktop run build:native:${{ matrix.suffix }}
       - name: Real WKWebView Odd Laws, sealed projection, local assets and root relaunch

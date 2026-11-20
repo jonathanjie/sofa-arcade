@@ -125,18 +125,33 @@
       "id": "WS5",
       "branch": "feature/tauri-local",
       "report": "docs/workstreams/tauri.md",
-      "pr": null,
-      "head": null,
-      "status": "awaiting-handoff",
+      "pr": 6,
+      "head": "618fc837f2f24f55a3aad1477ea9cf35ff478faf",
+      "status": "included",
       "protectedPaths": [
         "desktop",
         ".github/workflows/desktop.yml"
       ],
-      "postHandoffCorrections": [],
-      "observedCheckpoint": {
-        "pr": 6,
-        "head": "618fc837f2f24f55a3aad1477ea9cf35ff478faf",
-        "reason": "Final owner handoff checkpoint remains draft while native CI reruns; earlier3a2bd4e production and WKWebView gates passed both architectures and were independently inspected."
+      "postHandoffCorrections": [
+        {
+          "path": "desktop/runtime-manifest.json",
+          "blob": "ebd5dcc48d90b4639ab916095cc0e17ce12f3a02",
+          "mode": "100644",
+          "reason": "Append exactly79 reviewed game/client/UI/media runtime entries to the existing25-file manifest. No native code, build settings, owned tests, or workflow changes.",
+          "verification": "104-file Linux stage and independent manifest closure pass; bundled Node24.22.3 executes ESM/SQLite with no Node on PATH;12 desktop tests pass. Final combined macOS workflows remain required."
+        }
+      ],
+      "review": {
+        "handoff": "PR #6 explicitly ready at618fc837; final owner report and all three exact-head desktop jobs passed on matching architectures.",
+        "localChecks": [
+          "104 explicit runtime files staged and verified after the entry-only integration extension",
+          "12 desktop runtime/bootstrap tests passed on Linux using the pinned bundled Node",
+          "Earlier3a2bd4e ARM/Intel production artifacts independently byte/hash inspected; final618fc837 runtime code unchanged, test/report delta reviewed"
+        ],
+        "ciRuns": [
+          44706214389,
+          44706214344
+        ]
       }
     }
   ]

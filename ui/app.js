@@ -429,6 +429,7 @@ function renderCollectionMatch() {
   $('#collection-chrome').innerHTML=header();
   $('#collection-notices').innerHTML=notices();
   $('#collection-room-actions').innerHTML=state.room?.phase==='finished'&&state.role==='host'?`<button class="button" data-action="rematch" ${state.busy?'disabled':''}>${icon('reset')} Start a new council</button>`:'';
+  app.querySelector('.collection-match').classList.toggle('has-room-actions',!!$('#collection-room-actions').firstElementChild);
   const overlays=$('#collection-overlays'),hadModal=!!overlays.querySelector('.modal'),markup=modal();
   if(markup!==collectionModalHTML){
     const focused=document.activeElement;

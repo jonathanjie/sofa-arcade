@@ -51,3 +51,6 @@
 /* Embedded boards share the viewport with collection chrome. Reclaim vertical
    spacing on short TVs without shrinking the game's text, cards, or controls. */
 @media(min-width:1000px) and (max-height:780px){.collection-match:not(.is-controller){padding-top:4px;padding-bottom:4px}.collection-match:not(.is-controller) .topbar{margin-bottom:4px}.collection-match:not(.is-controller) #collection-game-root,.collection-match:not(.is-controller) .ols-game-shell{min-height:0}.collection-match:not(.is-controller) .ols-game-shell{padding-top:6px;padding-bottom:4px}}
+/* Results add the host's rematch control below the board. Preserve its full
+   target and type size by sharing the surrounding vertical space. */
+@media(min-width:1000px) and (max-height:780px){.collection-match.has-room-actions .topbar{margin-bottom:0}.collection-match.has-room-actions .ols-game-shell{padding-bottom:0}.collection-match.has-room-actions #collection-room-actions{padding-top:2px}}

@@ -3,10 +3,14 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { checkComponentLock } from './component-lock.mjs';
+import { getGame } from '../../games/catalog.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const strict = process.argv.includes('--require-complete');
 const checkpoint = await checkComponentLock({ complete: strict });
+if (strict && getGame('odd-laws-society')?.status !== 'playable') {
+  checkpoint.errors.push('Odd Laws has not passed integrated acceptance and been enabled in the collection.');
+}
 for (const message of checkpoint.waiting) console.log(`PENDING COMPONENT: ${message}`);
 if (checkpoint.errors.length) {
   for (const message of checkpoint.errors) console.error(message);
