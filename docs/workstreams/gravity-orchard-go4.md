@@ -6,7 +6,8 @@
 - Branch: `feature/gravity-orchard-tv`.
 - Base fetched from `main`: `6c6eb9343958da591b4488366c2ada4000e3ba08`.
 - Contract: frozen Gravity Orchard v0.2 pack at that base.
-- Current state: component implementation complete; rendered CI validation and screenshot review in progress. This report will record actual final results before handoff.
+- Handoff state: component-ready. The complete TV/tutorial implementation has passed the owned Chromium fixture suite, screenshot inspection and repairs. Final integration remains GO7's responsibility.
+- Pull request: [GO4: Gravity Orchard TV and tutorial #14](https://github.com/jonathanjie/sofa-arcade/pull/14). Its description records the exact final tested submitted SHA; the workflow also writes `tests/tested-commit.txt` into each evidence artifact.
 - No shared shell, phone, engine, transport, media pack, registry or production allowlist changes. The game remains planned. No merge or deployment.
 
 ## Runtime exports
@@ -37,7 +38,7 @@ The TV accepts the exact safe `PublicView`. It clones the listed fields and reje
 
 `reducedMotion` accepts a boolean, a live zero-argument getter or a MediaQueryList-like object. The OS reduced-motion preference always wins. Live changes update the existing scene without remounting/subscription loss. Essential force/gust arrows, final positions and basket/gate state remain visible.
 
-`now` is a monotonic millisecond presentation clock. The timeline buffers at most twelve accepted snapshots, renders 75 ms behind the newest received tick, interpolates only between known positions, and never extrapolates. Latest authoritative membership immediately removes caught fruit. Phase/epoch/level/match changes and reconnect snap cleanly. Old ticks/epochs and recently retired match IDs are rejected; GO2 remains responsible for stream ordering. After 750 ms without an active snapshot the TV displays a stale warning; the last known positions and all score/time fields remain fixed.
+`now` is a monotonic millisecond presentation clock. The timeline buffers at most twelve accepted snapshots, renders 75 ms behind the newest received tick, interpolates only between known positions, and never extrapolates. Latest authoritative membership immediately removes caught fruit. Phase/epoch/level/match changes and reconnect snap cleanly. A higher recovery epoch can restore a lower checkpoint tick; old ticks within the same epoch, old epochs and recently retired match IDs are rejected. GO2 remains responsible for stream ordering. After 750 ms without an active snapshot the TV displays a stale warning and held-view presence; the last known positions and all score/time fields remain fixed.
 
 ## Lifecycle and tutorial
 
@@ -54,6 +55,11 @@ Both mounts support repeated mount/dispose, ignore late async work and release R
 ## Browser inventory and media injection
 
 The exact eleven browser modules are listed in `ui/games/gravity-orchard/tv/runtime-files.json`; production dependencies are empty. GO7 must add that closure to shared browser/LAN/native/portable inventories. Exclude nested package files, tests, fixtures, reports, screenshots and READMEs from production delivery.
+
+| Owned area | Runtime files |
+| --- | --- |
+| `ui/games/gravity-orchard/tv/` | `index.mjs`, `public-view.mjs`, `timeline.mjs`, `effects.mjs`, `styles.mjs`, `scene.mjs`, `scene-style.mjs` |
+| `ui/games/gravity-orchard/tutorial/` | `index.mjs`, `lessons.mjs`, `graphics.mjs`, `styles.mjs` |
 
 Final reusable media belongs to GO5. This component uses code-native diagnostic silhouettes until injected. It accepts `{assets,characterStates}` or adapters exposing `resolve(key)`/`getAsset(key)`. Canonical keys include `fruit.apple`, `basket.apple`, `environment.morning-delivery`, and `character.jon.idle`; equivalent hyphen keys and `characterStates` references work. Supported character vocabulary: Jon/Lydia idle/lean/brace/cheer; Lala idle/forecast/gust/pleased. `cheer` also recognizes `celebrate`. Root-relative URLs, declared dimensions and atlas frame rectangles/durations are supported. Failed images preserve the fallback shape. Terrain collision and labels always come from geometry/public state, never from an image.
 
@@ -73,15 +79,32 @@ npm run test:browser
 
 The standalone fixture is `npm run fixture`, at `http://127.0.0.1:4194/tv/fixtures/`. The fixture toolbar explicitly identifies injected diagnostic snapshots; it is excluded from normal runtime delivery. Seventeen scenarios cover all phases, eight simultaneous fruit, full baskets, gate forecast/deferred/closed, Lala forecast/active gust, reconnect, timeout, ordinary/perfect final results and untimed practice. A coherent injected three-stage transcript exercises the actual view; it does not claim engine solvability.
 
-Executed so far:
+The complete runtime and tests were verified at `8f0e3f9b0e364f8554c68bc8f1db41e3443a29cc` in [GO4 CI run 44778298198](https://github.com/jonathanjie/sofa-arcade/actions/runs/44778298198):
 
-- Root `npm test`: 81/81 passing.
-- Root `npm run install:ci` and `npm run build`: passing; no root manifest/lock changes.
-- Owned Node checks: 16/16 passing before rendered review.
-- Browser spec discovery: 18 rendered tests, including 720p/1080p lifecycle and tutorial sweeps, layout bounds, alignment, authority, malformed/stale data, presence, host commands, repeat event IDs, motion preferences, failed assets and disposal.
-- Executor Chromium cannot launch: `ProcessSingleton socket() failed: Operation not permitted`. The separate cloud browser cannot reach this executor's loopback. Neither is counted as a rendered pass. The owned workflow executes the locked real Chromium suite in GitHub Actions and retains screenshots/HTML/JSON/traces with the exact tested SHA.
+| Check | Actual result |
+| --- | --- |
+| Owned public fixtures, timeline, event identity and module isolation | 19/19 passed |
+| Existing collection rules and rooms | 81/81 passed |
+| Locked Playwright 1.57.0 / Chromium rendered suite | 20/20 passed; zero failed, skipped or flaky |
+| 1280×720 and 1920×1080 lifecycle/tutorial screenshots | 52 PNG captures retained in the run artifact |
+| Production build | `npm run install:ci` and `npm run build` passed locally; build repeated after the first repairs |
+| Shared generated-file integrity | `node scripts/check-derived.mjs` passed; no shared generated changes |
+| Ownership and whitespace | Only GO4's four allowed areas changed; `git diff --check` passed |
 
-Final CI runs, inspected screenshot findings and any repairs will be appended before component handoff.
+Rendered coverage includes all seventeen lifecycle/hazard scenarios, every tutorial lesson, ordinary/perfect three-stage transcripts, timeout, same/new-seed rematch, completed-stage retry, shared Help pause, pending/rejected commands, actual SVG interpolation and endpoint freezing, malformed/stale data, reconnect/presence, repeated event IDs, live reduced motion, missing assets and disposal. Keyboard focus stays in the tutorial, Escape restores focus without resuming, primary controls fit both viewports, and the repaired Next/Brake hover states meet the tested 4.5:1 text-contrast threshold.
+
+Actual screenshots were inspected, including all sixteen tutorial captures and both-resolution dense/hazard pairs, plus waiting, pause, reconnect, full baskets, ordinary/perfect results, reduced motion and failed-asset fallbacks. Inspection found and repaired the recipe card covering Lydia's label, parent TV hover styling reducing tutorial button contrast, and a gate caption covering adjacent compost openings. The final 1080p gate capture and corrected 720p tutorial/forecast captures were re-opened and inspected. Targeted geometry/contrast assertions now guard those defects. An asynchronous fixture-count race was repaired by waiting for the valid rendered frame before injecting malformed data; the retained-state assertion remains intact.
+
+Four unmodified representative PNGs are committed under `tv/evidence/`:
+
+- [720p dense garden](../../ui/games/gravity-orchard/tv/evidence/tv-1280-dense.png)
+- [720p Lala gust forecast](../../ui/games/gravity-orchard/tv/evidence/tv-1280-gust-forecast.png)
+- [1080p deferred gate and bridge transfer](../../ui/games/gravity-orchard/tv/evidence/tv-1920-gate-deferred.png)
+- [720p isolated recipe tutorial](../../ui/games/gravity-orchard/tv/evidence/tutorial-1280-step-6.png)
+
+[Evidence provenance](../../ui/games/gravity-orchard/tv/evidence/provenance.json) records their source commit, run, artifact digest, capture hashes and all eleven runtime-file hashes. These are diagnostic fixture screenshots, not final art. The final evidence/report commit changes no runtime or tests; the owned workflow runs again on its exact submitted head. Full screenshots, HTML, JSON and failure traces are retained for fourteen days by each run; the four committed captures remain reviewable in Git.
+
+The executor's Chromium launch is restricted (`ProcessSingleton socket() failed: Operation not permitted`), and the separate cloud browser cannot reach its loopback. Neither attempt is counted as a rendered pass. The actual rendered passes above were obtained from the pinned Chromium browser in GitHub Actions.
 
 ## External acceptance gates
 
