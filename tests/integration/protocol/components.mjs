@@ -1,6 +1,6 @@
 import { access } from 'node:fs/promises';
 import { getGame } from '../../../games/catalog.mjs';
-import { getGameEngine } from '../../../games/registry.mjs';
+import { getGameEngine, oddLawsRoomEngine } from '../../../games/registry.mjs';
 import * as rooms from '../../../server/rooms.mjs';
 import { startFixtureServer } from './harness.mjs';
 
@@ -20,12 +20,11 @@ export async function oddComponents(t) {
     t.skip(message);
     return null;
   }
-  const [authority, previews, catalog] = await Promise.all([
-    import('../../../games/odd-laws-society/engine.mjs'),
+  const [previews, catalog] = await Promise.all([
     import('../../../games/odd-laws-society/preview.mjs'),
     import('../../../games/odd-laws-society/catalog.mjs'),
   ]);
-  return { engine: authority.engine, previews, catalog };
+  return { engine: oddLawsRoomEngine, previews, catalog };
 }
 
 export function seedForChair(engine, chair) {

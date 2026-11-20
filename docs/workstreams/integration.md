@@ -20,9 +20,9 @@ immutable head. A later head is a new candidate requiring affected checks again.
 | --- | --- | --- | --- |
 | WS1 engine | `feature/odd-laws-engine` | #4 — `a9d55b76c3c7d1da43836c350a0f7ce63820cecb` | Included; ready handoff and owned CI verified |
 | WS2 private platform | `feature/local-platform` | #7 — `adeefd5bd019e459f3f7a3fc4a921073cce3ec46` | Included; ready handoff and owned CI verified |
-| WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — observed `777bb73055e8c1b3214a7e94dd949886c2fde625` | Draft; not incorporated |
+| WS3 TV/phone UI | `feature/odd-laws-ui` | #5 — observed `30a7f076d0b7202fb2d530f71ab010369f81f2cf` | Draft; not incorporated |
 | WS4 media/music | `feature/odd-laws-media` | Not published at initial inspection | Awaiting tested handoff |
-| WS5 Tauri | `feature/tauri-local` | #6 — observed `d989530000828f1132388e487950f99cfd62190d` | Draft; not incorporated |
+| WS5 Tauri | `feature/tauri-local` | #6 — observed `792b52cc9cd1826a8c23c810baf576ecd89e122a` | Draft; not incorporated |
 
 Preferred review/merge order: WS1, WS2, WS3, WS4, WS5, then WS6. An aggregate WS6
 candidate depends on all included component PRs. This session does not merge
@@ -210,3 +210,79 @@ remain unserved. `room-client.mjs` enters preparation and the portable runtime.
 All **79 focused WS2 tests passed after the serving-entry extension**. This
 correction is documented in the immutable component matrix and will be retested
 with the final UI/media closure.
+
+### Exact WS1 + WS2 candidate and recovery correction
+
+A clean detached worktree at **`ad9dd79848d7714681353566125876599d66010a`**
+passed `npm test` (**81/81**), integration protocol (**14/14, zero skips**), and
+shared shell/audio (**12/12**). Both initial Chairs completed real six-session
+Odd Laws games through authenticated HTTP and three SSE streams; rich-policy
+results were **54–51** and **49–46**, with separate full-city/exhaustion and
+**4–4 tie** games. Differential serialized privacy checks covered either first
+voter, and sealed commitments survived SQLite restart. Legacy Sofa v1/v2
+completed with their original rules and rematched into v3.
+
+At that same head, [WS1 CI](https://github.com/jonathanjie/sofa-arcade/actions/runs/44702092032),
+[WS2 CI](https://github.com/jonathanjie/sofa-arcade/actions/runs/44702091979),
+[Game checks](https://github.com/jonathanjie/sofa-arcade/actions/runs/44702091996),
+and the production-build job all passed. The
+[integration run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44702091992)
+remained incomplete: the package graph now correctly reaches the missing WS4
+`/assets/odd-laws-society/manifest.json`, and the strict matrix still lacks
+WS3/WS4/WS5. [Protocol artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44702091992/artifacts/14613186721).
+
+The [rendered artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44702091992/artifacts/14613092750)
+proves the Sofa loading correction: a complete ten-round match, final results,
+rematch, SQLite restart, bare-root saved-host restoration, and explicit exit all
+passed in Chromium. Screenshots of the result and both narrow phones were
+visually inspected. No external request, console error or missing asset was
+recorded. The subsequent navigation-race test incorrectly compared raw storage
+`"null"` with JavaScript `null`; its assertion now parses the stored JSON while
+still requiring no active-room pointer. The full rerun remains necessary.
+
+A separate real-client regression then reproduced uncertain-command recovery:
+all POST acknowledgments are lost after a vote commits, SSE advances the phase,
+and the client must resolve that original request before accepting another. The
+shared bridge now calls the same client's `reconnect()` once when transport
+recovers, preserves the original request body/ID, retains an honest connection
+warning until resolved, and ignores late completion after disposal. The new
+regression and complete protocol suite passed **15/15** in the working candidate
+(zero skips); it will be revalidated at the next immutable checkpoint. The stricter
+privacy assertion also rejects any extra top-level room-envelope field.
+
+Local timing at clean `ad9dd79` used Node v24.22.3/Linux x64, HTTP on 127.0.0.1,
+POST start to parsed per-viewer SSE update, and a 60-second heartbeat. Across each
+36-action rich match, host medians were **5.904 ms** and **4.502 ms**, with p95
+**11.268 ms** and **8.714 ms**; per-phone observations are in the generated JSON.
+These are loopback transport measurements, not physical phone, Wi-Fi, browser
+paint, native presentation, or casting benchmarks.
+
+WS3 observed head `30a7f07` passes **33 Node + 61 Chromium** component tests;
+WS6's independent detached review confirms its unchanged tutorial/export
+contract and 12 runtime files. It awaits the final ready-PR handoff before inclusion.
+WS5 observed head `792b52c` now builds and passes production native lifecycle
+checks on both architectures, but WKWebView creation fails at the expected room
+code. It remains draft. WS6 prepares its own separate native combined-view and
+bare-root relaunch spec without editing unfinished desktop sources.
+
+### Shared error-code compatibility
+
+The canonical WS1 engine uses typed uppercase rule codes; WS2 deliberately
+reflects only its fixed lowercase message allowlist. A shared, server-only
+registry adapter now translates 12 explicit typed errors while retaining the
+real create/project/rebase/transition behavior. It rebuilds known errors with
+fixed text and no diagnostic properties, and lets unknown/untyped failures
+remain generically redacted. Invalid bids, sealed votes and insufficient funds
+therefore receive useful safe messages. Neither component is altered. Three
+new integration tests cover real API rejection, unchanged authority, successful
+fallback and differential sealed-error privacy. The strict protocol suite now
+passes **18/18, zero skips** on the working candidate; the 79 focused WS2 tests
+also pass. The next committed CI run supplies immutable evidence.
+
+The root integration workflow now includes a real Odd Laws browser gate once
+WS1–WS4 are included, and separate Apple Silicon/Intel WKWebView integration
+jobs after the five-component readiness gate. The latter use the owner's
+feature-gated test app without changing native/component files and verify
+public modules, all final media, sealed TV projection, Build, and three actual
+processes for saved-root restoration and explicit exit. Syntax is verified;
+these are pending gates until the complete native combination runs.

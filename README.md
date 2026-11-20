@@ -1,8 +1,8 @@
 # Sofa Arcade
 
-A collection of living-room games for Jon and Lydia: one site, one source repository, one shared TV, and two phones. **Sofa Kingdoms** is the first playable game. Jon and Lydia are tiny mouse adventurers collecting crumbs while Lala rearranges the furniture.
+A collection of living-room games for Jon and Lydia: one local Mac host, one shared TV, two phone browsers, and one source repository. **Sofa Kingdoms** is the first playable game. Jon and Lydia are tiny mouse adventurers collecting crumbs while Lala rearranges the furniture.
 
-**Canonical source:** https://github.com/jonathanjie/sofa-arcade — development and review happen here; the existing ChatGPT Site remains the live host. See [GitHub workflow](docs/GITHUB_WORKFLOW.md).
+**Canonical source:** [jonathanjie/sofa-arcade](https://github.com/jonathanjie/sofa-arcade). This branch integrates the local Tauri release. See [local setup, builds and acceptance](docs/LOCAL_RELEASE.md), the [exact component checkpoint](tests/integration/components.json), and [integration evidence](docs/workstreams/integration.md). The existing hosted version is a separate delivery path; this work does not publish it.
 
 ## The collection
 
@@ -12,7 +12,7 @@ A collection of living-room games for Jon and Lydia: one site, one source reposi
 | Borrowed Minutes | Planned | A cooperative time-loop heist with echoes of earlier attempts |
 | Gravity Orchard | Planned | Rotate gravity to guide falling fruit into your baskets |
 | Afterglow Market | Planned | Build and trade at an unpredictable night market |
-| The Odd Laws Society | Planned | Change the shared rules and exploit clever combinations |
+| The Odd Laws Society | Planned pending integrated acceptance | Build a nine-plot borough through six sealed councils, finite markets and changing laws |
 | The Last Ninety Seconds | Planned | Reconstruct a mystery from clues split across two phones |
 | Footprints at Midnight | Planned | Hidden movement through a moonlit garden |
 
@@ -20,12 +20,12 @@ Planned entries describe the collection's direction; they do not start dummy mat
 
 ## Play
 
-1. Open the deployed site on a Mac or the TV browser, select **Sofa Kingdoms**, and host a game.
-2. Scan the room QR code on each phone, or open the same site and enter its six-character room code.
+1. Start the local host on the Mac (see below), open its printed LAN address, select **Sofa Kingdoms**, and host a game.
+2. Scan the room QR code on each phone, or open the same local address and enter its six-character room code.
 3. Choose Jon on one phone and Lydia on the other.
 4. Start the match from the TV. Use the phones for moves and actions.
 
-The TV can display the Mac's full-screen browser. The public Site uses server-backed rooms, so controllers do not have to be on the same Wi-Fi network. The owner has made this Site public. No account is needed to open the game on either phone.
+The TV can display the Mac's full-screen browser. The Mac and both phones use the same LAN for local play; no cloud account is required. The existing public Site retains its separate server-backed room path.
 
 **Practice** runs in one browser without a room or a second device and lets you control both characters.
 
@@ -73,7 +73,7 @@ New matches use rules version 3. Existing version 2 matches retain Jon as their 
 
 ## Development
 
-**Current build plan: Tauri and local play.** The [dispatch pack](docs/DISPATCH_LOCAL.md) contains six self-contained implementation prompts with separate ownership, tests, and PR requirements. Start the first five in parallel and use the sixth for final integration; all share the [local implementation contracts](docs/LOCAL_IMPLEMENTATION_CONTRACT.md). Desktop packaging begins with playable Sofa Kingdoms while Odd Laws Society is built. The Tauri app is planned, not yet delivered.
+**Current integration: Tauri and local play.** The [dispatch pack](docs/DISPATCH_LOCAL.md) and [local implementation contracts](docs/LOCAL_IMPLEMENTATION_CONTRACT.md) define the five components and shared acceptance. The real Odd Laws engine and private multiplayer platform are now incorporated at reviewed immutable heads. UI/media/native handoffs and complete product acceptance remain gates. The catalog stays planned until the actual journey passes; a draft candidate is not an accepted Mac release.
 
 Start with [AGENTS.md](AGENTS.md) and [docs/HANDOFF.md](docs/HANDOFF.md) to continue the project in another coding session. **GitHub `jonathanjie/sofa-arcade` is the source of truth.** Branch from its latest `main`, keep one game per feature branch, and reconcile upstream changes before merging. Sites keeps a deployment mirror for its publication workflow; it is not a competing development branch. [GitHub workflow](docs/GITHUB_WORKFLOW.md) describes the separate source and deployment checkouts.
 
@@ -89,7 +89,7 @@ npm run dev
 
 `npm run db:generate` is needed only for schema changes. The database migration is checked in under `drizzle/`. Apply it to the local D1 database before testing multiplayer in a local preview; production migrations are applied by Sites publication. See the installed Sites workflow for local migration and hosting commands.
 
-`ui/` contains the authored collection shell, game interface, tutorial, board forecast helpers, action prediction queue, transport, audio, and motion modules. `scripts/prepare-game.mjs` copies browser modules and the public game engine to served assets before development and builds. Generated artwork lives in `public/assets/`. The source character sheets are not included. When adding a browser module, update the production copy list in `scripts/prepare-game.mjs`, the local static allowlist in `server/lan.mjs`, and the portable allowlist in `scripts/package-lan.mjs`.
+`ui/` contains the authored collection shell, game interface, tutorial, board forecast helpers, action prediction queue, transport, audio, and motion modules. `scripts/prepare-game.mjs` copies browser modules and the public game engine to served assets before development and builds. Generated artwork lives in `public/assets/`. The source character sheets are not included. When adding a browser module, update `BROWSER_FILES` in `scripts/runtime-files.mjs`, the local static allowlist in `server/lan.mjs`, and, after its handoff, `desktop/runtime-manifest.json`. Preparation and the portable packager share the explicit runtime inventory. Odd Laws authority/projection are host-only; its browser closure is catalog, preview and safe errors.
 
 ### Local-play download
 
@@ -99,7 +99,7 @@ npm run dev
 
 `games/catalog.mjs` is the shared collection catalog. `games/registry.mjs` maps playable entries to server rule engines. Each room records its `gameId`; rooms created before this upgrade default to Sofa Kingdoms. Unknown and planned games are rejected before a room is written.
 
-Add the next game in this checkout, implement its board and phone controls, register its engine, and mark its catalog entry playable only when it is complete. Reuse the room joining, host/player credentials, presence, music settings, and collection navigation. Game-specific action validation, normalization for safe retries, and secrecy rules must be reviewed when registering a game with different actions or private information: the current Sofa Kingdoms room envelope intentionally exposes its entire public board.
+Add the next game in this checkout, implement its board and phone controls, register its engine, and mark its catalog entry playable only when it is complete. Reuse the room joining, host/player credentials, presence, music settings, and collection navigation. Game-specific action validation, normalization for safe retries, and secrecy rules must be reviewed for every private game. The WS2 room API projects each HTTP/SSE response for its authenticated viewer; only legacy Sofa Kingdoms intentionally exposes its full public board. The private command client preserves action identities through uncertain responses and never predicts with a private engine.
 
 The source repository and Site identity in `.openai/hosting.json` are retained. Do not register a second Site for another game in this collection.
 

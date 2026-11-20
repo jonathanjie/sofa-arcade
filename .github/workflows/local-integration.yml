@@ -64,6 +64,24 @@ jobs:
         run: node tests/integration/browser/sofa-kingdoms.mjs
         env:
           SOFA_EVIDENCE_DIR: tests/integration/evidence/ci
+      - name: Identify the pinned Odd Laws browser candidate
+        id: odd-laws
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import { getGame } from './games/catalog.mjs';
+          const lock = JSON.parse(readFileSync('tests/integration/components.json'));
+          const ready = ['WS1', 'WS2', 'WS3', 'WS4'].every(id => lock.components.find(item => item.id === id)?.status === 'included');
+          const candidate = getGame('odd-laws-society')?.status === 'playable' ? '0' : '1';
+          appendFileSync(process.env.GITHUB_OUTPUT, `ready=${ready}\ncandidate=${candidate}\n`);
+          console.log(ready ? `Real Odd Laws browser acceptance; candidate-only catalog resolver: ${candidate}` : 'Odd Laws browser acceptance is blocked by missing tested WS1–WS4 handoffs. The strict readiness job remains failed.');
+          NODE
+      - name: Complete real Odd Laws matches, both Chairs, private phones and rematch
+        if: steps.odd-laws.outputs.ready == 'true'
+        run: node tests/integration/browser/odd-laws.mjs
+        env:
+          SOFA_ACCEPTANCE_CANDIDATE: ${{ steps.odd-laws.outputs.candidate }}
+          SOFA_EVIDENCE_DIR: tests/integration/evidence/ci
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -98,3 +116,64 @@ jobs:
           node-version: '22'
       - name: All five tested handoffs must be included before release readiness
         run: npm run verify:components
+
+  native-integrated:
+    name: Integrated WKWebView (${{ matrix.arch }})
+    needs: component-readiness
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+            node_arch: arm64
+            target: aarch64-apple-darwin
+            suffix: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+            node_arch: x64
+            target: x86_64-apple-darwin
+            suffix: intel
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    env:
+      SOFA_TEST_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOFA_EVIDENCE_DIR: ${{ github.workspace }}/tests/integration/evidence/native
+      RUSTUP_TOOLCHAIN: '1.100.0'
+      APPLE_SIGNING_IDENTITY: '-'
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.3'
+          architecture: ${{ matrix.node_arch }}
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Verify actual Mac architecture and locked native toolchain
+        run: |
+          test "$(uname -m)" = '${{ matrix.arch }}'
+          test "$(node -p process.arch)" = '${{ matrix.node_arch }}'
+          rustup toolchain install 1.100.0 --profile minimal --target '${{ matrix.target }}'
+          test "$(rustc -vV | sed -n 's/^host: //p')" = '${{ matrix.target }}'
+          mkdir -p tests/integration/evidence/native
+          git rev-parse HEAD > tests/integration/evidence/native/tested-commit.txt
+          uname -a > tests/integration/evidence/native/runner.txt
+          sw_vers >> tests/integration/evidence/native/runner.txt
+      - name: Install only locked desktop acceptance tooling
+        run: npm --prefix desktop ci --ignore-scripts
+      - name: Build separate instrumented native acceptance app
+        run: npm --prefix desktop run build:native:${{ matrix.suffix }}
+      - name: Real WKWebView Odd Laws, sealed projection, local assets and root relaunch
+        run: node tests/integration/native/run.mjs
+        env:
+          SOFA_APP_PATH: ${{ github.workspace }}/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/Sofa Arcade.app
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-native-${{ matrix.target }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: tests/integration/evidence/native/
+          if-no-files-found: warn

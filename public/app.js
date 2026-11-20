@@ -368,8 +368,9 @@ function updateConnectionChrome() {
 function setNetworkConnection(value) {
   const next=connectionStatus(value);
   const changed=state.network!==next.state;
-  state.network=next.state;
-  collectionGame?.setConnection(next);
+  // A live stream can recover before an uncertain command acknowledgment.
+  // Keep the bridge's effective status until that original request is resolved.
+  state.network=(collectionGame?.setConnection(next)||next).state;
   updateConnectionChrome();
   if(changed&&state.gameId===SOFA_GAME_ID&&state.view==='game')render();
 }
@@ -437,6 +438,7 @@ function renderCollectionMatch() {
   audio.setScore(ODD_LAWS_GAME_ID,collectionModules.score);
   if(!collectionGame){
     try{
+      const initialConnection={state:state.network};
       collectionGame=createCollectionGame({
         root,mount:collectionModules.mount,createRoomClient:collectionModules.createRoomClient,
         viewer:state.role==='player'?{role:'player',playerId:state.playerId}:{role:'host'},
@@ -447,7 +449,7 @@ function renderCollectionMatch() {
         onStatus:status=>{if(collectionIdentity===identity){state.network=status.state;updateConnectionChrome();}},
         onExit:()=>goHome(),
       });
-      collectionGame.setConnection({state:state.network});
+      collectionGame.setConnection(initialConnection);
     }catch(error){collectionLoadError=error.message;root.innerHTML=`<div class="collection-loading" role="alert">${esc(error.message)}</div>`;}
   }else collectionGame.update(state.room);
 }

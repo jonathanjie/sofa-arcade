@@ -56,7 +56,7 @@ async function exitToCollection(page) {
 async function remainsOnCollection(page) {
   assert.equal(await page.locator('.arcade-home').count(), 1, 'A stale response must not resurrect its old view');
   assert.equal(new URL(page.url()).search, '', 'A stale response must not rewrite navigation');
-  assert.equal(await page.evaluate(() => localStorage.getItem('sofa-last-local-session-v1')), null, 'Explicit exit stays cleared after the delayed response');
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('sofa-last-local-session-v1') || 'null')), null, 'Explicit exit stays cleared after the delayed response');
   const invalidCredentialKeys = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('sofa-room:') && !/^sofa-room:[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/.test(key)));
   assert.deepEqual(invalidCredentialKeys, [], 'Late join credentials must never be saved under another/empty code');
 }

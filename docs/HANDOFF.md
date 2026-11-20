@@ -2,6 +2,25 @@
 
 This is a living-room game collection for Jon and Lydia: one Site, one source repository, a shared TV, and two phone controllers. Read [README.md](../README.md), [AGENTS.md](../AGENTS.md), and the current source before editing. This handoff includes the strategy, local-network, randomized-opening, GitHub migration, and parallel game-design updates; inspect version history and deployment status for the latest published release.
 
+## Local integration checkpoint
+
+WS6 works on `feature/local-integration` from base
+`e34b0015399cb9791b175987adf1fab1b542565a`. Read
+[the frozen component matrix](../tests/integration/components.json),
+[the executed acceptance report](workstreams/integration.md), and
+[local setup/build instructions](LOCAL_RELEASE.md) before continuing.
+WS1 and WS2 ready heads are included by merge ancestry. Outstanding essential
+UI/media/native handoffs keep the aggregate PR draft and Odd Laws planned.
+Do not combine moving owner-branch tips or copy unfinished component files.
+
+Shared production and portable inputs now live in `scripts/runtime-files.mjs`.
+Regenerate public modules/root HTML and the portable ZIP after source changes;
+verify the extracted archive, explicit LAN routes, and desktop manifest together.
+`npm run verify:components` / `npm run verify:local-release` are strict readiness
+gates. Reports distinguish exact committed checks, dirty diagnostics, native CI,
+and physical hardware acceptance. See the matrix for permitted serving-only
+post-handoff corrections.
+
 ## Project identity
 
 | Item | Value |

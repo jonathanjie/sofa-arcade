@@ -165,6 +165,13 @@ export function assertNoCredentials(text, live) {
   for (const privateKey of ['hostHash', 'tokenHash', 'clientHash', 'recentActions']) {
     assert.ok(!text.includes(`"${privateKey}"`), `serialized room response contains ${privateKey}`);
   }
+  const payload = JSON.parse(text);
+  const envelope = payload?.room || payload;
+  if (envelope && Object.hasOwn(envelope, 'state') && Number.isSafeInteger(envelope.revision)) {
+    assert.deepEqual(Object.keys(envelope).sort(),
+      ['code', 'expiresAt', 'gameId', 'phase', 'players', 'revision', 'state'],
+      'the projected room envelope must not acquire an additional private/debug field');
+  }
 }
 
 export function latencySummary(samples) {

@@ -12,7 +12,7 @@ import { BROWSER_FILES, runtimeFiles } from '../../../scripts/runtime-files.mjs'
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const prefix = 'sofa-arcade-local/';
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
-const forbidden = /(^|\/)(?:\.git|\.sofa-lan|\.env[^/]*|node_modules|fixtures|tests?|evidence)(?:\/|$)|\.(?:sqlite|sqlite3|db)(?:-wal|-shm)?$|\.test\.[cm]?js$|\.pem$/i;
+const forbidden = /(^|\/)(?:\.git|\.sofa-lan|\.env[^/]*|node_modules|fixtures|harness|tests?|__tests__|evidence)(?:\/|$)|\.(?:sqlite|sqlite3|db)(?:-wal|-shm)?$|\.test\.[cm]?js$|\.pem$/i;
 
 test('portable packager is reproducible and ignores adjacent private/development files', async () => {
   const temp = await mkdtemp(path.join(tmpdir(), 'sofa-package-determinism-'));
@@ -23,7 +23,7 @@ test('portable packager is reproducible and ignores adjacent private/development
       await copyFile(path.join(root, name), path.join(temp, name));
     }
     const canary = 'SOFA_ACCEPTANCE_FAKE_SECRET_MUST_NEVER_BE_PACKAGED';
-    for (const name of ['.env.test', '.sofa-lan/rooms.sqlite', '.git/config', 'games/odd-laws-society/fixtures/private.json', 'ui/never-ship.test.mjs']) {
+    for (const name of ['.env.test', '.sofa-lan/rooms.sqlite', '.git/config', 'games/odd-laws-society/fixtures/private.json', 'ui/never-ship.test.mjs', 'ui/games/odd-laws-society/harness/private-state.json']) {
       await mkdir(path.dirname(path.join(temp, name)), { recursive: true });
       await writeFile(path.join(temp, name), canary);
     }
@@ -75,7 +75,9 @@ test('generated production browser modules and root HTML match authored sources'
   for (const { url, source } of BROWSER_FILES) {
     assert.ok(!forbidden.test(url), `Browser path must not expose test/fixture state: ${url}`);
     assert.ok(!source.startsWith('server/') && !source.startsWith('desktop/'));
-    assert.ok(!(source.startsWith('games/odd-laws-society/') && /(?:engine|state|authority|private)/i.test(path.basename(source))), `Private engine excluded: ${source}`);
+    if (source.startsWith('games/odd-laws-society/')) {
+      assert.ok(['catalog.mjs', 'preview.mjs', 'errors.mjs'].includes(source.slice('games/odd-laws-society/'.length)), `Only reviewed public engine helpers belong in browser delivery: ${source}`);
+    }
     const generated = path.join(root, 'public', url.slice(1));
     assert.ok((await readFile(generated)).equals(await readFile(path.join(root, source))), `Run prepare-game after editing ${source}`);
   }
@@ -87,20 +89,32 @@ test('generated production browser modules and root HTML match authored sources'
 
 function references(text, kind) {
   const matches = [];
+  const add = (specifier, module = false) => matches.push({ specifier, module });
   if (kind === 'html') {
-    for (const match of text.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/g)) matches.push(match[1]);
+    for (const match of text.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/g)) add(match[1]);
   }
   if (kind === 'js') {
-    for (const match of text.matchAll(/\b(?:import|export)\s+(?:[^;\n]*?\s+from\s*)?["']([^"']+)["']/g)) matches.push(match[1]);
-    for (const match of text.matchAll(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/g)) matches.push(match[1]);
+    for (const match of text.matchAll(/\b(?:import|export)\s+(?:[^;\n]*?\s+from\s*)?["']([^"']+)["']/g)) add(match[1], true);
+    for (const match of text.matchAll(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/g)) add(match[1], true);
+    for (const match of text.matchAll(/\bnew\s+URL\s*\(\s*["']([^"']+)["']\s*,\s*import\.meta\.url\s*\)/g)) add(match[1]);
     // Asset strings inserted at render time are as important as static imports.
-    for (const match of text.matchAll(/["'`](\/(?:assets|media|games)\/[A-Za-z0-9_./?=-]+\.(?:png|jpg|jpeg|webp|svg|json|mjs|js|css)(?:\?[^"'`\s]*)?)["'`]/g)) matches.push(match[1]);
+    for (const match of text.matchAll(/["'`](\/(?:assets|media|games)\/[A-Za-z0-9_./?=-]+\.(?:png|jpg|jpeg|webp|svg|json|mjs|js|css)(?:\?[^"'`\s]*)?)["'`]/g)) add(match[1]);
   }
   if (kind === 'css') {
-    for (const match of text.matchAll(/url\(\s*["']?([^\s"')]+)["']?\s*\)/g)) matches.push(match[1]);
-    for (const match of text.matchAll(/@import\s+["']([^"']+)["']/g)) matches.push(match[1]);
+    for (const match of text.matchAll(/url\(\s*["']?([^\s"')]+)["']?\s*\)/g)) add(match[1]);
+    for (const match of text.matchAll(/@import\s+["']([^"']+)["']/g)) add(match[1]);
   }
-  return matches.filter(value => !value.startsWith('data:') && !value.startsWith('#'));
+  if (kind === 'json') {
+    // Follow the fetched manifest itself rather than trusting runtimeFiles() to
+    // have named its image closure. This also checks ordinary webmanifest icons.
+    const visit = value => {
+      if (!value || typeof value !== 'object') return;
+      if (typeof value.src === 'string') add(value.src);
+      for (const item of Object.values(value)) visit(item);
+    };
+    visit(JSON.parse(text));
+  }
+  return matches.filter(({ specifier }) => !specifier.startsWith('data:') && !specifier.startsWith('#'));
 }
 
 test('isolated ZIP runs its host and serves the complete local browser graph without exposing authority', async () => {
@@ -126,17 +140,18 @@ test('isolated ZIP runs its host and serves the complete local browser graph wit
       const response = await fetch(next);
       assert.equal(response.status, 200, `Missing local runtime resource ${key}`);
       const type = response.headers.get('content-type');
-      const kind = type?.includes('javascript') ? 'js' : type?.includes('text/css') ? 'css' : type?.includes('text/html') ? 'html' : null;
+      const kind = type?.includes('javascript') ? 'js' : type?.includes('text/css') ? 'css' : type?.includes('text/html') ? 'html' : type?.includes('json') ? 'json' : null;
       if (!kind) { await response.arrayBuffer(); continue; }
-      for (const ref of references(await response.text(), kind)) {
-        if (!/^(?:\.\.?\/|\/|https?:\/\/)/.test(ref)) throw new Error(`Browser source imports unsupported nonlocal module ${ref}`);
-        pending.push(new URL(ref, next).href);
+      for (const { specifier, module } of references(await response.text(), kind)) {
+        if (module && !/^(?:\.\.?\/|\/|https?:\/\/)/.test(specifier)) throw new Error(`Browser source imports unsupported nonlocal module ${specifier}`);
+        pending.push(new URL(specifier, next).href);
       }
     }
     assert.ok(visited.has('/'), 'Rendered document entry crawled');
     for (const pathname of [
       '/server/rooms.mjs', '/server/lan.mjs', '/games/registry.mjs',
-      '/games/odd-laws-society/engine.mjs', '/games/odd-laws-society/fixtures/private.json',
+      '/games/odd-laws-society/engine.mjs', '/games/odd-laws-society/projection.mjs', '/games/odd-laws-society/fixtures/private.json',
+      '/games/odd-laws-society/harness/private-state.json',
       '/tests/integration/fixtures/secrets.json', '/desktop/runtime-manifest.json',
       '/.sofa-lan/rooms.sqlite', '/.env', '/.git/config',
       '/assets/../.env', '/assets/%2e%2e/%2e%2e/server/rooms.mjs',

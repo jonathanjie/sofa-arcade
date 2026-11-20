@@ -82,6 +82,87 @@ test('identical connected heartbeats do not rerender the component or clear its 
   h.handle.dispose();
 });
 
+test('uncertain commands recover once through the same client and ignore late work after navigation', async () => {
+  let options, dispatch, finishRecovery;
+  let reconnects = 0;
+  const statuses = [];
+  const handle = createCollectionGame({
+    root: {}, viewer: { role: 'player', playerId: 'jon' }, code: 'ABC234', token: 'seat', initialRoom: snapshot(),
+    createRoomClient(value) {
+      options = value;
+      return {
+        submit() { return Promise.reject(Object.assign(new Error('Pending acknowledgment.'), { code: 'unconfirmed_action' })); },
+        reconnect() {
+          reconnects++;
+          options.onStatus({ state: 'connected' });
+          return new Promise(resolve => { finishRecovery = resolve; });
+        },
+        dispose() {},
+      };
+    },
+    mount(_root, injected) {
+      dispatch = injected.dispatch;
+      return { update() {}, setConnection(status) { statuses.push(status); }, dispose() {} };
+    },
+  });
+  options.onStatus({ state: 'offline' });
+  handle.setConnection({ state: 'connected' });
+  await Promise.resolve();
+  assert.equal(reconnects, 0, 'ordinary client retries retain ownership until they exhaust');
+  await assert.rejects(dispatch({ type: 'work' }), { code: 'unconfirmed_action' });
+  options.onStatus({ state: 'connected' });
+  assert.equal(statuses.at(-1).state, 'offline', 'a delivered snapshot does not confirm the retained request');
+  assert.equal(handle.setConnection({ state: 'connected' }).state, 'reconnecting', 'the shell receives the effective connection state');
+  handle.setConnection({ state: 'connected' });
+  await Promise.resolve();
+  assert.equal(reconnects, 1);
+  assert.equal(statuses.at(-1).state, 'reconnecting', 'client callbacks cannot advertise an early recovery');
+  handle.setConnection('offline');
+  assert.equal(handle.setConnection('connected').state, 'reconnecting', 'a second transport recovery keeps the held request pending');
+  assert.equal(reconnects, 1);
+  handle.dispose();
+  const before = statuses.length;
+  finishRecovery(snapshot(2));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(statuses.length, before, 'navigation silences late recovery completion');
+});
+
+test('recovery failures remain explicit; transient loss can retry and an expired session stays blocked', async () => {
+  for (const terminal of [false, true]) {
+    let dispatch, reconnects = 0;
+    const statuses = [];
+    const handle = createCollectionGame({
+      root: {}, viewer: { role: 'player', playerId: 'jon' }, code: 'ABC234', token: 'seat', initialRoom: snapshot(),
+      createRoomClient() {
+        return {
+          submit() { return Promise.reject(Object.assign(new Error(), { code: 'unconfirmed_action' })); },
+          reconnect() {
+            reconnects++;
+            if (reconnects === 1) return Promise.reject(Object.assign(new Error('Untrusted transport text.'), terminal
+              ? { code: 'invalid_token', status: 401 } : { code: 'unavailable' }));
+            return Promise.resolve(snapshot(2));
+          },
+          dispose() {},
+        };
+      },
+      mount(_root, injected) {
+        dispatch = injected.dispatch;
+        return { update() {}, setConnection(status) { statuses.push(status); }, dispose() {} };
+      },
+    });
+    await assert.rejects(dispatch({ type: 'work' }));
+    handle.setConnection('connected');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(statuses.at(-1).state, terminal ? 'error' : 'offline');
+    assert.ok(!statuses.at(-1).message.includes('Untrusted'));
+    handle.setConnection('connected');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(reconnects, terminal ? 1 : 2);
+    assert.equal(statuses.at(-1).state, terminal ? 'error' : 'connected');
+    handle.dispose();
+  }
+});
+
 test('old snapshots and another room cannot overwrite the current projected game', () => {
   const h = harness();
   h.handle.receive(snapshot(4));

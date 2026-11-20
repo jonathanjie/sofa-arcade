@@ -83,8 +83,8 @@
       "postHandoffCorrections": [],
       "observedCheckpoint": {
         "pr": 5,
-        "head": "777bb73055e8c1b3214a7e94dd949886c2fde625",
-        "reason": "Draft; rendered component CI failed, owner repair pending."
+        "head": "30a7f076d0b7202fb2d530f71ab010369f81f2cf",
+        "reason": "61 rendered owner checks and33Node tests passed; final ready-PR handoff pending."
       }
     },
     {
@@ -115,8 +115,8 @@
       "postHandoffCorrections": [],
       "observedCheckpoint": {
         "pr": 6,
-        "head": "d989530000828f1132388e487950f99cfd62190d",
-        "reason": "Draft; native macOS CI pending."
+        "head": "792b52cc9cd1826a8c23c810baf576ecd89e122a",
+        "reason": "Both native production build/runtime checks passed; native WKWebView room-create gate failed, owner handoff pending."
       }
     }
   ]
