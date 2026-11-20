@@ -10,6 +10,27 @@ const fixturePath = process.env.SOFA_NATIVE_FIXTURE;
 const screenshot = name => browser.saveScreenshot(path.join(evidenceDir, name));
 const positionLabel = state => `Jon at ${String.fromCharCode(65 + state.players.jon.col)}${state.players.jon.row + 1}, Lydia at ${String.fromCharCode(65 + state.players.lydia.col)}${state.players.lydia.row + 1}`;
 
+async function waitRendered(selector, { timeout = 15000, scrollIntoView = false } = {}) {
+  // The shared UI replaces app.innerHTML when create/start completes and on
+  // each SSE snapshot. A cached WebDriver element can become detached between
+  // polls without this embedded driver reporting a stale-element error. Query
+  // the current WKWebView DOM each time, while still requiring visible pixels.
+  await browser.waitUntil(() => browser.execute((query, scroll) => {
+    const element = document.querySelector(query);
+    if (!element?.isConnected) return false;
+    if (scroll) element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+    const rect = element.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0 || rect.bottom <= 0 || rect.right <= 0 ||
+        rect.top >= innerHeight || rect.left >= innerWidth) return false;
+    for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) {
+      const style = getComputedStyle(ancestor);
+      if (style.display === 'none' || style.visibility === 'hidden' ||
+          style.visibility === 'collapse' || Number(style.opacity) === 0) return false;
+    }
+    return true;
+  }, selector, scrollIntoView), { timeout, timeoutMsg: `The current native WKWebView did not visibly render ${selector}` });
+}
+
 async function mainWindow() {
   await browser.waitUntil(async () => (await browser.getWindowHandles()).includes('main'),
     { timeout: 25000, timeoutMsg: 'The real native main WKWebView did not open' });
@@ -20,7 +41,9 @@ async function mainWindow() {
 
 async function boardAt(state) {
   const label = positionLabel(state);
-  await browser.waitUntil(async () => (await $('.board').getAttribute('aria-label')).includes(label),
+  await waitRendered('.board', { timeout: 5000 });
+  await browser.waitUntil(() => browser.execute(expected =>
+    document.querySelector('.board')?.getAttribute('aria-label')?.includes(expected) || false, label),
     { timeout: 5000, timeoutMsg: 'The native TV board did not render the authoritative positions' });
 }
 
@@ -50,7 +73,7 @@ describe(`Sofa Arcade actual native macOS window (${phase})`, () => {
       // Pass only a public room code to the test driver. The credential stays
       // inside WKWebView localStorage and is used by the ordinary shared UI.
       await browser.url(`${origin}/?room=${saved.code}`);
-      await $('.game-layout').waitForDisplayed();
+      await waitRendered('.game-layout');
       const hasHost = await browser.execute(code => {
         try { return typeof JSON.parse(localStorage.getItem('sofa-room:' + code)).hostToken === 'string'; }
         catch { return false; }
@@ -64,7 +87,7 @@ describe(`Sofa Arcade actual native macOS window (${phase})`, () => {
       return;
     }
 
-    await $('.arcade-home').waitForDisplayed();
+    await waitRendered('.arcade-home');
     assert.match(await $('h1').getText(), /starts on the sofa/i);
     await browser.waitUntil(() => browser.execute(() => {
       const image = document.querySelector('.featured-image img');
@@ -72,13 +95,13 @@ describe(`Sofa Arcade actual native macOS window (${phase})`, () => {
     }), { timeoutMsg: 'Original illustration or character atlas failed to load in WKWebView' });
     await screenshot('native-collection.png');
     await $('[data-action="open-game"][data-game="sofa-kingdoms"]').click();
-    await $('[data-action="create"]').waitForDisplayed();
+    await waitRendered('[data-action="create"]', { scrollIntoView: true });
     assert.match(await $('.lan-mode-label').getText(), /Local Wi-Fi/);
     await $('[data-action="create"]').click();
-    await $('.room-code').waitForDisplayed();
-    const code = (await $('.room-code').getText()).trim();
+    await waitRendered('.room-code');
+    const code = await browser.execute(() => document.querySelector('.room-code')?.textContent.trim());
     assert.match(code, /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/);
-    await browser.waitUntil(async () => await $('#room-qr svg').isExisting() || await $('#room-qr img').isExisting(),
+    await browser.waitUntil(() => browser.execute(() => !!document.querySelector('#room-qr svg, #room-qr img')),
       { timeoutMsg: 'The packaged game did not render its phone QR code' });
     const joinLinks = await browser.execute(() => Array.from(document.querySelectorAll('.seat-link'), link => link.href));
     assert.equal(joinLinks.length, 2);
@@ -90,11 +113,15 @@ describe(`Sofa Arcade actual native macOS window (${phase})`, () => {
       assert.equal([...url.searchParams.keys()].some(key => /token|auth/i.test(key)), false);
     }
     const tokens = await joinBoth(origin, code);
-    await browser.waitUntil(async () => await $('[data-action="start"]').isEnabled(),
+    await browser.waitUntil(() => browser.execute(() => {
+      const button = document.querySelector('[data-action="start"]');
+      return !!button && !button.disabled;
+    }),
       { timeoutMsg: 'Both HTTP phone seats did not become ready on the native host' });
+    await waitRendered('[data-action="start"]', { scrollIntoView: true });
     await screenshot('native-lobby.png');
     await $('[data-action="start"]').click();
-    await $('.game-layout').waitForDisplayed();
+    await waitRendered('.game-layout');
     const current = (await request(origin, `/api/rooms/${code}`, { token: tokens.jon })).body;
     const actor = current.state.activePlayer;
     const action = legalActions(current.state, actor).find(item => item.type === 'move');
@@ -125,7 +152,7 @@ describe(`Sofa Arcade actual native macOS window (${phase})`, () => {
     process.kill(status.childPid, 'SIGKILL');
     await hostStatus(value => value.state === 'ready' && value.parentPid === status.parentPid && value.generation > status.generation);
     await mainWindow();
-    await $('.game-layout').waitForDisplayed();
+    await waitRendered('.game-layout');
     await boardAt(applied.state);
     assert.equal(await browser.execute(() => localStorage.getItem('sofa-native-acceptance-marker')), marker);
     await screenshot('native-child-recovery.png');

@@ -12,14 +12,18 @@ The desktop packages the existing Sofa Kingdoms collection and shared LAN host.
 It does not fork game rules or change shared runtime code. Odd Laws will enter
 through the same runtime after the component handoffs and WS6 integration.
 
-**Current checkpoint: implementation complete; native macOS validation in
-progress.** [PR #6](https://github.com/jonathanjie/sofa-arcade/pull/6) is draft
-until native launch and WKWebView evidence pass. Portable checks have passed
-locally and in CI. Both native runners have verified their architecture and
-started the production build. No successful Mac launch, signed distribution,
-physical phone test, or offline hardware test is claimed by this checkpoint.
-The PR records the exact tested head rather than embedding this report's future
-commit hash in itself.
+**Current checkpoint: native production acceptance passed on Apple Silicon and
+Intel; the native UI harness is being repaired and rerun.**
+[PR #6](https://github.com/jonathanjie/sofa-arcade/pull/6) remains draft until
+the complete WKWebView flow passes. Portable checks passed locally and in CI.
+Both native runners verified their architecture, built the production app/DMG,
+verified signatures, and passed packaged gameplay/lifecycle acceptance.
+The Apple Silicon WebDriver screenshot confirms the real collection and lobby
+render, but a cached element wait failed across an SSE-driven DOM replacement.
+The revised harness re-queries rendered elements; it needs a new passing run.
+The PR records the exact tested head and superseded runs rather than embedding
+this report's future commit hash in itself. No physical phone, disconnected
+network, or notarized distribution acceptance is claimed.
 
 ## Architecture and interfaces
 
@@ -156,6 +160,20 @@ and screenshots. Generated outputs stay outside authored source control.
 
 ## Native validation and source basis
 
+The [first repaired native run](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701519835)
+passed production acceptance on both native architectures. The Apple Silicon
+JSON records **14 passing checks**, an authoritative action/SSE response in
+105 ms, and verified process/profile cleanup. That is one CI observation, not a
+performance guarantee. Its [build and evidence artifact](https://github.com/jonathanjie/sofa-arcade/actions/runs/44701519835/artifacts/14613341831)
+contains the production app/DMG, SHA-256 values, exact runner/commit details,
+post-sign Node probe, entitlement maps, and genuine native screenshots.
+
+The first UI run reached the actual lobby but failed a stale element visibility
+wait. Its failure screenshot visibly contains the expected room code and QR;
+the subsequent test-only repair retains WebDriver clicks and requires current
+DOM geometry and visible styles. The old run is partial evidence, not validation
+of the revised head. Final passing native UI and relaunch evidence is pending.
+
 The current [Tauri WebDriver guidance](https://v2.tauri.app/develop/tests/webdriver/)
 recommends WebdriverIO and `@wdio/tauri-service`. Its embedded driver supports
 macOS; the driver is gated to a separate native test build and excluded from
@@ -174,8 +192,9 @@ exercise ESM and `node:sqlite` using the staged executable.
 
 ## Remaining gates at this checkpoint
 
-- Obtain an actual macOS package launch, native UI screenshots, and lifecycle
-  results from the desktop workflow; repair relevant failures.
+- Complete the repaired native WKWebView gameplay, child recovery, and
+  persistent-credential relaunch flow, then inspect final screenshots and
+  artifact evidence at the PR's exact proposed head.
 - Developer ID signing and notarization require credentials not provided here.
   Do not claim notarization or disable Gatekeeper. See
   [Tauri macOS signing](https://v2.tauri.app/distribute/sign/macos/).
