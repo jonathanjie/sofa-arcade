@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Odd Laws Society · Media review</title>
+  <link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+  <header class="masthead">
+    <div><p class="eyebrow">SOFA ARCADE · THE ORIGINAL MEDIA COLLECTION</p><h1>Odd Laws Society</h1><p class="intro">A little city. Very serious business.</p></div>
+    <div class="edition"><span class="edition-seal" aria-hidden="true">OLS</span><p>Art &amp; score review<br><strong>20 November 2026</strong></p></div>
+  </header>
+  <nav aria-label="Media sections">
+    <div class="tabs" role="tablist" aria-label="Asset views">
+      <button id="tab-board" role="tab" aria-controls="panel-board" data-tab="board" aria-selected="true">On the board</button>
+      <button id="tab-catalog" role="tab" aria-controls="panel-catalog" data-tab="catalog" aria-selected="false" tabindex="-1">18 buildings</button>
+      <button id="tab-characters" role="tab" aria-controls="panel-characters" data-tab="characters" aria-selected="false" tabindex="-1">Council cast</button>
+      <button id="tab-symbols" role="tab" aria-controls="panel-symbols" data-tab="symbols" aria-selected="false" tabindex="-1">Laws &amp; symbols</button>
+      <button id="tab-sound" role="tab" aria-controls="panel-sound" data-tab="sound" aria-selected="false" tabindex="-1">The soundtrack</button>
+    </div>
+    <label class="surface-control">Surface <select id="surface"><option value="paper">Paper</option><option value="ink">Dark ink</option><option value="check">Alpha grid</option></select></label>
+  </nav>
+  <p id="status" role="status" class="status">Loading the local media pack…</p>
+  <main>
+    <section id="panel-board" role="tabpanel" aria-labelledby="tab-board"><div id="board"></div></section>
+    <section id="panel-catalog" role="tabpanel" aria-labelledby="tab-catalog" hidden><div class="section-heading"><div><p class="eyebrow">THE BOROUGHS, IN THREE TERMS</p><h2>From tea stalls to landmarks</h2></div><p>144 px market art · live HTML labels</p></div><div id="catalog"></div></section>
+    <section id="panel-characters" role="tabpanel" aria-labelledby="tab-characters" hidden><div class="section-heading"><div><p class="eyebrow">A COUNCIL WITH CHARACTER</p><h2>Jon, Lydia &amp; Chair Lala</h2></div><p>144 px flat states · procedural anchors supplied</p></div><div id="characters"></div></section>
+    <section id="panel-symbols" role="tabpanel" aria-labelledby="tab-symbols" hidden><div class="section-heading"><div><p class="eyebrow">SMALL THINGS, CLEAR MEANING</p><h2>Four guilds. Twelve laws.</h2></div><p>Original vector symbols · shape plus color</p></div><div id="symbols"></div></section>
+    <section id="panel-sound" role="tabpanel" aria-labelledby="tab-sound" hidden><div id="sound"></div></section>
+  </main>
+  <footer><span>MEDIA FIXTURE · NOT A PLAYABLE GAME VIEW</span><span>All files resolve locally. No fonts, art, or music are downloaded from a CDN.</span></footer>
+  <script type="module" src="gallery.mjs"></script>
+</body>
+</html>

@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "title": "Lala Calls the House",
+  "methodology": "Deterministic oscillator/envelope/filter approximation of ui/audio.js. No compressor, limiter, loudness normalization, audio device, or human audition. Headroom measured before and after the shared music/effects bus gains.",
+  "sampleRate": 32000,
+  "channels": 1,
+  "pcmBits": 16,
+  "scoreSeconds": 76.8,
+  "releaseTailSeconds": 0.6,
+  "previewVolume": 1,
+  "defaultSharedVolume": 0.45,
+  "musicBusGain": 0.7,
+  "effectsBusGain": 0.75,
+  "sourceSha256": {
+    "score": "17299ffd2f23ced154970453a1bf849013ba66a77cc9d45edc00a7c5832a842e",
+    "effects": "e36e94b61e93587b9b6c865162be37062778bf78e041d376e65a308b06e9cce9",
+    "renderer": "c47eeebb6cd99070781f721669e089c4e87a594b6a64c44c5165a2a1b0ae74a5"
+  },
+  "modes": {
+    "play": {
+      "eventCount": 388,
+      "sourceMix": {
+        "peak": 0.21649174,
+        "peakDbFS": -13.29117333,
+        "rms": 0.07286822,
+        "rmsDbFS": -22.74923682,
+        "dcOffset": 0.00000858,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.15154422,
+        "peakDbFS": -16.38921253,
+        "rms": 0.05100775,
+        "rmsDbFS": -25.84727602,
+        "dcOffset": 0.00000601,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.0681949,
+        "peakDbFS": -23.32496225,
+        "rms": 0.02295349,
+        "rmsDbFS": -32.78302574,
+        "dcOffset": 0.0000027,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "pcmWavSha256": "4dd12edbb2453ef631ad23f9bd34f9b616773b9005b975ec9d2b849082119390"
+    },
+    "lobby": {
+      "eventCount": 295,
+      "sourceMix": {
+        "peak": 0.18560877,
+        "peakDbFS": -14.62803,
+        "rms": 0.06419061,
+        "rmsDbFS": -23.85056944,
+        "dcOffset": 0.00000749,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.12992614,
+        "peakDbFS": -17.7260692,
+        "rms": 0.04493343,
+        "rmsDbFS": -26.94860864,
+        "dcOffset": 0.00000524,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.05846676,
+        "peakDbFS": -24.66181892,
+        "rms": 0.02022004,
+        "rmsDbFS": -33.88435836,
+        "dcOffset": 0.00000236,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "council": {
+      "eventCount": 237,
+      "sourceMix": {
+        "peak": 0.15401547,
+        "peakDbFS": -16.24871325,
+        "rms": 0.05122144,
+        "rmsDbFS": -25.81096442,
+        "dcOffset": 0.00000562,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.10781083,
+        "peakDbFS": -19.34675245,
+        "rms": 0.03585501,
+        "rmsDbFS": -28.90900362,
+        "dcOffset": 0.00000394,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.04851487,
+        "peakDbFS": -26.28250218,
+        "rms": 0.01613475,
+        "rmsDbFS": -35.84475335,
+        "dcOffset": 0.00000177,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "pcmWavSha256": "8bdf7b6de5d3e00d05908852f392a2f135a35460746c12f58eae71f75013ecc6"
+    },
+    "term1": {
+      "eventCount": 388,
+      "sourceMix": {
+        "peak": 0.21649174,
+        "peakDbFS": -13.29117333,
+        "rms": 0.07286822,
+        "rmsDbFS": -22.74923682,
+        "dcOffset": 0.00000858,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.15154422,
+        "peakDbFS": -16.38921253,
+        "rms": 0.05100775,
+        "rmsDbFS": -25.84727602,
+        "dcOffset": 0.00000601,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.0681949,
+        "peakDbFS": -23.32496225,
+        "rms": 0.02295349,
+        "rmsDbFS": -32.78302574,
+        "dcOffset": 0.0000027,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "term2": {
+      "eventCount": 388,
+      "sourceMix": {
+        "peak": 0.21649174,
+        "peakDbFS": -13.29117333,
+        "rms": 0.07289133,
+        "rmsDbFS": -22.74648296,
+        "dcOffset": 0.00000876,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.15154422,
+        "peakDbFS": -16.38921253,
+        "rms": 0.05102393,
+        "rmsDbFS": -25.84452216,
+        "dcOffset": 0.00000613,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.0681949,
+        "peakDbFS": -23.32496225,
+        "rms": 0.02296077,
+        "rmsDbFS": -32.78027188,
+        "dcOffset": 0.00000276,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "term3": {
+      "eventCount": 391,
+      "sourceMix": {
+        "peak": 0.21761061,
+        "peakDbFS": -13.24639882,
+        "rms": 0.07291944,
+        "rmsDbFS": -22.74313294,
+        "dcOffset": 0.000009,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.15232742,
+        "peakDbFS": -16.34443802,
+        "rms": 0.05104361,
+        "rmsDbFS": -25.84117214,
+        "dcOffset": 0.0000063,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.06854734,
+        "peakDbFS": -23.28018774,
+        "rms": 0.02296963,
+        "rmsDbFS": -32.77692187,
+        "dcOffset": 0.00000283,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "celebrate": {
+      "eventCount": 391,
+      "sourceMix": {
+        "peak": 0.23079981,
+        "peakDbFS": -12.73529123,
+        "rms": 0.07793159,
+        "rmsDbFS": -22.16572944,
+        "dcOffset": 0.0000092,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.16155986,
+        "peakDbFS": -15.83333043,
+        "rms": 0.05455211,
+        "rmsDbFS": -25.26376864,
+        "dcOffset": 0.00000644,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.07270194,
+        "peakDbFS": -22.76908015,
+        "rms": 0.02454845,
+        "rmsDbFS": -32.19951836,
+        "dcOffset": 0.0000029,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    }
+  },
+  "effects": {
+    "build": {
+      "atSecondsInPreview": 0.5,
+      "sourceMix": {
+        "peak": 0.06497468,
+        "peakDbFS": -23.74511703,
+        "rms": 0.007331,
+        "rmsDbFS": -42.69673662,
+        "dcOffset": -0.00000611,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.04873101,
+        "peakDbFS": -26.24389176,
+        "rms": 0.00549825,
+        "rmsDbFS": -45.19551135,
+        "dcOffset": -0.00000458,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.02192895,
+        "peakDbFS": -33.17964148,
+        "rms": 0.00247421,
+        "rmsDbFS": -52.13126108,
+        "dcOffset": -0.00000206,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "coin": {
+      "atSecondsInPreview": 2.02,
+      "sourceMix": {
+        "peak": 0.06012246,
+        "peakDbFS": -24.41926455,
+        "rms": 0.00605091,
+        "rmsDbFS": -44.36358516,
+        "dcOffset": -9.3e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.04509185,
+        "peakDbFS": -26.91803929,
+        "rms": 0.00453818,
+        "rmsDbFS": -46.86235989,
+        "dcOffset": -7e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.02029133,
+        "peakDbFS": -33.85378901,
+        "rms": 0.00204218,
+        "rmsDbFS": -53.79810961,
+        "dcOffset": -3.1e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "influence": {
+      "atSecondsInPreview": 3.43,
+      "sourceMix": {
+        "peak": 0.06375057,
+        "peakDbFS": -23.91031881,
+        "rms": 0.02308717,
+        "rmsDbFS": -32.73258637,
+        "dcOffset": 8e-8,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.04781293,
+        "peakDbFS": -26.40909355,
+        "rms": 0.01731538,
+        "rmsDbFS": -35.2313611,
+        "dcOffset": 6e-8,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.02151582,
+        "peakDbFS": -33.34484327,
+        "rms": 0.00779192,
+        "rmsDbFS": -42.16711083,
+        "dcOffset": 3e-8,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "street": {
+      "atSecondsInPreview": 5.22,
+      "sourceMix": {
+        "peak": 0.0562975,
+        "peakDbFS": -24.99021713,
+        "rms": 0.00723045,
+        "rmsDbFS": -42.81669666,
+        "dcOffset": 7.4e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.04222313,
+        "peakDbFS": -27.48899187,
+        "rms": 0.00542284,
+        "rmsDbFS": -45.31547139,
+        "dcOffset": 5.6e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.01900041,
+        "peakDbFS": -34.42474159,
+        "rms": 0.00244028,
+        "rmsDbFS": -52.25122111,
+        "dcOffset": 2.5e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "seal": {
+      "atSecondsInPreview": 7.04,
+      "sourceMix": {
+        "peak": 0.05185925,
+        "peakDbFS": -25.7034755,
+        "rms": 0.00394827,
+        "rmsDbFS": -48.0718707,
+        "dcOffset": 0.00000922,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.03889444,
+        "peakDbFS": -28.20225024,
+        "rms": 0.0029612,
+        "rmsDbFS": -50.57064543,
+        "dcOffset": 0.00000692,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.0175025,
+        "peakDbFS": -35.13799996,
+        "rms": 0.00133254,
+        "rmsDbFS": -57.50639516,
+        "dcOffset": 0.00000311,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "reveal": {
+      "atSecondsInPreview": 8.29,
+      "sourceMix": {
+        "peak": 0.06906312,
+        "peakDbFS": -23.21507669,
+        "rms": 0.02499813,
+        "rmsDbFS": -32.04184939,
+        "dcOffset": -0.00000121,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.05179734,
+        "peakDbFS": -25.71385142,
+        "rms": 0.0187486,
+        "rmsDbFS": -34.54062412,
+        "dcOffset": -9.1e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.0233088,
+        "peakDbFS": -32.64960114,
+        "rms": 0.00843687,
+        "rmsDbFS": -41.47637385,
+        "dcOffset": -4.1e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "stamp": {
+      "atSecondsInPreview": 10.11,
+      "sourceMix": {
+        "peak": 0.07285978,
+        "peakDbFS": -22.75024283,
+        "rms": 0.00657358,
+        "rmsDbFS": -43.64396659,
+        "dcOffset": 0.00009613,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.05464484,
+        "peakDbFS": -25.24901756,
+        "rms": 0.00493018,
+        "rmsDbFS": -46.14274132,
+        "dcOffset": 0.00007209,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.02459018,
+        "peakDbFS": -32.18476728,
+        "rms": 0.00221858,
+        "rmsDbFS": -53.07849105,
+        "dcOffset": 0.00003244,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "festival": {
+      "atSecondsInPreview": 11.39,
+      "sourceMix": {
+        "peak": 0.07223654,
+        "peakDbFS": -22.82486095,
+        "rms": 0.02873135,
+        "rmsDbFS": -30.83287894,
+        "dcOffset": -0.00000284,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.05417741,
+        "peakDbFS": -25.32363568,
+        "rms": 0.02154851,
+        "rmsDbFS": -33.33165368,
+        "dcOffset": -0.00000213,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.02437983,
+        "peakDbFS": -32.25938541,
+        "rms": 0.00969683,
+        "rmsDbFS": -40.2674034,
+        "dcOffset": -9.6e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "win": {
+      "atSecondsInPreview": 13.63,
+      "sourceMix": {
+        "peak": 0.13099088,
+        "peakDbFS": -17.65517882,
+        "rms": 0.03927539,
+        "rmsDbFS": -28.11759034,
+        "dcOffset": 3e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.09824316,
+        "peakDbFS": -20.15395355,
+        "rms": 0.02945654,
+        "rmsDbFS": -30.61636507,
+        "dcOffset": 2.3e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.04420942,
+        "peakDbFS": -27.08970327,
+        "rms": 0.01325544,
+        "rmsDbFS": -37.5521148,
+        "dcOffset": 1e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "tie": {
+      "atSecondsInPreview": 16.23,
+      "sourceMix": {
+        "peak": 0.09099589,
+        "peakDbFS": -20.81956465,
+        "rms": 0.03074634,
+        "rmsDbFS": -30.24413134,
+        "dcOffset": -0.00000127,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "volume100": {
+        "peak": 0.06824692,
+        "peakDbFS": -23.31833939,
+        "rms": 0.02305976,
+        "rmsDbFS": -32.74290608,
+        "dcOffset": -9.5e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "defaultVolume45": {
+        "peak": 0.03071111,
+        "peakDbFS": -30.25408911,
+        "rms": 0.01037689,
+        "rmsDbFS": -39.6786558,
+        "dcOffset": -4.3e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    }
+  },
+  "auditoryEvaluation": "Not performed. Preview rendering, numerical signal analysis and browser playback checks are distinct from listening.",
+  "effectsPreview": {
+    "durationSeconds": 19.12603125,
+    "pcmWavSha256": "06f80378ea1d9307a2869d42a517bfffe2c655cdabb7fcc9b5b942ed5d82ed4d",
+    "sourceMix": {
+      "peak": 0.13099088,
+      "peakDbFS": -17.65517882,
+      "rms": 0.02056952,
+      "rmsDbFS": -33.7355182,
+      "dcOffset": 0.00000354,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "volume100": {
+      "peak": 0.09824316,
+      "peakDbFS": -20.15395355,
+      "rms": 0.01542714,
+      "rmsDbFS": -36.23429293,
+      "dcOffset": 0.00000265,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "defaultVolume45": {
+      "peak": 0.04420942,
+      "peakDbFS": -27.08970327,
+      "rms": 0.00694221,
+      "rmsDbFS": -43.17004266,
+      "dcOffset": 0.00000119,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    }
+  },
+  "encodedPreviews": {
+    "lala-calls-the-house-play.mp3": {
+      "bytes": 774764,
+      "sha256": "eb928b05650e934cec28ece97b9df75a6e28ec8c54887e22d3bac21c03995c05",
+      "decodedSeconds": 77.4,
+      "decodedMeasurements": {
+        "peak": 0.14396633,
+        "peakDbFS": -16.8347812,
+        "rms": 0.04845552,
+        "rmsDbFS": -26.29313437,
+        "dcOffset": 0.00000574,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "lala-calls-the-house-council.mp3": {
+      "bytes": 774764,
+      "sha256": "e7208ab0d1a29e22e7343d61330c3725f64547b720a67265173399cbc2d23ab8",
+      "decodedSeconds": 77.4,
+      "decodedMeasurements": {
+        "peak": 0.10245516,
+        "peakDbFS": -19.78932315,
+        "rms": 0.03406034,
+        "rmsDbFS": -29.35502019,
+        "dcOffset": 0.00000371,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "civic-effects.mp3": {
+      "bytes": 192284,
+      "sha256": "755cbf4516bf188b69cadfa5bbb5566ddea29f36c4d86065f49dbe70e6c52b27",
+      "decodedSeconds": 19.12603125,
+      "decodedMeasurements": {
+        "peak": 0.09330975,
+        "peakDbFS": -20.60145924,
+        "rms": 0.01465647,
+        "rmsDbFS": -36.67941527,
+        "dcOffset": 0.00000257,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    }
+  },
+  "encoder": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers"
+}
