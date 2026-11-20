@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "repository": "jonathanjie/sofa-arcade",
+  "integrationBranch": "feature/local-integration",
+  "base": {
+    "ref": "main",
+    "sha": "e34b0015399cb9791b175987adf1fab1b542565a"
+  },
+  "components": [
+    {
+      "id": "WS1",
+      "branch": "feature/odd-laws-engine",
+      "report": "docs/workstreams/odd-laws-engine.md",
+      "pr": null,
+      "head": null,
+      "status": "awaiting-handoff",
+      "protectedPaths": ["games/odd-laws-society", ".github/workflows/ws1-engine.yml"],
+      "postHandoffCorrections": []
+    },
+    {
+      "id": "WS2",
+      "branch": "feature/local-platform",
+      "report": "docs/workstreams/room-platform.md",
+      "pr": null,
+      "head": null,
+      "status": "awaiting-handoff",
+      "protectedPaths": ["server/rooms.mjs", "server/rooms.test.mjs", "server/lan.mjs", "server/lan.test.mjs", "server/room-*.mjs", "ui/transport.mjs", "ui/transport.test.mjs", "ui/room-client.mjs", "ui/room-client.test.mjs", ".github/workflows/ws2-platform.yml"],
+      "postHandoffCorrections": []
+    },
+    {
+      "id": "WS3",
+      "branch": "feature/odd-laws-ui",
+      "report": "docs/workstreams/odd-laws-ui.md",
+      "pr": null,
+      "head": null,
+      "status": "awaiting-handoff",
+      "protectedPaths": ["ui/games/odd-laws-society", ".github/workflows/ws3-ui.yml"],
+      "postHandoffCorrections": []
+    },
+    {
+      "id": "WS4",
+      "branch": "feature/odd-laws-media",
+      "report": "docs/workstreams/odd-laws-media.md",
+      "pr": null,
+      "head": null,
+      "status": "awaiting-handoff",
+      "protectedPaths": ["public/assets/odd-laws-society", "ui/media/odd-laws-society", ".github/workflows/ws4-media.yml"],
+      "postHandoffCorrections": []
+    },
+    {
+      "id": "WS5",
+      "branch": "feature/tauri-local",
+      "report": "docs/workstreams/tauri.md",
+      "pr": null,
+      "head": null,
+      "status": "awaiting-handoff",
+      "protectedPaths": ["desktop", ".github/workflows/desktop.yml"],
+      "postHandoffCorrections": []
+    }
+  ]
+}
