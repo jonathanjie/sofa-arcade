@@ -10,7 +10,7 @@
 
 ## Handoff status
 
-Implementation and local protocol verification are complete. Remote CI, the actual browser runtime gate, and the production build are being checked before marking the component ready. The PR identifies the exact tested head; this report intentionally does not contain its own future commit hash.
+Implementation, local protocol verification, the production build, and the actual browser runtime gate are complete. The final macOS matrix check is being obtained after replacing an unsupported runner label. [PR #7](https://github.com/jonathanjie/sofa-arcade/pull/7) identifies the exact tested head and current CI results; this report intentionally does not contain its own future commit hash.
 
 The component uses an injected fixture to complete independent platform work. Actual Odd Laws registration, its real engine/view combination, and whole-product acceptance belong to WS6. Nothing here enables a planned game or publishes a deployment.
 
@@ -150,20 +150,22 @@ git diff --check
 
 The focused suite includes 18 adversarial API tests and four actual three-client LAN tests. Serialized JSON and SSE frame assertions cover both first-voter orders, same-revision and forced CAS submissions, locked-vote reconnect, changed-content IDs, lost final responses, stale phases, forged actors, pre-reveal balance privacy, prior revealed history, rematch isolation, unauthorized/rotated streams, hostile Host/Origin, restored SQLite and expiry. The live stream test uses a 60-second heartbeat and requires mutation delivery within three seconds, so a heartbeat cannot masquerade as immediate push.
 
-`.github/workflows/ws2-platform.yml` explicitly runs all new protocol suites on Node 22.13.0/Linux, Node 24/Linux and Node 24/macOS, plus the legacy regression command. Its separate browser job installs pinned Playwright 1.62.1 under a temporary tool directory without changing root dependencies and runs:
+`.github/workflows/ws2-platform.yml` explicitly runs all new protocol suites on Node 22.13.0/Linux, Node 24/Linux and Node 24/macOS 15, plus the legacy regression command. It records the actual runtime and architecture. The original macOS 14 job was cancelled before execution with `The configuration 'macos-14-arm64-us-default' is not supported`; the workflow now uses the supported `macos-15` label from [GitHub's runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners). Its separate browser job installs pinned Playwright 1.62.1 under a temporary tool directory without changing root dependencies and runs:
 
 ```sh
 SOFA_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
   node --test server/room-browser.test.mjs
 ```
 
-That browser test uses three isolated Chromium contexts on a non-loopback HTTP origin, checks the real insecure-context crypto APIs, imports the actual served client/transport modules, exercises locked reconnect and a complete fixture match, loses/retries the final acknowledgment, and rejects an old command after rematch. An optional `SOFA_CHROMIUM_EXECUTABLE` selects an installed Chromium. The local managed workspace denies interface enumeration and Chromium's required socket operation, so this gate must be obtained from the dedicated CI job; no local browser pass is claimed.
+That browser test uses three isolated Chromium contexts on a non-loopback HTTP origin, checks the real insecure-context crypto APIs, imports the actual served client/transport modules, exercises locked reconnect and a complete fixture match, loses/retries the final acknowledgment, and rejects an old command after rematch. An optional `SOFA_CHROMIUM_EXECUTABLE` selects an installed Chromium. The local managed workspace denies interface enumeration and Chromium's required socket operation, so this gate was obtained from the dedicated CI job; no local browser pass is claimed.
+
+Initial remote evidence at the first proposed source head: both Linux protocol/regression matrix jobs passed, the existing Game checks workflow passed, and [the actual Chromium job](https://github.com/jonathanjie/sofa-arcade/actions/runs/44700710523/job/136168117335) passed **1/1** browser scenario with Chrome 151.0.7922.34 and Node v24.22.3. The final head's CI links are in the PR. `npm run build` also passed all five Vinext/Vite production build stages in a separate checkout with matching package and lockfile hashes; generated copies were not committed from this component branch.
 
 Evidence is reproducible in the named test files and the PR's linked workflow jobs. Protocol tests are loopback/same-machine evidence, and the browser suite is a same-machine browser test. Neither establishes physical home Wi-Fi latency, TV casting, audio behavior, packaged Tauri execution, or a complete production Odd Laws match.
 
 ## Remaining gates and dependency requests
 
-- Before component handoff: obtain green owned CI, including the browser runtime gate, and complete the production build check; keep the PR draft while any essential component gate is missing.
+- Before component handoff: confirm the corrected macOS job and all owned checks are green at the final proposed head; keep the PR draft while any essential component gate is missing.
 - WS6: connect the real WS1 engine and WS3 views, apply the exact preparation/package entries above, register only after acceptance, and rerun the combined games/desktop tests.
 - WS5/WS6: validate the packaged Mac lifecycle and explicit runtime manifest with this host API.
 - Hardware acceptance: two actual phone browsers on Jon's Wi-Fi, TV/casting, real disconnect/resume behavior, and audio. These remain separate from protocol CI.
