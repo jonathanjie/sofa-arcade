@@ -41,7 +41,20 @@ jobs:
           git diff --exit-code -- public/assets/gravity-orchard ui/media/gravity-orchard/manifest-data.mjs ui/media/gravity-orchard/runtime-files.json ui/media/gravity-orchard/sources/symbols/fragment.json
       - name: Install Chromium and audio encoder for actual decode/render checks
         run: |
-          node ui/media/gravity-orchard/node_modules/playwright/cli.js install --with-deps chromium
+          browser_path=""
+          for candidate in chromium chromium-browser google-chrome google-chrome-stable; do
+            if command -v "$candidate" >/dev/null 2>&1; then
+              browser_path="$(command -v "$candidate")"
+              break
+            fi
+          done
+          if [ -n "$browser_path" ]; then
+            "$browser_path" --version
+            echo "GO5_BROWSER=$browser_path" >> "$GITHUB_ENV"
+            echo "CHROMIUM_PATH=$browser_path" >> "$GITHUB_ENV"
+          else
+            node ui/media/gravity-orchard/node_modules/playwright/cli.js install --with-deps chromium
+          fi
           command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
       - name: Render seven arrangements, cue reel and scene/loop transitions through the shared scheduler
         run: node ui/media/gravity-orchard/sources/audio/render.mjs --write --encode
