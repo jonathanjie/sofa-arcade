@@ -3,8 +3,23 @@
   if (window !== window.top || location.protocol !== 'http:' || location.hostname !== '127.0.0.1') return;
   const pending = new Map();
   const fail = code => Object.assign(new Error('Trusted local access is unavailable. Retry from this Mac.'), { code });
-  const request = (operation, options) => new Promise((resolve, reject) => {
-    if (pending.size >= 4) { reject(fail('BUSY')); return; }
+  // The native host runs one setup command at a time and rejects a command
+  // that arrives while another is in progress. Send commands one after another
+  // here, so a quick click during the setup screen's first status check waits
+  // for that check instead of failing.
+  const MAX_QUEUED = 4;
+  let queued = 0;
+  let previous = Promise.resolve();
+  let pageClosed = false;
+  const request = (operation, options) => {
+    if (queued >= MAX_QUEUED) return Promise.reject(fail('BUSY'));
+    queued++;
+    const result = previous.then(() => send(operation, options));
+    previous = result.catch(() => {});
+    return result.finally(() => { queued--; });
+  };
+  const send = (operation, options) => new Promise((resolve, reject) => {
+    if (pageClosed) { reject(fail('CANCELLED')); return; }
     const id = crypto.randomUUID();
     const timer = setTimeout(() => { pending.delete(id); reject(fail('TIMEOUT')); }, 20000);
     pending.set(id, { resolve, reject, timer });
@@ -27,6 +42,7 @@
     remove: ({ mode = 'remove' } = {}) => request('remove', { mode }),
   }), writable: false, configurable: false });
   addEventListener('pagehide', () => {
+    pageClosed = true;
     for (const waiting of pending.values()) { clearTimeout(waiting.timer); waiting.reject(fail('CANCELLED')); }
     pending.clear();
   }, { once: true });

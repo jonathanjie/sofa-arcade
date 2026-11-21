@@ -593,6 +593,22 @@ every stage boundary, so the test identifies a stage run by its resumed epoch.
 The 250 ms stall guard, the stage deadlines and the result checks are
 unchanged.
 
+### Intermittent Apple Silicon setup failure (post-merge, PR 18)
+
+The Apple Silicon native acceptance failed about half the time with "That did
+not work" after **Set up tilt**, and the host recorded no setup error. The
+cause was a race in the Mac app, not in certificate setup. The setup screen
+shows its buttons while its first status check is still in progress. The
+native shell accepts one setup command at a time and rejects a second command
+at once, without passing it to the host. The test clicks immediately, so its
+setup command often arrived during the status check. A fast person could see
+the same failure.
+
+`desktop/native-bridge.js` now sends setup commands one after another, with at
+most four waiting. A command waiting when the page closes is cancelled and
+never sent. A simulated one-command host reproduced the failure with the old
+bridge and passed with the new one.
+
 ### Reproduce
 
 ```sh
