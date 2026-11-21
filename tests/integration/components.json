@@ -546,6 +546,13 @@
           "mode": "100644",
           "reason": "Retain the PID-specific normal Mac Quit helper, executable/parent/sidecar ownership checks and closure waits; additionally require final supervisor state stopped before recording successful native shutdown.",
           "verification": "Syntax and independent lifecycle review pass. The assertion gates both desktop acceptance and the integrated three-process suite. No sleeps, marker relocation, credential changes or relaxed assertions are introduced; corrected exact-head Mac CI is required."
+        },
+        {
+          "path": ".github/workflows/desktop.yml",
+          "blob": "93c6600fd91d25fae4bfde66d2a0724402346991",
+          "mode": "100644",
+          "reason": "GO7 actual Intel CI proved ripgrep is absent on the Mac runner. Replace the conditional rg check, which swallowed command-not-found, with installed Node reading that fails on missing/empty graph or any native test-driver dependency. Keep the production build, signing, DMG, startup and WKWebView gates intact.",
+          "verification": "The exact workflow script passes a production-only graph and rejects driver-bearing, empty and missing files. Required actual macOS ARM/Intel production graph and package results remain in the GO7 report and PR."
         }
       ],
       "review": {

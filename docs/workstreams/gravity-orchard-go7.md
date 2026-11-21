@@ -60,8 +60,9 @@ verification; no broad path exemption is used.
   banner that overlapped Lydia's badge in the actual 1024×684 WKWebView. Host
   reconnect/data warnings remain visible. Three focused rendered cases cover
   these fixes, bringing GO4's browser suite to 23 tests. Its 19 Node tests and
-  the 12 GO7 bridge tests pass locally; Chromium execution and corrected final
-  screenshots remain required CI gates.
+  the 12 GO7 bridge tests pass locally. All 23 actual Chromium cases passed
+  at `5bc5960` in run 44839463603; corrected final-asset screenshots also passed
+  the complete integrated browser journey at that exact head.
 
 ## Integrated authority and lifecycle
 
@@ -176,10 +177,81 @@ native code and certificate capabilities remain excluded.
 | Existing portable delivery/source closure | 5 passed |
 | Production build and public inventory | Passed; 182 declared public files |
 | Rust non-GUI protocol/configuration/Quit | 20 passed |
-| Rendered collection TV + two phone contexts | CI gate; local Chromium blocked before page load by AF_UNIX restrictions |
-| Actual packaged macOS ARM64 | GO7 full three-process WKWebView acceptance passed at `400514d` and `8de00c8`; latest job 136636195772 |
-| Actual packaged macOS Intel | Separate running CI gate; ARM and Linux do not establish Intel acceptance |
-| GO1–GO6 assembled component suites | 280 tests passed at `400514d`; fixture regeneration also passed |
+| Rendered collection TV + two phone contexts | Complete 18/18 journey passed at `5bc5960`; local Chromium remains unavailable because of AF_UNIX restrictions |
+| Actual packaged macOS ARM64 | GO7 full three-process WKWebView acceptance passed at `5bc5960`, job 136644343154 |
+| Actual packaged macOS Intel | `5bc5960` entered a real host-stall safety pause; the harness did not resume it and failed. Bounded recovery acceptance is being added before activation |
+| GO1–GO6 assembled component suites | 282 tests passed at `5bc5960`; fixture regeneration and GO4's 23 rendered cases also passed |
+
+### Complete rendered candidate and native follow-up
+
+At `5bc5960573530044f113875f27875444f758879f`,
+[GO7's full rendered journey](https://github.com/jonathanjie/sofa-arcade/actions/runs/44839463661/job/136644087524)
+passed all 18 acceptance checks with a clean tree.
+[Artifact 14679819040](https://github.com/jonathanjie/sofa-arcade/actions/runs/44839463661/artifacts/14679819040)
+contains the inspected 720p/1080p TV, 360/390 phone, practice, recovery and reduced-motion
+screenshots. The campaign completed 12 orders/nine stars/zero compost and nine
+transfers each way in 128.25 seconds. The full/wrong-basket exercise took 55.58 s
+and retained the same rejected fruit. Surviving TV/phone pages recovered after
+host restart at a fresh paused epoch; both-ready, a real 350 ms host stall,
+final assets, silent phones, menu return and disposal all passed. Browser errors,
+external runtime requests and failed asset responses were empty.
+
+| Rendered same-machine measurement at `5bc5960` | Jon | Lydia |
+| --- | --- | --- |
+| ACK RTT median / p95 | 29.1 / 49.7 ms | 29.5 / 49.5 ms |
+| ACK RTT p99 / maximum | 53.3 / 170.0 ms | 78.2 / 219.3 ms |
+| Observed-to-applied tick age p95 / maximum | 3 / 9 ticks | 3 / 10 ticks |
+| Maximum browser socket buffer | 265 bytes | 401 bytes |
+
+That rendered campaign accepted 5,916 inputs with 55 checkpoints and recorded
+**two tick overruns and nine skipped catch-up ticks**, with zero unplanned host
+stalls. All pages' visible rAF interval p95 was 16.7 ms; the TV maximum was
+66.8 ms, with three intervals over 25 ms. These are callback scheduling measurements,
+not GPU duration, one-way latency, physical Wi-Fi or display/casting delay.
+The separate clean TCP/stress
+[artifact 14680176625](https://github.com/jonathanjie/sofa-arcade/actions/runs/44839463661/artifacts/14680176625)
+completed 12 orders/nine stars in 131.934 s with 5,237 inputs/36 checkpoints and
+ACK p95 49.24/49.46 ms. Its six-second healthy sample measured 59.998 simulation
+Hz and 19.999 snapshot Hz, 238 inputs/one checkpoint/two changed SQLite rows.
+Real slow-reader pressure coalesced 42 snapshots, retained at most one pending
+snapshot and removed the reader after 39.16 s; a 200-frame flood closed with 4429
+after 22.35 ms. Recovery and zero-timer shutdown passed.
+
+The exact head's Apple Silicon
+[native artifact 14680107935](https://github.com/jonathanjie/sofa-arcade/actions/runs/44839463661/artifacts/14680107935)
+records 12 orders/nine stars/zero compost in 145.413 s, transfers both ways,
+49 decoded final images, no external runtime requests, and all three real app
+processes and normal Quit checks passing. Each authenticated Node controller
+sent 2,806 inputs and received 2,907 snapshots without drops or errors. The
+corrected native paused-relaunch screen keeps both character badges visible.
+These controllers are Node clients, with rendered phones established separately
+by the full browser journey.
+
+Intel's actual app compiled, launched and entered the game, then its screenshot
+showed a host-stall safety pause with 1:28 remaining in stage one. The original
+native harness waited for an interlude without performing the mandatory both-ready
+resumption. It failed its unchanged 115-second stage deadline; this is not a
+completed Intel campaign. The next planned candidate explicitly accepts at most
+one observed host-stall recovery, verifies frozen ticks and cleared input/readiness,
+uses both authenticated ready commands, and records the pause. Other/repeated
+pauses fail. No simulation, rate, threshold, stage deadline or result criterion
+is relaxed. Pre-disposal failure snapshots and controller statistics make future
+failures diagnosable before teardown changes presence.
+
+The native acceptance now also exercises the real shared-shell setup screen and
+its provision/public-CRT/Apple-profile buttons. It verifies newly written public
+CA files and the completed WKWebView export UI without installing trust. This
+closes the gap between the earlier native callback test and the composed setup
+screen; it remains a required actual-Mac gate.
+
+Intel CI exposed a separate gate defect: its runner has no `rg`, and an `if rg`
+condition silently treated command-not-found as an absent test driver. GO7 and
+the inherited Desktop workflow now read the production graph with installed Node,
+failing on a missing/empty graph or a native test-driver dependency. Positive and
+driver/empty/missing negative cases pass; the exact Desktop workflow correction
+is recorded in the legacy WS5 lock. A separate Intel DMG attempt failed after
+successful app compilation/signing because `hdiutil` could not eject a busy
+temporary image; only that failed job was retried at the same source head.
 
 The first clean committed real-rate CI campaign passed at
 `64e417d9dc4b18a3b3e9def6a3232a06d7010134` in

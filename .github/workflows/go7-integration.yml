@@ -173,7 +173,13 @@ jobs:
       - name: Production dependency graph excludes the native test driver
         run: |
           cargo tree --locked --manifest-path desktop/src-tauri/Cargo.toml --edges normal > "$SOFA_EVIDENCE_DIR/production-dependencies.txt"
-          if rg 'tauri-plugin-wdio' "$SOFA_EVIDENCE_DIR/production-dependencies.txt"; then exit 1; fi
+          node --input-type=module - "$SOFA_EVIDENCE_DIR/production-dependencies.txt" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const graph = readFileSync(process.argv[2], 'utf8');
+          if (!graph.trim() || graph.includes('tauri-plugin-wdio')) {
+            throw new Error('Production dependency graph must be present and exclude the native test driver.');
+          }
+          NODE
       - name: Build separate instrumented native acceptance app
         run: npm --prefix desktop run build:native:${{ matrix.suffix }}
       - name: Actual WKWebView game, trusted setup, recovery and three-process Quit/relaunch

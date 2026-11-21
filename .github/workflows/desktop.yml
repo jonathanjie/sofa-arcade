@@ -134,9 +134,13 @@ jobs:
           cp src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg artifacts/
           shasum -a 256 artifacts/*.zip artifacts/*.dmg > evidence/production-sha256.txt
           cargo +1.100.0 tree --locked --manifest-path src-tauri/Cargo.toml --edges normal > evidence/production-dependencies.txt
-          if rg 'tauri-plugin-wdio' evidence/production-dependencies.txt; then
-            exit 1
-          fi
+          node --input-type=module - evidence/production-dependencies.txt <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const graph = readFileSync(process.argv[2], 'utf8');
+          if (!graph.trim() || graph.includes('tauri-plugin-wdio')) {
+            throw new Error('Production dependency graph must be present and exclude the native test driver.');
+          }
+          NODE
       - name: Native production startup, two seats, SSE, persistence and failure cases
         run: npm run test:native:release -- --app "$GITHUB_WORKSPACE/desktop/artifacts/production/Sofa Arcade.app"
       - name: Build separate instrumented native acceptance app
