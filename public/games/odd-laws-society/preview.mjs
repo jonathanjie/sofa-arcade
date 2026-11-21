@@ -1,9 +1,10 @@
 /** Public, pure v0.2/v0.3 arithmetic. Safe to ship to a browser; no authority imports. */
 import { ALL_BUILDINGS, LAWS } from './catalog.mjs';
+import { features } from './rules.mjs';
 import { RuleError } from './errors.mjs';
 
 const buildings = new Map(ALL_BUILDINGS.map(building => [building.id, building]));
-const isV03 = view => view?.rulesVersion === '0.3';
+const on = (view, feature) => features(view)[feature];
 const laws = new Map(LAWS.map(law => [law.id, law]));
 const playerIds = ['jon', 'lydia'];
 
@@ -58,16 +59,17 @@ export function festivalBonus(view, playerId) {
 }
 
 /**
- * v0.3 Festivals reward a Culture city instead of spare coins: 2 prestige plus 1
- * per Culture building, at most 4. Festival icons add nothing extra in v0.3.
- * (Tested against 1 + Culture, 0 + Culture and a cap of 3; see the simulation README.)
+ * The Culture Festival (Grand Market module) rewards a Culture city
+ * instead of spare coins: 2 prestige plus 1 per Culture building, at most 4.
+ * Festival icons add nothing extra. (Tested against 1 + Culture, 0 + Culture and
+ * a cap of 3; see the simulation README.)
  */
 export const V03_FESTIVAL = Object.freeze({ base: 2, perCulture: 1, max: 4 });
 
 /** Prestige a Festival would secure now. v0.2: 3 plus the citywide icon bonus. */
 export function festivalPoints(view, playerId) {
   const player = playerFor(view, playerId);
-  if (!isV03(view)) return 3 + festivalBonus(view, playerId);
+  if (!on(view, 'cultureFestival')) return 3 + festivalBonus(view, playerId);
   const culture = cityBuildings(player).filter(building => building.guild === 'culture').length;
   return Math.min(V03_FESTIVAL.max, V03_FESTIVAL.base + culture * V03_FESTIVAL.perCulture);
 }
@@ -83,7 +85,7 @@ export function festivalPoints(view, playerId) {
 export function buildQuote(view, playerId, designId, plotIndex = null) {
   const player = playerFor(view, playerId);
   const building = buildingFor(designId);
-  const replaced = isV03(view) && Number.isInteger(plotIndex) && player.city[plotIndex]
+  const replaced = on(view, 'rebuild') && Number.isInteger(plotIndex) && player.city[plotIndex]
     ? buildingFor(player.city[plotIndex].designId) : null;
   const law = lawFor(view.activeLaws?.economy, 'economy');
   const firstBuild = player.buildsThisSession === 0;
@@ -109,7 +111,7 @@ export function buildQuote(view, playerId, designId, plotIndex = null) {
   else if (view.activePlayer !== playerId) reason = 'Wait for your turn.';
   else if (!isAvailable(view, player, building)) {
     reason = 'This building is not available.';
-  } else if (isV03(view) && player.city.some(instance => instance?.designId === designId)) {
+  } else if (on(view, 'grandMarket') && player.city.some(instance => instance?.designId === designId)) {
     reason = 'You already have this building.';
   } else if (!replaced && !player.city.includes(null)) reason = 'Your city is full.';
   else if (player.coins < cost) reason = 'Not enough coins.';
@@ -127,13 +129,14 @@ export function buildQuote(view, playerId, designId, plotIndex = null) {
 }
 
 /**
- * v0.2: the design must be in this term's market. v0.3: it must be in the open
- * row (one copy) or in this player's own reserve, from any term.
+ * Two-copy market (v0.2 and base v0.3): the design must be in this term's market.
+ * Grand Market: it must be face up, or in this player's own reserve (Back-Room
+ * Deals), from any term.
  */
 function isAvailable(view, player, building) {
   const inMarket = view.market?.some(stack => stack.designId === building.id && stack.remaining > 0);
-  if (!isV03(view)) return building.term === view.term && inMarket;
-  return inMarket || (Array.isArray(player.reserve) && player.reserve.includes(building.id));
+  if (!on(view, 'grandMarket')) return building.term === view.term && inMarket;
+  return inMarket || (on(view, 'backRoom') && Array.isArray(player.reserve) && player.reserve.includes(building.id));
 }
 
 /** Hypothetical placement ignores action timing, affordability, and market stock. */

@@ -1,6 +1,7 @@
 /** Authority-only projection. Never serve this module or full-state fixtures. */
 import { RuleError } from './errors.mjs';
 import { scoreBreakdown } from './preview.mjs';
+import { features } from './rules.mjs';
 
 const playerIds = ['jon', 'lydia'];
 
@@ -28,11 +29,11 @@ function commitmentView(commitment) {
 }
 
 /**
- * v0.3 reserves are private: only their owner sees the designs. Everyone sees
+ * Back-Room Deals reserves are private: only their owner sees the designs. Everyone sees
  * the count. The TV (host or public viewer) sees no designs.
  */
 function reserveView(state, playerId, viewer) {
-  if (state.rulesVersion !== '0.3') return {};
+  if (!features(state).backRoom) return {};
   const reserve = state.players[playerId].reserve;
   const own = viewer.role === 'player' && viewer.playerId === playerId;
   return {
@@ -73,6 +74,7 @@ export function project(state, viewer) {
     schemaVersion: state.schemaVersion,
     gameId: state.gameId,
     rulesVersion: state.rulesVersion,
+    ...(Array.isArray(state.modules) ? { modules: state.modules.map(id => id) } : {}),
     matchId: state.matchId,
     phase: state.phase,
     stage: state.stage,
@@ -95,7 +97,7 @@ export function project(state, viewer) {
     } : null,
     market: state.market.map(stack => ({ designId: stack.designId, remaining: stack.remaining })),
     // v0.3: the deck order is hidden; only its size is public.
-    ...(state.rulesVersion === '0.3' ? { deckCount: state.deck.length } : {}),
+    ...(features(state).grandMarket ? { deckCount: state.deck.length } : {}),
     players: { jon: playerView(state, 'jon', viewer), lydia: playerView(state, 'lydia', viewer) },
     lastCouncil: revealed ? {
       session: revealed.session,

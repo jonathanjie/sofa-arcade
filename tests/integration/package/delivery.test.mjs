@@ -114,7 +114,8 @@ test('generated production browser modules and root HTML match authored sources'
     assert.ok(!forbidden.test(url), `Browser path must not expose test/fixture state: ${url}`);
     assert.ok(!source.startsWith('server/') && !source.startsWith('desktop/'));
     if (source.startsWith('games/odd-laws-society/')) {
-      assert.ok(['catalog.mjs', 'preview.mjs', 'errors.mjs'].includes(source.slice('games/odd-laws-society/'.length)), `Only reviewed public engine helpers belong in browser delivery: ${source}`);
+      // rules.mjs holds only the public v0.3 module switches; it imports nothing.
+      assert.ok(['catalog.mjs', 'preview.mjs', 'errors.mjs', 'rules.mjs'].includes(source.slice('games/odd-laws-society/'.length)), `Only reviewed public engine helpers belong in browser delivery: ${source}`);
     }
     const generated = path.join(root, 'public', url.slice(1));
     assert.ok((await readFile(generated)).equals(await readFile(path.join(root, source))), `Run prepare-game after editing ${source}`);

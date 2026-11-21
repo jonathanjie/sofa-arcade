@@ -2,12 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { engine, legalActions, RULES_V03, V03_STAPLES, V03_SPONSOR_PRESTIGE } from '../engine.mjs';
 import { ALL_BUILDINGS, EFFECT_BUILDINGS, termPool } from '../catalog.mjs';
+import { MODULE_IDS } from '../rules.mjs';
 import { scoreBreakdown, buildQuote, festivalPoints } from '../preview.mjs';
 import { OPENING_AGENDA, clone, council, take, cityOf } from './helpers.mjs';
 
 const fresh03 = (overrides = {}) => engine.create({
   seed: 'v03-seed', matchId: 'v03-match',
-  options: { firstChair: 'jon', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03 },
+  options: { firstChair: 'jon', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03, modules: [...MODULE_IDS] },
   ...overrides,
 });
 // One entry per physical card: a staple stack with 2 copies counts twice.
@@ -35,11 +36,12 @@ test('v0.3 is opt-in, and v0.2 matches are unchanged', () => {
   assert.throws(() => engine.create({ seed: 'x', matchId: 'm', options: { rulesVersion: '0.4' } }), /0.2 or 0.3/);
 });
 
-test('v0.3 catalog adds twelve effect designs, ten per term', () => {
+test('Grand Market adds twelve effect designs, ten per term with Back-Room Deals', () => {
   assert.equal(EFFECT_BUILDINGS.length, 12);
   for (const term of [1, 2, 3]) {
-    assert.equal(termPool('0.3', term).length, 10);
-    assert.equal(termPool('0.2', term).length, 6);
+    assert.equal(termPool({ grandMarket: true, backRoom: true }, term).length, 10);
+    assert.equal(termPool({ grandMarket: true }, term).length, 9, 'designs that Scout need Back-Room Deals');
+    assert.equal(termPool({}, term).length, 6);
   }
   assert.equal(new Set(ALL_BUILDINGS.map(design => design.id)).size, 30);
 });
@@ -55,7 +57,7 @@ test('v0.3 deals 8 designs per term plus its staple, with a 4-card row face up',
   assert.deepEqual(state.termDecks.map(deck => deck.length), [8, 8, 8]);
   assert.ok(state.termDecks.flat().every(designId => !V03_STAPLES.includes(designId)), 'staples are never dealt into a deck');
   // The deal does not depend on the Chair, so mirrored sweeps share it.
-  const mirrored = engine.create({ seed: 'v03-seed', matchId: 'v03-match', options: { firstChair: 'lydia', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03 } });
+  const mirrored = engine.create({ seed: 'v03-seed', matchId: 'v03-match', options: { firstChair: 'lydia', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03, modules: [...MODULE_IDS] } });
   assert.deepEqual(mirrored.termDecks, state.termDecks);
 });
 
@@ -319,7 +321,7 @@ test('v0.3 Festival also gains 1 influence, up to 6', () => {
 
 test('random v0.3 matches finish, keep 8 designs per term in play and never duplicate a card', () => {
   for (let seed = 0; seed < 20; seed += 1) {
-    let state = engine.create({ seed: `v03-random-${seed}`, matchId: `m${seed}`, options: { rulesVersion: RULES_V03 } });
+    let state = engine.create({ seed: `v03-random-${seed}`, matchId: `m${seed}`, options: { rulesVersion: RULES_V03, modules: [...MODULE_IDS] } });
     let pick = seed + 1;
     let term = 1;
     while (state.phase === 'playing') {

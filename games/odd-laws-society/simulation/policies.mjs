@@ -4,6 +4,7 @@
  * Weights are hypotheses for exercising distinct routes, never changes to v0.2 rules.
  */
 import { ALL_BUILDINGS, LAWS } from '../catalog.mjs';
+import { features } from '../rules.mjs';
 import { buildQuote, streetOutcome, civicAward, incomeBonus, festivalBonus, festivalPoints, scoreBreakdown } from '../preview.mjs';
 
 export const POLICY_IDS = Object.freeze(['economy', 'festival', 'civic', 'efficient-building']);
@@ -16,7 +17,7 @@ export const POLICY_VERSION = 'heuristics-1';
 export const V03_POLICY_IDS = Object.freeze([...POLICY_IDS, 'politician']);
 export const V03_POLICY_VERSION = 'heuristics-v03-1';
 const buildingById = new Map(ALL_BUILDINGS.map(building => [building.id, building]));
-const isV03 = view => view.rulesVersion === '0.3';
+const on = (view, feature) => features(view)[feature];
 const lawById = new Map(LAWS.map(law => [law.id, law]));
 const other = seat => seat === 'jon' ? 'lydia' : 'jon';
 const command = (view, type, fields = {}) => ({ type, matchId: view.matchId, phaseId: view.phaseId, ...fields });
@@ -89,7 +90,7 @@ export function chooseCouncil(view, seat, policyId) {
   const spread = best.value - ranked[ranked.length - 1].value;
   const policyBid = ['civic', 'politician'].includes(policyId) ? (spread > 2.5 ? 3 : spread > 1 ? 2 : spread > 0.25 ? 1 : 0)
     : spread > 2.5 ? 2 : spread > 0.8 ? 1 : 0;
-  if (isV03(view)) {
+  if (on(view, 'winnerPays')) {
     // Only the winner pays in v0.3, so a losing bid is free: bid one more when
     // the outcome matters at all, and bid everything as the politician.
     const eager = spread > 0.25 ? 1 : 0;
@@ -122,7 +123,7 @@ function buildValue(view, seat, policyId, design, quote, index, rebuild = false)
   if (ability === 'firstBuildDiscount' && !view.players[seat].city.some(card => card && buildingById.get(card.designId).ability?.type === 'firstBuildDiscount')) {
     value += Math.min(remainingIncomes, emptyPlots - 1) * (policyId === 'economy' ? 0.8 : 0.35);
   }
-  if (!isV03(view) && ability === 'festivalBonus' && festivalBonus(view, seat) === 0) value += (7 - view.session) * (policyId === 'festival' ? 1.1 : 0.15);
+  if (!on(view, 'cultureFestival') && ability === 'festivalBonus' && festivalBonus(view, seat) === 0) value += (7 - view.session) * (policyId === 'festival' ? 1.1 : 0.15);
   if (ability === 'influenceOnBuild') value += quote.influenceGain * (policyId === 'civic' ? 0.75 : 0.15);
   if (policyId === 'civic' && design.guild === 'civic') value += 0.8;
   if (policyId === 'festival' && design.guild === 'culture') value += 0.35;
@@ -131,7 +132,7 @@ function buildValue(view, seat, policyId, design, quote, index, rebuild = false)
   value += awardGain * (view.session % 2 === 0 && view.session < 6 ? 2 : 1) * (policyId === 'civic' ? 1.5 : 0.8);
   // Preserve scarce late slots: a heuristic opportunity cost, not an extra rule.
   if (!rebuild && view.session < 5 && emptyPlots <= 3) value -= (5 - view.session) * 1.25;
-  if (isV03(view)) value += v03AbilityValue(view, seat, policyId, design, projected);
+  if (on(view, 'v03')) value += v03AbilityValue(view, seat, policyId, design, projected);
   return value;
 }
 
@@ -141,13 +142,13 @@ function v03AbilityValue(view, seat, policyId, design, projected) {
   const remainingSessions = 6 - view.session;
   let value = effectPrestige * 1.1;
   const ability = design.ability?.type;
-  if (design.guild === 'culture' && festivalPoints(projected, seat) > festivalPoints(view, seat)) {
+  if (on(view, 'cultureFestival') && design.guild === 'culture' && festivalPoints(projected, seat) > festivalPoints(view, seat)) {
     value += remainingSessions * (policyId === 'festival' ? 0.9 : 0.3);
   }
   if (ability === 'treasuryRate') value += 1.2;
   if (ability === 'lobbyCoin') value += remainingSessions * (policyId === 'politician' ? 0.6 : 0.15);
   if (ability === 'rivalFestivalCoin') value += remainingSessions * 0.3;
-  if (ability === 'scoutOnBuild' && view.players[seat].reserve.length < 2 && view.deckCount > 0) value += 1;
+  if (ability === 'scoutOnBuild' && on(view, 'backRoom') && view.players[seat].reserve.length < 2 && view.deckCount > 0) value += 1;
   if (ability === 'streetGuildPrestige' || ability === 'diversityPrestige') value += 0.4; // room to grow
   return value;
 }
@@ -171,13 +172,13 @@ export function chooseCityAction(view, seat, policyId) {
   if (policyId === 'politician' && view.session < 6 && player.influence <= 2) {
     candidates.push({ action: command(view, 'lobby'), value: politicalNeed ? 3 : 2.2 });
   }
-  if (isV03(view)) addV03Candidates(view, seat, policyId, candidates, emptyPlots.length);
+  if (on(view, 'backRoom')) addScoutCandidate(view, seat, policyId, candidates);
   if (player.coins >= 3 && !player.festivalUsed) {
     const points = festivalPoints(view, seat);
     const value = points * (policyId === 'festival' ? 1.55 : 1) - 1.35 + (emptyPlots.length === 0 ? 1.4 : 0);
     candidates.push({ action: command(view, 'festival'), value });
   }
-  const designIds = [...view.market.map(stack => stack.designId), ...(isV03(view) ? player.reserve : [])];
+  const designIds = [...view.market.map(stack => stack.designId), ...(on(view, 'backRoom') ? player.reserve : [])];
   for (const designId of designIds) {
     const quote = buildQuote(view, seat, designId);
     const design = buildingById.get(designId);
@@ -187,7 +188,7 @@ export function chooseCityAction(view, seat, policyId) {
     });
     // v0.3 Rebuild: replace a weaker building. The v0.3 effect value already
     // subtracts the replaced building's prestige and effects.
-    if (isV03(view)) {
+    if (on(view, 'rebuild')) {
       player.city.forEach((card, index) => {
         if (!card || buildingById.get(card.designId).prestige >= design.prestige) return;
         const rebuildQuote = buildQuote(view, seat, design.id, index);
@@ -203,7 +204,7 @@ export function chooseCityAction(view, seat, policyId) {
   return candidates[0].action;
 }
 
-function addV03Candidates(view, seat, policyId, candidates, emptyPlots) {
+function addScoutCandidate(view, seat, policyId, candidates) {
   const player = view.players[seat];
   // Scout is free (no city action), once per session, for 1 influence. Take it
   // when spare influence would otherwise sit unused.

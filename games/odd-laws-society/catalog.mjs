@@ -94,9 +94,14 @@ export const EFFECT_BUILDINGS = deepFreeze([
 /** Every design either rules version can use, for lookups by design ID. */
 export const ALL_BUILDINGS = deepFreeze([...BUILDINGS, ...EFFECT_BUILDINGS]);
 
-/** The designs a rules version can deal in one term. */
-export function termPool(rulesVersion, term) {
-  const designs = rulesVersion === '0.3' ? ALL_BUILDINGS : BUILDINGS;
+/**
+ * The designs a match can use in one term. The Grand Market module adds the
+ * effect designs; without Back-Room Deals, designs that Scout are left out.
+ */
+export function termPool({ grandMarket = false, backRoom = false } = {}, term) {
+  const designs = grandMarket
+    ? ALL_BUILDINGS.filter(design => backRoom || design.ability?.type !== 'scoutOnBuild')
+    : BUILDINGS;
   return designs.filter(design => design.term === term);
 }
 
