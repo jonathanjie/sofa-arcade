@@ -3,6 +3,10 @@ import { SOFA_GAME_ID, getGame } from '../games/catalog.mjs';
 import { getGameEngine } from '../games/registry.mjs';
 
 export const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
+// Expired rooms stay readable for this long, so an old phone or TV tab still sees
+// "This room has expired" (410) instead of "not found" (404). After that, room
+// creation deletes them so the database does not grow without limit.
+export const EXPIRED_ROOM_RETENTION_MS = 24 * 60 * 60 * 1000;
 export const MAX_BODY_BYTES = 12 * 1024;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const CONNECTED_WINDOW_MS = 30_000;
@@ -222,12 +226,27 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     return Number(result.meta?.changes) === 1 ? { ...room, [column]: now } : room;
   }
 
+  /**
+   * Removes rooms whose retention window has ended. Room creation is rare and
+   * already writes, so it is a cheap place to clean up without a scheduled job.
+   * Cleanup is best effort: a failure must never block a new game.
+   */
+  async function deleteLongExpiredRooms(db) {
+    const cutoff = Date.now() - EXPIRED_ROOM_RETENTION_MS;
+    try {
+      await db.prepare('DELETE FROM sofa_rooms WHERE expires_at <= ?').bind(cutoff).run();
+    } catch {
+      // The next room creation tries again.
+    }
+  }
+
   async function createRoom(db, body) {
     const gameId = body.gameId === undefined ? SOFA_GAME_ID : body.gameId;
     if (typeof gameId !== 'string' || !resolveGame(gameId)) {
       throw new ApiError(400, 'Choose a game from the collection.', 'invalid_game');
     }
     adapter(gameId);
+    await deleteLongExpiredRooms(db);
     const hostToken = randomToken();
     const data = {
       gameId,

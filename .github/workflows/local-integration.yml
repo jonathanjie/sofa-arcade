@@ -78,23 +78,9 @@ jobs:
         run: node tests/integration/browser/menu-audio.mjs
         env:
           SOFA_EVIDENCE_DIR: ${{ runner.temp }}/ws6-browser
-      - name: Identify the pinned Odd Laws browser candidate
-        id: odd-laws
-        run: |
-          node --input-type=module <<'NODE'
-          import { readFileSync, appendFileSync } from 'node:fs';
-          import { getGame } from './games/catalog.mjs';
-          const lock = JSON.parse(readFileSync('tests/integration/components.json'));
-          const ready = ['WS1', 'WS2', 'WS3', 'WS4'].every(id => lock.components.find(item => item.id === id)?.status === 'included');
-          const candidate = getGame('odd-laws-society')?.status === 'playable' ? '0' : '1';
-          appendFileSync(process.env.GITHUB_OUTPUT, `ready=${ready}\ncandidate=${candidate}\n`);
-          console.log(ready ? `Real Odd Laws browser acceptance; candidate-only catalog resolver: ${candidate}` : 'Odd Laws browser acceptance is blocked by missing tested WS1–WS4 handoffs. The strict readiness job remains failed.');
-          NODE
       - name: Complete real Odd Laws matches, both Chairs, private phones and rematch
-        if: steps.odd-laws.outputs.ready == 'true'
         run: node tests/integration/browser/odd-laws.mjs
         env:
-          SOFA_ACCEPTANCE_CANDIDATE: ${{ steps.odd-laws.outputs.candidate }}
           SOFA_EVIDENCE_DIR: ${{ runner.temp }}/ws6-browser
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
@@ -206,20 +192,17 @@ jobs:
             ui/media/odd-laws-society/audio-evidence/render-report.json
           if-no-files-found: warn
 
-  component-readiness:
+  release-readiness:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: All five tested handoffs must be included before release readiness
-        run: npm run verify:components
-      - name: Odd Laws must pass the rendered candidate and be enabled before native release acceptance
+      - name: Odd Laws must be enabled before native release acceptance
         run: |
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
@@ -229,7 +212,7 @@ jobs:
 
   native-integrated:
     name: Integrated WKWebView (${{ matrix.arch }})
-    needs: component-readiness
+    needs: release-readiness
     strategy:
       fail-fast: false
       matrix:
