@@ -85,6 +85,7 @@ export function project(state, viewer) {
     actionIndex: state.actionIndex,
     actionsRemaining: { jon: state.actionsRemaining.jon, lydia: state.actionsRemaining.lydia },
     activeLaws: { economy: state.activeLaws.economy, civic: state.activeLaws.civic },
+    ...(state.sponsors ? { sponsors: { economy: state.sponsors.economy, civic: state.sponsors.civic } } : {}),
     agenda: state.agenda.map(item => ({ session: item.session, category: item.category, lawIds: item.lawIds.map(id => id) })),
     council: pending ? {
       category: pending.category,

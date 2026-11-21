@@ -146,3 +146,19 @@ Each row adds one change to the row above, except where noted. "Range" is the sp
 - Festival scores 2 + 1 per Culture building, at most 4.
 
 All policies win 42–59% of decided games, and ties are 8%. Lobby is still used only by the politician, and 2–4 influence is still left over, so influence remains the weakest system. These remaining gaps are probably as much about the simple bots as about the rules, and they should be checked in human play.
+
+### Influence tuning (rules v0.3, same 48 seeds)
+
+The goal was to make influence worth spending. Before this round, only the politician lobbied, and players finished with 2–4 unspent influence.
+
+| Step | Initial Chair | Most one-sided pair | Policy win shares | Influence left | Notes |
+| --- | ---: | ---: | --- | ---: | --- |
+| Start (tuned v0.3) | 0.47 | 0.69 | 0.42–0.59 | 1.8–3.8 | Politics mattered only to the politician |
+| Sponsor dividend every session | 0.55 | 0.82 | 0.29–0.65 | 1.9–2.2 | Politics too strong; the Chair's tie-break won sponsorships |
+| + ties at 1 or more keep the law (rejected) | 0.49 | 0.91 | 0.26–0.69 | — | Worse |
+| Dividend at Civic session ends only | 0.49 | 0.74 | 0.32–0.60 | about 2–2.5 | Festival still weak |
+| **+ Festival gains 1 influence (adopted)** | 0.52 | 0.73 | 0.36–0.56 | 2.9–3.9 | Mean scores of all policies within 1.3 points |
+
+**Adopted:** the player whose bid enacts a law becomes its **sponsor** (shown to everyone). At each Civic session end (2, 4 and 6), each sponsor of an active law secures 1 prestige with the Civic awards. A **Festival** also gains 1 influence, up to 6.
+
+**Result:** influence now matters to every strategy. Influence paid per game rose to 6.6–9.4, and Civic and politician strategies win 55–56%. Average final scores of all five policies are 60.3–61.6. The Festival policy wins only 36% of decided games, but its losing margins are small. Influence left at the end is still 3–4, mostly because these bots never bid more than about 2.5 per council. People would probably spend it.

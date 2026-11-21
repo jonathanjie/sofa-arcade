@@ -22,6 +22,9 @@ export const RULES_VERSION = '0.2';
  * - Twelve extra designs add new building effects.
  * - Staple designs have two copies, both face up for their whole term, so both
  *   players can get one. Nobody can build a design already in their own city.
+ * - Sponsors: the player whose bid enacts a law sponsors it. At each Civic
+ *   session end (2, 4 and 6), each sponsor of an active law secures
+ *   V03_SPONSOR_PRESTIGE. A Festival also gains 1 influence (up to 6).
  * - Rebuild: Build onto your own occupied plot. Pay the new cost minus the old
  *   building's printed cost (at least 1). The old building leaves the game, and
  *   its street is not scored again.
@@ -39,6 +42,14 @@ const SCOUT_COST = 1;
 export const V03_STAPLES = Object.freeze(['corner-shop', 'night-market']);
 const STAPLE_COPIES = 2;
 const isStaple = designId => V03_STAPLES.includes(designId);
+/**
+ * Paid only at Civic session ends: paying every session made political
+ * strategies too strong in bot sweeps (see the simulation README).
+ */
+export const V03_SPONSOR_PRESTIGE = 1;
+const sponsorsPaidAfter = session => session % 2 === 0;
+/** Popularity: a Festival gains influence, so a Culture plan can compete in councils. */
+export const V03_FESTIVAL_INFLUENCE = 1;
 export const PLAYER_IDS = Object.freeze(['jon', 'lydia']);
 
 const BUILDING_IDS = new Set(ALL_BUILDINGS.map(building => building.id));
@@ -302,6 +313,7 @@ export function create(input) {
     lastCouncil: null, result: null,
   };
   if (rulesVersion === RULES_V03) {
+    state.sponsors = { economy: null, civic: null };
     state.termDecks = dealTermDecks(input.seed);
     openTermMarket(state);
   }
@@ -412,7 +424,11 @@ function resolveCouncil(state) {
   }
   // No balance changes are visible after only one lock.
   for (const playerId of PLAYER_IDS) state.players[playerId].influence -= paid[playerId];
-  if (choiceId !== 'keep') state.activeLaws[council.category] = choiceId;
+  if (choiceId !== 'keep') {
+    state.activeLaws[council.category] = choiceId;
+    // v0.3: the winner's bid enacted this law, so the winner sponsors it.
+    if (isV03(state)) state.sponsors[council.category] = winner;
+  }
   state.lastCouncil = {
     session: state.session, phaseId: state.phaseId,
     choices: { jon: { ...jon }, lydia: { ...lydia } },
@@ -429,6 +445,13 @@ function resolveCouncil(state) {
 function finishSession(state) {
   // Compute both awards from the same post-action city snapshot before recording either.
   const awards = { jon: civicAward(state, 'jon'), lydia: civicAward(state, 'lydia') };
+  if (isV03(state) && sponsorsPaidAfter(state.session)) {
+    // Sponsor dividends are secured with Civic awards, as political prestige.
+    for (const category of ['economy', 'civic']) {
+      const sponsor = state.sponsors[category];
+      if (sponsor) awards[sponsor] += V03_SPONSOR_PRESTIGE;
+    }
+  }
   for (const playerId of PLAYER_IDS) state.players[playerId].score.civic += awards[playerId];
   refreshScores(state);
   if (state.session === 6) {
@@ -533,6 +556,7 @@ export function apply(fullState, authenticatedPlayerId, rawAction) {
       player.score.festivals += festivalPoints(fullState, authenticatedPlayerId);
       player.festivalUsed = true;
       if (isV03(state)) {
+        player.influence = Math.min(6, player.influence + V03_FESTIVAL_INFLUENCE);
         const rival = state.players[otherPlayer(authenticatedPlayerId)];
         rival.coins += Math.min(1, abilityCount(rival, 'rivalFestivalCoin'));
       }
