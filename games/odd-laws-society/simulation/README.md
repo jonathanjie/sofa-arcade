@@ -58,3 +58,132 @@ The initial Chair won 318 matches, lost 240, and tied 210 under this policy set.
 All four policies selected zero Lobby actions in this baseline. The Civic policy obtained influence from construction and spent more of it, but this run does **not** explore Lobby-heavy political play. Many building policies filled nine slots in session 5, with some in session 4; the Festival policy usually left room. Read `fullBySession`, `fullCityWork`, bid histograms, score components, and source/spend totals in the JSON when selecting future cases. Exact Lobby behavior is exercised in the rules/adversarial suites.
 
 No human playtests, observed teaching times, physical phone/TV sessions, or balance validation are represented by these files.
+
+## Rules v0.3 comparison (`compare.mjs`)
+
+`compare.mjs` runs rules v0.2 and the opt-in rules v0.3 with the same harness and five policies. These are the four original policies plus `politician`, which lobbies, bids hard and, under v0.3, scouts. Policies see projected views only. The v0.2-only policy behaviour is unchanged, and the `heuristics-1` baseline digest above still reproduces.
+
+```sh
+node games/odd-laws-society/simulation/compare.mjs --seeds 48
+```
+
+Rules v0.3 changes:
+
+- only the winning bid is paid, and a 0–0 council keeps the current law;
+- each term deals 8 of 10 designs, one copy each, with 4 face up and a refilling market;
+- Scout (1 influence) draws blind into a private reserve of up to 2 cards;
+- twelve effect designs are added.
+
+Results, 21 November 2026 (48 seeds, 2,400 games per version, policy `heuristics-v03-1`):
+
+| Measure | v0.2 | v0.3 |
+| --- | ---: | ---: |
+| Score range | 41–72 | 39–67 |
+| Tie rate | 0.29 | 0.08 |
+| Mirror-policy tie rate | 1.00 | 0.07 |
+| Initial Chair share of decided games | 0.55 | 0.47 |
+| Most one-sided pairing | 0.90 | 0.77 |
+| Mean bid per council | 0.4–1.3 | 1.3–2.0 |
+| Influence left at the end | 4.2–5.5 | 2.1–4.5 |
+| Scouts per game | — | 0.1–0.5 |
+
+| Policy | v0.2 win share | v0.3 win share |
+| --- | ---: | ---: |
+| economy | 0.29 | 0.67 |
+| festival | 0.55 | 0.47 |
+| civic | 0.40 | 0.42 |
+| efficient-building | 0.53 | 0.53 |
+| politician | 0.76 | 0.41 |
+
+What this shows:
+
+1. **The single-copy market works as intended.** Identical strategies no longer tie, because the player who moves first takes the only copy. The initial Chair's edge also falls.
+2. **Politics was strong in v0.2 when a bot actually played it.** The politician won 76%, because all-pay bids drain the opponent too. Under winner-pays, a losing bid is free, so both players bid more and influence decides less (the politician drops to 41%).
+3. **v0.3 has a new outlier: Economy wins 67%, and 70–77% against three policies.** The likely cause is that single copies make the one Corner Shop or Night Market decisive. Tune the income designs before anything else.
+4. **Scout and Lobby are still rarely chosen,** and influence is still left over. The reserve may need a cheaper Scout, a free Scout on Lobby, or a reason to spend influence late.
+
+### Staples and no duplicates (rules v0.3, same 48 seeds)
+
+The income designs (Corner Shop in Term I, Night Market in Term II) became **staples**. Each has two copies, face up for its whole term, beside the 4-card row, and staples are never dealt into a deck. Also, nobody can build a design that is already in their own city.
+
+| Measure | v0.3, no staples | Income staples (adopted) | Income and workshop staples |
+| --- | ---: | ---: | ---: |
+| Tie rate | 0.08 | 0.05 | 0.05 |
+| Mirror-policy tie rate | 0.07 | 0.04 | 0.07 |
+| Initial Chair share | 0.47 | 0.53 | 0.47 |
+| Most one-sided pairing | 0.77 | 0.96 | 0.93 |
+| economy win share | 0.67 | 0.52 | 0.55 |
+| festival win share | 0.47 | 0.77 | 0.80 |
+| civic win share | 0.42 | 0.31 | 0.29 |
+| efficient-building win share | 0.53 | 0.43 | 0.48 |
+| politician win share | 0.41 | 0.47 | 0.37 |
+
+**Staples fixed Economy, but the outlier moved to Festival.** Economy fell from 0.67 to 0.52. Festival rose to 0.77, and it beats Civic in 96% of decided games. The likely cause is that both players now get income, so both have more coins, and the repeatable Festival (3 coins for 3–4 prestige) becomes the best use of them. The gameplay analysis already flagged this. Adding the workshops as staples did not help. The next change to test is a Festival that scores 1 plus 1 per Culture building, at most 4.
+
+### Tuning round (rules v0.3, same 48 seeds)
+
+Each row adds one change to the row above, except where noted. "Range" is the spread of policy win shares.
+
+| Step | Ties | Initial Chair | Most one-sided pair | Policy win shares | Notes |
+| --- | ---: | ---: | ---: | --- | --- |
+| Income staples (start) | 0.05 | 0.53 | 0.96 | 0.31–0.77 | Festival 0.77 |
+| Festival = 1 + Culture, max 4 | 0.04 | 0.51 | 0.97 | 0.32–0.82 | Festival points fell, but Festival still won |
+| (alternatives) 0 + Culture; 1 + Culture, max 3 | 0.04–0.05 | 0.50–0.53 | 0.91–0.94 | up to 0.78–0.80 | The formula was not the cause |
+| **Rebuild** | 0.09 | 0.51 | 0.72 | 0.40–0.58 | The real cause was plot hoarding |
+| Scout free, once per session | 0.08 | 0.45 | 0.78 | 0.40–0.59 | Scouts rose from about 0 to 1–2 per game |
+| **Festival = 2 + Culture, max 4 (adopted)** | 0.08 | 0.47 | 0.69 | 0.42–0.59 | Only Economy vs Festival is above 0.65 |
+| (rejected) income cap +1 | 0.09 | 0.47 | 0.68 | 0.41–0.58 | No real effect, so not adopted |
+
+**Why Festival won.** It was not the Festival action. A design count showed that the Festival policy took Term III landmarks 3–5 times as often as its rivals. Other policies filled all nine plots with cheap Term I and II buildings, so the Festival policy alone had space and coins when single-copy landmarks appeared. Rebuild lets anyone replace an early building with a landmark: pay the new cost minus the old printed cost, at least 1. That removed the advantage.
+
+**Adopted v0.3 rules after tuning:**
+
+- winner-pays councils;
+- a single-copy refilling market with income staples;
+- no duplicate designs in one city;
+- Rebuild;
+- Scout is free, once per session, for 1 influence;
+- Festival scores 2 + 1 per Culture building, at most 4.
+
+All policies win 42–59% of decided games, and ties are 8%. Lobby is still used only by the politician, and 2–4 influence is still left over, so influence remains the weakest system. These remaining gaps are probably as much about the simple bots as about the rules, and they should be checked in human play.
+
+### Influence tuning (rules v0.3, same 48 seeds)
+
+The goal was to make influence worth spending. Before this round, only the politician lobbied, and players finished with 2–4 unspent influence.
+
+| Step | Initial Chair | Most one-sided pair | Policy win shares | Influence left | Notes |
+| --- | ---: | ---: | --- | ---: | --- |
+| Start (tuned v0.3) | 0.47 | 0.69 | 0.42–0.59 | 1.8–3.8 | Politics mattered only to the politician |
+| Sponsor dividend every session | 0.55 | 0.82 | 0.29–0.65 | 1.9–2.2 | Politics too strong; the Chair's tie-break won sponsorships |
+| + ties at 1 or more keep the law (rejected) | 0.49 | 0.91 | 0.26–0.69 | — | Worse |
+| Dividend at Civic session ends only | 0.49 | 0.74 | 0.32–0.60 | about 2–2.5 | Festival still weak |
+| **+ Festival gains 1 influence (adopted)** | 0.52 | 0.73 | 0.36–0.56 | 2.9–3.9 | Mean scores of all policies within 1.3 points |
+
+**Adopted:** the player whose bid enacts a law becomes its **sponsor** (shown to everyone). At each Civic session end (2, 4 and 6), each sponsor of an active law secures 1 prestige with the Civic awards. A **Festival** also gains 1 influence, up to 6.
+
+**Result:** influence now matters to every strategy. Influence paid per game rose to 6.6–9.4, and Civic and politician strategies win 55–56%. Average final scores of all five policies are 60.3–61.6. The Festival policy wins only 36% of decided games, but its losing margins are small. Influence left at the end is still 3–4, mostly because these bots never bid more than about 2.5 per council. People would probably spend it.
+
+### Base game and modules (rules v0.3, same 48 seeds)
+
+v0.3 is now a base game plus optional modules (`options.modules`; see `rules.mjs`). The goal was a base game that is close to v0.2 and quick to teach, with the extra depth in modules.
+
+Sweep results that decided where each rule belongs (initial Chair share / most one-sided pairing / policy win-share range):
+
+| Variant | Base | Grand Market | Grand Market + Back-Room |
+| --- | --- | --- | --- |
+| Every rule in the base (sponsors, Festival influence) | 0.64 / 0.83 / 0.29–0.73 | 0.57 / 0.69 / 0.38–0.53 | 0.52 / 0.73 / 0.36–0.56 |
+| Base without sponsors | 0.57 / 0.77 / 0.40–0.65 | — | — |
+| Ties keep the law, with sponsors (rejected) | 0.52 / 0.92 / 0.22–0.72 | 0.51 / 0.79 | 0.48 / 0.83 |
+| **Adopted: trailing Chair; sponsors only with Grand Market** | **0.52 / 0.77 / 0.41–0.59** | **0.52 / 0.73 / 0.34–0.58** | **0.52 / 0.67 / 0.42–0.58** |
+
+**Adopted structure:**
+
+- **Base v0.3:** v0.2, plus winner-pays councils, Rebuild, and **the player who is behind chairs** each session from session 2 (on equal scores, the printed schedule stands). The trailing Chair replaces v0.2's fixed schedule, which gave the first Chair both Economy tie-breaks.
+- **Grand Market:** the single-copy dealt market, income staples, no duplicate designs, 12 effect designs, the Culture Festival, sponsors and Festival influence. Sponsors made the two-copy base too political (the politician won 73–74%), but they balance the Grand Market.
+- **Back-Room Deals** (needs Grand Market): Scout and the private reserve. Without it, the three designs that Scout are not dealt.
+
+**Remaining gaps:**
+
+- In the base, identical bots tie 77% of the time (two copies of everything); people do not play identically.
+- Influence in the base is mostly left over (about 5), because the base has no sponsors.
+- With Grand Market alone, Festival is a little weak (0.34).

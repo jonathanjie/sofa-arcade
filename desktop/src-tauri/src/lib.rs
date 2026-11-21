@@ -2,6 +2,8 @@
 pub mod config;
 #[cfg(feature = "native")]
 pub mod native;
+#[cfg(feature = "native")]
+pub mod updater;
 pub mod process;
 pub mod protocol;
 pub mod secure;

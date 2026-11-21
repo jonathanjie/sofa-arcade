@@ -1,8 +1,8 @@
 # Local Sofa Arcade — build and acceptance guide
 
-This guide follows the WS6 integration candidate. Its authoritative dependency
-checkpoint is [`tests/integration/components.json`](../tests/integration/components.json),
-and executed results are in [the integration report](workstreams/integration.md).
+This guide follows the WS6 integration candidate. Its dependency checkpoint is
+archived at [`docs/archive/local-release-components.json`](archive/local-release-components.json)
+and is no longer enforced. Executed results are in [the integration report](workstreams/integration.md).
 The candidate remains a draft until every essential component and the complete
 automated/native acceptance gates pass. All five components are included; Odd
 Laws is enabled after the complete browser candidate passed at `4695643`.
@@ -208,8 +208,6 @@ node scripts/check-derived.mjs
 npm run test:integration
 npm run build
 node tests/integration/package/production.mjs
-npm run verify:components
-npm run verify:local-release
 ```
 
 `check-derived.mjs` requires regenerated browser assets and the ZIP to match

@@ -1,6 +1,7 @@
 /** Authority-only projection. Never serve this module or full-state fixtures. */
 import { RuleError } from './errors.mjs';
 import { scoreBreakdown } from './preview.mjs';
+import { features } from './rules.mjs';
 
 const playerIds = ['jon', 'lydia'];
 
@@ -27,9 +28,25 @@ function commitmentView(commitment) {
   return commitment ? { choiceId: commitment.choiceId, bid: commitment.bid } : null;
 }
 
-function playerView(state, playerId) {
+/**
+ * Back-Room Deals reserves are private: only their owner sees the designs. Everyone sees
+ * the count. The TV (host or public viewer) sees no designs.
+ */
+function reserveView(state, playerId, viewer) {
+  if (!features(state).backRoom) return {};
+  const reserve = state.players[playerId].reserve;
+  const own = viewer.role === 'player' && viewer.playerId === playerId;
+  return {
+    reserve: own ? reserve.map(designId => designId) : null,
+    reserveCount: reserve.length,
+    scoutedThisSession: state.players[playerId].scoutedThisSession,
+  };
+}
+
+function playerView(state, playerId, viewer) {
   const player = state.players[playerId];
   return {
+    ...reserveView(state, playerId, viewer),
     coins: player.coins,
     // The fixed pre-council budget is also the public balance until atomic reveal.
     influence: state.stage === 'council' ? state.council.budgets[playerId] : player.influence,
@@ -57,6 +74,7 @@ export function project(state, viewer) {
     schemaVersion: state.schemaVersion,
     gameId: state.gameId,
     rulesVersion: state.rulesVersion,
+    ...(Array.isArray(state.modules) ? { modules: state.modules.map(id => id) } : {}),
     matchId: state.matchId,
     phase: state.phase,
     stage: state.stage,
@@ -69,6 +87,7 @@ export function project(state, viewer) {
     actionIndex: state.actionIndex,
     actionsRemaining: { jon: state.actionsRemaining.jon, lydia: state.actionsRemaining.lydia },
     activeLaws: { economy: state.activeLaws.economy, civic: state.activeLaws.civic },
+    ...(state.sponsors ? { sponsors: { economy: state.sponsors.economy, civic: state.sponsors.civic } } : {}),
     agenda: state.agenda.map(item => ({ session: item.session, category: item.category, lawIds: item.lawIds.map(id => id) })),
     council: pending ? {
       category: pending.category,
@@ -77,13 +96,16 @@ export function project(state, viewer) {
       ownCommitment: viewer.role === 'player' ? commitmentView(pending.commitments[viewer.playerId]) : null,
     } : null,
     market: state.market.map(stack => ({ designId: stack.designId, remaining: stack.remaining })),
-    players: { jon: playerView(state, 'jon'), lydia: playerView(state, 'lydia') },
+    // v0.3: the deck order is hidden; only its size is public.
+    ...(features(state).grandMarket ? { deckCount: state.deck.length } : {}),
+    players: { jon: playerView(state, 'jon', viewer), lydia: playerView(state, 'lydia', viewer) },
     lastCouncil: revealed ? {
       session: revealed.session,
       phaseId: revealed.phaseId,
       choices: { jon: commitmentView(revealed.choices.jon), lydia: commitmentView(revealed.choices.lydia) },
       adoptedLawId: revealed.adoptedLawId,
       category: revealed.category,
+      ...(revealed.paid ? { paid: { jon: revealed.paid.jon, lydia: revealed.paid.lydia } } : {}),
     } : null,
     result: state.result ? {
       winner: state.result.winner,

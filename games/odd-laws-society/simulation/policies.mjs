@@ -3,12 +3,21 @@
  * This module receives projected views only and has no authority import.
  * Weights are hypotheses for exercising distinct routes, never changes to v0.2 rules.
  */
-import { BUILDINGS, LAWS } from '../catalog.mjs';
-import { buildQuote, streetOutcome, civicAward, incomeBonus, festivalBonus } from '../preview.mjs';
+import { ALL_BUILDINGS, LAWS } from '../catalog.mjs';
+import { features } from '../rules.mjs';
+import { buildQuote, streetOutcome, civicAward, incomeBonus, festivalBonus, festivalPoints, scoreBreakdown } from '../preview.mjs';
 
 export const POLICY_IDS = Object.freeze(['economy', 'festival', 'civic', 'efficient-building']);
 export const POLICY_VERSION = 'heuristics-1';
-const buildingById = new Map(BUILDINGS.map(building => [building.id, building]));
+/**
+ * The politician policy lobbies and bids hard; compare.mjs uses it under both
+ * rules versions. Rule-specific v0.3 behaviour is gated on view.rulesVersion.
+ * The recorded heuristics-1 baseline uses only POLICY_IDS, so it does not change.
+ */
+export const V03_POLICY_IDS = Object.freeze([...POLICY_IDS, 'politician']);
+export const V03_POLICY_VERSION = 'heuristics-v03-1';
+const buildingById = new Map(ALL_BUILDINGS.map(building => [building.id, building]));
+const on = (view, feature) => features(view)[feature];
 const lawById = new Map(LAWS.map(law => [law.id, law]));
 const other = seat => seat === 'jon' ? 'lydia' : 'jon';
 const command = (view, type, fields = {}) => ({ type, matchId: view.matchId, phaseId: view.phaseId, ...fields });
@@ -16,7 +25,7 @@ const copy = value => JSON.parse(JSON.stringify(value));
 const compareText = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 const tieKey = action => `${action.type}:${action.designId ?? ''}:${action.row ?? ''}:${action.col ?? ''}`;
 function validatePolicy(id) {
-  if (!POLICY_IDS.includes(id)) throw new Error('Unknown policy.');
+  if (!V03_POLICY_IDS.includes(id)) throw new Error('Unknown policy.');
 }
 function cityWith(view, seat, designId, index) {
   const next = copy(view);
@@ -51,6 +60,20 @@ function ownLawValue(view, seat, policyId, lawId, category) {
   return construction + work;
 }
 
+/**
+ * v0.3 sponsorship: enacting a law earns 1 prestige at each remaining Civic
+ * session end until it is replaced, and replacing the rival's law ends their
+ * dividend. These weights are heuristics, not exact expected values.
+ */
+function sponsorValue(view, seat, choiceId, category) {
+  if (!view.sponsors) return 0;
+  const sessionEnds = 7 - view.session;
+  const expectedLife = Math.min(sessionEnds, 2.5);
+  if (choiceId === 'keep') return view.sponsors[category] === seat ? expectedLife * 0.8 : 0;
+  const endsRivalDividend = view.sponsors[category] === other(seat) ? expectedLife * 0.6 : 0;
+  return expectedLife * 0.8 + endsRivalDividend;
+}
+
 /** Both policies decide before either commitment is submitted by the harness. */
 export function chooseCouncil(view, seat, policyId) {
   validatePolicy(policyId);
@@ -61,14 +84,21 @@ export function chooseCouncil(view, seat, policyId) {
     const lawId = choiceId === 'keep' ? currentLaw : choiceId;
     const own = ownLawValue(view, seat, policyId, lawId, category);
     const rival = ownLawValue(view, other(seat), policyId, lawId, category);
-    return { choiceId, value: own - rival * 0.55 };
+    return { choiceId, value: own - rival * 0.55 + sponsorValue(view, seat, choiceId, category) };
   }).sort((a, b) => b.value - a.value || compareText(a.choiceId, b.choiceId));
   const best = ranked[0];
   const spread = best.value - ranked[ranked.length - 1].value;
-  const policyBid = policyId === 'civic' ? (spread > 2.5 ? 3 : spread > 1 ? 2 : spread > 0.25 ? 1 : 0)
+  const policyBid = ['civic', 'politician'].includes(policyId) ? (spread > 2.5 ? 3 : spread > 1 ? 2 : spread > 0.25 ? 1 : 0)
     : spread > 2.5 ? 2 : spread > 0.8 ? 1 : 0;
+  if (on(view, 'winnerPays')) {
+    // Only the winner pays in v0.3, so a losing bid is free: bid one more when
+    // the outcome matters at all, and bid everything as the politician.
+    const eager = spread > 0.25 ? 1 : 0;
+    const wanted = policyId === 'politician' ? (spread > 0.5 ? 3 : spread > 0.1 ? 2 : 0) : policyBid + eager;
+    return command(view, 'commitCouncil', { choiceId: best.choiceId, bid: Math.min(3, view.players[seat].influence, wanted) });
+  }
   // Retain influence for later ballots unless the current differential is material.
-  const reserve = view.session < 5 && policyId !== 'civic' ? 1 : 0;
+  const reserve = view.session < 5 && !['civic', 'politician'].includes(policyId) ? 1 : 0;
   const bid = Math.min(3, Math.max(0, view.players[seat].influence - reserve), policyBid);
   return command(view, 'commitCouncil', { choiceId: best.choiceId, bid });
 }
@@ -81,19 +111,19 @@ function placementPotential(view, seat, index, designId) {
   if (ids.length === 3) return new Set(ids).size === 2 ? -0.7 : 0;
   return ids.length === 2 ? 0.3 : 0.08;
 }
-function buildValue(view, seat, policyId, design, quote, index) {
-  const street = streetOutcome(view, seat, Math.floor(index / 3), index % 3, design.id);
+function buildValue(view, seat, policyId, design, quote, index, rebuild = false) {
+  const street = rebuild ? { prestige: 0 } : streetOutcome(view, seat, Math.floor(index / 3), index % 3, design.id);
   const remainingIncomes = 6 - view.session;
   const emptyPlots = view.players[seat].city.filter(plot => plot === null).length;
   let value = design.prestige * (policyId === 'efficient-building' ? 1.3 : 1.1)
     + street.prestige * 1.3 - quote.cost * 0.45
-    + placementPotential(view, seat, index, design.id);
+    + (rebuild ? 0 : placementPotential(view, seat, index, design.id));
   const ability = design.ability?.type;
   if (ability === 'income' && incomeBonus(view, seat) < 2) value += remainingIncomes * (policyId === 'economy' ? 1.05 : 0.5);
   if (ability === 'firstBuildDiscount' && !view.players[seat].city.some(card => card && buildingById.get(card.designId).ability?.type === 'firstBuildDiscount')) {
     value += Math.min(remainingIncomes, emptyPlots - 1) * (policyId === 'economy' ? 0.8 : 0.35);
   }
-  if (ability === 'festivalBonus' && festivalBonus(view, seat) === 0) value += (7 - view.session) * (policyId === 'festival' ? 1.1 : 0.15);
+  if (!on(view, 'cultureFestival') && ability === 'festivalBonus' && festivalBonus(view, seat) === 0) value += (7 - view.session) * (policyId === 'festival' ? 1.1 : 0.15);
   if (ability === 'influenceOnBuild') value += quote.influenceGain * (policyId === 'civic' ? 0.75 : 0.15);
   if (policyId === 'civic' && design.guild === 'civic') value += 0.8;
   if (policyId === 'festival' && design.guild === 'culture') value += 0.35;
@@ -101,7 +131,25 @@ function buildValue(view, seat, policyId, design, quote, index) {
   const awardGain = civicAward(projected, seat) - civicAward(view, seat);
   value += awardGain * (view.session % 2 === 0 && view.session < 6 ? 2 : 1) * (policyId === 'civic' ? 1.5 : 0.8);
   // Preserve scarce late slots: a heuristic opportunity cost, not an extra rule.
-  if (view.session < 5 && emptyPlots <= 3) value -= (5 - view.session) * 1.25;
+  if (!rebuild && view.session < 5 && emptyPlots <= 3) value -= (5 - view.session) * 1.25;
+  if (on(view, 'v03')) value += v03AbilityValue(view, seat, policyId, design, projected);
+  return value;
+}
+
+/** v0.3 effects: live building prestige from synergy/diversity, and the new abilities. */
+function v03AbilityValue(view, seat, policyId, design, projected) {
+  const effectPrestige = scoreBreakdown(projected, seat).buildings - scoreBreakdown(view, seat).buildings - design.prestige;
+  const remainingSessions = 6 - view.session;
+  let value = effectPrestige * 1.1;
+  const ability = design.ability?.type;
+  if (on(view, 'cultureFestival') && design.guild === 'culture' && festivalPoints(projected, seat) > festivalPoints(view, seat)) {
+    value += remainingSessions * (policyId === 'festival' ? 0.9 : 0.3);
+  }
+  if (ability === 'treasuryRate') value += 1.2;
+  if (ability === 'lobbyCoin') value += remainingSessions * (policyId === 'politician' ? 0.6 : 0.15);
+  if (ability === 'rivalFestivalCoin') value += remainingSessions * 0.3;
+  if (ability === 'scoutOnBuild' && on(view, 'backRoom') && view.players[seat].reserve.length < 2 && view.deckCount > 0) value += 1;
+  if (ability === 'streetGuildPrestige' || ability === 'diversityPrestige') value += 0.4; // room to grow
   return value;
 }
 
@@ -121,20 +169,47 @@ export function chooseCityAction(view, seat, policyId) {
   if (policyId === 'civic' && view.session < 6 && player.influence <= 1 && politicalNeed) {
     candidates.push({ action: command(view, 'lobby'), value: 2.7 });
   }
+  if (policyId === 'politician' && view.session < 6 && player.influence <= 2) {
+    candidates.push({ action: command(view, 'lobby'), value: politicalNeed ? 3 : 2.2 });
+  }
+  if (on(view, 'backRoom')) addScoutCandidate(view, seat, policyId, candidates);
   if (player.coins >= 3 && !player.festivalUsed) {
-    const points = 3 + festivalBonus(view, seat);
+    const points = festivalPoints(view, seat);
     const value = points * (policyId === 'festival' ? 1.55 : 1) - 1.35 + (emptyPlots.length === 0 ? 1.4 : 0);
     candidates.push({ action: command(view, 'festival'), value });
   }
-  for (const stack of view.market) {
-    const quote = buildQuote(view, seat, stack.designId);
-    if (!quote.allowed) continue;
-    const design = buildingById.get(stack.designId);
-    for (const index of emptyPlots) candidates.push({
+  const designIds = [...view.market.map(stack => stack.designId), ...(on(view, 'backRoom') ? player.reserve : [])];
+  for (const designId of designIds) {
+    const quote = buildQuote(view, seat, designId);
+    const design = buildingById.get(designId);
+    if (quote.allowed) for (const index of emptyPlots) candidates.push({
       action: command(view, 'build', { designId: design.id, row: Math.floor(index / 3), col: index % 3 }),
       value: buildValue(view, seat, policyId, design, quote, index),
     });
+    // v0.3 Rebuild: replace a weaker building. The v0.3 effect value already
+    // subtracts the replaced building's prestige and effects.
+    if (on(view, 'rebuild')) {
+      player.city.forEach((card, index) => {
+        if (!card || buildingById.get(card.designId).prestige >= design.prestige) return;
+        const rebuildQuote = buildQuote(view, seat, design.id, index);
+        if (!rebuildQuote.allowed) return;
+        candidates.push({
+          action: command(view, 'build', { designId: design.id, row: Math.floor(index / 3), col: index % 3 }),
+          value: buildValue(view, seat, policyId, design, rebuildQuote, index, true),
+        });
+      });
+    }
   }
   candidates.sort((a, b) => b.value - a.value || compareText(tieKey(a.action), tieKey(b.action)));
   return candidates[0].action;
+}
+
+function addScoutCandidate(view, seat, policyId, candidates) {
+  const player = view.players[seat];
+  // Scout is free (no city action), once per session, for 1 influence. Take it
+  // when spare influence would otherwise sit unused.
+  const spareInfluence = player.influence - (policyId === 'politician' || policyId === 'civic' ? 2 : 1);
+  if (!player.scoutedThisSession && player.reserve.length < 2 && view.deckCount > 0 && spareInfluence >= 1 && view.session <= 5) {
+    candidates.push({ action: command(view, 'scout'), value: 99 });
+  }
 }

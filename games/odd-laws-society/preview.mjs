@@ -1,8 +1,10 @@
-/** Public, pure v0.2 arithmetic. Safe to ship to a browser; no authority imports. */
-import { BUILDINGS, LAWS } from './catalog.mjs';
+/** Public, pure v0.2/v0.3 arithmetic. Safe to ship to a browser; no authority imports. */
+import { ALL_BUILDINGS, LAWS } from './catalog.mjs';
+import { features } from './rules.mjs';
 import { RuleError } from './errors.mjs';
 
-const buildings = new Map(BUILDINGS.map(building => [building.id, building]));
+const buildings = new Map(ALL_BUILDINGS.map(building => [building.id, building]));
+const on = (view, feature) => features(view)[feature];
 const laws = new Map(LAWS.map(law => [law.id, law]));
 const playerIds = ['jon', 'lydia'];
 
@@ -57,12 +59,34 @@ export function festivalBonus(view, playerId) {
 }
 
 /**
+ * The Culture Festival (Grand Market module) rewards a Culture city
+ * instead of spare coins: 2 prestige plus 1 per Culture building, at most 4.
+ * Festival icons add nothing extra. (Tested against 1 + Culture, 0 + Culture and
+ * a cap of 3; see the simulation README.)
+ */
+export const V03_FESTIVAL = Object.freeze({ base: 2, perCulture: 1, max: 4 });
+
+/** Prestige a Festival would secure now. v0.2: 3 plus the citywide icon bonus. */
+export function festivalPoints(view, playerId) {
+  const player = playerFor(view, playerId);
+  if (!on(view, 'cultureFestival')) return 3 + festivalBonus(view, playerId);
+  const culture = cityBuildings(player).filter(building => building.guild === 'culture').length;
+  return Math.min(V03_FESTIVAL.max, V03_FESTIVAL.base + culture * V03_FESTIVAL.perCulture);
+}
+
+/**
  * Preview the single greatest pre-action discount, including its actual reduction.
  * All known-design arithmetic remains available when this Build is unavailable.
+ *
+ * v0.3 Rebuild: pass the target plot index (0–8). If that plot is occupied, the
+ * new building replaces the old one, and the price drops by the old building's
+ * printed cost (still at least 1 coin). The old building leaves the game.
  */
-export function buildQuote(view, playerId, designId) {
+export function buildQuote(view, playerId, designId, plotIndex = null) {
   const player = playerFor(view, playerId);
   const building = buildingFor(designId);
+  const replaced = on(view, 'rebuild') && Number.isInteger(plotIndex) && player.city[plotIndex]
+    ? buildingFor(player.city[plotIndex].designId) : null;
   const law = lawFor(view.activeLaws?.economy, 'economy');
   const firstBuild = player.buildsThisSession === 0;
   const workshop = firstBuild && abilityTotal(player, 'firstBuildDiscount') > 0 ? 1 : 0;
@@ -75,8 +99,9 @@ export function buildQuote(view, playerId, designId) {
   const selected = lawDiscount >= workshop && lawDiscount > 0
     ? { amount: lawDiscount, sourceId: law.id }
     : { amount: workshop, sourceId: workshop > 0 ? 'workshop' : null };
-  const cost = Math.max(1, building.cost - selected.amount);
-  const discount = { amount: building.cost - cost, sourceId: selected.sourceId };
+  const discountedCost = Math.max(1, building.cost - selected.amount);
+  const cost = replaced ? Math.max(1, discountedCost - replaced.cost) : discountedCost;
+  const discount = { amount: building.cost - discountedCost, sourceId: selected.sourceId };
   const influenceGain = building.ability?.type === 'influenceOnBuild'
     ? Math.max(0, Math.min(building.ability.amount, 6 - player.influence))
     : 0;
@@ -84,9 +109,11 @@ export function buildQuote(view, playerId, designId) {
   let reason = null;
   if (view.phase !== 'playing' || view.stage !== 'actions') reason = 'Build during a city turn.';
   else if (view.activePlayer !== playerId) reason = 'Wait for your turn.';
-  else if (building.term !== view.term || !view.market?.some(stack => stack.designId === designId && stack.remaining > 0)) {
+  else if (!isAvailable(view, player, building)) {
     reason = 'This building is not available.';
-  } else if (!player.city.includes(null)) reason = 'Your city is full.';
+  } else if (on(view, 'grandMarket') && player.city.some(instance => instance?.designId === designId)) {
+    reason = 'You already have this building.';
+  } else if (!replaced && !player.city.includes(null)) reason = 'Your city is full.';
   else if (player.coins < cost) reason = 'Not enough coins.';
 
   return {
@@ -97,7 +124,19 @@ export function buildQuote(view, playerId, designId) {
     discount,
     influenceGain,
     prestige: building.prestige,
+    ...(replaced ? { rebuild: { replacedDesignId: replaced.id, credit: discountedCost - cost } } : {}),
   };
+}
+
+/**
+ * Two-copy market (v0.2 and base v0.3): the design must be in this term's market.
+ * Grand Market: it must be face up, or in this player's own reserve (Back-Room
+ * Deals), from any term.
+ */
+function isAvailable(view, player, building) {
+  const inMarket = view.market?.some(stack => stack.designId === building.id && stack.remaining > 0);
+  if (!on(view, 'grandMarket')) return building.term === view.term && inMarket;
+  return inMarket || (on(view, 'backRoom') && Array.isArray(player.reserve) && player.reserve.includes(building.id));
 }
 
 /** Hypothetical placement ignores action timing, affordability, and market stock. */
@@ -151,13 +190,45 @@ export function civicAward(view, playerId, lawId = view.activeLaws.civic) {
   return Math.min(2, points);
 }
 
+/**
+ * v0.3 building effects that score from the current city: street synergy and
+ * guild diversity. They are part of the Buildings score, and they change if the
+ * city changes, unlike secured prestige.
+ */
+export function buildingEffectPrestige(view, playerId) {
+  const player = playerFor(view, playerId);
+  let points = 0;
+  player.city.forEach((instance, index) => {
+    if (!instance) return;
+    const building = buildingFor(instance.designId);
+    const type = building.ability?.type;
+    if (type === 'streetGuildPrestige') {
+      const row = Math.floor(index / 3);
+      const neighbours = player.city.slice(row * 3, row * 3 + 3)
+        .filter((other, column) => other && row * 3 + column !== index && buildingFor(other.designId).guild === building.guild);
+      points += neighbours.length * building.ability.amount;
+    } else if (type === 'diversityPrestige') {
+      points += Math.min(4, new Set(cityBuildings(player).map(design => design.guild)).size) * building.ability.amount;
+    }
+  });
+  return points;
+}
+
+/** Treasury converts every 3 coins, or every 2 with a v0.3 treasury building; at most 4. */
+export function treasuryFor(view, playerId) {
+  const player = playerFor(view, playerId);
+  const rate = cityBuildings(player).some(building => building.ability?.type === 'treasuryRate') ? 2 : 3;
+  return Math.min(4, Math.floor(player.coins / rate));
+}
+
 /** Printed prestige is derived once from the city; secured components never rescore. */
 export function scoreBreakdown(view, playerId) {
   const player = playerFor(view, playerId);
-  const buildings = cityBuildings(player).reduce((sum, building) => sum + building.prestige, 0);
+  const buildings = cityBuildings(player).reduce((sum, building) => sum + building.prestige, 0)
+    + buildingEffectPrestige(view, playerId);
   const streets = player.score.streets;
   const festivals = player.score.festivals;
   const civic = player.score.civic;
-  const treasury = Math.min(4, Math.floor(player.coins / 3));
+  const treasury = treasuryFor(view, playerId);
   return { buildings, streets, festivals, civic, treasury, total: buildings + streets + festivals + civic + treasury };
 }

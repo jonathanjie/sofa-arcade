@@ -2,7 +2,7 @@
 
 A collection of living-room games for Jon and Lydia: one local Mac host, one shared TV, two phone browsers, and one source repository. **Sofa Kingdoms** is a crumb-collecting rivalry; **The Odd Laws Society** adds a six-session strategy city builder with sealed councils.
 
-**Canonical source:** [jonathanjie/sofa-arcade](https://github.com/jonathanjie/sofa-arcade). This branch integrates the local Tauri release. See [local setup, builds and acceptance](docs/LOCAL_RELEASE.md), the [exact component checkpoint](tests/integration/components.json), and [integration evidence](docs/workstreams/integration.md). The existing hosted version is a separate delivery path; this work does not publish it.
+**Canonical source:** [jonathanjie/sofa-arcade](https://github.com/jonathanjie/sofa-arcade). This branch integrates the local Tauri release. See [local setup, builds and acceptance](docs/LOCAL_RELEASE.md), the [archived component checkpoint](docs/archive/local-release-components.json), and [integration evidence](docs/workstreams/integration.md). The existing hosted version is a separate delivery path; this work does not publish it.
 
 ## The collection
 
@@ -10,7 +10,7 @@ A collection of living-room games for Jon and Lydia: one local Mac host, one sha
 | --- | --- | --- |
 | Sofa Kingdoms | Playable | A crumb-collecting rivalry on a board rearranged by Lala |
 | Borrowed Minutes | Planned | A cooperative time-loop heist with echoes of earlier attempts |
-| Gravity Orchard | Planned | Rotate gravity to guide falling fruit into your baskets |
+| Gravity Orchard | Playable on the local Mac host | Tilt your garden and pass fruit across the bridge to fill picnic orders together |
 | Afterglow Market | Planned | Build and trade at an unpredictable night market |
 | The Odd Laws Society | Playable in the local integration candidate | Build a nine-plot borough through six sealed councils, finite markets and changing laws |
 | The Last Ninety Seconds | Planned | Reconstruct a mystery from clues split across two phones |

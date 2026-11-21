@@ -22,7 +22,7 @@ Your job is to assemble the actual tested components into a playable collection 
 
 You own shared catalog/registry, shell routing/global integration styles, the new ui/games/gravity-orchard/index.mjs bridge, existing server/rooms.mjs and server/lan.mjs integration seams, existing desktop host/native/protocol/config entrypoints, shared audio wiring, root production dependencies/locks, explicit runtime/browser allowlists, generated public/app route files and portable package, tests/gravity-orchard-integration/**, .github/workflows/go7-integration.yml, shared handoff documentation, and docs/workstreams/gravity-orchard-go7.md.
 
-GO1–GO6 exclusively own the subtrees/workflows in the dispatch table. Do not edit them concurrently. After an explicit tested handoff, any necessary component correction must be small, reviewed, listed with exact path/blob/reason and reverified; preserve the original PR and its tested SHA. Do not weaken existing component-lock checks to get green.
+GO1–GO6 exclusively own the subtrees/workflows in the dispatch table. Do not edit them concurrently. After an explicit tested handoff, any necessary component correction must be small, reviewed, listed with exact path/blob/reason and reverified; preserve the original PR and its tested SHA. Do not weaken existing tests or CI checks to get green.
 
 Use up to three subagents if available with separate files: server/auth/runtime wiring; collection/UI/media bridge; acceptance/package/native validation. Coordinate shared-file ownership before they edit.
 

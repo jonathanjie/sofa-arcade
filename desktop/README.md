@@ -161,8 +161,9 @@ is not a passing native launch.
 ## Distribution status
 
 CI uses local ad-hoc code signatures for test artifacts. These are **not**
-Developer ID signatures or notarization. No public release is published by
-this workflow, and it does not disable Gatekeeper or alter macOS security
+Developer ID signatures or notarization. The desktop check workflow publishes
+no release. Tagged releases come only from `release.yml` (see "Automatic
+updates"). No workflow disables Gatekeeper or alters macOS security
 settings. Downloaded-app distribution needs the owner's signing/notarization
 credentials and a separate Gatekeeper acceptance check.
 
@@ -171,6 +172,44 @@ Wi-Fi, TV casting, or device speakers. Real internet-disconnected play and
 physical sleep/wake also remain hardware acceptance checks. See the
 [WS5 report](../docs/workstreams/tauri.md) and the PR for actual completed
 evidence and remaining gates.
+
+## Automatic updates
+
+The installed app updates itself from GitHub Releases.
+
+**How it works**
+
+1. **At each launch, before the local host starts,** the app downloads `latest.json` from the newest release of `jonathanjie/sofa-arcade`. This check has a 5-second limit.
+2. **If the release is newer than the installed version,** the status window says "Installing the latest Sofa Arcade". The app downloads the update for its architecture and checks it against the public key in `src-tauri/tauri.conf.json`. It then replaces itself and reopens.
+3. **Any failure is ignored, and the app starts normally.** Failures include being offline, having no release yet, a read-only install location (for example, running from the DMG) and a bad signature. Local play never depends on the internet.
+
+The check happens only at launch, so an update never interrupts a room. Saved rooms and settings in Application Support are not touched.
+
+**When the check is skipped:** end-to-end test builds (`native-e2e` feature) never check. `SOFA_DISABLE_UPDATER=1` also skips the check, and the packaged-app test sets it.
+
+**Publish a release**
+
+1. Set the version everywhere and commit it:
+
+   ```bash
+   node desktop/scripts/set-version.mjs 0.2.0
+   ```
+
+2. Tag the commit and push the tag:
+
+   ```bash
+   git tag v0.2.0
+   ```
+
+   ```bash
+   git push origin v0.2.0
+   ```
+
+3. `.github/workflows/release.yml` builds both Mac architectures and signs the update bundles. It writes `latest.json` with `scripts/updater-manifest.mjs` and creates the GitHub Release with the DMGs, update bundles, signatures and manifest. The workflow fails if the tag does not match every version field.
+
+**One-time setup: the signing key.** The release workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY`. It holds the private key whose public half is in `tauri.conf.json`. The key has no password; set `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` only if you replace it with a password-protected key. Keep an offline backup of the private key. Without it, no installed app will accept a future update, and every app would have to be reinstalled by hand with a new public key.
+
+**Code signing.** Releases are ad-hoc signed, not Developer ID signed or notarized. A downloaded DMG still needs the usual right-click → Open the first time. macOS may ask again for local-network permission after an update, because an ad-hoc signature changes with every build. A Developer ID certificate and notarization would remove both prompts.
 
 ## Runtime integration contract
 

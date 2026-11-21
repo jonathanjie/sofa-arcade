@@ -3,6 +3,10 @@ import { SOFA_GAME_ID, getGame } from '../games/catalog.mjs';
 import { getGameEngine } from '../games/registry.mjs';
 
 export const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
+// Expired rooms stay readable for this long, so an old phone or TV tab still sees
+// "This room has expired" (410) instead of "not found" (404). After that, room
+// creation deletes them so the database does not grow without limit.
+export const EXPIRED_ROOM_RETENTION_MS = 24 * 60 * 60 * 1000;
 export const MAX_BODY_BYTES = 12 * 1024;
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const CONNECTED_WINDOW_MS = 30_000;
@@ -233,6 +237,20 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     return Number(result.meta?.changes) === 1 ? { ...room, [column]: now } : room;
   }
 
+  /**
+   * Removes rooms whose retention window has ended. Room creation is rare and
+   * already writes, so it is a cheap place to clean up without a scheduled job.
+   * Cleanup is best effort: a failure must never block a new game.
+   */
+  async function deleteLongExpiredRooms(db) {
+    const cutoff = Date.now() - EXPIRED_ROOM_RETENTION_MS;
+    try {
+      await db.prepare('DELETE FROM sofa_rooms WHERE expires_at <= ?').bind(cutoff).run();
+    } catch {
+      // The next room creation tries again.
+    }
+  }
+
   async function createRoom(db, body) {
     const gameId = body.gameId === undefined ? SOFA_GAME_ID : body.gameId;
     if (typeof gameId !== 'string' || !resolveGame(gameId)) {
@@ -248,6 +266,7 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       }
       options = { mode: options.mode };
     }
+    await deleteLongExpiredRooms(db);
     const hostToken = randomToken();
     const data = {
       gameId,
@@ -349,6 +368,9 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       type: action.type, index: action.index,
       ...(Object.hasOwn(action, 'axis') ? { axis: action.axis } : {}),
       ...(Object.hasOwn(action, 'direction') ? { direction: action.direction } : {}),
+      // Rules v4 toys can move a pounce to a square instead of choosing a line.
+      ...(Object.hasOwn(action, 'row') ? { row: action.row } : {}),
+      ...(Object.hasOwn(action, 'col') ? { col: action.col } : {}),
     });
     return JSON.stringify({ type: action.type });
   }
@@ -369,6 +391,10 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     stale_match: 'This command belongs to a different match. Refresh the board.',
     stale_phase: 'This command belongs to an earlier phase. Refresh the board.',
     game_finished: 'This match has finished. Wait for a rematch.',
+    reserve_full: 'Your reserve is full. Build from it first.',
+    insufficient_influence: 'You do not have enough influence for that action.',
+    duplicate_design: 'You already have this building in your city.',
+    scout_used: 'You have already scouted this session.',
   });
 
   function ruleError(error) {

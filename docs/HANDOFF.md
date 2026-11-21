@@ -3,22 +3,21 @@
 
 ## Gravity Orchard integration candidate — GO7
 
-The local realtime integration is on `feature/gravity-orchard-integration`, based
-on `6c6eb9343958da591b4488366c2ada4000e3ba08`. All six exact tested component heads
-are preserved. See [the GO7 report](workstreams/gravity-orchard-go7.md) and
-[component lock](../tests/gravity-orchard-integration/components.json) for their
-SHAs, order, corrections, dependency closure and acceptance evidence.
+Gravity Orchard's realtime integration (GO7) is merged into `main`. All six
+tested component heads are preserved in its history. See [the GO7 report](workstreams/gravity-orchard-go7.md)
+and the [archived component matrix](archive/gravity-orchard-components.json) for
+their SHAs, order, corrections, dependency closure and acceptance evidence. The
+component locks were retired after the integrations merged.
 
 The shared host now composes one credential authority/database/coordinator into
 HTTP/WS and optional native-owned HTTPS/WSS. The shared collection bridge mounts
 final phone/TV/tutorial/media and composed audio. Explicit delivery inventories,
-portable packaging and native setup/lifecycle are integrated. Gravity Orchard
-remains planned until rendered and actual macOS software acceptance passes;
-only explicit local acceptance instances enable the candidate meanwhile.
+portable packaging and native setup/lifecycle are integrated. Rendered and
+packaged macOS (Apple Silicon and Intel) software acceptance passed at
+`8e29e68`, so Gravity Orchard is enabled (`playable`) on the local host. The
+hosted Site has no realtime coordinator and keeps it unavailable.
 
-Run `npm run test:gravity-orchard` and `npm run verify:gravity-components` in
-addition to the existing gates. Keep the legacy WS1–WS5 lock meaningful: shared
-changes and GO6 additions have exact post-handoff records, not exemptions.
+Run `npm run test:gravity-orchard` in addition to the existing gates.
 Physical iOS/Android trust/sensors, WAN-disconnected cold start, Wi-Fi and casting
 are separate unverified gates. The report is authoritative for the latest GO7
 checkpoint; older sections below describe the merged collection baseline.
@@ -37,7 +36,7 @@ The next assignment is **Gravity Orchard v0.2**, a real-time cooperative game wi
 
 WS6 works on `feature/local-integration` from base
 `e34b0015399cb9791b175987adf1fab1b542565a`. Read
-[the frozen component matrix](../tests/integration/components.json),
+[the archived component matrix](archive/local-release-components.json),
 [the executed acceptance report](workstreams/integration.md), and
 [local setup/build instructions](LOCAL_RELEASE.md) before continuing.
 All five ready component heads are included by merge ancestry. The complete
@@ -50,10 +49,9 @@ Do not combine moving owner-branch tips or copy unfinished component files.
 Shared production and portable inputs now live in `scripts/runtime-files.mjs`.
 Regenerate public modules/root HTML and the portable ZIP after source changes;
 verify the extracted archive, explicit LAN routes, and desktop manifest together.
-`npm run verify:components` / `npm run verify:local-release` are strict readiness
-gates. Reports distinguish exact committed checks, dirty diagnostics, native CI,
-and physical hardware acceptance. See the matrix for permitted serving-only
-post-handoff corrections.
+The component lock that pinned WS1–WS6 handoffs was removed after the local
+release merged; the matrix is kept only as history. Reports distinguish exact
+committed checks, dirty diagnostics, native CI, and physical hardware acceptance.
 
 ## Project identity
 
