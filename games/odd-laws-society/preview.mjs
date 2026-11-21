@@ -87,6 +87,8 @@ export function buildQuote(view, playerId, designId) {
   else if (view.activePlayer !== playerId) reason = 'Wait for your turn.';
   else if (!isAvailable(view, player, building)) {
     reason = 'This building is not available.';
+  } else if (isV03(view) && player.city.some(instance => instance?.designId === designId)) {
+    reason = 'You already have this building.';
   } else if (!player.city.includes(null)) reason = 'Your city is full.';
   else if (player.coins < cost) reason = 'Not enough coins.';
 

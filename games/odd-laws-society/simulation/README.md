@@ -101,3 +101,21 @@ What this shows:
 2. **Politics was strong in v0.2 when a bot actually played it.** The politician won 76%, because all-pay bids drain the opponent too. Under winner-pays, a losing bid is free, so both players bid more and influence decides less (the politician drops to 41%).
 3. **v0.3 has a new outlier: Economy wins 67%, and 70–77% against three policies.** The likely cause is that single copies make the one Corner Shop or Night Market decisive. Tune the income designs before anything else.
 4. **Scout and Lobby are still rarely chosen,** and influence is still left over. The reserve may need a cheaper Scout, a free Scout on Lobby, or a reason to spend influence late.
+
+### Staples and no duplicates (rules v0.3, same 48 seeds)
+
+The income designs (Corner Shop in Term I, Night Market in Term II) became **staples**. Each has two copies, face up for its whole term, beside the 4-card row, and staples are never dealt into a deck. Also, nobody can build a design that is already in their own city.
+
+| Measure | v0.3, no staples | Income staples (adopted) | Income and workshop staples |
+| --- | ---: | ---: | ---: |
+| Tie rate | 0.08 | 0.05 | 0.05 |
+| Mirror-policy tie rate | 0.07 | 0.04 | 0.07 |
+| Initial Chair share | 0.47 | 0.53 | 0.47 |
+| Most one-sided pairing | 0.77 | 0.96 | 0.93 |
+| economy win share | 0.67 | 0.52 | 0.55 |
+| festival win share | 0.47 | 0.77 | 0.80 |
+| civic win share | 0.42 | 0.31 | 0.29 |
+| efficient-building win share | 0.53 | 0.43 | 0.48 |
+| politician win share | 0.41 | 0.47 | 0.37 |
+
+**Staples fixed Economy, but the outlier moved to Festival.** Economy fell from 0.67 to 0.52. Festival rose to 0.77, and it beats Civic in 96% of decided games. The likely cause is that both players now get income, so both have more coins, and the repeatable Festival (3 coins for 3–4 prestige) becomes the best use of them. The gameplay analysis already flagged this. Adding the workshops as staples did not help. The next change to test is a Festival that scores 1 plus 1 per Culture building, at most 4.
