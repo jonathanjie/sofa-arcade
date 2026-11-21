@@ -130,7 +130,15 @@ try{
   if(current.phase==='playing'){
    if(lastPhase!=='playing')pilot.reset();
    const controls=pilot.update(current);
-   await Promise.all(IDS.map(id=>drivers[id].apply(controls[id])));
+   try{await Promise.all(IDS.map(id=>drivers[id].apply(controls[id])));}
+   catch(error){
+    // Play can end between reading the TV and touching the phones: the last
+    // buffered fruit may complete two orders on one tick, and the joystick
+    // then leaves the phone. That alone is expected; anything else still fails.
+    const latest=await view(tv);
+    if(latest?.phase==='playing')throw error;
+    continue;
+   }
    if(!captured.has(current.stageIndex)&&current.fruits.length>=2){captured.add(current.stageIndex);await Promise.all(IDS.map(id=>drivers[id].apply({x:0,y:0,brake:true})));await run.screenshot(tv,`stage-${current.stageIndex+1}-active`);}
   }
   lastPhase=current.phase;

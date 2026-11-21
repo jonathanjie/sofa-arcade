@@ -13,20 +13,20 @@
   <main class="go6-diagnostic">
     <p class="eyebrow">Gravity Orchard / Phone check</p>
     <h1>A gentle tilt.<br>A clear check.</h1>
-    <p class="intro">Run this on each phone after trusting your Mac’s public certificate. No readings leave this page.</p>
+    <p class="intro">Open this on each phone after you add your Mac to it. Your tilt readings stay on this phone.</p>
     <div class="probe-art" aria-hidden="true"><div class="probe-phone"><span>✦</span></div><span class="probe-dot"></span></div>
     <p id="probe-status" class="status" role="status" aria-live="polite">Checking this page…</p>
     <dl class="checks">
-      <div><dt>HTTPS page loaded</dt><dd id="https-state">Not checked</dd></div>
-      <div><dt>Secure context</dt><dd id="context-state">Not checked</dd></div>
-      <div><dt>Motion permission</dt><dd id="permission-state">Not requested</dd></div>
-      <div><dt>Finite motion samples</dt><dd id="sample-state">None yet</dd></div>
+      <div><dt>Page opened safely</dt><dd id="https-state">Not checked</dd></div>
+      <div><dt>Phone allows tilt</dt><dd id="context-state">Not checked</dd></div>
+      <div><dt>Motion allowed</dt><dd id="permission-state">Not requested</dd></div>
+      <div><dt>Tilt readings</dt><dd id="sample-state">None yet</dd></div>
     </dl>
     <button id="start-probe" type="button">Check motion on this phone</button>
     <button id="stop-probe" type="button" class="secondary">Stop checking</button>
-    <p id="evidence" class="evidence">Browser check · no simulated readings</p>
-    <p class="help">Hold the phone comfortably and tilt a little. If no readings arrive, keep using touch. Permission and certificate settings vary by phone and browser.</p>
-    <details><summary>What this check can tell you</summary><p>HTTPS loading and a secure context are separate checks. This page cannot read your phone’s trust settings or verify whether someone bypassed a certificate warning. Always open it without bypassing warnings. Finite browser events show data reached this page; synthetic tests and desktop browsers do not prove a physical phone works.</p><p>If trust is missing, return to the Mac’s trusted-access setup. Do not continue past a certificate warning. On ordinary local HTTP, choose touch controls.</p></details>
+    <p id="evidence" class="evidence">Real phone readings only</p>
+    <p class="help">Hold the phone comfortably and tilt a little. If no readings arrive, keep using touch. Settings differ between phones.</p>
+    <details><summary>What this check can tell you</summary><p>This test cannot see your phone’s settings. If your phone showed a warning page before opening this, stop and check the setup on your Mac. Testing on a computer does not test a phone.</p><p>If tilt does not work, go back to the tilt setup on your Mac. If you see a warning page, do not continue. You can always play with touch.</p></details>
     <a href="/" class="return-link">Return to Sofa Arcade</a>
   </main>
 </body>
