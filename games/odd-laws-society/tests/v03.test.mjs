@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { engine, legalActions, RULES_V03 } from '../engine.mjs';
+import { engine, legalActions, RULES_V03, V03_STAPLES } from '../engine.mjs';
 import { ALL_BUILDINGS, EFFECT_BUILDINGS, termPool } from '../catalog.mjs';
 import { scoreBreakdown, buildQuote } from '../preview.mjs';
 import { OPENING_AGENDA, clone, council, take, cityOf } from './helpers.mjs';
@@ -10,12 +10,20 @@ const fresh03 = (overrides = {}) => engine.create({
   options: { firstChair: 'jon', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03 },
   ...overrides,
 });
+// One entry per physical card: a staple stack with 2 copies counts twice.
 const designsInPlay = state => [
-  ...state.market.map(stack => stack.designId), ...state.deck,
+  ...state.market.flatMap(stack => Array(stack.remaining).fill(stack.designId)), ...state.deck,
   ...['jon', 'lydia'].flatMap(seat => state.players[seat].reserve),
   ...['jon', 'lydia'].flatMap(seat => state.players[seat].city.filter(Boolean).map(card => card.designId)),
 ];
 const toActions = state => council(state);
+const copiesAllowed = designId => (V03_STAPLES.includes(designId) ? 2 : 1);
+const assertCardCounts = state => {
+  const counts = new Map();
+  for (const designId of designsInPlay(state)) counts.set(designId, (counts.get(designId) ?? 0) + 1);
+  for (const [designId, count] of counts) assert.ok(count <= copiesAllowed(designId), `${designId} appears ${count} times`);
+};
+const rowCards = state => state.market.filter(stack => !V03_STAPLES.includes(stack.designId));
 const byId = new Map(ALL_BUILDINGS.map(design => [design.id, design]));
 
 test('v0.3 is opt-in, and v0.2 matches are unchanged', () => {
@@ -36,13 +44,16 @@ test('v0.3 catalog adds twelve effect designs, ten per term', () => {
   assert.equal(new Set(ALL_BUILDINGS.map(design => design.id)).size, 30);
 });
 
-test('v0.3 deals 8 of 10 designs per term, one copy each, with 4 face up', () => {
+test('v0.3 deals 8 designs per term plus its staple, with a 4-card row face up', () => {
   const state = fresh03();
-  assert.equal(state.market.length, 4);
-  assert.ok(state.market.every(stack => stack.remaining === 1 && byId.get(stack.designId).term === 1));
+  assert.deepEqual(state.market[0], { designId: 'corner-shop', remaining: 2 });
+  assert.equal(rowCards(state).length, 4);
+  assert.ok(rowCards(state).every(stack => stack.remaining === 1 && byId.get(stack.designId).term === 1));
   assert.equal(state.deck.length, 4);
-  assert.equal(new Set(designsInPlay(state)).size, 8);
+  assert.equal(new Set(designsInPlay(state)).size, 9);
+  assert.equal(designsInPlay(state).length, 10);
   assert.deepEqual(state.termDecks.map(deck => deck.length), [8, 8, 8]);
+  assert.ok(state.termDecks.flat().every(designId => !V03_STAPLES.includes(designId)), 'staples are never dealt into a deck');
   // The deal does not depend on the Chair, so mirrored sweeps share it.
   const mirrored = engine.create({ seed: 'v03-seed', matchId: 'v03-match', options: { firstChair: 'lydia', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03 } });
   assert.deepEqual(mirrored.termDecks, state.termDecks);
@@ -66,16 +77,16 @@ test('v0.3 council: only the winner pays, the Chair wins ties, and 0–0 keeps t
 test('v0.3 build from the row removes the only copy and refills from the deck', () => {
   const state = toActions(fresh03());
   const seat = state.activePlayer;
-  const designId = state.market.find(stack => buildQuote(state, seat, stack.designId).allowed).designId;
+  const designId = rowCards(state).find(stack => buildQuote(state, seat, stack.designId).allowed).designId;
   const nextFromDeck = state.deck[0];
   const built = take(state, 'build', { designId, row: 0, col: 0 });
   assert.equal(built.players[seat].city[0].designId, designId);
   assert.equal(built.players[seat].city[0].instanceId, `v03-match:${designId}`);
   assert.equal(built.market.some(stack => stack.designId === designId), false);
   assert.equal(built.market.at(-1).designId, nextFromDeck);
-  assert.equal(built.market.length, 4);
+  assert.equal(rowCards(built).length, 4);
   assert.equal(built.deck.length, 3);
-  assert.equal(new Set(designsInPlay(built)).size, 8);
+  assertCardCounts(built);
 });
 
 test('v0.3 Scout costs 1 influence, fills the reserve to 2, and reserved cards can be built later', () => {
@@ -95,7 +106,7 @@ test('v0.3 Scout costs 1 influence, fills the reserve to 2, and reserved cards c
   const built = take(back, 'build', { designId, row: 1, col: 1 });
   assert.equal(built.players[seat].city[4].designId, designId);
   assert.deepEqual(built.players[seat].reserve, [top[1]]);
-  assert.equal(new Set(designsInPlay(built)).size, 8);
+  assertCardCounts(built);
   // On the other player's turn, a design held in this reserve is not available to them.
   const rival = scouted.activePlayer;
   assert.notEqual(rival, seat);
@@ -113,6 +124,7 @@ test('v0.3 reserves survive term changes, and each term opens a new row', () => 
     else state = take(state, 'work');
   }
   assert.deepEqual(state.players[seat].reserve, reserved);
+  assert.deepEqual(state.market[0], { designId: 'night-market', remaining: 2 });
   assert.ok(state.market.every(stack => byId.get(stack.designId).term === 2));
   assert.equal(state.deck.length, 4);
 });
@@ -180,6 +192,34 @@ test('v0.3 effects: street synergy, diversity, treasury rate, Lobby coin, rival 
   assert.deepEqual(withMusicians.players[seat].reserve, [topCard]);
 });
 
+test('v0.3 staples: each player can build one of the two copies, and the stack does not refill', () => {
+  let state = toActions(fresh03());
+  const first = state.activePlayer;
+  const second = first === 'jon' ? 'lydia' : 'jon';
+  state.players.jon.coins = 30;
+  state.players.lydia.coins = 30;
+  state = take(state, 'build', { designId: 'corner-shop', row: 0, col: 0 });
+  assert.equal(state.players[first].city[0].instanceId, 'v03-match:corner-shop:copy-1');
+  assert.deepEqual(state.market[0], { designId: 'corner-shop', remaining: 1 });
+  state = take(state, 'build', { designId: 'corner-shop', row: 0, col: 0 });
+  assert.equal(state.players[second].city[0].instanceId, 'v03-match:corner-shop:copy-2');
+  assert.equal(state.market.some(stack => stack.designId === 'corner-shop'), false);
+  assert.equal(rowCards(state).length, 4, 'an empty staple does not take a deck card');
+  assertCardCounts(state);
+});
+
+test('v0.3 forbids a second copy of a design in one city', () => {
+  const state = toActions(fresh03());
+  const seat = state.activePlayer;
+  state.players[seat].coins = 30;
+  state.players[seat].city = cityOf(['corner-shop']);
+  const quote = buildQuote(state, seat, 'corner-shop');
+  assert.equal(quote.allowed, false);
+  assert.match(quote.reason, /already have/);
+  assert.equal(legalActions(state, seat).some(action => action.designId === 'corner-shop'), false);
+  assert.throws(() => take(state, 'build', { designId: 'corner-shop', row: 1, col: 1 }), error => error.code === 'DUPLICATE_DESIGN');
+});
+
 test('random v0.3 matches finish, keep 8 designs per term in play and never duplicate a card', () => {
   for (let seed = 0; seed < 20; seed += 1) {
     let state = engine.create({ seed: `v03-random-${seed}`, matchId: `m${seed}`, options: { rulesVersion: RULES_V03 } });
@@ -193,8 +233,11 @@ test('random v0.3 matches finish, keep 8 designs per term in play and never dupl
       pick = (pick * 1103515245 + 12345) % 2147483648;
       state = engine.apply(state, seat, options[pick % options.length]);
       assert.deepEqual(JSON.parse(JSON.stringify(state)), state);
-      const inPlay = designsInPlay(state);
-      assert.equal(new Set(inPlay).size, inPlay.length, 'no design appears twice');
+      assertCardCounts(state);
+      for (const seatId of ['jon', 'lydia']) {
+        const own = state.players[seatId].city.filter(Boolean).map(card => card.designId);
+        assert.equal(new Set(own).size, own.length, 'no duplicate design in one city');
+      }
       if (state.term !== term) term = state.term;
       for (const seatId of ['jon', 'lydia']) {
         assert.ok(state.players[seatId].reserve.length <= 2);

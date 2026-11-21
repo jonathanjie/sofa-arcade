@@ -19,6 +19,8 @@ export const RULES_VERSION = '0.2';
  * - Scout (1 influence) draws blind from the deck until your private reserve
  *   holds 2 cards. Reserved cards can be built in any later session.
  * - Twelve extra designs add new building effects.
+ * - Staple designs have two copies, both face up for their whole term, so both
+ *   players can get one. Nobody can build a design already in their own city.
  */
 export const RULES_V03 = '0.3';
 export const SUPPORTED_RULES = Object.freeze([RULES_VERSION, RULES_V03]);
@@ -26,6 +28,13 @@ const MARKET_ROW_SIZE = 4;
 const DESIGNS_PER_TERM = 8;
 const RESERVE_LIMIT = 2;
 const SCOUT_COST = 1;
+/**
+ * v0.3 staples: the income buildings, which decided too many bot matches when
+ * only one copy existed. They sit beside the 4-card row and never enter a deck.
+ */
+export const V03_STAPLES = Object.freeze(['corner-shop', 'night-market']);
+const STAPLE_COPIES = 2;
+const isStaple = designId => V03_STAPLES.includes(designId);
 export const PLAYER_IDS = Object.freeze(['jon', 'lydia']);
 
 const BUILDING_IDS = new Set(ALL_BUILDINGS.map(building => building.id));
@@ -189,16 +198,24 @@ function stockFor(term) {
   return termPool(RULES_VERSION, term).map(building => ({ designId: building.id, remaining: 2 }));
 }
 
-/** v0.3: each term's hidden deal order, independent of the Chair for mirrored tests. */
+/**
+ * v0.3: each term's hidden deal order, independent of the Chair for mirrored
+ * tests. Staples are never dealt into a deck.
+ */
 function dealTermDecks(seed) {
-  return [1, 2, 3].map(term => shuffled(termPool(RULES_V03, term).map(design => design.id), seededRandom(`${seed}:deck:${term}`))
-    .slice(0, DESIGNS_PER_TERM));
+  return [1, 2, 3].map(term => shuffled(
+    termPool(RULES_V03, term).map(design => design.id).filter(designId => !isStaple(designId)),
+    seededRandom(`${seed}:deck:${term}`),
+  ).slice(0, DESIGNS_PER_TERM));
 }
 
-/** v0.3: open a term's market row and keep the rest of its deck hidden. */
+/** v0.3: open a term's staples and 4-card row, and keep the rest of its deck hidden. */
 function openTermMarket(state) {
   const deck = [...state.termDecks[state.term - 1]];
-  state.market = deck.splice(0, MARKET_ROW_SIZE).map(designId => ({ designId, remaining: 1 }));
+  const staples = termPool(RULES_V03, state.term)
+    .filter(design => isStaple(design.id))
+    .map(design => ({ designId: design.id, remaining: STAPLE_COPIES }));
+  state.market = [...staples, ...deck.splice(0, MARKET_ROW_SIZE).map(designId => ({ designId, remaining: 1 }))];
   state.deck = deck;
 }
 
@@ -338,6 +355,9 @@ function validateAction(state, playerId, action) {
     const stack = state.market.find(item => item.designId === action.designId);
     const reserved = isV03(state) && player.reserve.includes(action.designId);
     if ((!stack || stack.remaining < 1) && !reserved) fail('NOT_AVAILABLE', 'That building is not available in this market.');
+    if (isV03(state) && player.city.some(instance => instance?.designId === action.designId)) {
+      fail('DUPLICATE_DESIGN', 'You already have this building in your city.');
+    }
     if (!player.city.includes(null)) fail('CITY_FULL', 'Your city is full.');
     if (player.city[action.row * 3 + action.col] !== null) fail('PLOT_OCCUPIED', 'That plot is occupied.');
     if (player.coins < buildQuote(state, playerId, action.designId).cost) fail('INSUFFICIENT_COINS', 'You need more coins to build.');
@@ -461,12 +481,18 @@ export function apply(fullState, authenticatedPlayerId, rawAction) {
       const stack = state.market.find(item => item.designId === action.designId);
       let instanceId;
       if (isV03(state)) {
-        // One copy per design: build from the open row (then refill) or the reserve.
-        instanceId = `${state.matchId}:${action.designId}`;
-        if (stack) {
+        // A staple loses one of its two copies. A row card is the only copy, so
+        // the row refills from the deck. Otherwise the card comes from the reserve.
+        if (stack && isStaple(action.designId)) {
+          instanceId = `${state.matchId}:${action.designId}:copy-${STAPLE_COPIES + 1 - stack.remaining}`;
+          stack.remaining -= 1;
+          if (stack.remaining === 0) state.market = state.market.filter(item => item !== stack);
+        } else if (stack) {
+          instanceId = `${state.matchId}:${action.designId}`;
           state.market = state.market.filter(item => item.designId !== action.designId);
           if (state.deck.length > 0) state.market.push({ designId: state.deck.shift(), remaining: 1 });
         } else {
+          instanceId = `${state.matchId}:${action.designId}`;
           player.reserve = player.reserve.filter(designId => designId !== action.designId);
         }
       } else {

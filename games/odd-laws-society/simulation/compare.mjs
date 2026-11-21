@@ -11,7 +11,7 @@
  */
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
-import { engine, legalActions } from '../engine.mjs';
+import { engine, legalActions, V03_STAPLES } from '../engine.mjs';
 import { V03_POLICY_IDS, V03_POLICY_VERSION, chooseCouncil, chooseCityAction } from './policies.mjs';
 
 const seats = ['jon', 'lydia'];
@@ -24,17 +24,29 @@ function newLedger() {
   };
 }
 
-/** v0.3 only: every dealt design is in exactly one place at all times. */
+/**
+ * v0.3 only: every card is in exactly one place. A staple has two copies; any
+ * other design has one. No city holds two copies of a design.
+ */
 function auditCards(state) {
   if (state.rulesVersion !== '0.3') return;
-  const places = [
-    ...state.market.map(stack => stack.designId), ...state.deck,
+  const cards = [
+    ...state.market.flatMap(stack => Array(stack.remaining).fill(stack.designId)), ...state.deck,
     ...seats.flatMap(seat => state.players[seat].reserve),
     ...seats.flatMap(seat => state.players[seat].city.filter(Boolean).map(card => card.designId)),
   ];
-  assert.equal(new Set(places).size, places.length, 'A design appeared in two places');
-  const dealtSoFar = state.termDecks.slice(0, state.term).flat();
-  for (const designId of places) assert.ok(dealtSoFar.includes(designId), 'An undealt design appeared');
+  const counts = new Map();
+  for (const designId of cards) counts.set(designId, (counts.get(designId) ?? 0) + 1);
+  const dealtSoFar = new Set(state.termDecks.slice(0, state.term).flat());
+  for (const [designId, count] of counts) {
+    const staple = V03_STAPLES.includes(designId);
+    assert.ok(count <= (staple ? 2 : 1), `${designId} appears ${count} times`);
+    assert.ok(staple || dealtSoFar.has(designId), 'An undealt design appeared');
+  }
+  for (const seat of seats) {
+    const own = state.players[seat].city.filter(Boolean).map(card => card.designId);
+    assert.equal(new Set(own).size, own.length, 'A city holds two copies of one design');
+  }
 }
 
 export function runMatch({ seed, rulesVersion, firstChair, policies }) {
