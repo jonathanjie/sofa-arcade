@@ -233,7 +233,7 @@ export function mountTV(root, { assets = {}, geometry, onCommand, onExit, sound 
     }, () => {
       if (disposed || serial !== commandSerial || view?.matchId !== matchId) return;
       pendingCommand = null; if (intent === 'help') helpPending = false; if (intent === 'exit') exitPending = false;
-      message('The request did not reach your garden. Reconnect and try again.'); updateButtons();
+      message('That didn’t reach the garden. Check your Wi-Fi and try again.'); updateButtons();
     });
   }
   function handleAction(event) {

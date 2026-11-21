@@ -261,7 +261,7 @@ export function mountPhone(root, {
     return Promise.resolve(result).then((reply) => {
       if (!disposed && generation === lifecycleGeneration &&
           (kind !== 'ready' || readyVersion === readyGeneration) && reply?.accepted === false) {
-        commandError = kind === 'pause' ? 'Pause was not confirmed. Keep controls released and check the TV.' : 'Ready was not confirmed. Check the connection and try again.';
+        commandError = kind === 'pause' ? 'Pause was not confirmed. Keep controls released and check the TV.' : 'That didn’t go through. Check your Wi-Fi and try again.';
         render();
       }
       return reply;
@@ -575,15 +575,15 @@ export function mountPhone(root, {
       paused: view?.pauseReason === 'network' ? 'Reconnect, then get ready together.' : 'Both gardeners choose ready to continue.',
       interlude: 'Catch your breath before the next garden.', finished: '',
     };
-    refs['phase-note'].textContent = connection.state !== 'connected' ? 'Controls held safely while reconnecting.' : notes[phase];
+    refs['phase-note'].textContent = connection.state !== 'connected' ? 'Your controls are paused while we reconnect.' : notes[phase];
     refs['phase-note'].hidden = !refs['phase-note'].textContent;
     refs.setup.hidden = !setupOpen;
     const setupCopy = {
-      insecure: ['Touch is ready to play', 'Tilt needs the trusted secure link from your Mac. You can play the whole game with touch here.'],
+      insecure: ['Touch is ready to play', 'Tilt needs the one-time setup on your Mac. You can play the whole game with touch.'],
       unsupported: ['Touch is ready to play', 'This browser does not provide phone tilt. Touch has all the same controls.'],
       'needs-permission': ['Play with a gentle tilt', 'Hold your phone naturally while seated. Enable tilt, then keep still briefly to find your center.'],
-      denied: ['Your choice — touch works too', 'Tilt permission was not allowed. Use touch, or review motion permission in your browser settings.'],
-      'no-samples': ['No tilt readings yet', 'Permission alone is not enough. Try centering again, or play with touch controls.'],
+      denied: ['Your choice — touch works too', 'Tilt was not allowed. Use touch, or allow motion in your browser settings.'],
+      'no-samples': ['No tilt readings yet', 'Tilt isn’t responding. Try centering again, or play with touch.'],
       calibrating: ['Find your comfortable center', 'Hold your phone naturally and still for a moment. No flat table or shaking needed.'],
       ready: ['Your controls are ready', 'Choose ready when you and your partner are comfortable.'],
       paused: ['Center your phone again', sensor.reason === 'rotation' ? 'The screen rotated. Hold your new comfortable grip and recenter before continuing.' : 'Keep your phone in a comfortable grip, then center it.'],

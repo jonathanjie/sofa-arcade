@@ -62,9 +62,9 @@ try {
   await check('setup, status refresh and immediate touch fallback use only injected callbacks', async () => {
     await load();
     assert.equal(await page.locator('.go6-setup').getAttribute('data-state'), 'needs-setup');
-    await page.getByRole('button', { name: 'Set up trusted access', exact: true }).click();
+    await page.getByRole('button', { name: 'Set up tilt', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('.go6-setup').dataset.state === 'ready');
-    assert.equal(await page.locator('.go6-phone-state').first().textContent(), 'Trust not checked');
+    assert.equal(await page.locator('.go6-phone-state').first().textContent(), 'Not set up yet');
     assert.deepEqual(await page.evaluate(() => window.__go6Fixture.operations), [{ operation: 'provision', result: 'simulated-success' }]);
     await page.getByRole('button', { name: 'Play with touch for now' }).click();
     assert.equal(await page.getByRole('heading', { name: 'Continue with touch' }).count(), 1);
@@ -79,7 +79,7 @@ try {
   });
   await check('public PEM and CA-only profile download; no private bytes in download or UI', async () => {
     await load('ready');
-    for (const [button, format] of [['Export certificate', 'pem'], ['Export for iPhone', 'mobileconfig']]) {
+    for (const [button, format] of [['Save file for Android', 'pem'], ['Save file for iPhone', 'mobileconfig']]) {
       const pending = page.waitForEvent('download'); await page.getByRole('button', { name: button, exact: true }).click();
       const download = await pending; const contents = await readFile(await download.path(), 'utf8');
       assert.equal(contents, exports[format].contents); assert.ok(!contents.includes('PRIVATE KEY'));
@@ -94,7 +94,7 @@ try {
       window.__go6Fixture.mount();
     });
     await page.getByRole('button', { name: 'Retry setup', exact: true }).click();
-    assert.ok((await page.locator('.go6-notice').textContent()).includes('could not finish'));
+    assert.ok((await page.locator('.go6-notice').textContent()).includes('did not work'));
     assert.ok(!(await page.locator('body').textContent()).includes('host-token'));
     await page.evaluate(() => {
       window.__go6Fixture.callbacks.provision = async () => { throw { code: 'CANCELLED' }; };
@@ -131,7 +131,7 @@ try {
       window.__go6Fixture.callbacks.provision = () => new Promise((resolve) => { window.__resolveProvision = resolve; });
       window.__go6Fixture.mount();
     });
-    await page.getByRole('button', { name: 'Set up trusted access', exact: true }).click();
+    await page.getByRole('button', { name: 'Set up tilt', exact: true }).click();
     assert.equal(await page.locator('.go6-setup').getAttribute('aria-busy'), 'true');
     await page.getByRole('button', { name: 'Play with touch for now' }).click();
     await page.evaluate(() => window.__resolveProvision({ enabled: true, status: 'ready', controllerOrigins: ['https://192.168.1.24:4178'], requiresPhoneTrust: true }));
@@ -139,24 +139,24 @@ try {
   });
   await check('remove and root replacement require keyboard-accessible local confirmation', async () => {
     await load('ready');
-    await page.locator('summary', { hasText: 'Trust scope & removal' }).click();
-    await page.getByRole('button', { name: 'Remove this installation’s certificates', exact: true }).click();
+    await page.locator('summary', { hasText: 'What this allows, and how to undo it' }).click();
+    await page.getByRole('button', { name: 'Remove the setup from this Mac', exact: true }).click();
     assert.equal(await page.getByRole('dialog').count(), 1);
     assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Keep current setup');
-    await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Remove certificates');
+    await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Remove setup');
     await page.keyboard.press('Escape'); assert.equal(await page.getByRole('dialog').isVisible(), false);
     assert.deepEqual(await page.evaluate(() => window.__go6Fixture.operations), []);
-    await page.getByRole('button', { name: 'Replace the installation root…', exact: true }).click();
-    await page.getByRole('button', { name: 'Replace root & set up again' }).click();
+    await page.getByRole('button', { name: 'Start over with a new setup…', exact: true }).click();
+    await page.getByRole('button', { name: 'Start over' }).click();
     assert.deepEqual(await page.evaluate(() => window.__go6Fixture.operations), [{ operation: 'replace-root', result: 'simulated-success' }]);
-    await page.getByRole('button', { name: 'Remove this installation’s certificates', exact: true }).click();
-    await page.getByRole('button', { name: 'Remove certificates', exact: true }).click();
+    await page.getByRole('button', { name: 'Remove the setup from this Mac', exact: true }).click();
+    await page.getByRole('button', { name: 'Remove setup', exact: true }).click();
     assert.equal(await page.locator('.go6-setup').getAttribute('data-state'), 'needs-setup');
   });
   await check('disabling keeps the certificate; repeated mount/dispose owns only its root', async () => {
     await load('ready');
-    await page.locator('summary', { hasText: 'Trust scope & removal' }).click();
-    await page.getByRole('button', { name: 'Turn trusted access off', exact: true }).click();
+    await page.locator('summary', { hasText: 'What this allows, and how to undo it' }).click();
+    await page.getByRole('button', { name: 'Turn tilt off', exact: true }).click();
     assert.equal(await page.locator('.go6-setup').getAttribute('data-state'), 'disabled');
     assert.ok((await page.locator('[data-testid=fingerprint]').textContent()).length > 60);
     await page.evaluate(() => {
@@ -173,15 +173,15 @@ try {
       window.__go6Fixture.mount();
     });
     let downloaded = false; const listener = () => { downloaded = true; }; page.on('download', listener);
-    await page.getByRole('button', { name: 'Export certificate', exact: true }).click();
-    assert.ok((await page.locator('.go6-notice').textContent()).includes('could not be exported'));
+    await page.getByRole('button', { name: 'Save file for Android', exact: true }).click();
+    assert.ok((await page.locator('.go6-notice').textContent()).includes('could not be saved'));
     assert.equal(downloaded, false); page.off('download', listener);
     assert.ok(!(await page.locator('body').textContent()).includes('PRIVATE KEY'));
   });
   await check('phone diagnostic reports actual page context and rejects synthetic events as sensor proof', async () => {
     await page.goto(`${base}/secure-lan/diagnostic`);
-    assert.equal(await page.locator('#https-state').textContent(), 'No — HTTP');
-    assert.equal(await page.locator('#context-state').textContent(), 'Confirmed'); // localhost exception; not a LAN HTTPS claim.
+    assert.equal(await page.locator('#https-state').textContent(), 'No');
+    assert.equal(await page.locator('#context-state').textContent(), 'Yes'); // localhost exception; not a LAN HTTPS claim.
     await page.getByRole('button', { name: 'Check motion on this phone' }).click();
     await page.evaluate(() => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { beta: 2, gamma: 5 })));
     assert.equal(await page.locator('#sample-state').textContent(), 'None yet');

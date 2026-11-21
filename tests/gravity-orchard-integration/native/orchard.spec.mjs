@@ -95,7 +95,7 @@ async function exportTrustThroughSetup(expectedFingerprint, observeNativeUI) {
       // counting complete files or parsing their certificate bytes.
       await browser.waitUntil(() => browser.execute(() =>
         document.querySelector('.go6-setup')?.getAttribute('aria-busy') === 'false'
-        && document.querySelector('.go6-notice')?.textContent.startsWith('Public certificate exported.')),
+        && document.querySelector('.go6-notice')?.textContent.startsWith('File saved.')),
       { timeout: 15000, timeoutMsg: 'Actual WKWebView setup must finish its public export without a download error' });
       await observeNativeUI(`after-public-export-${format}`);
       const created = (await readdir(downloads)).filter(name => !before.has(name) && /^(?:\d+-)?sofa-arcade-/.test(name));
