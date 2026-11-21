@@ -9,12 +9,16 @@
  * The score is the average of two views: after this round's Lala event, and
  * after the following event too (if nobody moved). The second view lets the bot
  * value rules v4 toys, which change the next round's event.
+ *
+ * Under rules v4 the bot searches from its own projected view, so it never sees
+ * the opponent's sealed toy. A v4 toy costs no action, so the bot chooses "no
+ * toy" or one toy, and then its two actions.
  */
 import {
-  applyAction, legalActions, previewForecast, scoreFor, upcomingForecasts, BAG_CAPACITY, FULL_BAG_BONUS,
+  applyAction, legalActions, previewForecast, projectState, scoreFor, upcomingForecasts, BAG_CAPACITY, FULL_BAG_BONUS,
 } from '../engine.mjs';
 
-export const POLICY_VERSION = 'trip-planner-2';
+export const POLICY_VERSION = 'trip-planner-3';
 
 const POINT_WEIGHT = 10;
 // Value of one action, used to compare short and long trips. About 10 points
@@ -87,8 +91,11 @@ function bankValue(crumbs, fullBagBonus) {
 function afterFollowingEvent(state, view, decisionRound) {
   if (view.phase !== 'playing') return view;
   const resolved = state.round > decisionRound;
-  const following = resolved ? state.forecast : upcomingForecasts(state, 1)[0];
+  let following = resolved ? state.forecast : upcomingForecasts(state, 1)[0];
   if (!following) return view;
+  // Before the reveal, the bot still knows its own sealed toy.
+  const ownToy = !resolved && state.sealedToys?.[state.decidingPlayer];
+  if (ownToy) following = { ...following, ...ownToy };
   const preview = previewForecast({ ...view, forecast: following });
   const players = structuredClone(view.players);
   for (const id of Object.keys(players)) {
@@ -117,8 +124,11 @@ function positionValue(view, me, actionsLeft) {
  * Returns the action sequence (one or two actions) for the active player.
  * `useToys: false` removes toy actions, to measure what toys contribute.
  */
-export function chooseTurn(state, { useToys = true } = {}) {
-  const me = state.activePlayer;
+export function chooseTurn(trueState, { useToys = true } = {}) {
+  const me = trueState.activePlayer;
+  // Search only what this player may know. decidingPlayer lets the evaluation
+  // find this player's own sealed toy.
+  const state = { ...projectState(trueState, me), decidingPlayer: me };
   const decisionRound = state.round;
   const roundsAfterThis = state.maxRounds - state.round;
   // The opponent still acts this round when I move first.
@@ -134,15 +144,23 @@ export function chooseTurn(state, { useToys = true } = {}) {
     const value = evaluate(finished, me, decisionRound, actionsLeft);
     if (!best || value > best.value) best = { value, sequence };
   };
-  const options = current => legalActions(current, me).filter(action => useToys || action.type !== 'lure');
-  for (const first of options(state)) {
-    const afterFirst = applyAction(state, me, first);
-    if (afterFirst.activePlayer !== me || afterFirst.phase !== 'playing') {
-      consider([first], afterFirst);
-      continue;
-    }
-    for (const second of options(afterFirst)) {
-      consider([first, second], applyAction(afterFirst, me, second));
+  const sealedToys = state.version >= 4;
+  const isToy = action => action.type === 'lure';
+  const options = current => legalActions(current, me)
+    .filter(action => (useToys && !sealedToys) || !isToy(action));
+  const toyChoices = useToys && sealedToys ? [null, ...legalActions(state, me).filter(isToy)] : [null];
+  for (const toy of toyChoices) {
+    const start = toy ? { ...applyAction(state, me, toy), decidingPlayer: me } : state;
+    const prefix = toy ? [toy] : [];
+    for (const first of options(start)) {
+      const afterFirst = { ...applyAction(start, me, first), decidingPlayer: me };
+      if (afterFirst.activePlayer !== me || afterFirst.phase !== 'playing') {
+        consider([...prefix, first], afterFirst);
+        continue;
+      }
+      for (const second of options(afterFirst)) {
+        consider([...prefix, first, second], { ...applyAction(afterFirst, me, second), decidingPlayer: me });
+      }
     }
   }
   return best.sequence;

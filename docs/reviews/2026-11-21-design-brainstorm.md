@@ -37,9 +37,9 @@ This gives each game a shared feel, and it tells the designer where to add tensi
 - there are 3 or more rounds per game with both players in the centre 3×3;
 - pounces catch a player 0.5–1 times per game.
 
-### More options
+**Sealed toys, prototyped in rules v4.** A toy is slipped secretly, costs no action, and only one can be slipped per player per round. Toys are revealed at the end of the round and change the next round's event. Two toys in the same round cancel. The engine's `projectState` hides a pending toy from the other phone and from the TV. Starter share: 0.52–0.53 at 9–11 rounds. About half of all toys cancel in bot play, so watch for frustration in playtests. If it is a problem, a collision could make Lala take a surprise nap instead.
 
-- **Sealed toys.** Both phones secretly choose "toy or no toy" (and the target) before Lala acts. Choices are revealed together. This reuses Odd Laws' private-choice support and adds guessing without slowing the game.
+### More options
 - **Caught bags are loot.** The first full-bag delivery that includes dropped crumbs scores +3, not +2. This gives a reason to go after a dropped bag.
 - **Bump.** Moving onto the opponent's square costs 1 action and takes 1 carried crumb. This is direct interaction. Its risk is that the player who is behind gets bumped more.
 - **Lala's treat refills.** One central tile gains 1 crumb at the end of each round, up to 3. This is a recurring reason to visit the centre, not a single race.
