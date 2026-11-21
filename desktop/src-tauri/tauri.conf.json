@@ -41,5 +41,13 @@
       "entitlements": "Entitlements.plist"
     }
   },
-  "mainBinaryName": "sofa-arcade"
+  "mainBinaryName": "sofa-arcade",
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5QjM1MDg5NjFFNkJGNjIKUldSaXYrWmhpVkN6T2F5QU4yeUtaRURtaFg0cnQ5aC94MG05SVpyeUpwUmc0cG9XbG81a3VhZGoK",
+      "endpoints": [
+        "https://github.com/jonathanjie/sofa-arcade/releases/latest/download/latest.json"
+      ]
+    }
+  }
 }

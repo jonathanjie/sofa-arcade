@@ -47,6 +47,8 @@ const nativeEnvironment = { ...process.env, PATH: safePath,
   // An inherited Node injector must never alter our absolute bundled executable.
   NODE_OPTIONS: '--import=/sofa-test-missing-injection.mjs', NODE_PATH: '/sofa-test-invalid-modules',
   TAURI_WEBDRIVER_PORT: String(driverPort), WDIO_EMBEDDED_SERVER: 'true',
+  // A test build must never replace itself with a published release mid-test.
+  SOFA_DISABLE_UPDATER: '1',
 };
 
 function launch() {

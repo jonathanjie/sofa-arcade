@@ -94,6 +94,7 @@ fn set_status(
         "ready" => "Your game shelf is ready. Host a game, then scan its QR code on both phones.",
         "stopped" => "The local host is closed. Your rooms remain saved on this Mac.",
         "restarting" => "Reconnecting your local game shelf…",
+        "updating" => "Installing the latest Sofa Arcade. It will reopen by itself in a moment…",
         _ => "Opening your local game shelf…",
     });
     let _ = config::atomic_json(paths.data.join("host-status.json"), &*status);
@@ -544,7 +545,8 @@ pub fn run() {
                 let _ = window.show();
                 let _ = window.set_focus();
             }
-        }));
+        }))
+        .plugin(tauri_plugin_updater::Builder::new().build());
     #[cfg(feature = "native-e2e")]
     let builder = builder.plugin(tauri_plugin_wdio_webdriver::init());
     let app = builder
@@ -621,7 +623,16 @@ pub fn run() {
                     .build()?,
             )?;
             let handle = app.handle().clone();
-            thread::spawn(move || supervisor(handle, paths, receive, status));
+            thread::spawn(move || {
+                // Update before the host starts, so no running room is ever interrupted.
+                let outcome = crate::updater::check_and_install(&handle, |_version| {
+                    set_status(&handle, &status, &paths, "updating", None, None);
+                });
+                if let crate::updater::Outcome::RestartRequired = outcome {
+                    handle.restart();
+                }
+                supervisor(handle, paths, receive, status)
+            });
             Ok(())
         })
         .on_menu_event(|app, event| {
@@ -646,6 +657,8 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("Sofa Arcade could not initialize its native window");
     app.run(|app, event| match event {
+        // Only the launch-time updater restarts, and it does so before any host starts.
+        RunEvent::ExitRequested { code: Some(tauri::RESTART_EXIT_CODE), .. } => {}
         RunEvent::ExitRequested { api, .. } => {
             if !app.state::<Desktop>().termination.lock().expect("termination mutex poisoned").is_complete() {
                 api.prevent_exit();
