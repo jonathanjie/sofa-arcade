@@ -7,6 +7,9 @@ export const INITIAL_LURES = 2;
 export const FULL_BAG_BONUS = 2;
 export const TOY_RECHARGE_MINIMUM = 3;
 export const SECOND_PLAYER_BONUS = 1;
+/** Rules v4 is an opt-in prototype until the TV and phone controls support it. */
+export const DEFAULT_RULES_VERSION = 3;
+export const PROTOTYPE_RULES_VERSION = 4;
 
 const DIRECTIONS = Object.freeze({
   up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1],
@@ -21,6 +24,8 @@ const wrap = value => (value + SIZE) % SIZE;
 const atHome = player => player.row === player.home.row && player.col === player.home.col;
 const tileAt = (state, row, col) => state.tiles.find(tile => tile.row === row && tile.col === col);
 const strategicRules = state => state.version >= 2;
+const centreRules = state => state.version >= 4;
+const isHome = (row, col) => Object.values(HOME).some(home => home.row === row && home.col === col);
 
 /** Secured crumbs remain a conserved resource; score bonuses are separate. */
 export function scoreFor(player) {
@@ -49,10 +54,21 @@ function seededRandom(seed) {
   };
 }
 
-function forecastFor(seed, round) {
+/**
+ * Rules v4 pounce beats within each ten-round block: the first pounce is on beat
+ * 2 or 3 (round 3 or 4) and the second on beat 8 or 7, so one pounce is in an odd
+ * round and one in an even round. Each player then acts last before one pounce.
+ */
+function pounceBeats(seed, block) {
+  const early = seededRandom(`${seed}:pounce-beats:${block}`)() < 0.5;
+  return early ? [2, 7] : [3, 8];
+}
+
+function forecastFor(seed, round, version = DEFAULT_RULES_VERSION) {
   const random = seededRandom(`${seed}:lala:${round}`);
   const beat = (round - 1) % 10;
-  if (beat === 2 || beat === 8) {
+  const pounces = version >= 4 ? pounceBeats(seed, Math.floor((round - 1) / 10)) : [2, 8];
+  if (pounces.includes(beat)) {
     return { type: 'pounce', row: 1 + Math.floor(random() * 3), col: 1 + Math.floor(random() * 3) };
   }
   if (beat === 5) return { type: 'nap' };
@@ -72,7 +88,8 @@ export function upcomingForecasts(state, count = 1) {
   }
   return Array.from({ length: Math.min(count, state.maxRounds - state.round) }, (_, index) => {
     const round = state.round + index + 1;
-    return { round, ...forecastFor(state.seed, round) };
+    if (index === 0 && centreRules(state) && state.nextForecast) return { round, ...state.nextForecast };
+    return { round, ...forecastFor(state.seed, round, state.version) };
   });
 }
 
@@ -99,7 +116,10 @@ function appendLog(state, text, playerId = null, kind = 'action') {
  * Starts a game immediately. Room creation and lobby readiness belong to the server.
  * All terrain is walkable. The picture on a tile is flavour; crumbs travel with it.
  */
-export function createGame({ seed = 'a-little-living-room', maxRounds = 10, firstPlayer } = {}) {
+export function createGame({ seed = 'a-little-living-room', maxRounds = 10, firstPlayer, rulesVersion = DEFAULT_RULES_VERSION } = {}) {
+  if (rulesVersion !== DEFAULT_RULES_VERSION && rulesVersion !== PROTOTYPE_RULES_VERSION) {
+    throw new Error('Choose rules version 3 or 4.');
+  }
   if (!Number.isInteger(maxRounds) || maxRounds < 1 || maxRounds > 20) {
     throw new Error('Choose between 1 and 20 rounds.');
   }
@@ -117,33 +137,49 @@ export function createGame({ seed = 'a-little-living-room', maxRounds = 10, firs
       tiles.push({ id: `tile-${row * SIZE + col}`, row, col, kind: KINDS[Math.floor(random() * KINDS.length)], crumbs: 0 });
     }
   }
+  const setPair = ([row, col], crumbs) => {
+    tiles.find(tile => tile.row === row && tile.col === col).crumbs = crumbs;
+    tiles.find(tile => tile.row === SIZE - 1 - row && tile.col === SIZE - 1 - col).crumbs = crumbs;
+  };
+  const shuffled = list => {
+    for (let i = list.length - 1; i > 0; i--) {
+      const pick = Math.floor(random() * (i + 1));
+      [list[i], list[pick]] = [list[pick], list[i]];
+    }
+    return list;
+  };
   // Every initial crumb has an equally valuable counterpart a half-turn away.
-  // The first two pairs put two different opening routes beside each burrow.
-  const pairs = [[3, 0], [4, 1], [2, 0], [3, 1]];
-  const optionalPairs = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 1]];
-  for (let i = optionalPairs.length - 1; i > 0; i--) {
-    const pick = Math.floor(random() * (i + 1));
-    [optionalPairs[i], optionalPairs[pick]] = [optionalPairs[pick], optionalPairs[i]];
+  if (rulesVersion >= 4) {
+    // v4 keeps a small home cluster and puts most crumbs in the shared centre,
+    // where the pounces land: 2 home pairs, 4 centre neighbours of 3, a centre
+    // of 5 and one random outer pair. Total 29 crumbs.
+    for (const pair of [[3, 0], [4, 1]]) setPair(pair, 2);
+    for (const pair of [[1, 2], [2, 1]]) setPair(pair, 3);
+    setPair(shuffled([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [2, 0], [3, 1]])[0], 2);
+    tiles.find(tile => tile.row === 2 && tile.col === 2).crumbs = 5;
+  } else {
+    // The first two pairs put two different opening routes beside each burrow.
+    for (const pair of [[3, 0], [4, 1], [2, 0], [3, 1]]) setPair(pair, 2);
+    for (const pair of shuffled([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 1]]).slice(0, 2)) setPair(pair, 2);
+    tiles.find(tile => tile.row === 2 && tile.col === 2).crumbs = 3;
   }
-  pairs.push(...optionalPairs.slice(0, 2));
-  for (const [row, col] of pairs) {
-    tiles.find(tile => tile.row === row && tile.col === col).crumbs = 2;
-    tiles.find(tile => tile.row === SIZE - 1 - row && tile.col === SIZE - 1 - col).crumbs = 2;
-  }
-  tiles.find(tile => tile.row === 2 && tile.col === 2).crumbs = 3;
   const players = Object.fromEntries(PLAYER_IDS.map(id => [id, {
     id, name: id === 'jon' ? 'Jon' : 'Lydia', ...HOME[id], home: { ...HOME[id] },
     carried: 0, banked: 0, bonusPoints: 0,
-    openingBonus: id === starter ? 0 : SECOND_PLAYER_BONUS, lures: INITIAL_LURES,
+    openingBonus: id === starter || rulesVersion >= 4 ? 0 : SECOND_PLAYER_BONUS, lures: INITIAL_LURES,
   }]));
   const state = {
-    version: 3, seed: normalizedSeed, size: SIZE, phase: 'playing', round: 1, maxRounds,
+    version: rulesVersion, seed: normalizedSeed, size: SIZE, phase: 'playing', round: 1, maxRounds,
     firstPlayer: starter, activePlayer: starter, actionsLeft: ACTIONS_PER_TURN, turnInRound: 0,
-    players, tiles, forecast: forecastFor(normalizedSeed, 1), lastEvent: null,
+    players, tiles, forecast: forecastFor(normalizedSeed, 1, rulesVersion), lastEvent: null,
+    // Rules v4 toys change the next round's event, so it is stored, not derived.
+    ...(rulesVersion >= 4 ? { nextForecast: maxRounds > 1 ? forecastFor(normalizedSeed, 2, rulesVersion) : null } : {}),
     winner: null, actionNumber: 0, logSequence: 0, log: [],
   };
   appendLog(state, 'The kingdom is open. Bring crumbs back to your own burrow to score.', null, 'welcome');
-  appendLog(state, `${players[starter].name} starts. ${players[otherPlayer(starter)].name} receives +${SECOND_PLAYER_BONUS} opening point for going second.`, null, 'opening');
+  appendLog(state, rulesVersion >= 4
+    ? `${players[starter].name} starts.`
+    : `${players[starter].name} starts. ${players[otherPlayer(starter)].name} receives +${SECOND_PLAYER_BONUS} opening point for going second.`, null, 'opening');
   return state;
 }
 
@@ -157,12 +193,22 @@ export function legalActions(state, playerId) {
   }
   if (player.carried < BAG_CAPACITY && tileAt(state, player.row, player.col).crumbs > 0) actions.push({ type: 'collect' });
   if (player.carried > 0 && atHome(player)) actions.push({ type: 'bank' });
-  if (player.lures > 0 && state.forecast?.type === 'swipe') {
+  // Rules v3 toys bend this round's event. Rules v4 toys bend the next round's
+  // event, so both players get a full turn to react before it happens.
+  const target = centreRules(state) ? state.nextForecast : state.forecast;
+  if (player.lures > 0 && centreRules(state) && target?.type === 'pounce') {
+    for (const [dr, dc] of Object.values(DIRECTIONS)) {
+      const row = target.row + dr;
+      const col = target.col + dc;
+      if (inBounds(row, col) && !isHome(row, col)) actions.push({ type: 'lure', row, col });
+    }
+  }
+  if (player.lures > 0 && target?.type === 'swipe') {
     if (strategicRules(state)) {
       for (const axis of ['row', 'column']) {
         for (let index = 0; index < SIZE; index++) {
           for (const direction of [-1, 1]) {
-            if (axis !== state.forecast.axis || index !== state.forecast.index || direction !== state.forecast.direction) {
+            if (axis !== target.axis || index !== target.index || direction !== target.direction) {
               actions.push({ type: 'lure', axis, index, direction });
             }
           }
@@ -170,7 +216,7 @@ export function legalActions(state, playerId) {
       }
     } else {
       for (let index = 0; index < SIZE; index++) {
-        if (index !== state.forecast.index) actions.push({ type: 'lure', index });
+        if (index !== target.index) actions.push({ type: 'lure', index });
       }
     }
   }
@@ -254,6 +300,7 @@ function finishTurn(state) {
     state.activePlayer = null;
     state.actionsLeft = 0;
     state.forecast = null;
+    if (centreRules(state)) state.nextForecast = null;
     const jonScore = strategicRules(state) ? scoreFor(state.players.jon) : state.players.jon.banked;
     const lydiaScore = strategicRules(state) ? scoreFor(state.players.lydia) : state.players.lydia.banked;
     state.winner = jonScore === lydiaScore ? 'tie' : (jonScore > lydiaScore ? 'jon' : 'lydia');
@@ -266,7 +313,12 @@ function finishTurn(state) {
   state.turnInRound = 0;
   state.activePlayer = roundStarter(state);
   state.actionsLeft = ACTIONS_PER_TURN;
-  state.forecast = forecastFor(state.seed, state.round);
+  if (centreRules(state)) {
+    state.forecast = state.nextForecast;
+    state.nextForecast = state.round < state.maxRounds ? forecastFor(state.seed, state.round + 1, state.version) : null;
+  } else {
+    state.forecast = forecastFor(state.seed, state.round, state.version);
+  }
 }
 
 /** Apply one legal command. The input remains unchanged even if validation fails. */
@@ -286,18 +338,29 @@ export function applyAction(state, playerId, action) {
   } else if (action.type === 'bank') {
     if (!atHome(currentPlayer)) throw new Error('Return to your own burrow to bank crumbs.');
     if (currentPlayer.carried <= 0) throw new Error('Collect some crumbs before banking.');
+  } else if (action.type === 'lure' && centreRules(state) && !state.nextForecast) {
+    throw new Error('Toys change the next round, and this is the last round.');
+  } else if (action.type === 'lure' && centreRules(state) && state.nextForecast.type === 'pounce') {
+    if (currentPlayer.lures <= 0) throw new Error('You have used both of your toys.');
+    if (!Number.isInteger(action.row) || !Number.isInteger(action.col)) throw new Error('Choose a square for the pounce.');
+    const distance = Math.abs(action.row - state.nextForecast.row) + Math.abs(action.col - state.nextForecast.col);
+    if (distance !== 1 || !inBounds(action.row, action.col)) throw new Error('A toy moves the pounce one square up, down, left, or right.');
+    if (isHome(action.row, action.col)) throw new Error('Lala will not pounce on a burrow.');
   } else if (action.type === 'lure') {
     if (currentPlayer.lures <= 0) throw new Error('You have used both of your toys.');
-    if (state.forecast.type !== 'swipe') throw new Error('Toys can redirect a swipe, but not a pounce or a nap.');
+    const target = centreRules(state) ? state.nextForecast : state.forecast;
+    if (target.type !== 'swipe') {
+      throw new Error(centreRules(state) ? 'Toys can redirect a swipe or a pounce, but not a nap.' : 'Toys can redirect a swipe, but not a pounce or a nap.');
+    }
     if (!Number.isInteger(action.index) || action.index < 0 || action.index >= SIZE) throw new Error('Choose a row or column from 1 to 5.');
-    const axis = Object.hasOwn(action, 'axis') ? action.axis : state.forecast.axis;
-    const direction = Object.hasOwn(action, 'direction') ? action.direction : state.forecast.direction;
+    const axis = Object.hasOwn(action, 'axis') ? action.axis : target.axis;
+    const direction = Object.hasOwn(action, 'direction') ? action.direction : target.direction;
     if (axis !== 'row' && axis !== 'column') throw new Error('Choose a row or a column.');
     if (direction !== -1 && direction !== 1) throw new Error('Choose one of the two swipe directions.');
-    if (!strategicRules(state) && (axis !== state.forecast.axis || direction !== state.forecast.direction)) {
+    if (!strategicRules(state) && (axis !== target.axis || direction !== target.direction)) {
       throw new Error('This classic match keeps the announced swipe axis and direction. Choose another line.');
     }
-    if (axis === state.forecast.axis && action.index === state.forecast.index && direction === state.forecast.direction) {
+    if (axis === target.axis && action.index === target.index && direction === target.direction) {
       throw new Error('Lala is already aiming there in that direction. Choose a different swipe.');
     }
   } else if (action.type !== 'end') {
@@ -333,11 +396,18 @@ export function applyAction(state, playerId, action) {
     appendLog(next, `${player.name} banks ${banked} ${banked === 1 ? 'crumb' : 'crumbs'}.${bonus ? ` +${bonus} full-bag bonus points.` : ''}${recharged ? ' One toy restored.' : ''} Safe from Lala!`, playerId);
   } else if (action.type === 'lure') {
     player.lures -= 1;
-    next.forecast.axis = Object.hasOwn(action, 'axis') ? action.axis : next.forecast.axis;
-    next.forecast.index = action.index;
-    next.forecast.direction = Object.hasOwn(action, 'direction') ? action.direction : next.forecast.direction;
-    next.forecast.luredBy = playerId;
-    appendLog(next, `${player.name} uses a toy. ${describeForecast(next.forecast)}`, playerId);
+    const target = centreRules(next) ? next.nextForecast : next.forecast;
+    if (target.type === 'pounce') {
+      target.row = action.row;
+      target.col = action.col;
+    } else {
+      target.axis = Object.hasOwn(action, 'axis') ? action.axis : target.axis;
+      target.index = action.index;
+      target.direction = Object.hasOwn(action, 'direction') ? action.direction : target.direction;
+    }
+    target.luredBy = playerId;
+    const when = centreRules(next) ? ' Next round:' : '';
+    appendLog(next, `${player.name} uses a toy.${when} ${describeForecast(target)}`, playerId);
   }
   next.actionsLeft -= 1;
   if (next.actionsLeft === 0) finishTurn(next);

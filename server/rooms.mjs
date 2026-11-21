@@ -339,6 +339,9 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       type: action.type, index: action.index,
       ...(Object.hasOwn(action, 'axis') ? { axis: action.axis } : {}),
       ...(Object.hasOwn(action, 'direction') ? { direction: action.direction } : {}),
+      // Rules v4 toys can move a pounce to a square instead of choosing a line.
+      ...(Object.hasOwn(action, 'row') ? { row: action.row } : {}),
+      ...(Object.hasOwn(action, 'col') ? { col: action.col } : {}),
     });
     return JSON.stringify({ type: action.type });
   }

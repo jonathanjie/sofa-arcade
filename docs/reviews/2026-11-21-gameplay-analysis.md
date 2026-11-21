@@ -4,6 +4,12 @@
 
 **Evidence limits.** All numbers come from bots, not people. The Sofa Kingdoms numbers come from a new greedy two-action bot (`work/sofa-kingdoms-greedy-sim.mjs`, 200–300 seeds per run, ignored by Git). The Odd Laws numbers come from the existing 768-match heuristic sweep. The Gravity Orchard numbers come from the GO1 route-proof pilot. Use them to find questions for playtests, not as final balance results.
 
+> **Correction (same day).** Two Sofa Kingdoms claims below were wrong.
+> - The starter advantage without the opening point is a fault in the bot, not in the rules. An independent rerun with the opening point removed gave 8 rounds 197–25, 9 rounds 86–83, 10 rounds 152–34, 11 rounds 84–82 and 12 rounds 141–51 (starter–second). The advantage appears only at even round counts. With no interaction, both players act before every Lala event, so turn order gives no advantage. The opening point therefore corrects nothing and only gives the second player every tie.
+> - A fixed route banks about 10 points in 17 actions, so people will score more than the bot's mean of 6.5, and ties will be more common.
+>
+> See [the design brainstorm](2026-11-21-design-brainstorm.md).
+
 ## Summary
 
 | Game | Strongest part | Biggest problem | First change to try |
