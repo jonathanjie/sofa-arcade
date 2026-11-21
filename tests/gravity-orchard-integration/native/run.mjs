@@ -74,6 +74,10 @@ try {
   if (runner && runner.exitCode === null && runner.signalCode === null) runner.kill('SIGTERM');
   if (owned) {
     let clean = false; try { await stopped(); clean = true; } catch { /* Preserve a potentially owned data directory. */ }
+    // Keep the host's tilt-setup failure code (a short fixed code, no secrets)
+    // before the owned data folder is deleted.
+    try { await saveEvidence('secure-lan-last-error.json', JSON.parse(await readFile(path.join(dataDir, 'secure-lan-last-error.json'), 'utf8'))); }
+    catch { /* No setup failure was recorded. */ }
     if (clean) await rm(dataDir, { recursive: true, force: true });
   }
 }

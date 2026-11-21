@@ -185,7 +185,7 @@ try {
     await page.getByRole('button', { name: 'Check motion on this phone' }).click();
     await page.evaluate(() => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { beta: 2, gamma: 5 })));
     assert.equal(await page.locator('#sample-state').textContent(), 'None yet');
-    assert.ok((await page.locator('#evidence').textContent()).includes('Synthetic event detected'));
+    assert.ok((await page.locator('#evidence').textContent()).includes('Test signal detected'));
     await page.getByRole('button', { name: 'Stop checking' }).click();
     assert.ok((await page.locator('#probe-status').textContent()).includes('paused'));
   });
