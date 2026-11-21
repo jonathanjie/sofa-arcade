@@ -4,6 +4,7 @@
  * All randomness is consumed at setup; every transition is pure and JSON-serializable.
  */
 import { ALL_BUILDINGS, LAWS, termPool } from './catalog.mjs';
+import { features, normalizeModules } from './rules.mjs';
 import { RuleError, fail } from './errors.mjs';
 import { buildQuote, streetOutcome, civicAward, scoreBreakdown, incomeBonus, festivalPoints } from './preview.mjs';
 import { project } from './projection.mjs';
@@ -12,22 +13,9 @@ export { project, RuleError };
 export const GAME_ID = 'odd-laws-society';
 export const RULES_VERSION = '0.2';
 /**
- * Rules v0.3 (opt-in prototype until the TV and phone controls support it):
- * - Only the winning council bid is paid, and a 0–0 council keeps the current law.
- * - Each term deals 8 of its 10 designs, one copy each, into a hidden deck. Four
- *   are face up in the market, which refills after each purchase.
- * - Scout (1 influence, no city action, once per session) draws blind from the
- *   deck until your private reserve holds 2 cards. Reserved cards can be built
- *   in any later session.
- * - Twelve extra designs add new building effects.
- * - Staple designs have two copies, both face up for their whole term, so both
- *   players can get one. Nobody can build a design already in their own city.
- * - Sponsors: the player whose bid enacts a law sponsors it. At each Civic
- *   session end (2, 4 and 6), each sponsor of an active law secures
- *   V03_SPONSOR_PRESTIGE. A Festival also gains 1 influence (up to 6).
- * - Rebuild: Build onto your own occupied plot. Pay the new cost minus the old
- *   building's printed cost (at least 1). The old building leaves the game, and
- *   its street is not scored again.
+ * Rules v0.3 is opt-in (create options.rulesVersion '0.3') until the TV and phone
+ * controls support it. It is a base game plus optional modules (options.modules);
+ * rules.mjs lists which rule belongs where.
  */
 export const RULES_V03 = '0.3';
 export const SUPPORTED_RULES = Object.freeze([RULES_VERSION, RULES_V03]);
@@ -54,7 +42,7 @@ export const PLAYER_IDS = Object.freeze(['jon', 'lydia']);
 
 const BUILDING_IDS = new Set(ALL_BUILDINGS.map(building => building.id));
 const designById = new Map(ALL_BUILDINGS.map(building => [building.id, building]));
-const isV03 = state => state.rulesVersion === RULES_V03;
+const on = (state, feature) => features(state)[feature];
 const LAW_IDS = new Set(LAWS.map(law => law.id));
 const MATCH_ID = /^[A-Za-z0-9_-]{1,128}$/;
 const PHASE_ID = /^([A-Za-z0-9_-]{1,128}):s([1-6]):(council|action:[0-5]|finished)$/;
@@ -209,17 +197,18 @@ function validateAgenda(agenda) {
   });
 }
 
+/** v0.2 and base v0.3: two copies of each of this term's six designs. */
 function stockFor(term) {
-  return termPool(RULES_VERSION, term).map(building => ({ designId: building.id, remaining: 2 }));
+  return termPool({}, term).map(building => ({ designId: building.id, remaining: 2 }));
 }
 
 /**
  * v0.3: each term's hidden deal order, independent of the Chair for mirrored
  * tests. Staples are never dealt into a deck.
  */
-function dealTermDecks(seed) {
+function dealTermDecks(seed, poolFeatures) {
   return [1, 2, 3].map(term => shuffled(
-    termPool(RULES_V03, term).map(design => design.id).filter(designId => !isStaple(designId)),
+    termPool(poolFeatures, term).map(design => design.id).filter(designId => !isStaple(designId)),
     seededRandom(`${seed}:deck:${term}`),
   ).slice(0, DESIGNS_PER_TERM));
 }
@@ -227,7 +216,7 @@ function dealTermDecks(seed) {
 /** v0.3: open a term's staples and 4-card row, and keep the rest of its deck hidden. */
 function openTermMarket(state) {
   const deck = [...state.termDecks[state.term - 1]];
-  const staples = termPool(RULES_V03, state.term)
+  const staples = termPool(features(state), state.term)
     .filter(design => isStaple(design.id))
     .map(design => ({ designId: design.id, remaining: STAPLE_COPIES }));
   state.market = [...staples, ...deck.splice(0, MARKET_ROW_SIZE).map(designId => ({ designId, remaining: 1 }))];
@@ -245,9 +234,9 @@ function drawIntoReserve(state, playerId, maximumCards) {
   return drawn;
 }
 
-function startingPlayer(rulesVersion = RULES_VERSION) {
+function startingPlayer(backRoom = false) {
   return {
-    ...(rulesVersion === RULES_V03 ? { reserve: [], scoutedThisSession: false } : {}),
+    ...(backRoom ? { reserve: [], scoutedThisSession: false } : {}),
     coins: 4, influence: 2, city: Array(9).fill(null), streetEvaluated: [false, false, false],
     buildsThisSession: 0, festivalUsed: false,
     score: { buildings: 0, streets: 0, festivals: 0, civic: 0, treasury: 1, total: 1 },
@@ -264,6 +253,7 @@ function openCouncil(state) {
   state.activePlayer = null;
   state.actionIndex = null;
   state.actionsRemaining = { jon: 3, lydia: 3 };
+  if (on(state, 'trailingChair')) assignTrailingChair(state);
   state.chair = chairForSession(state);
   state.phaseId = councilPhase(state);
   state.council = {
@@ -271,6 +261,19 @@ function openCouncil(state) {
     budgets: { jon: state.players.jon.influence, lydia: state.players.lydia.influence },
     commitments: { jon: null, lydia: null },
   };
+}
+
+/**
+ * v0.3: from session 2, the player with fewer prestige points chairs, which
+ * breaks council ties in their favour and lets them act second. On equal
+ * scores the printed schedule stands. The schedule entry is fixed when the
+ * council opens, so chairForSession stays the single source of truth.
+ */
+function assignTrailingChair(state) {
+  if (state.session === 1) return;
+  const jon = state.players.jon.score.total;
+  const lydia = state.players.lydia.score.total;
+  if (jon !== lydia) state.chairSchedule[state.session - 1] = jon < lydia ? 'jon' : 'lydia';
 }
 
 /** A/B | B/A | A/B. The caller can inspect any valid session of this match. */
@@ -291,9 +294,13 @@ export function create(input) {
     fail('INVALID_SETUP', 'A setup seed of 1 to 256 characters is required.');
   }
   const options = input.options === undefined ? {} : input.options;
-  record(options, ['firstChair', 'agenda', 'rulesVersion'], [], 'INVALID_SETUP', 'The setup options are invalid.');
+  record(options, ['firstChair', 'agenda', 'rulesVersion', 'modules'], [], 'INVALID_SETUP', 'The setup options are invalid.');
   const rulesVersion = options.rulesVersion ?? RULES_VERSION;
   if (!SUPPORTED_RULES.includes(rulesVersion)) fail('INVALID_SETUP', 'Choose rules version 0.2 or 0.3.');
+  const modules = normalizeModules(options.modules ?? []);
+  if (modules === null || (rulesVersion !== RULES_V03 && modules.length > 0)) {
+    fail('INVALID_SETUP', 'Choose valid modules for rules version 0.3.');
+  }
   if (Object.hasOwn(options, 'firstChair') && !PLAYER_IDS.includes(options.firstChair)) {
     fail('INVALID_SETUP', 'The first Chair must be a valid player.');
   }
@@ -301,6 +308,7 @@ export function create(input) {
   const secondChair = otherPlayer(firstChair);
   const state = {
     schemaVersion: 1, gameId: GAME_ID, rulesVersion,
+    ...(rulesVersion === RULES_V03 ? { modules } : {}),
     seed: input.seed, matchId: input.matchId,
     phase: 'playing', stage: 'council', phaseId: '', session: 1, term: 1,
     chair: firstChair,
@@ -309,12 +317,12 @@ export function create(input) {
     activeLaws: { economy: 'economy-neutral', civic: 'civic-neutral' },
     agenda: Object.hasOwn(options, 'agenda') ? validateAgenda(options.agenda) : makeAgenda(input.seed),
     council: null, market: stockFor(1),
-    players: { jon: startingPlayer(rulesVersion), lydia: startingPlayer(rulesVersion) },
+    players: { jon: startingPlayer(modules.includes('back-room')), lydia: startingPlayer(modules.includes('back-room')) },
     lastCouncil: null, result: null,
   };
-  if (rulesVersion === RULES_V03) {
-    state.sponsors = { economy: null, civic: null };
-    state.termDecks = dealTermDecks(input.seed);
+  if (on(state, 'sponsors')) state.sponsors = { economy: null, civic: null };
+  if (on(state, 'grandMarket')) {
+    state.termDecks = dealTermDecks(input.seed, features(state));
     openTermMarket(state);
   }
   openCouncil(state);
@@ -369,13 +377,13 @@ function validateAction(state, playerId, action) {
   const player = state.players[playerId];
   if (action.type === 'build') {
     const stack = state.market.find(item => item.designId === action.designId);
-    const reserved = isV03(state) && player.reserve.includes(action.designId);
+    const reserved = on(state, 'backRoom') && player.reserve.includes(action.designId);
     if ((!stack || stack.remaining < 1) && !reserved) fail('NOT_AVAILABLE', 'That building is not available in this market.');
-    if (isV03(state) && player.city.some(instance => instance?.designId === action.designId)) {
+    if (on(state, 'grandMarket') && player.city.some(instance => instance?.designId === action.designId)) {
       fail('DUPLICATE_DESIGN', 'You already have this building in your city.');
     }
     const plotIndex = action.row * 3 + action.col;
-    const rebuild = isV03(state) && player.city[plotIndex] !== null;
+    const rebuild = on(state, 'rebuild') && player.city[plotIndex] !== null;
     if (!rebuild && !player.city.includes(null)) fail('CITY_FULL', 'Your city is full.');
     if (!rebuild && player.city[plotIndex] !== null) fail('PLOT_OCCUPIED', 'That plot is occupied.');
     if (player.coins < buildQuote(state, playerId, action.designId, plotIndex).cost) fail('INSUFFICIENT_COINS', 'You need more coins to build.');
@@ -383,7 +391,7 @@ function validateAction(state, playerId, action) {
     if (player.festivalUsed) fail('FESTIVAL_USED', 'You have already held a Festival this session.');
     if (player.coins < 3) fail('INSUFFICIENT_COINS', 'A Festival costs 3 coins.');
   } else if (action.type === 'scout') {
-    if (!isV03(state)) fail('INVALID_ACTION', 'Scout is not part of these rules.');
+    if (!on(state, 'backRoom')) fail('INVALID_ACTION', 'Scout is not part of these rules.');
     if (player.reserve.length >= RESERVE_LIMIT) fail('RESERVE_FULL', 'Your reserve is full.');
     if (state.deck.length < 1) fail('NOT_AVAILABLE', 'The market deck is empty.');
     if (player.influence < SCOUT_COST) fail('INSUFFICIENT_INFLUENCE', 'Scouting costs 1 influence.');
@@ -411,7 +419,7 @@ function resolveCouncil(state) {
   const winner = jon.bid === lydia.bid ? state.chair : jon.bid > lydia.bid ? 'jon' : 'lydia';
   const paid = { jon: 0, lydia: 0 };
   let choiceId;
-  if (isV03(state)) {
+  if (on(state, 'winnerPays')) {
     // v0.3: only the winner pays, and nobody bidding keeps the current law.
     const nobodyBid = jon.bid === 0 && lydia.bid === 0;
     choiceId = nobodyBid ? 'keep' : council.commitments[winner].choiceId;
@@ -427,13 +435,13 @@ function resolveCouncil(state) {
   if (choiceId !== 'keep') {
     state.activeLaws[council.category] = choiceId;
     // v0.3: the winner's bid enacted this law, so the winner sponsors it.
-    if (isV03(state)) state.sponsors[council.category] = winner;
+    if (on(state, 'sponsors')) state.sponsors[council.category] = winner;
   }
   state.lastCouncil = {
     session: state.session, phaseId: state.phaseId,
     choices: { jon: { ...jon }, lydia: { ...lydia } },
     adoptedLawId: state.activeLaws[council.category], category: council.category,
-    ...(isV03(state) ? { paid } : {}),
+    ...(on(state, 'winnerPays') ? { paid } : {}),
   };
   state.council = null;
   state.stage = 'actions';
@@ -445,7 +453,7 @@ function resolveCouncil(state) {
 function finishSession(state) {
   // Compute both awards from the same post-action city snapshot before recording either.
   const awards = { jon: civicAward(state, 'jon'), lydia: civicAward(state, 'lydia') };
-  if (isV03(state) && sponsorsPaidAfter(state.session)) {
+  if (on(state, 'sponsors') && sponsorsPaidAfter(state.session)) {
     // Sponsor dividends are secured with Civic awards, as political prestige.
     for (const category of ['economy', 'civic']) {
       const sponsor = state.sponsors[category];
@@ -467,7 +475,7 @@ function finishSession(state) {
   state.session += 1;
   state.term = Math.ceil(state.session / 2);
   if (state.session === 3 || state.session === 5) {
-    if (isV03(state)) openTermMarket(state);
+    if (on(state, 'grandMarket')) openTermMarket(state);
     else state.market = stockFor(state.term);
   }
   for (const playerId of PLAYER_IDS) {
@@ -476,7 +484,7 @@ function finishSession(state) {
     player.influence = Math.min(6, player.influence + 1);
     player.buildsThisSession = 0;
     player.festivalUsed = false;
-    if (isV03(state)) player.scoutedThisSession = false;
+    if (on(state, 'backRoom')) player.scoutedThisSession = false;
   }
   openCouncil(state);
   refreshScores(state);
@@ -515,7 +523,7 @@ export function apply(fullState, authenticatedPlayerId, rawAction) {
         : { completes: false, prestige: 0 };
       const stack = state.market.find(item => item.designId === action.designId);
       let instanceId;
-      if (isV03(state)) {
+      if (on(state, 'grandMarket')) {
         // A staple loses one of its two copies. A row card is the only copy, so
         // the row refills from the deck. Otherwise the card comes from the reserve.
         if (stack && isStaple(action.designId)) {
@@ -542,7 +550,7 @@ export function apply(fullState, authenticatedPlayerId, rawAction) {
         player.streetEvaluated[action.row] = true;
         player.score.streets += street.prestige;
       }
-      if (isV03(state) && designById.get(action.designId).ability?.type === 'scoutOnBuild') {
+      if (on(state, 'backRoom') && designById.get(action.designId).ability?.type === 'scoutOnBuild') {
         drawIntoReserve(state, authenticatedPlayerId, 1);
       }
     } else if (action.type === 'work') {
@@ -550,16 +558,15 @@ export function apply(fullState, authenticatedPlayerId, rawAction) {
       player.coins += law?.effect.type === 'workIncome' ? law.effect.coins : 3;
     } else if (action.type === 'lobby') {
       player.influence = Math.min(6, player.influence + 2);
-      if (isV03(state)) player.coins += Math.min(1, abilityCount(player, 'lobbyCoin'));
+      // Effect designs exist only with Grand Market, so this is zero otherwise.
+      player.coins += Math.min(1, abilityCount(player, 'lobbyCoin'));
     } else if (action.type === 'festival') {
       player.coins -= 3;
       player.score.festivals += festivalPoints(fullState, authenticatedPlayerId);
       player.festivalUsed = true;
-      if (isV03(state)) {
-        player.influence = Math.min(6, player.influence + V03_FESTIVAL_INFLUENCE);
-        const rival = state.players[otherPlayer(authenticatedPlayerId)];
-        rival.coins += Math.min(1, abilityCount(rival, 'rivalFestivalCoin'));
-      }
+      if (on(state, 'festivalInfluence')) player.influence = Math.min(6, player.influence + V03_FESTIVAL_INFLUENCE);
+      const rival = state.players[otherPlayer(authenticatedPlayerId)];
+      rival.coins += Math.min(1, abilityCount(rival, 'rivalFestivalCoin'));
     } else if (action.type === 'scout') {
       // A free action: the turn and its phase ID do not advance.
       player.influence -= SCOUT_COST;
@@ -593,14 +600,14 @@ export function legalActions(state, authenticatedPlayerId) {
   const actions = ['work', 'lobby'].map(type => normalizeAction({ type, ...base }));
   const player = state.players[authenticatedPlayerId];
   if (player.coins >= 3 && !player.festivalUsed) actions.push(normalizeAction({ type: 'festival', ...base }));
-  if (isV03(state) && player.reserve.length < RESERVE_LIMIT && state.deck.length > 0 && player.influence >= SCOUT_COST
+  if (on(state, 'backRoom') && player.reserve.length < RESERVE_LIMIT && state.deck.length > 0 && player.influence >= SCOUT_COST
       && !player.scoutedThisSession) {
     actions.push(normalizeAction({ type: 'scout', ...base }));
   }
-  const designIds = [...state.market.map(stack => stack.designId), ...(isV03(state) ? player.reserve : [])];
+  const designIds = [...state.market.map(stack => stack.designId), ...(on(state, 'backRoom') ? player.reserve : [])];
   for (const designId of designIds) {
     for (let index = 0; index < 9; index += 1) {
-      const rebuild = isV03(state) && player.city[index] !== null;
+      const rebuild = on(state, 'rebuild') && player.city[index] !== null;
       if (player.city[index] !== null && !rebuild) continue;
       if (!buildQuote(state, authenticatedPlayerId, designId, index).allowed) continue;
       actions.push(normalizeAction({

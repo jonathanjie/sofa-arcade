@@ -3,6 +3,7 @@
  * Compares rules v0.2 and v0.3 with the same harness and the same five policies.
  *
  *   node games/odd-laws-society/simulation/compare.mjs --seeds 24
+ *   node games/odd-laws-society/simulation/compare.mjs --rules 0.3 --modules grand-market,back-room
  *
  * Every unordered policy pair (including self-pairs) plays under both initial
  * Chairs; distinct pairs also swap seats. Policies receive projected views only,
@@ -12,6 +13,7 @@
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import { engine, legalActions, V03_STAPLES } from '../engine.mjs';
+import { features } from '../rules.mjs';
 import { V03_POLICY_IDS, V03_POLICY_VERSION, chooseCouncil, chooseCityAction } from './policies.mjs';
 
 const seats = ['jon', 'lydia'];
@@ -29,10 +31,10 @@ function newLedger() {
  * other design has one. No city holds two copies of a design.
  */
 function auditCards(state) {
-  if (state.rulesVersion !== '0.3') return;
+  if (!features(state).grandMarket) return;
   const cards = [
     ...state.market.flatMap(stack => Array(stack.remaining).fill(stack.designId)), ...state.deck,
-    ...seats.flatMap(seat => state.players[seat].reserve),
+    ...seats.flatMap(seat => state.players[seat].reserve ?? []),
     ...seats.flatMap(seat => state.players[seat].city.filter(Boolean).map(card => card.designId)),
   ];
   const counts = new Map();
@@ -49,8 +51,9 @@ function auditCards(state) {
   }
 }
 
-export function runMatch({ seed, rulesVersion, firstChair, policies }) {
-  let state = engine.create({ seed, matchId: `cmp-${seed}`, options: { firstChair, rulesVersion } });
+export function runMatch({ seed, rulesVersion, modules = [], firstChair, policies }) {
+  const options = { firstChair, rulesVersion, ...(rulesVersion === '0.3' ? { modules } : {}) };
+  let state = engine.create({ seed, matchId: `cmp-${seed}`, options });
   const ledgers = { jon: newLedger(), lydia: newLedger() };
   while (state.phase === 'playing') {
     if (state.stage === 'council') {
@@ -92,7 +95,7 @@ function pairings() {
   return list;
 }
 
-export function runComparison({ seeds = 24, rulesVersion }) {
+export function runComparison({ seeds = 24, rulesVersion, modules = [] }) {
   const perPolicy = Object.fromEntries(V03_POLICY_IDS.map(id => [id, { games: 0, wins: 0, ties: 0, losses: 0, totals: newLedger(), scoreSum: 0 }]));
   const pairs = new Map();
   const chair = { wins: 0, losses: 0, ties: 0 };
@@ -105,7 +108,7 @@ export function runComparison({ seeds = 24, rulesVersion }) {
       for (const firstChair of seats) {
         for (const [jonPolicy, lydiaPolicy] of seatings) {
           const policies = { jon: jonPolicy, lydia: lydiaPolicy };
-          const { winner, ledgers } = runMatch({ seed, rulesVersion, firstChair, policies });
+          const { winner, ledgers } = runMatch({ seed, rulesVersion, modules, firstChair, policies });
           games += 1;
           if (winner === 'tie') ties += 1;
           if (a === b) { selfGames += 1; if (winner === 'tie') selfTies += 1; }
@@ -149,7 +152,7 @@ export function runComparison({ seeds = 24, rulesVersion }) {
   }]));
   const pairRates = Object.fromEntries([...pairs].map(([key, pair]) => [key, round(pair.firstWins / Math.max(1, pair.firstWins + pair.secondWins))]));
   return {
-    rulesVersion, policyVersion: V03_POLICY_VERSION, seeds, games,
+    rulesVersion, modules, policyVersion: V03_POLICY_VERSION, seeds, games,
     scoreRange: [Math.min(...scores), Math.max(...scores)],
     tieRate: round(ties / games),
     mirrorTieRate: round(selfTies / selfGames),
@@ -167,5 +170,7 @@ function readOption(name, fallback) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const seeds = Number(readOption('seeds', 24));
   const versions = readOption('rules', 'both') === 'both' ? ['0.2', '0.3'] : [readOption('rules')];
-  console.log(JSON.stringify(versions.map(rulesVersion => runComparison({ seeds, rulesVersion }))));
+  const modulesOption = readOption('modules', '');
+  const modules = modulesOption ? modulesOption.split(',') : [];
+  console.log(JSON.stringify(versions.map(rulesVersion => runComparison({ seeds, rulesVersion, modules: rulesVersion === '0.3' ? modules : [] }))));
 }

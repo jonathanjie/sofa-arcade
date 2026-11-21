@@ -175,7 +175,7 @@ test('independent review: the sixth action earns the new Civic threshold before 
 });
 
 test('independent review: browser module graph ends at public data and safe errors', () => {
-  const publicModules = new Set(['catalog.mjs', 'preview.mjs', 'errors.mjs']);
+  const publicModules = new Set(['catalog.mjs', 'preview.mjs', 'errors.mjs', 'rules.mjs']);
   const visited = new Set();
   function inspect(name) {
     if (visited.has(name)) return;

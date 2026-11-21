@@ -25,7 +25,7 @@ test('canonical TV/Jon/Lydia fixtures regenerate from legal traces without drift
 
 test('browser-safe preview/catalog/error/fixture dependency closure excludes authority and private test data', async () => {
   const base = fileURLToPath(new URL('../', import.meta.url));
-  const allowed = new Set(['catalog.mjs', 'preview.mjs', 'errors.mjs', 'fixtures/projected/index.mjs']);
+  const allowed = new Set(['catalog.mjs', 'preview.mjs', 'errors.mjs', 'rules.mjs', 'fixtures/projected/index.mjs']);
   const seen = new Set();
   async function inspect(relative) {
     if (seen.has(relative)) return;

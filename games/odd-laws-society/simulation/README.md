@@ -162,3 +162,28 @@ The goal was to make influence worth spending. Before this round, only the polit
 **Adopted:** the player whose bid enacts a law becomes its **sponsor** (shown to everyone). At each Civic session end (2, 4 and 6), each sponsor of an active law secures 1 prestige with the Civic awards. A **Festival** also gains 1 influence, up to 6.
 
 **Result:** influence now matters to every strategy. Influence paid per game rose to 6.6–9.4, and Civic and politician strategies win 55–56%. Average final scores of all five policies are 60.3–61.6. The Festival policy wins only 36% of decided games, but its losing margins are small. Influence left at the end is still 3–4, mostly because these bots never bid more than about 2.5 per council. People would probably spend it.
+
+### Base game and modules (rules v0.3, same 48 seeds)
+
+v0.3 is now a base game plus optional modules (`options.modules`; see `rules.mjs`). The goal was a base game that is close to v0.2 and quick to teach, with the extra depth in modules.
+
+Sweep results that decided where each rule belongs (initial Chair share / most one-sided pairing / policy win-share range):
+
+| Variant | Base | Grand Market | Grand Market + Back-Room |
+| --- | --- | --- | --- |
+| Every rule in the base (sponsors, Festival influence) | 0.64 / 0.83 / 0.29–0.73 | 0.57 / 0.69 / 0.38–0.53 | 0.52 / 0.73 / 0.36–0.56 |
+| Base without sponsors | 0.57 / 0.77 / 0.40–0.65 | — | — |
+| Ties keep the law, with sponsors (rejected) | 0.52 / 0.92 / 0.22–0.72 | 0.51 / 0.79 | 0.48 / 0.83 |
+| **Adopted: trailing Chair; sponsors only with Grand Market** | **0.52 / 0.77 / 0.41–0.59** | **0.52 / 0.73 / 0.34–0.58** | **0.52 / 0.67 / 0.42–0.58** |
+
+**Adopted structure:**
+
+- **Base v0.3:** v0.2, plus winner-pays councils, Rebuild, and **the player who is behind chairs** each session from session 2 (on equal scores, the printed schedule stands). The trailing Chair replaces v0.2's fixed schedule, which gave the first Chair both Economy tie-breaks.
+- **Grand Market:** the single-copy dealt market, income staples, no duplicate designs, 12 effect designs, the Culture Festival, sponsors and Festival influence. Sponsors made the two-copy base too political (the politician won 73–74%), but they balance the Grand Market.
+- **Back-Room Deals** (needs Grand Market): Scout and the private reserve. Without it, the three designs that Scout are not dealt.
+
+**Remaining gaps:**
+
+- In the base, identical bots tie 77% of the time (two copies of everything); people do not play identically.
+- Influence in the base is mostly left over (about 5), because the base has no sponsors.
+- With Grand Market alone, Festival is a little weak (0.34).

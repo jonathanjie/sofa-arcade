@@ -8,6 +8,30 @@ All costs, values, caps, and duration estimates are starting hypotheses. The spe
 
 Read [parallel development](../PARALLEL_DEVELOPMENT.md), [hosting and Tauri options](../DEPLOYMENT_OPTIONS.md), and [networking](../NETWORKING.md). **Sealed council bids require private state projection and simultaneous commitments.** This is no longer a public-information-only integration.
 
+## 0. Rules v0.3 prototype: base game and modules (21 November 2026)
+
+The engine supports rules v0.3 as an opt-in prototype (`options.rulesVersion: '0.3'`, `options.modules`). New matches still use v0.2 until the TV and phone screens support v0.3. The tuning history is in [the simulation README](../../games/odd-laws-society/simulation/README.md); `games/odd-laws-society/rules.mjs` is the source of truth for which rule belongs where.
+
+**Base game.** Everything below this section, with three changes:
+
+- **Only the winner pays.** Only the winning bid is spent. If both players bid 0, the current law stays.
+- **Rebuild.** You may Build onto your own occupied plot. Pay the new cost minus the old building's printed cost, at least 1 coin. The old building leaves the game, and its street is not scored again.
+- **The player who is behind chairs.** From session 2, the player with fewer prestige points is the Chair: they win council ties and take the second city action. On equal scores, the printed schedule stands.
+
+**Grand Market module:**
+
+- Each term deals 8 designs from a 30-design pool, one copy each, into a hidden deck. 4 are face up, and the row refills after each purchase.
+- Corner Shop and Night Market are two-copy staples, always face up in their term.
+- You cannot build a design that is already in your city.
+- It adds 12 effect designs: street synergy, guild diversity, coins when your opponent holds a Festival, Lobby coins, a better treasury rate, and (with Back-Room Deals) a free draw when built.
+- A Festival scores 2 + 1 per Culture building (at most 4) and gains 1 influence.
+- **Sponsors:** the player whose bid enacts a law sponsors it. At each Civic session end, each sponsor of an active law secures 1 prestige.
+
+**Back-Room Deals module** (needs Grand Market):
+
+- Once per session, as a free action, pay 1 influence to draw blind from the deck until your private reserve holds 2 cards.
+- Only you see your reserve. You can build from it in any later session.
+
 ## 1. Product promise and intended weight
 
 **Build the city. Rewrite its rules.**

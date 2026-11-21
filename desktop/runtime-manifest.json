@@ -32,6 +32,7 @@
     { "path": "games/odd-laws-society/errors.mjs" },
     { "path": "games/odd-laws-society/preview.mjs" },
     { "path": "games/odd-laws-society/projection.mjs" },
+    { "path": "games/odd-laws-society/rules.mjs" },
     { "path": "public/assets/odd-laws-society/LICENSE-NOTES.md" },
     { "path": "public/assets/odd-laws-society/buildings/button-workshop.webp" },
     { "path": "public/assets/odd-laws-society/buildings/clockwork-studio.webp" },

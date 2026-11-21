@@ -23,6 +23,7 @@ const SOURCES = new Map([
   ['/games/catalog.mjs', 'games/catalog.mjs'],
   ['/games/odd-laws-society/catalog.mjs', 'games/odd-laws-society/catalog.mjs'],
   ['/games/odd-laws-society/preview.mjs', 'games/odd-laws-society/preview.mjs'],
+  ['/games/odd-laws-society/rules.mjs', 'games/odd-laws-society/rules.mjs'],
   ['/games/odd-laws-society/errors.mjs', 'games/odd-laws-society/errors.mjs'],
   ...['score.mjs', 'effects.mjs'].map(file => [`/media/sofa-menu/${file}`, `ui/media/sofa-menu/${file}`]),
   ...['score.mjs', 'effects.mjs'].map(file => [`/media/odd-laws-society/${file}`, `ui/media/odd-laws-society/${file}`]),
