@@ -14,7 +14,7 @@ The next assignment is **Gravity Orchard v0.2**, a real-time cooperative game wi
 
 WS6 works on `feature/local-integration` from base
 `e34b0015399cb9791b175987adf1fab1b542565a`. Read
-[the frozen component matrix](../tests/integration/components.json),
+[the archived component matrix](archive/local-release-components.json),
 [the executed acceptance report](workstreams/integration.md), and
 [local setup/build instructions](LOCAL_RELEASE.md) before continuing.
 All five ready component heads are included by merge ancestry. The complete
@@ -27,10 +27,9 @@ Do not combine moving owner-branch tips or copy unfinished component files.
 Shared production and portable inputs now live in `scripts/runtime-files.mjs`.
 Regenerate public modules/root HTML and the portable ZIP after source changes;
 verify the extracted archive, explicit LAN routes, and desktop manifest together.
-`npm run verify:components` / `npm run verify:local-release` are strict readiness
-gates. Reports distinguish exact committed checks, dirty diagnostics, native CI,
-and physical hardware acceptance. See the matrix for permitted serving-only
-post-handoff corrections.
+The component lock that pinned WS1–WS6 handoffs was removed after the local
+release merged; the matrix is kept only as history. Reports distinguish exact
+committed checks, dirty diagnostics, native CI, and physical hardware acceptance.
 
 ## Project identity
 

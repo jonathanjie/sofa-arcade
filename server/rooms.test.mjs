@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { createRoomApi, handleApi, ROOM_TTL_MS, MAX_BODY_BYTES } from './rooms.mjs';
+import { createRoomApi, handleApi, ROOM_TTL_MS, MAX_BODY_BYTES, EXPIRED_ROOM_RETENTION_MS } from './rooms.mjs';
 
 const ORIGIN = 'https://sofa.example';
 
@@ -342,6 +342,42 @@ test('expired rooms reject reads and writes without recreating themselves', asyn
   const move = await api(f, `/api/rooms/${live.code}/action`, { method: 'POST', token: live.tokens.jon, body: actionBody(live.game.revision, { type: 'end' }) });
   assert.equal(move.status, 410);
   assert.equal(rawRoom(f, live.code).revision, live.game.revision);
+  f.sqlite.close();
+});
+
+test('creating a room deletes rooms past the expired-room retention window only', async () => {
+  const f = fixture();
+  const longExpired = await openedRoom(f);
+  const recentlyExpired = await openedRoom(f);
+  const live = await openedRoom(f);
+  const now = Date.now();
+  const setExpiry = (code, expiresAt) => f.sqlite.prepare('UPDATE sofa_rooms SET expires_at = ? WHERE code = ?').run(expiresAt, code);
+  setExpiry(longExpired.code, now - EXPIRED_ROOM_RETENTION_MS - 1);
+  setExpiry(recentlyExpired.code, now - 1);
+
+  const created = await api(f, '/api/rooms', { method: 'POST', body: {} });
+  assert.equal(created.status, 201);
+
+  assert.equal(rawRoom(f, longExpired.code), undefined);
+  assert.equal((await api(f, `/api/rooms/${longExpired.code}`)).status, 404);
+  // A recently expired room still explains itself to an old TV or phone tab.
+  const recentRead = await api(f, `/api/rooms/${recentlyExpired.code}`);
+  assert.equal(recentRead.status, 410);
+  assert.equal(recentRead.body.code, 'room_expired');
+  assert.equal((await api(f, `/api/rooms/${live.code}`)).status, 200);
+  f.sqlite.close();
+});
+
+test('a failed expired-room cleanup does not block room creation', async () => {
+  const f = fixture();
+  const prepare = f.env.DB.prepare;
+  f.env.DB.prepare = sql => {
+    if (sql.startsWith('DELETE')) throw new Error('cleanup unavailable');
+    return prepare(sql);
+  };
+  const created = await api(f, '/api/rooms', { method: 'POST', body: {} });
+  assert.equal(created.status, 201);
+  assert.ok(rawRoom(f, created.body.code));
   f.sqlite.close();
 });
 

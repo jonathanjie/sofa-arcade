@@ -13,7 +13,7 @@ collection-create rerun and combined ARM/Intel native acceptance remain pending,
 so the aggregate PR stays draft. No unfinished component branch tip is included.
 
 The machine-readable checkpoint is
-[`tests/integration/components.json`](../../tests/integration/components.json).
+[`docs/archive/local-release-components.json`](../archive/local-release-components.json).
 Only an explicitly reviewed, tested owner handoff may fill a component's PR and
 immutable head. A later head is a new candidate requiring affected checks again.
 
