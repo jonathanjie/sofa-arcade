@@ -35,7 +35,11 @@ function reserveView(state, playerId, viewer) {
   if (state.rulesVersion !== '0.3') return {};
   const reserve = state.players[playerId].reserve;
   const own = viewer.role === 'player' && viewer.playerId === playerId;
-  return { reserve: own ? reserve.map(designId => designId) : null, reserveCount: reserve.length };
+  return {
+    reserve: own ? reserve.map(designId => designId) : null,
+    reserveCount: reserve.length,
+    scoutedThisSession: state.players[playerId].scoutedThisSession,
+  };
 }
 
 function playerView(state, playerId, viewer) {

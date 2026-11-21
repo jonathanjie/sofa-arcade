@@ -63,7 +63,8 @@ This gives each game a shared feel, and it tells the designer where to add tensi
 - New problem: Economy wins 67% of decided games.
 - Scout and Lobby are still rarely used.
 - A new lobbying bot shows that v0.2 politics was strong when played: it won 76%.
-- Follow-up: the income designs became two-copy **staples**, and a city cannot hold two copies of a design. Economy fell from 67% to 52%, but Festival rose to 77% (96% against Civic). The next fix to test is a Festival that scales with Culture.
+- Follow-up: the income designs became two-copy **staples**, and a city cannot hold two copies of a design. Economy fell from 67% to 52%, but Festival rose to 77% (96% against Civic).
+- Tuning round: the real cause was **plot hoarding for single-copy landmarks**, so **Rebuild** was added. Scout became a free once-per-session action, and Festival became 2 + 1 per Culture building (at most 4). All policies now win 42–59% of decided games; the most one-sided pairing is 69%, ties are 8%, and the initial Chair is at 47%. Influence is still the weakest system.
 
 **Test pass condition (extend the existing sweep):**
 

@@ -365,6 +365,7 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     reserve_full: 'Your reserve is full. Build from it first.',
     insufficient_influence: 'You do not have enough influence for that action.',
     duplicate_design: 'You already have this building in your city.',
+    scout_used: 'You have already scouted this session.',
   });
 
   function ruleError(error) {

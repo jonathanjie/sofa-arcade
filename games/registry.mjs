@@ -23,6 +23,7 @@ const oddLawsRoomCodes = Object.freeze({
   RESERVE_FULL: 'reserve_full',
   INSUFFICIENT_INFLUENCE: 'insufficient_influence',
   DUPLICATE_DESIGN: 'duplicate_design',
+  SCOUT_USED: 'scout_used',
 });
 
 function withRoomRuleCodes(method) {

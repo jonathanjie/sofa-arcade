@@ -58,12 +58,33 @@ export function festivalBonus(view, playerId) {
 }
 
 /**
+ * v0.3 Festivals reward a Culture city instead of spare coins: 2 prestige plus 1
+ * per Culture building, at most 4. Festival icons add nothing extra in v0.3.
+ * (Tested against 1 + Culture, 0 + Culture and a cap of 3; see the simulation README.)
+ */
+export const V03_FESTIVAL = Object.freeze({ base: 2, perCulture: 1, max: 4 });
+
+/** Prestige a Festival would secure now. v0.2: 3 plus the citywide icon bonus. */
+export function festivalPoints(view, playerId) {
+  const player = playerFor(view, playerId);
+  if (!isV03(view)) return 3 + festivalBonus(view, playerId);
+  const culture = cityBuildings(player).filter(building => building.guild === 'culture').length;
+  return Math.min(V03_FESTIVAL.max, V03_FESTIVAL.base + culture * V03_FESTIVAL.perCulture);
+}
+
+/**
  * Preview the single greatest pre-action discount, including its actual reduction.
  * All known-design arithmetic remains available when this Build is unavailable.
+ *
+ * v0.3 Rebuild: pass the target plot index (0–8). If that plot is occupied, the
+ * new building replaces the old one, and the price drops by the old building's
+ * printed cost (still at least 1 coin). The old building leaves the game.
  */
-export function buildQuote(view, playerId, designId) {
+export function buildQuote(view, playerId, designId, plotIndex = null) {
   const player = playerFor(view, playerId);
   const building = buildingFor(designId);
+  const replaced = isV03(view) && Number.isInteger(plotIndex) && player.city[plotIndex]
+    ? buildingFor(player.city[plotIndex].designId) : null;
   const law = lawFor(view.activeLaws?.economy, 'economy');
   const firstBuild = player.buildsThisSession === 0;
   const workshop = firstBuild && abilityTotal(player, 'firstBuildDiscount') > 0 ? 1 : 0;
@@ -76,8 +97,9 @@ export function buildQuote(view, playerId, designId) {
   const selected = lawDiscount >= workshop && lawDiscount > 0
     ? { amount: lawDiscount, sourceId: law.id }
     : { amount: workshop, sourceId: workshop > 0 ? 'workshop' : null };
-  const cost = Math.max(1, building.cost - selected.amount);
-  const discount = { amount: building.cost - cost, sourceId: selected.sourceId };
+  const discountedCost = Math.max(1, building.cost - selected.amount);
+  const cost = replaced ? Math.max(1, discountedCost - replaced.cost) : discountedCost;
+  const discount = { amount: building.cost - discountedCost, sourceId: selected.sourceId };
   const influenceGain = building.ability?.type === 'influenceOnBuild'
     ? Math.max(0, Math.min(building.ability.amount, 6 - player.influence))
     : 0;
@@ -89,7 +111,7 @@ export function buildQuote(view, playerId, designId) {
     reason = 'This building is not available.';
   } else if (isV03(view) && player.city.some(instance => instance?.designId === designId)) {
     reason = 'You already have this building.';
-  } else if (!player.city.includes(null)) reason = 'Your city is full.';
+  } else if (!replaced && !player.city.includes(null)) reason = 'Your city is full.';
   else if (player.coins < cost) reason = 'Not enough coins.';
 
   return {
@@ -100,6 +122,7 @@ export function buildQuote(view, playerId, designId) {
     discount,
     influenceGain,
     prestige: building.prestige,
+    ...(replaced ? { rebuild: { replacedDesignId: replaced.id, credit: discountedCost - cost } } : {}),
   };
 }
 
