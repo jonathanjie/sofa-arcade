@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createGame, applyAction, legalActions, previewForecast, describeForecast,
-  scoreFor, upcomingForecasts, roundStarter, SECOND_PLAYER_BONUS, SIZE, BAG_CAPACITY, ACTIONS_PER_TURN,
+  scoreFor, upcomingForecasts, roundStarter, projectState, SECOND_PLAYER_BONUS, SIZE, BAG_CAPACITY, ACTIONS_PER_TURN,
 } from './engine.mjs';
 
 const tileAt = (state, row, col) => state.tiles.find(tile => tile.row === row && tile.col === col);
@@ -538,7 +538,9 @@ test('rules v4 draws one odd and one even pounce round per seed, and keeps the r
   assert.deepEqual(pounceRounds(createGame({ seed: 'v3-beats' })), [3, 9]);
 });
 
-test('rules v4 toys change the next round: a pounce moves one square, never onto a burrow', () => {
+const endTurnOf = current => applyAction(current, current.activePlayer, { type: 'end' });
+
+test('rules v4 sealed toys move next round\'s pounce one square, never onto a burrow', () => {
   let state = createGame({ seed: 'v4-toy', rulesVersion: 4, firstPlayer: 'jon' });
   const round = pounceRounds(state)[0];
   state = advanceToRound(state, round - 1);
@@ -550,34 +552,63 @@ test('rules v4 toys change the next round: a pounce moves one square, never onto
   assert.deepEqual(nudges.map(({ row, col }) => `${row},${col}`).sort(), ['2,0', '3,1']);
   assert.throws(() => applyAction(state, actor, { type: 'lure', row: 4, col: 0 }), /burrow/);
   assert.throws(() => applyAction(state, actor, { type: 'lure', row: 1, col: 0 }), /one square/);
-  const nudged = applyAction(state, actor, { type: 'lure', row: 2, col: 0 });
-  assert.deepEqual([nudged.nextForecast.row, nudged.nextForecast.col], [2, 0]);
-  assert.deepEqual(nudged.forecast, state.forecast, 'this round is unchanged');
-  assert.equal(nudged.players[actor].lures, state.players[actor].lures - 1);
-  assert.equal(state.nextForecast.row, 3, 'the input state is not mutated');
-  assert.deepEqual({ ...upcomingForecasts(nudged)[0] }, { round, ...nudged.nextForecast });
-  // The changed event becomes the next round's forecast.
-  const endTurn = current => applyAction(current, current.activePlayer, { type: 'end' });
-  const next = endTurn(endTurn(nudged));
+  const sealed = applyAction(state, actor, { type: 'lure', row: 2, col: 0 });
+  // A sealed toy costs no action, changes nothing visible yet and logs nothing.
+  assert.equal(sealed.actionsLeft, state.actionsLeft);
+  assert.deepEqual(sealed.nextForecast, state.nextForecast);
+  assert.deepEqual(sealed.log, state.log);
+  assert.equal(sealed.players[actor].lures, state.players[actor].lures - 1);
+  assert.deepEqual(sealed.sealedToys[actor], { row: 2, col: 0 });
+  assert.equal(legalActions(sealed, actor).some(action => action.type === 'lure'), false);
+  assert.throws(() => applyAction(sealed, actor, { type: 'lure', row: 3, col: 1 }), /already slipped/);
+  // Revealed at the end of the round, it becomes next round's forecast.
+  const next = endTurnOf(endTurnOf(sealed));
   assert.equal(next.round, round);
-  assert.deepEqual([next.forecast.row, next.forecast.col], [2, 0]);
+  assert.deepEqual([next.forecast.row, next.forecast.col, next.forecast.luredBy], [2, 0, actor]);
+  assert.deepEqual(next.sealedToys, { jon: null, lydia: null });
   assertInvariants(next);
 });
 
-test('rules v4 toys change next round\'s swipe and cannot be used in the last round', () => {
-  let state = createGame({ seed: 'v4-swipe-toy', rulesVersion: 4, maxRounds: 2, firstPlayer: 'jon' });
+test('rules v4 sealed toys change next round\'s swipe and cannot be used in the last round', () => {
+  const state = createGame({ seed: 'v4-swipe-toy', rulesVersion: 4, maxRounds: 2, firstPlayer: 'jon' });
   state.nextForecast = { type: 'swipe', axis: 'row', index: 0, direction: 1 };
-  const redirected = applyAction(state, 'jon', { type: 'lure', axis: 'column', index: 4, direction: -1 });
-  assert.deepEqual(redirected.forecast, state.forecast);
-  assert.equal(redirected.nextForecast.axis, 'column');
-  const endTurn = current => applyAction(current, current.activePlayer, { type: 'end' });
-  // Jon used one action on the toy; ending Jon's and Lydia's turns ends round 1.
-  const last = endTurn(endTurn(redirected));
+  const sealed = applyAction(state, 'jon', { type: 'lure', axis: 'column', index: 4, direction: -1 });
+  const last = endTurnOf(endTurnOf(sealed));
   assert.equal(last.round, 2);
-  assert.equal(last.forecast.axis, 'column');
+  assert.deepEqual([last.forecast.axis, last.forecast.index, last.forecast.direction], ['column', 4, -1]);
   assert.equal(last.nextForecast, null);
   assert.equal(legalActions(last, last.activePlayer).some(action => action.type === 'lure'), false);
   assert.throws(() => applyAction(last, last.activePlayer, { type: 'lure', axis: 'row', index: 1, direction: 1 }), /last round/);
+});
+
+test('rules v4 sealed toys cancel when both players slip one in the same round', () => {
+  const state = createGame({ seed: 'v4-collision', rulesVersion: 4, firstPlayer: 'jon' });
+  state.nextForecast = { type: 'swipe', axis: 'row', index: 0, direction: 1 };
+  const jonToy = applyAction(state, 'jon', { type: 'lure', axis: 'column', index: 1, direction: 1 });
+  const lydiaTurn = endTurnOf(jonToy);
+  const bothToys = applyAction(lydiaTurn, 'lydia', { type: 'lure', axis: 'row', index: 3, direction: -1 });
+  const next = endTurnOf(bothToys);
+  assert.deepEqual([next.forecast.axis, next.forecast.index, next.forecast.direction], ['row', 0, 1]);
+  assert.equal(next.players.jon.lures, 1);
+  assert.equal(next.players.lydia.lures, 1);
+  assert.equal(next.log.at(-2).kind, 'toy-collision');
+});
+
+test('rules v4 projection hides the other player\'s sealed toy from them and from the TV', () => {
+  const state = createGame({ seed: 'v4-private', rulesVersion: 4, firstPlayer: 'jon' });
+  const sealed = applyAction(state, 'jon', { type: 'lure', axis: 'row', index: 2, direction: 1 });
+  const forJon = projectState(sealed, 'jon');
+  const forLydia = projectState(sealed, 'lydia');
+  const forTv = projectState(sealed);
+  assert.deepEqual(forJon.sealedToys.jon, sealed.sealedToys.jon);
+  assert.equal(forJon.players.jon.lures, 1);
+  for (const view of [forLydia, forTv]) {
+    assert.deepEqual(view.sealedToys, { jon: null, lydia: null });
+    assert.equal(view.players.jon.lures, 2, 'the toy count does not reveal the sealed toy');
+    assert.deepEqual(view.log, state.log);
+    assert.equal(JSON.stringify(view).includes('"index":2,"direction":1'), JSON.stringify(state).includes('"index":2,"direction":1'));
+  }
+  assert.deepEqual(projectState(createGame({ seed: 'v3-private' }), 'lydia'), createGame({ seed: 'v3-private' }));
 });
 
 test('rules v3 toys still cannot change a pounce', () => {

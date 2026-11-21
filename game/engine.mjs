@@ -173,7 +173,11 @@ export function createGame({ seed = 'a-little-living-room', maxRounds = 10, firs
     firstPlayer: starter, activePlayer: starter, actionsLeft: ACTIONS_PER_TURN, turnInRound: 0,
     players, tiles, forecast: forecastFor(normalizedSeed, 1, rulesVersion), lastEvent: null,
     // Rules v4 toys change the next round's event, so it is stored, not derived.
-    ...(rulesVersion >= 4 ? { nextForecast: maxRounds > 1 ? forecastFor(normalizedSeed, 2, rulesVersion) : null } : {}),
+    // Sealed toys wait here, hidden from the other player, until the round ends.
+    ...(rulesVersion >= 4 ? {
+      nextForecast: maxRounds > 1 ? forecastFor(normalizedSeed, 2, rulesVersion) : null,
+      sealedToys: { jon: null, lydia: null },
+    } : {}),
     winner: null, actionNumber: 0, logSequence: 0, log: [],
   };
   appendLog(state, 'The kingdom is open. Bring crumbs back to your own burrow to score.', null, 'welcome');
@@ -196,14 +200,15 @@ export function legalActions(state, playerId) {
   // Rules v3 toys bend this round's event. Rules v4 toys bend the next round's
   // event, so both players get a full turn to react before it happens.
   const target = centreRules(state) ? state.nextForecast : state.forecast;
-  if (player.lures > 0 && centreRules(state) && target?.type === 'pounce') {
+  const canUseToy = player.lures > 0 && !(centreRules(state) && state.sealedToys?.[playerId]);
+  if (canUseToy && centreRules(state) && target?.type === 'pounce') {
     for (const [dr, dc] of Object.values(DIRECTIONS)) {
       const row = target.row + dr;
       const col = target.col + dc;
       if (inBounds(row, col) && !isHome(row, col)) actions.push({ type: 'lure', row, col });
     }
   }
-  if (player.lures > 0 && target?.type === 'swipe') {
+  if (canUseToy && target?.type === 'swipe') {
     if (strategicRules(state)) {
       for (const axis of ['row', 'column']) {
         for (let index = 0; index < SIZE; index++) {
@@ -282,6 +287,33 @@ export function previewForecast(state) {
   };
 }
 
+/**
+ * Rules v4: both players' sealed toys are revealed together at the end of the
+ * round. One toy changes the next round's event. Two toys cancel each other:
+ * Lala ignores both, and both are used up.
+ */
+function revealSealedToys(state) {
+  const played = PLAYER_IDS.filter(id => state.sealedToys[id]);
+  if (played.length === 2) {
+    appendLog(state, 'Both toys landed at once. Lala ignores them both.', null, 'toy-collision');
+  } else if (played.length === 1) {
+    const [playerId] = played;
+    const toy = state.sealedToys[playerId];
+    const target = state.nextForecast;
+    if (target.type === 'pounce') {
+      target.row = toy.row;
+      target.col = toy.col;
+    } else {
+      target.axis = toy.axis;
+      target.index = toy.index;
+      target.direction = toy.direction;
+    }
+    target.luredBy = playerId;
+    appendLog(state, `${state.players[playerId].name}'s toy is revealed. Next round: ${describeForecast(target)}`, playerId, 'toy');
+  }
+  state.sealedToys = { jon: null, lydia: null };
+}
+
 function finishTurn(state) {
   if (state.turnInRound === 0) {
     state.turnInRound = 1;
@@ -289,6 +321,7 @@ function finishTurn(state) {
     state.actionsLeft = ACTIONS_PER_TURN;
     return;
   }
+  if (centreRules(state)) revealSealedToys(state);
   state.lastEvent = resolveForecast(state);
   let catText = state.lastEvent.description;
   if (state.lastEvent.caught.length) {
@@ -321,6 +354,22 @@ function finishTurn(state) {
   }
 }
 
+/**
+ * Returns what one viewer may see. Rules v4 hides the other player's sealed toy
+ * and shows their toy count as it was before they slipped it. A viewer that is
+ * not a player (the TV) sees no sealed toys. Earlier versions have no secrets.
+ */
+export function projectState(state, viewerId = null) {
+  const view = copy(state);
+  if (!centreRules(view) || !view.sealedToys) return view;
+  for (const id of PLAYER_IDS) {
+    if (id === viewerId || !view.sealedToys[id]) continue;
+    view.players[id].lures += 1;
+    view.sealedToys[id] = null;
+  }
+  return view;
+}
+
 /** Apply one legal command. The input remains unchanged even if validation fails. */
 export function applyAction(state, playerId, action) {
   if (!state || state.phase !== 'playing') throw new Error('This game has finished. Start a rematch to play again.');
@@ -340,6 +389,8 @@ export function applyAction(state, playerId, action) {
     if (currentPlayer.carried <= 0) throw new Error('Collect some crumbs before banking.');
   } else if (action.type === 'lure' && centreRules(state) && !state.nextForecast) {
     throw new Error('Toys change the next round, and this is the last round.');
+  } else if (action.type === 'lure' && centreRules(state) && state.sealedToys[playerId]) {
+    throw new Error('You have already slipped a toy this round.');
   } else if (action.type === 'lure' && centreRules(state) && state.nextForecast.type === 'pounce') {
     if (currentPlayer.lures <= 0) throw new Error('You have used both of your toys.');
     if (!Number.isInteger(action.row) || !Number.isInteger(action.col)) throw new Error('Choose a square for the pounce.');
@@ -394,9 +445,20 @@ export function applyAction(state, playerId, action) {
     if (bonus) player.bonusPoints = (player.bonusPoints || 0) + bonus;
     if (recharged) player.lures += 1;
     appendLog(next, `${player.name} banks ${banked} ${banked === 1 ? 'crumb' : 'crumbs'}.${bonus ? ` +${bonus} full-bag bonus points.` : ''}${recharged ? ' One toy restored.' : ''} Safe from Lala!`, playerId);
+  } else if (action.type === 'lure' && centreRules(next)) {
+    // A sealed toy costs no action, so spending one reveals nothing.
+    player.lures -= 1;
+    next.sealedToys[playerId] = next.nextForecast.type === 'pounce'
+      ? { row: action.row, col: action.col }
+      : {
+        axis: Object.hasOwn(action, 'axis') ? action.axis : next.nextForecast.axis,
+        index: action.index,
+        direction: Object.hasOwn(action, 'direction') ? action.direction : next.nextForecast.direction,
+      };
+    return next;
   } else if (action.type === 'lure') {
     player.lures -= 1;
-    const target = centreRules(next) ? next.nextForecast : next.forecast;
+    const target = next.forecast;
     if (target.type === 'pounce') {
       target.row = action.row;
       target.col = action.col;
@@ -406,8 +468,7 @@ export function applyAction(state, playerId, action) {
       target.direction = Object.hasOwn(action, 'direction') ? action.direction : target.direction;
     }
     target.luredBy = playerId;
-    const when = centreRules(next) ? ' Next round:' : '';
-    appendLog(next, `${player.name} uses a toy.${when} ${describeForecast(target)}`, playerId);
+    appendLog(next, `${player.name} uses a toy. ${describeForecast(target)}`, playerId);
   }
   next.actionsLeft -= 1;
   if (next.actionsLeft === 0) finishTurn(next);

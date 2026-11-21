@@ -18,19 +18,23 @@ const inCentre = player => player.row >= CENTRE.min && player.row <= CENTRE.max
 export function playMatch({ seed, rulesVersion, maxRounds, firstPlayer, useToys = true }) {
   let state = createGame({ seed, rulesVersion, maxRounds, firstPlayer });
   const second = firstPlayer === 'jon' ? 'lydia' : 'jon';
-  const stats = { sharedCentreRounds: new Set(), pounceCatches: 0, swipeToys: 0, pounceToys: 0, fullBags: 0 };
+  const stats = { sharedCentreRounds: new Set(), pounceCatches: 0, swipeToys: 0, pounceToys: 0, fullBags: 0, toyCollisions: 0 };
   while (state.phase === 'playing') {
     const me = state.activePlayer;
     const round = state.round;
     for (const action of chooseTurn(state, { useToys })) {
-      if (action.type === 'lure') stats[state.forecast.type === 'pounce' ? 'pounceToys' : 'swipeToys']++;
+      if (action.type === 'lure') stats[Object.hasOwn(action, 'row') ? 'pounceToys' : 'swipeToys']++;
+      const logBefore = state.logSequence;
       const before = state.players[me].bonusPoints || 0;
       state = applyAction(state, me, action);
       if ((state.players[me].bonusPoints || 0) > before) stats.fullBags++;
+      stats.toyCollisions += state.log.filter(entry => entry.id > logBefore && entry.kind === 'toy-collision').length;
       if (state.activePlayer !== me || state.phase !== 'playing') break;
     }
     if (state.activePlayer === me && state.phase === 'playing' && state.round === round) {
+      const logBefore = state.logSequence;
       state = applyAction(state, me, { type: 'end' });
+      stats.toyCollisions += state.log.filter(entry => entry.id > logBefore && entry.kind === 'toy-collision').length;
     }
     if (state.lastEvent?.round === round && state.lastEvent.type === 'pounce') {
       stats.pounceCatches += state.lastEvent.caught.length;
@@ -50,6 +54,7 @@ export function playMatch({ seed, rulesVersion, maxRounds, firstPlayer, useToys 
     swipeToys: stats.swipeToys,
     pounceToys: stats.pounceToys,
     fullBags: stats.fullBags,
+    toyCollisions: stats.toyCollisions,
   };
 }
 
@@ -83,6 +88,7 @@ export function runSweep({ rulesVersion = 4, maxRounds = 10, seeds = 100, useToy
     meanSwipeToys: mean(games.map(game => game.swipeToys)),
     meanPounceToys: mean(games.map(game => game.pounceToys)),
     meanFullBags: mean(games.map(game => game.fullBags)),
+    meanToyCollisions: mean(games.map(game => game.toyCollisions)),
   };
 }
 
