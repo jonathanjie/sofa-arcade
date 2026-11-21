@@ -172,15 +172,182 @@ native code and certificate capabilities remain excluded.
 
 | Gate | Verified checkpoint so far |
 | --- | --- |
-| GO7 protocol/UI/native host/package suites | 32 passed, zero skipped after the same-client restart regression and regenerated runtime |
+| GO7 protocol/UI/native host/package suites | 35 passed, zero skipped after the shared phone-setup link and private runtime-timing regressions; same-client restart and runtime/package checks retained |
 | Existing root rules/rooms/LAN/controller/music | 81 passed |
 | Existing portable delivery/source closure | 5 passed |
 | Production build and public inventory | Passed; 182 declared public files |
 | Rust non-GUI protocol/configuration/Quit | 20 passed |
-| Rendered collection TV + two phone contexts | Complete 18/18 journey passed at `5bc5960`; local Chromium remains unavailable because of AF_UNIX restrictions |
-| Actual packaged macOS ARM64 | GO7 full three-process WKWebView acceptance passed at `5bc5960`, job 136644343154 |
-| Actual packaged macOS Intel | `5bc5960` entered a real host-stall safety pause; the harness did not resume it and failed. Bounded recovery acceptance is being added before activation |
-| GO1–GO6 assembled component suites | 282 tests passed at `5bc5960`; fixture regeneration and GO4's 23 rendered cases also passed |
+| Rendered collection TV + two phone contexts | Complete 18/18 journey passed at `1d67f9a`; local Chromium remains unavailable because of AF_UNIX restrictions |
+| Actual packaged macOS ARM64 | Complete setup/export and three-process WKWebView run passed at `1d67f9a`, job 136656564754; screenshot-discovered phone-link correction requires another exact-head run |
+| Actual packaged macOS Intel | `1d67f9a` failed on a second observed host-stall, preserving the one-recovery cap; the next planned candidate adds bounded timing and native foreground evidence |
+| GO1–GO6 assembled component suites | 282 tests passed at `1d67f9a`; fixture regeneration and GO4's 23 rendered cases also passed |
+
+### Native-acceptance follow-up candidate `1d67f9a`
+
+The planned follow-up at `1d67f9a48389448963ee40670998f4fbed13d691`
+(tree `a3ca07f3b552affcb71f203b837e37b971909728`) includes the independently
+reviewed bounded native host-stall recovery, actual setup/export UI acceptance,
+and fail-closed production dependency guards described below. It changes no
+runtime bundle or portable bytes from `5bc5960`. All Linux checks and the
+complete rendered journey pass; the actual Mac results are recorded separately
+before catalog activation.
+
+| Exact-head software evidence | Result / source |
+| --- | --- |
+| Strict GO7 and legacy component locks | Passed, no errors; [GO7 run 44843179897](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179897) |
+| Node 22.13 and 24.22.3 | Each passed 81 core tests and 32 GO7 authority/TLS/native-host/package tests, no skipped tests |
+| All six assembled components | 282 tests and 13 projected fixtures passed; each separate GO1–GO6 workflow also passed |
+| Full rendered GO7 | 18/18; [browser artifact 14681384571](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179897/artifacts/14681384571) |
+| Focused GO4 TV/tutorial | 23/23, no skipped/flaky cases; [artifact 14681563338](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843180215/artifacts/14681563338) |
+| Existing rendered collection | Sofa Kingdoms 15, menu music 10, Odd Laws Chair Jon 13 / Chair Lydia 9 checks passed; [artifact 14682175484](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179895/artifacts/14682175484) |
+| Existing privacy / package / production | 53 integration tests, both-seat private HTTP/SSE invariance and sealed restore, production build, 182-file public boundary, and unchanged generated closure passed |
+| Actual GO7 macOS ARM / Intel | ARM passed the complete setup/export and three-process run (job 136656564754); Intel failed on a second observed host-stall (job 136656564794). Screenshot inspection also exposed the phone-link correction below, so activation remains deferred |
+| Existing production desktop and native collection | Both ARM and Intel passed production packaging, all 14 production checks and inherited WKWebView phases in [Desktop run 44843179923](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179923); both native collection jobs also passed in [local integration run 44843179895](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179895) |
+
+The current rendered campaign completed 12 orders/nine stars/zero compost in
+130.279 s, with nine transfers each way. Its same-fruit full/wrong-basket exercise
+took 55.537 s. Lost ACK/stale epoch, real pagehide/Back, phone reload, live
+same-client host restart, retries/rematches, practice, host-only composition and
+disposal passed. The deliberately injected 350 ms event-loop stall is recorded
+separately from the campaign and correctly paused the run. All final screenshots
+were inspected at 720p/1080p TV and 360/390 phone sizes; no new visual defect,
+browser exception, failed asset response or external runtime request was found.
+
+| Current rendered loopback measurement | Jon | Lydia |
+| --- | --- | --- |
+| Applied-input ACK samples | 2,642 | 2,774 |
+| ACK RTT median / p95 | 31.5 / 51.2 ms | 25.8 / 49.9 ms |
+| ACK RTT p99 / maximum | 56.1 / 134.8 ms | 59.9 / 147.3 ms |
+| Observed-to-applied tick age p95 / maximum | 4 / 10 ticks | 4 / 10 ticks |
+| Maximum browser socket buffer | 265 bytes | 265 bytes |
+
+The campaign/rematch sample recorded 5,994 inputs, 55 checkpoints and 144 changed
+SQLite rows; zero tick overruns, skipped catch-up ticks or unplanned host stalls.
+All pages' visible-playing rAF p95 was 16.7 ms and maximum 16.8 ms, with no gap
+above 25 ms. This measures callback scheduling, not GPU duration, paint completion,
+one-way input delay, physical Wi-Fi or casting. The older `5bc5960` run's two
+overruns and nine skipped ticks remain recorded below; the current zero count is
+not a general performance guarantee.
+
+The clean real-clock TCP
+[artifact 14682171202](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179897/artifacts/14682171202)
+(SHA-256 `2fdd5a4ab6f1dfb12f267b19562c146aa55a2d882bf193f6292a6d61a0067e07`)
+records 134.158 s, 12 orders/nine stars, ten transfers each way, 5,330 inputs,
+36 checkpoints and 102 changed rows. ACK RTT p95 was 48.19/48.25 ms, maximum
+66.44/66.53 ms; observed-to-applied age p95 three ticks, maximum four. The
+six-second healthy sample measured 59.830 ticks/s and 19.832 snapshots/s with
+238 inputs/one checkpoint/two changed rows. Actual slow-reader pressure ran
+39.529 s at 60.006 ticks/s and 19.985 snapshots/s, coalesced 41 snapshots and
+retained at most one pending snapshot/two inputs. It removed the nonreading
+spectator while all three healthy clients stayed playing. The 200-frame flood
+closed 4429 after 20.88 ms; fresh-epoch recovery and zero-work/timer cleanup
+passed. These are unchanged-public-pilot Linux loopback measurements using an
+in-memory database; they do not rule out disk-backed SQLite delays on the Mac.
+
+The inherited Odd Laws Chair-Jon fault journey also retained a measurable tail:
+TV n=95, median 34.18 ms, p95 216.03 ms, maximum 373.65 ms; phone p95 about
+213.9 ms and maxima about 374.2 ms. That sample includes deliberate recovery and
+driver scheduling. Chair-Lydia's TV p95 was 58.43 ms, maximum 84.73 ms. These
+values are not home-network or physical-display measurements.
+
+The preceding `5bc5960` Desktop Intel retry passed production app/DMG/signature
+and all 14 native production checks, then the newer push cancelled it during the
+instrumented build. No inherited WKWebView pass is credited to that cancelled
+attempt. [Artifact 14681796085](https://github.com/jonathanjie/sofa-arcade/actions/runs/44839463628/artifacts/14681796085)
+preserves the completed production evidence. The complete inherited production
+and native suites subsequently passed on both architectures at `1d67f9a`;
+Gravity Orchard's Intel failure remains separate and unresolved.
+
+### Native setup phone-link correction
+
+The actual `1d67f9a` ARM
+[artifact 14681689311](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179897/artifacts/14681689311)
+passed all 12 orders/nine stars/zero compost in a 142.119 s control interval
+that also includes the same-seed rematch and subsequent pause checkpoint,
+both transfer directions, 49 decoded images, no external runtime requests and
+all three owned-process Quit/relaunch checks. It recorded no host-stall recovery.
+The actual setup screen provisioned and exported one 749-byte public CRT and
+one 2,081-byte Apple profile, each matching the displayed CA fingerprint with
+mode 0600; no trust installation was attempted.
+
+Inspection of those new native screenshots found a real integration defect
+that the preceding callback tests could not reveal: GO6's “Open on each phone”
+list and first-origin motion-check link included the Mac's loopback identities.
+Opening `127.0.0.1` or `localhost` on a phone targets the phone itself. The shared
+QR already selected a LAN address, but `openSecureSetup()` forwarded raw native
+status to the setup factory.
+
+The bounded GO7 correction adds `phoneSetupStatus()` in `ui/transport.mjs` and
+uses it only for the setup view's callback results in `ui/app.js`. It filters
+canonical HTTPS local origins, excludes loopback/wildcard/malformed addresses,
+deduplicates, and prefers the current phone join hostname. The native status,
+certificate SANs, HTTPS listener and validation allowlist stay intact. If no
+usable phone origin exists, the view shows its connection-failure state while
+retaining certificate export/disable management. GO6's protected source is
+unchanged; the exact legacy WS2 transport blob and reason are recorded.
+
+All 13 bridge tests pass, including frozen-original-state checks, preferred LAN
+ordering, canonical rejection, and no-LAN/disabled/error cases. The full local
+GO7 suite passes 33/33, existing core 81/81, and production build/182-file public
+boundary checks pass. The regenerated 200-file ZIP is 8,967,165 bytes with SHA-256
+`628d8e4f52b15277981cf015efa5b61a82db9da898fb1b4cbc3200ace065500b`. Independent
+review found no authority or contract change. Actual Mac acceptance now also
+requires every rendered phone URL to be a canonical non-loopback member of the
+native listener's validated origins, its first host to match served phone join
+metadata, and the diagnostic URL to use that first origin. Corrected actual-Mac
+screenshots and full acceptance remain required before catalog activation.
+
+### Second Intel stall and bounded native timing evidence
+
+The actual `1d67f9a` Intel
+[artifact 14683076373](https://github.com/jonathanjie/sofa-arcade/actions/runs/44843179897/artifacts/14683076373)
+(SHA-256 `501083d9f07022da76e47ecc73633359db189fe011fbdaf12948b5d47001b96f`)
+failed the explicit assertion that a second observed host-stall must fail native
+acceptance. At 89.607 s from controller creation, stage two paused at tick 5,313,
+epoch four. Both clients remained connected and neutral; Jon-only readiness
+kept it paused, then Lydia's readiness started epoch five and play resumed.
+The 366 ms recorded interval is the observed-pause-to-readiness sequence, not
+the duration of the scheduler delay. Stage three entered countdown at 109.957 s,
+tick 6,490, epoch seven; another host-stall appeared at 110.996 s, tick 6,509,
+epoch eight. No stage-three game time had elapsed. Both clients remained connected
+without drops, retries, callback errors or invalid messages, and owned Quit passed.
+
+Those observations do not identify the cause of either delay. GO2's existing
+250 ms stall guard, one permitted recovery and the 15/115/420-second acceptance
+deadlines remain unchanged. The next planned candidate adds optional observations
+around the same SQLite object and existing realtime clock, separating callback
+duration from timer lateness and checkpoint projection/stringification. Fixed
+operation labels and numeric timings contain no SQL, bindings, paths, credentials,
+room state or checkpoint contents. Observer failures cannot change database
+results, authority decisions or shutdown. Two focused tests exercise actual
+disk-backed SQLite, default and injected clocks, and throwing-observer isolation.
+
+Only the explicit native acceptance build enables the bounded recorder. It keeps
+aggregate timings and at most 128 slow observations in memory, then writes a
+private `0600` file after owned shutdown, capped at 128 KiB. Production does not
+receive the diagnostic switch; no additional play-time file writes, HTTP route
+or stdout records are introduced. The native runner removes only its fixed
+previous diagnostic before each launch and preserves the fresh report even on
+acceptance failure. A real child-process regression checks privacy, the public
+404 boundary, bounded output and EOF shutdown.
+
+A dedicated acceptance helper verifies the exact owned PID, executable and
+bundle before observing AppKit active/hidden/frontmost state. It records state
+before and after public certificate exports, returns once from Finder to the
+game, and requires foreground state before starting the campaign. Stall and
+failure observations never reactivate the app. No global power setting or App
+Nap override is introduced, and foreground state is not claimed as the proven
+cause of the prior delay. Wall-clock anchors correlate controller and native
+observations with the host report. Actual Mac compilation and acceptance of
+this evidence path remain required.
+
+The instrumentation candidate passes all 81 shared tests, 35 GO7 tests and 20
+non-GUI Rust tests locally. These checks establish the observation boundaries;
+they do not replace the unresolved Intel campaign or corrected setup screenshots.
+Its regenerated 200-file portable ZIP is 8,968,192 bytes, SHA-256
+`78e1bd456c1b9a45b98f8d891e0e7147f53edcc558728ff56cbb6111c7533c24`.
+The 19-dependency private bundle remains byte-identical. The production build
+and 182-file public-delivery boundary pass after regeneration.
 
 ### Complete rendered candidate and native follow-up
 
@@ -219,7 +386,8 @@ after 22.35 ms. Recovery and zero-timer shutdown passed.
 
 The exact head's Apple Silicon
 [native artifact 14680107935](https://github.com/jonathanjie/sofa-arcade/actions/runs/44839463661/artifacts/14680107935)
-records 12 orders/nine stars/zero compost in 145.413 s, transfers both ways,
+records 12 orders/nine stars/zero compost, with 145.413 s covering campaign control,
+the same-seed rematch and its pause checkpoint, transfers both ways,
 49 decoded final images, no external runtime requests, and all three real app
 processes and normal Quit checks passing. Each authenticated Node controller
 sent 2,806 inputs and received 2,907 snapshots without drops or errors. The

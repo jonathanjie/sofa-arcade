@@ -1,5 +1,6 @@
 /** Local-only composition of the reviewed simulation, room credentials and WS authority. */
 import * as simulation from '../games/gravity-orchard/engine.mjs';
+import { performance } from 'node:perf_hooks';
 import { getGame } from '../games/catalog.mjs';
 import { getGameEngine, gravityOrchardRoomEngine } from '../games/registry.mjs';
 import { createRoomApi } from './rooms.mjs';
@@ -10,7 +11,7 @@ const PUBLIC = Object.freeze({ role: 'public', playerId: null });
 const fail = code => Object.assign(new Error('The local harvest is unavailable.'), { code, status: 503 });
 
 /** All storage calls use the host's existing SQLite connection, never a second DB. */
-export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecycle, clock, seed, enabled = false }) {
+export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecycle, clock, seed, enabled = false, onRuntimeTiming }) {
   sqlite.exec(`CREATE TABLE IF NOT EXISTS sofa_gravity_checkpoints (
     code TEXT PRIMARY KEY NOT NULL REFERENCES sofa_rooms(code) ON DELETE CASCADE,
     checkpoint TEXT NOT NULL, updated_at INTEGER NOT NULL
@@ -21,6 +22,16 @@ export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecy
   let closed = false;
   let checkpointWrites = 0;
   let authority;
+
+  const measure = (operation, action) => {
+    if (!onRuntimeTiming) return action();
+    const atMs = performance.now();
+    try { return action(); }
+    finally {
+      try { onRuntimeTiming({ operation, atMs, durationMs: performance.now() - atMs }); }
+      catch { /* Optional observation cannot change persistence or authority. */ }
+    }
+  };
 
   function roomRecord(code) {
     const row = sqlite.prepare('SELECT code, data, revision, expires_at FROM sofa_rooms WHERE code = ?').get(code);
@@ -41,11 +52,11 @@ export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecy
     async saveCheckpoint(code, checkpoint) {
       // GO2 supplies a checked, private GO1 checkpoint. Project its exact saved
       // state without calling restoreCheckpoint (which deliberately changes epoch).
-      const view = simulation.project(checkpoint.engine.state, PUBLIC);
+      const view = measure('checkpoint.project', () => simulation.project(checkpoint.engine.state, PUBLIC));
       if (checkpoint.roomCode !== code || checkpoint.gameId !== GAME_ID
         || checkpoint.coordinatorSchema !== 1 || view.matchId !== checkpoint.matchId
         || view.runEpoch !== checkpoint.runEpoch) throw fail('checkpoint_invalid');
-      const encoded = JSON.stringify(checkpoint);
+      const encoded = measure('checkpoint.stringify', () => JSON.stringify(checkpoint));
       if (Buffer.byteLength(encoded) > 1024 * 1024) throw fail('checkpoint_invalid');
       const now = Date.now();
       sqlite.exec('BEGIN IMMEDIATE');
@@ -58,7 +69,7 @@ export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecy
           ON CONFLICT(code) DO UPDATE SET checkpoint = excluded.checkpoint, updated_at = excluded.updated_at`)
           .run(code, encoded, now);
         sqlite.prepare('UPDATE sofa_rooms SET data = ?, revision = revision + 1, updated_at = ? WHERE code = ?')
-          .run(JSON.stringify(data), now, code);
+          .run(measure('checkpoint.stringify', () => JSON.stringify(data)), now, code);
         sqlite.exec('COMMIT');
         checkpointWrites++;
       } catch (error) { sqlite.exec('ROLLBACK'); throw error; }

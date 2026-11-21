@@ -99,7 +99,7 @@ test('native refresh and Quit serialize with an active privileged operation and 
 test('real owned Node child exposes setup only on its inherited private pipe and shuts down on EOF', { timeout: 12000 }, async t => {
   const directory = await mkdtemp(path.join(tmpdir(), 'go7-native-pipe-'));
   const root = fileURLToPath(new URL('../../../', import.meta.url));
-  const child = spawn(process.execPath, [path.join(root, 'desktop/host/entry.mjs'), '--root', root, '--database', path.join(directory, 'rooms.sqlite'), '--port', '0', '--gravity-orchard-candidate'], { env: { PATH: '/nonexistent' }, stdio: ['pipe', 'pipe', 'ignore'] });
+  const child = spawn(process.execPath, [path.join(root, 'desktop/host/entry.mjs'), '--root', root, '--database', path.join(directory, 'rooms.sqlite'), '--port', '0', '--gravity-orchard-candidate'], { env: { PATH: '/nonexistent', SOFA_NATIVE_E2E_TIMING: '1' }, stdio: ['pipe', 'pipe', 'ignore'] });
   const records = []; let buffer = '';
   child.stdout.on('data', chunk => {
     buffer += chunk;
@@ -119,9 +119,21 @@ test('real owned Node child exposes setup only on its inherited private pipe and
   child.stdin.write(JSON.stringify({ type: 'secure', id: 'private-request-1', operation: 'getStatus', options: {} }) + '\n');
   const result = await waitRecord(value => value.type === 'secure-result');
   assert.equal(result.id, 'private-request-1'); assert.equal(result.ok, true); assert.equal(result.status.status, 'needs-setup');
+  const created = await fetch(ready.hostUrl + 'api/rooms', { method: 'POST', headers: { Origin: ready.hostUrl.slice(0, -1), 'Content-Type': 'application/json' }, body: '{}' });
+  assert.equal(created.status, 201); const room = await created.json();
   const forbidden = await fetch(ready.hostUrl + 'api/host/secure-lan', { method: 'POST', headers: { Origin: ready.hostUrl.slice(0, -1), 'Content-Type': 'application/json' }, body: JSON.stringify({ operation: 'provision' }) });
   assert.equal(forbidden.status, 404);
+  assert.equal((await fetch(ready.hostUrl + 'host-timing.json')).status, 404);
   child.stdin.end();
   assert.deepEqual(await exited, { code: 0, signal: null });
   await assert.rejects(fetch(ready.hostUrl, { signal: AbortSignal.timeout(1000) }));
+  const filename = path.join(directory, 'host-timing.json'), text = await readFile(filename, 'utf8');
+  const timing = JSON.parse(text);
+  assert.equal(timing.kind, 'native-e2e-host-runtime-timing');
+  assert.ok(timing.operations['sqlite.run'].count > 0, 'Actual room writes are observed without serializing their SQL or values');
+  assert.ok(timing.slowOperations.length <= 128); assert.ok(Buffer.byteLength(text) <= 128 * 1024);
+  assert.equal(text.includes(room.hostToken), false); assert.equal(text.includes(room.code), false);
+  assert.equal(text.includes(directory), false); assert.equal(text.includes('INSERT INTO'), false);
+  assert.equal((await stat(filename)).mode & 0o777, 0o600);
+  assert.ok(records.every(record => ['ready', 'secure-result'].includes(record.type)), 'Timing evidence must never enter the native stdout protocol');
 });

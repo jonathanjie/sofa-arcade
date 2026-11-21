@@ -4,10 +4,11 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dataDir, desktopDir, evidenceDir, exists, requireFreshProfile, saveEvidence, statusPath, waitPortClosed, waitProcessExit } from '../../../desktop/tests/native/helpers.mjs';
+import { dataDir, desktopDir, evidenceDir, exists, requireFreshProfile, runFile, saveEvidence, statusPath, waitPortClosed, waitProcessExit } from '../../../desktop/tests/native/helpers.mjs';
 
 const spec = fileURLToPath(new URL('./orchard.spec.mjs', import.meta.url));
 const fixture = path.join(evidenceDir, 'go7-native-fixture.json');
+const uiStateHelper = path.join(evidenceDir, 'go7-native-ui-state');
 let owned = false, runner;
 const phases = [];
 async function stopped() {
@@ -20,7 +21,11 @@ try {
   await requireFreshProfile(); owned = true;
   assert.ok(process.env.SOFA_APP_PATH?.endsWith('.app'), 'Native acceptance requires the actual instrumented app bundle');
   await mkdir(evidenceDir, { recursive: true });
+  // Compile before any app launches, so compiler load cannot disturb a live run.
+  await runFile('/usr/bin/swiftc', [fileURLToPath(new URL('./ui-state.swift', import.meta.url)), '-o', uiStateHelper], { timeout: 60000 });
   for (const phase of ['first', 'relaunch', 'exited']) {
+    // A failed relaunch must not inherit its predecessor's diagnostic as proof.
+    await rm(path.join(dataDir, 'host-timing.json'), { force: true });
     if (phase === 'exited') {
       const saved = JSON.parse(await readFile(fixture, 'utf8'));
       const filename = path.join(dataDir, 'config.json');
@@ -36,7 +41,7 @@ try {
       // three-stage campaign exceeds the legacy 90-second collection timeout.
       runner = spawn(process.execPath, [path.join(desktopDir, 'node_modules/@wdio/cli/bin/wdio.js'), 'run', path.join(desktopDir, 'wdio.native.mjs'), '--spec', spec, '--mochaOpts.timeout', '420000'], {
         cwd: desktopDir,
-        env: { ...process.env, SOFA_NATIVE_PHASE: `go7-${phase}`, SOFA_GO7_NATIVE_PHASE: phase, SOFA_GO7_NATIVE_FIXTURE: fixture },
+        env: { ...process.env, SOFA_NATIVE_PHASE: `go7-${phase}`, SOFA_GO7_NATIVE_PHASE: phase, SOFA_GO7_NATIVE_FIXTURE: fixture, SOFA_GO7_NATIVE_UI_HELPER: uiStateHelper },
         stdio: 'inherit',
       });
       runner.once('error', reject);
@@ -44,7 +49,19 @@ try {
     });
     runner = undefined;
     await stopped();
+    // The instrumented host writes this bounded, credential-free timing report
+    // only after stopping. Preserve it even when this phase's WebDriver test failed.
+    let timingCaptured = false;
+    try {
+      const raw = await readFile(path.join(dataDir, 'host-timing.json'), 'utf8');
+      assert.ok(Buffer.byteLength(raw) <= 1024 * 1024, 'Native host timing report must remain bounded');
+      await saveEvidence(`go7-native-host-timing-${phase}.json`, JSON.parse(raw));
+      timingCaptured = true;
+    } catch (error) {
+      await saveEvidence(`go7-native-host-timing-${phase}.json`, { captured: false, failureName: error.name, failureCode: typeof error.code === 'string' ? error.code : null });
+    }
     assert.equal(result, 0, `GO7 ${phase} WKWebView acceptance failed; inspect the actual screenshot and logs`);
+    assert.equal(timingCaptured, true, 'The instrumented native host timing report must be preserved');
     phases.push({ phase, passed: true });
   }
   await saveEvidence('go7-native.json', { schemaVersion: 1, kind: 'native-macos-WKWebView', commit: process.env.SOFA_TEST_COMMIT || null, passed: true, phases,

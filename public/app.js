@@ -3,7 +3,7 @@ import { audio } from '/audio.js?v=5';
 import { enhanceMotion } from '/motion.js?v=2';
 import { forecastOverlay, axisLabels, turnOrder, forecastLookahead } from '/board-view.mjs?v=5';
 import { createActionQueue } from '/action-queue.mjs?v=4';
-import { readTransportConfig, subscribeRoom, trustedPhoneOrigin } from '/transport.mjs?v=5';
+import { readTransportConfig, subscribeRoom, trustedPhoneOrigin, phoneSetupStatus } from '/transport.mjs?v=5';
 
 const transport = readTransportConfig();
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -386,7 +386,7 @@ async function openSecureSetup() {
     if(serial!==secureSetupSerial||epoch!==roomEpoch)return;
     const native=window.sofaDesktopSecureLan;
     secureSetupStyle=document.createElement('link');secureSetupStyle.rel='stylesheet';secureSetupStyle.href='/secure-lan/setup.css';document.head.append(secureSetupStyle);
-    const update=async fn=>{const next=await fn();secureStatus=next;return next;};
+    const update=async fn=>{const next=await fn();secureStatus=next;return phoneSetupStatus(next,transport.joinOrigin);};
     secureSetupRoot=document.createElement('div');secureSetupRoot.className='orchard-setup-layer';document.body.append(secureSetupRoot);app.inert=true;
     secureSetup=mountSecureLanSetup(secureSetupRoot,{
       getStatus:()=>update(()=>native.getStatus()),provision:options=>update(()=>native.provision(options)),

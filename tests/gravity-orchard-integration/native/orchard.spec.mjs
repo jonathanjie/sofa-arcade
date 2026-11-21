@@ -10,7 +10,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import WebSocket from 'ws';
 import { createRealtimeClient } from '../../../ui/realtime/gravity-orchard/index.mjs';
 import { createPilot } from '../../../games/gravity-orchard/validation/pilot.mjs';
-import { evidenceDir, hostStatus, joinBoth, runFile, saveEvidence } from '../../../desktop/tests/native/helpers.mjs';
+import { binaryFor, evidenceDir, hostStatus, joinBoth, runFile, saveEvidence } from '../../../desktop/tests/native/helpers.mjs';
 
 const requireDesktop = createRequire(new URL('../../../desktop/package.json', import.meta.url));
 const { browser, $ } = await import(pathToFileURL(requireDesktop.resolve('@wdio/globals')).href);
@@ -49,7 +49,40 @@ async function secureCall(operation, options = {}) {
   }, operation, options);
   assert.equal(result.ok, true, `Native secure capability failed: ${result.code}`); return result.value;
 }
-async function exportTrustThroughSetup(expectedFingerprint) {
+async function ownedNativeUIState(status, operation = 'observe') {
+  const helper = process.env.SOFA_GO7_NATIVE_UI_HELPER;
+  assert.ok(helper, 'The native UI observer must compile before the app launches');
+  const { stdout } = await runFile(helper, [operation, String(status.parentPid), binaryFor(path.resolve(process.env.SOFA_APP_PATH))], { timeout: 7000, maxBuffer: 16384 });
+  const native = JSON.parse(stdout);
+  assert.equal(native.matchesOwnedExecutable, true);
+  assert.equal(native.before.ownedPid, status.parentPid); assert.equal(native.after.ownedPid, status.parentPid);
+  const documentState = await browser.execute(() => ({ visibilityState: document.visibilityState, hasFocus: document.hasFocus() }));
+  return { ...native, document: documentState };
+}
+async function phoneLinksThroughSetup(nativeStatus) {
+  const shown = await browser.execute(() => ({
+    origins: [...document.querySelectorAll('.go6-setup .go6-origin')].map(link => link.href),
+    diagnostic: document.querySelector('.go6-setup .go6-diagnostic-link')?.href,
+    preferred: document.querySelector('meta[name="sofa-join-origin"]')?.content,
+  }));
+  const loopback = hostname => hostname === 'localhost' || hostname.endsWith('.localhost') || /^127\./.test(hostname)
+    || ['0.0.0.0', '::', '[::]', '::1', '[::1]'].includes(hostname);
+  assert.ok(shown.origins.length > 0, 'The native setup must show a phone-reachable LAN origin');
+  const origins = shown.origins.map(href => {
+    const url = new URL(href);
+    assert.equal(url.protocol, 'https:'); assert.equal(loopback(url.hostname), false, 'Phone setup must never advertise the Mac loopback address');
+    assert.equal(href, url.origin + '/', 'Phone setup links must be canonical HTTPS roots without credentials or query data');
+    assert.ok(nativeStatus.controllerOrigins.includes(url.origin), 'Every displayed phone link must belong to the actual validated native listener');
+    return url.origin;
+  });
+  assert.equal(new Set(origins).size, origins.length);
+  const preferredHostname = new URL(shown.preferred).hostname;
+  assert.equal(loopback(preferredHostname), false, 'This actual Mac runner must supply a preferred LAN host for phones');
+  assert.equal(new URL(origins[0]).hostname, preferredHostname, 'Setup must prioritize the same LAN host as the shared phone join link');
+  assert.equal(shown.diagnostic, origins[0] + '/secure-lan/diagnostic', 'The motion check must use the displayed preferred phone origin');
+  return { controllerOrigins: origins, preferredHostname, diagnostic: shown.diagnostic };
+}
+async function exportTrustThroughSetup(expectedFingerprint, observeNativeUI) {
   const downloads = path.join(homedir(), 'Downloads');
   const owned = [], exports = [];
   try {
@@ -64,6 +97,7 @@ async function exportTrustThroughSetup(expectedFingerprint) {
         document.querySelector('.go6-setup')?.getAttribute('aria-busy') === 'false'
         && document.querySelector('.go6-notice')?.textContent.startsWith('Public certificate exported.')),
       { timeout: 15000, timeoutMsg: 'Actual WKWebView setup must finish its public export without a download error' });
+      await observeNativeUI(`after-public-export-${format}`);
       const created = (await readdir(downloads)).filter(name => !before.has(name) && /^(?:\d+-)?sofa-arcade-/.test(name));
       assert.equal(created.length, 1, 'The settled native setup must export exactly one new public file per action');
       const [filename] = created;
@@ -119,7 +153,7 @@ function publicDiagnostic(snapshot) {
     players: Object.fromEntries(playerIds.map(id => [id, { input: { ...view.players[id].input } }])),
     presence: Object.fromEntries(playerIds.map(id => [id, { connected: snapshot.presence[id].connected, inputFresh: snapshot.presence[id].inputFresh }])) };
 }
-async function controllers(origin, code, tokens) {
+async function controllers(origin, code, tokens, observeNativeUI) {
   const latest = {}, clients = {}, states = {}, lastActive = {}, history = [], historyKeys = {};
   const connectedAt = Date.now();
   class OwnedSocket extends WebSocket { constructor(url) { super(url, { origin }); } }
@@ -143,8 +177,8 @@ async function controllers(origin, code, tokens) {
     const result = await clients[playerId].sendCommand({ id: crypto.randomUUID(), kind, payload });
     assert.equal(result.accepted, true, `Native controller ${kind} rejected: ${result.code}`); return result;
   };
-  return { latest, clients, states, lastActive, command,
-    diagnostics: () => ({ states: { ...states }, phaseHistory: structuredClone(history),
+  return { latest, clients, states, lastActive, command, observeNativeUI, controllerStartedAtEpochMs: connectedAt,
+    diagnostics: () => ({ controllerStartedAtEpochMs: connectedAt, states: { ...states }, phaseHistory: structuredClone(history),
       latest: Object.fromEntries(playerIds.map(id => [id, publicDiagnostic(latest[id])])),
       stats: Object.fromEntries(playerIds.map(id => [id, clients[id].getStats()])) }),
     dispose() { for (const client of Object.values(clients)) client.dispose(); } };
@@ -192,6 +226,7 @@ async function recoverObservedHostStall(control, recoveries, deadline) {
   };
   await within(() => waitFor(() => playerIds.every(id => control.latest[id].view.phase === 'paused' && control.latest[id].view.runEpoch === paused.runEpoch), 'Both controllers must observe the same host-stall epoch'));
   assertFrozen({ jon: false, lydia: false });
+  evidence.nativeUI = await within(() => control.observeNativeUI('observed-host-stall'));
   const beforeSeq = Object.fromEntries(playerIds.map(id => [id, control.latest[id].serverSeq]));
   await within(async () => { await visible('.go-tv[data-go-phase="paused"]'); await screenshot('observed-host-stall'); });
   await within(() => waitFor(() => freshControllers(control, paused.matchId, paused.runEpoch)
@@ -241,6 +276,15 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
     this.timeout(420000);
     const status = await mainWindow();
     const origin = `http://127.0.0.1:${status.port}`;
+    const nativeUIObservations = [], uiObservedAt = Date.now();
+    const observeNativeUI = async (label, operation = 'observe') => {
+      const observedAtEpochMs = Date.now(), state = await ownedNativeUIState(status, operation);
+      const observation = { label, elapsedMs: observedAtEpochMs - uiObservedAt, observedAtEpochMs, completedAtEpochMs: Date.now(), ...state };
+      nativeUIObservations.push(observation);
+      await saveEvidence(`go7-native-ui-state-${phase}.json`, { phase, observations: nativeUIObservations });
+      return observation;
+    };
+    await observeNativeUI('initial-native-window');
     assert.equal(await browser.execute(() => typeof window.__TAURI__), 'undefined');
     const genericNativeDenied = await browser.executeAsync(done => {
       if (!window.__TAURI_INTERNALS__?.invoke) { done(true); return; }
@@ -254,7 +298,7 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
       assert.equal(await browser.execute(() => !!document.querySelector('.go-tv')), false);
       assert.equal((await secureCall('getStatus')).status, 'disabled');
       await screenshot('exited');
-      await saveEvidence('go7-native-exited.json', { passed: true, explicitExitSurvivedStaleNativeURL: true, secureDisablePersisted: true });
+      await saveEvidence('go7-native-exited.json', { passed: true, explicitExitSurvivedStaleNativeURL: true, secureDisablePersisted: true, nativeUIObservations });
       return;
     }
     if (phase === 'relaunch') {
@@ -272,7 +316,7 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
       await secureCall('remove', { mode: 'disable' });
       await $('[data-go-action="exit"]').click(); await visible('.arcade-home');
       await screenshot('explicit-exit');
-      await saveEvidence('go7-native-relaunch.json', { passed: true, persistentWKStorage: true, pausedRecoveryWithFreshEpoch: true, secureRootAndEnabledPreferencePersisted: true, explicitExit: true });
+      await saveEvidence('go7-native-relaunch.json', { passed: true, persistentWKStorage: true, pausedRecoveryWithFreshEpoch: true, secureRootAndEnabledPreferencePersisted: true, explicitExit: true, nativeUIObservations });
       return;
     }
 
@@ -292,10 +336,15 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
     assert.equal(secure.status, 'ready'); assert.equal(secure.requiresPhoneTrust, true);
     assert.ok(secure.controllerOrigins.every(raw => new URL(raw).protocol === 'https:'));
     assert.equal(await $('.go6-fingerprint').getText(), secure.certificateFingerprint);
-    const publicExports = await exportTrustThroughSetup(secure.certificateFingerprint);
+    const phoneSetupLinks = await phoneLinksThroughSetup(secure);
+    await observeNativeUI('before-public-exports');
+    const publicExports = await exportTrustThroughSetup(secure.certificateFingerprint, observeNativeUI);
     const closeSetup = await $('.go6-setup [aria-label="Close setup"]');
     await closeSetup.scrollIntoView({ block: 'center' }); await closeSetup.click();
     await browser.waitUntil(() => browser.execute(() => !document.querySelector('.go6-setup') && !document.querySelector('#app')?.inert));
+    const returned = await observeNativeUI('return-from-export-to-game', 'activate');
+    assert.equal(returned.after.isActive, true); assert.equal(returned.after.isFrontmost, true);
+    assert.equal(returned.after.isHidden, false); assert.equal(returned.after.isTerminated, false);
     const createButton = await $('[data-action="create"]');
     await createButton.scrollIntoView({ block: 'center' }); await createButton.click();
     await visible('.room-code');
@@ -303,10 +352,13 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
     const tokens = await joinBoth(origin, code);
     await browser.waitUntil(() => browser.execute(() => document.querySelector('[data-action="start"]')?.disabled === false));
     await $('[data-action="start"]').click(); await visible('.go-tv');
-    const control = await controllers(origin, code, tokens);
+    const control = await controllers(origin, code, tokens, observeNativeUI);
     const campaignStarted = Date.now(), observedHostStallRecoveries = [];
     let timer;
     try {
+      const foreground = await observeNativeUI('before-campaign');
+      assert.equal(foreground.after.isActive, true); assert.equal(foreground.after.isFrontmost, true);
+      assert.equal(foreground.after.isHidden, false);
       const pilot = createPilot();
       const seenEvents = new Set(), spawnOwners = new Map(), transfers = new Set();
       timer = setInterval(() => {
@@ -331,6 +383,7 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
       clearInterval(timer); timer = undefined;
       const finished = control.latest.jon.view;
       assert.equal(finished.phase, 'finished'); assert.equal(finished.results.length, 3);
+      const campaignCompletedAtEpochMs = Date.now();
       assert.ok(finished.results.reduce((sum, result) => sum + result.ordersCompleted, 0) > 0, 'Native campaign must actually fill picnic orders');
       assert.deepEqual([...transfers].sort(), ['jon>lydia', 'lydia>jon']);
       await visible('.go-tv[data-go-phase="finished"]'); await screenshot('results');
@@ -355,13 +408,31 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
       await browser.execute(marker => localStorage.setItem('go7-native-marker', marker), marker);
       await writeFile(fixture, JSON.stringify({ code, origin, parentPid: status.parentPid, matchId: paused.state.matchId, runEpoch: paused.state.runEpoch, certificateFingerprint: secure.certificateFingerprint, marker }) + '\n', { mode: 0o600 });
       await screenshot('paused-checkpoint');
-      await saveEvidence('go7-native-first.json', { passed: true, kind: 'native-macos-WKWebView', campaignSeconds: (Date.now() - campaignStarted) / 1000, results: finished.results, transfers: [...transfers], decodedAssets: moduleEvidence.decodedAssets, externalRuntimeRequests: moduleEvidence.external, secureSetupViaNativeCapability: true, integratedSetupButtons: true, publicExports, trustInstallationAttempted: false, generalNativePermissionsDenied: true, sameSeedRematch: true, observedHostStallRecoveries, controllerStats: Object.fromEntries(Object.entries(control.clients).map(([id, client]) => [id, client.getStats()])), controllerTimeline: control.diagnostics().phaseHistory });
+      const completedAtEpochMs = Date.now();
+      const campaignRematchAndPauseSeconds = (completedAtEpochMs - campaignStarted) / 1000;
+      await saveEvidence('go7-native-first.json', {
+        passed: true, kind: 'native-macos-WKWebView',
+        campaignSeconds: campaignRematchAndPauseSeconds,
+        campaignSecondsDescription: 'Legacy alias of campaignRematchAndPauseSeconds; not the three-stage campaign duration.',
+        campaignCompletionSeconds: (campaignCompletedAtEpochMs - campaignStarted) / 1000,
+        campaignRematchAndPauseSeconds,
+        timing: {
+          clock: 'Date.now wall clock', startedAtEpochMs: campaignStarted, campaignCompletedAtEpochMs, completedAtEpochMs,
+          start: 'Controllers connected, before the foreground check and initial ready commands.',
+          campaignCompletion: 'The three-stage finished state was observed, before result screenshot and asset checks.',
+          completion: 'Result/asset checks, same-seed rematch, saved pause and paused-checkpoint screenshot completed.',
+          excluded: 'Secure setup/public exports, later app relaunches and owned-process Quit.',
+        },
+        controllerStartedAtEpochMs: control.controllerStartedAtEpochMs, results: finished.results, transfers: [...transfers], decodedAssets: moduleEvidence.decodedAssets, externalRuntimeRequests: moduleEvidence.external, secureSetupViaNativeCapability: true, integratedSetupButtons: true, phoneSetupLinks, publicExports, trustInstallationAttempted: false, generalNativePermissionsDenied: true, sameSeedRematch: true, observedHostStallRecoveries, nativeUIObservations, controllerStats: Object.fromEntries(Object.entries(control.clients).map(([id, client]) => [id, client.getStats()])), controllerTimeline: control.diagnostics().phaseHistory,
+      });
     } catch (error) {
       // Preserve the actual failing presence/phase before dispose intentionally
       // disconnects the test controllers. The generic WDIO screenshot follows
       // cleanup and cannot diagnose the original transport or pause state.
       const diagnostic = { passed: false, capturedBeforeDisposal: true, elapsedMs: Date.now() - campaignStarted,
         failureName: error.name, observedHostStallRecoveries, ...control.diagnostics() };
+      try { diagnostic.nativeUI = await observeNativeUI('failure-before-disposal'); } catch { diagnostic.nativeUI = { unavailable: true }; }
+      diagnostic.nativeUIObservations = nativeUIObservations;
       try { await saveEvidence('go7-native-pre-disposal-failure.json', diagnostic); } catch { /* Retain the original acceptance failure. */ }
       try { await screenshot('pre-disposal-failure'); } catch { /* Never fabricate a failed screenshot. */ }
       throw error;

@@ -54,10 +54,10 @@
       "postHandoffCorrections": [
         {
           "path": "server/lan.mjs",
-          "blob": "9b523067ce37677830353f1eceaf2a47c1514a39",
+          "blob": "01a311b079e89fc31cb013ed9aaabd6789cd0612",
           "mode": "100644",
-          "reason": "Extend only explicit serving entries for shared adapters, reviewed public game/UI/media files and exact static assets; the menu-audio follow-up adds exactly /media/sofa-menu/score.mjs and effects.mjs. Canonicalization, Host/Origin/API/SSE logic remain as reviewed. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9. GO7: mount one shared authoritative coordinator on the existing HTTP upgrade path, serve only explicitly inventoried browser assets, and expose narrow shared HTTPS lifecycle seams.",
-          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+          "reason": "Extend only explicit serving entries for shared adapters, reviewed public game/UI/media files and exact static assets; the menu-audio follow-up adds exactly /media/sofa-menu/score.mjs and effects.mjs. Canonicalization, Host/Origin/API/SSE logic remain as reviewed. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9. GO7: mount one shared authoritative coordinator on the existing HTTP upgrade path, serve only explicitly inventoried browser assets, and expose narrow shared HTTPS lifecycle seams. Add optional fixed-label timing around the same SQLite connection and realtime clock, without changing uninstrumented objects or scheduling.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit. The 35 GO7 tests include two timing regressions covering disk-backed SQLite, heartbeat, both clocks and observer failure isolation."
         },
         {
           "path": "server/rooms.mjs",
@@ -68,10 +68,10 @@
         },
         {
           "path": "ui/transport.mjs",
-          "blob": "b84bd7682abb5924a077124611fad9c31d9b4d9c",
+          "blob": "ea727ac90c4402df361584cccb66f8ac1d6daa76",
           "mode": "100644",
-          "reason": "GO7: preserve legacy lifecycle transport while reporting the optional trusted controller URL and integration-candidate flag.",
-          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+          "reason": "GO7: preserve legacy lifecycle transport while reporting the optional trusted controller URL and integration-candidate flag. Actual GO7 Mac setup screenshots exposed loopback phone links and a loopback motion-check URL. Share canonical, non-loopback LAN origin selection between QR and the display-only setup status; retain the full native status, certificate identities and listener allowlist.",
+          "verification": "All 13 focused GO7 bridge tests pass, including immutable native status, canonical-origin rejection, preferred-LAN ordering, disabled/error suppression and no-LAN safe display. Independent authority review found no source blocker. Native DOM assertions require every setup link to be a member of the actual native allowlist and the motion-check URL to use the preferred LAN origin; corrected actual Mac evidence remains a required gate."
         }
       ],
       "review": {
@@ -227,10 +227,10 @@
         },
         {
           "path": "desktop/host/entry.mjs",
-          "blob": "664c157731a0787987e1722ecdbc071678b0678f",
+          "blob": "94a7bd6d1226cdd6342e68c6548686e14faa3039",
           "mode": "100644",
-          "reason": "GO7: accept private native secure-setup commands over the existing owned process pipe, and opt the native acceptance build into the planned candidate.",
-          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+          "reason": "GO7: accept private native secure-setup commands over the existing owned process pipe, and opt the native acceptance build into the planned candidate. Record bounded acceptance-only numeric host timing in memory and write a private file after owned shutdown; expose no diagnostic over HTTP or the native stdout protocol.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit. The actual owned child regression verifies private mode, bounded output, no room/token/path contents, public 404 and EOF shutdown."
         },
         {
           "path": "desktop/host/lifecycle.mjs",
@@ -514,10 +514,10 @@
         },
         {
           "path": "desktop/src-tauri/src/process.rs",
-          "blob": "b883e79e2b8de725acf3c0e7f87d451dd7715ed1",
+          "blob": "f617322625e696f991aa1c9264d1b5e3b1c2c7b9",
           "mode": "100644",
-          "reason": "GO7: pass only the explicit native-test candidate flag to the owned sidecar; production follows the shared catalog state.",
-          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+          "reason": "GO7: pass only the explicit native-test candidate flag to the owned sidecar; production follows the shared catalog state. Pass the fixed private runtime-timing switch only in the native-e2e build; production environment clearing prevents inheritance.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit. All 20 non-GUI Rust tests pass, including explicit production-switch exclusion."
         },
         {
           "path": "desktop/src-tauri/src/protocol.rs",

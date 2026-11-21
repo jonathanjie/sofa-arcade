@@ -3,11 +3,21 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createOrchardAssets, createOrchardSound, mountGravityOrchard, realtimeURL } from '../../../ui/games/gravity-orchard/index.mjs';
 import { MANIFEST } from '../../../ui/media/gravity-orchard/manifest.mjs';
-import { readTransportConfig, trustedPhoneOrigin } from '../../../ui/transport.mjs';
+import { phoneSetupStatus, readTransportConfig, trustedPhoneOrigin } from '../../../ui/transport.mjs';
 
 const waiting = JSON.parse(await readFile(new URL('../../../games/gravity-orchard/fixtures/projected/waiting.json', import.meta.url)));
 const publicView = waiting.view || waiting;
 const tick = () => new Promise(resolve => queueMicrotask(resolve));
+const unusablePhoneOrigins = [
+  'https://127.0.0.1:4178', 'https://127.42.0.8:4178', 'https://[::1]:4178',
+  'https://[::ffff:7f00:1]:4178', 'https://localhost:4178', 'https://phone.localhost:4178',
+  'https://localhost.:4178', 'https://phone.localhost.:4178', 'https://0.0.0.0:4178', 'https://[::]:4178',
+  'http://192.168.1.7:4177', 'wss://192.168.1.7:4178', 'not an origin',
+  'https://user@192.168.1.7:4178', 'https://user:password@192.168.1.7:4178',
+  'https://192.168.1.7:4178/', 'https://192.168.1.7:4178/motion-check',
+  'https://192.168.1.7:4178?room=ABC234', 'https://192.168.1.7:4178#setup',
+  'HTTPS://192.168.1.7:4178', 'https://192.168.1.7:443', ' https://192.168.1.7:4178',
+];
 
 function harness(role = 'host') {
   const events = [], mounts = [], sent = [], input = [], snapshots = [];
@@ -71,6 +81,36 @@ test('trusted phone QR chooses the current LAN address and excludes local-only o
   assert.equal(trustedPhoneOrigin({...status,status:'disabled'},'http://192.168.1.7:4177'),null);
   assert.equal(trustedPhoneOrigin({status:'ready',controllerOrigins:['https://127.0.0.1:4178','https://[::1]:4178','https://localhost:4178','http://192.168.1.7:4177']},'http://127.0.0.1:4177'),null);
   assert.equal(trustedPhoneOrigin({status:'ready',controllerOrigins:['https://jon-mac.local:4178']},'http://jon-mac.local:4177'),'https://jon-mac.local:4178');
+  for(const origin of unusablePhoneOrigins){
+    assert.equal(trustedPhoneOrigin({status:'ready',controllerOrigins:[origin]},'http://192.168.1.7:4177'),null,origin);
+  }
+});
+
+test('phone setup narrows native status to usable canonical HTTPS origins without changing listener or certificate state', () => {
+  const preferred='https://192.168.1.7:4178',other='https://192.168.2.8:4178',named='https://jon-mac.local:4178';
+  const certificate={enabled:true,requiresPhoneTrust:true,certificateFingerprint:Array(32).fill('AB').join(':'),validUntil:'2027-02-19T00:00:00.000Z'};
+  const native=Object.freeze({...certificate,status:'ready',controllerOrigins:Object.freeze([...unusablePhoneOrigins,other,preferred,named])});
+  const original=structuredClone(native);
+  const display=phoneSetupStatus(native,'http://192.168.1.7:4177');
+  assert.notEqual(display,native,'GO6 receives a separate display status');
+  assert.deepEqual(display,{...certificate,status:'ready',controllerOrigins:[preferred,other,named]});
+  assert.equal(trustedPhoneOrigin(display,'http://192.168.1.7:4177'),display.controllerOrigins[0],'QR and motion check choose the same reachable address');
+  assert.deepEqual(phoneSetupStatus(native,'http://127.0.0.1:4177').controllerOrigins,[other,preferred,named]);
+  assert.deepEqual(native,original,'The native listener status, origin order and certificate identity remain unchanged');
+
+  const loopbackOnly=Object.freeze({...native,controllerOrigins:Object.freeze([...unusablePhoneOrigins])});
+  const unavailable=phoneSetupStatus(loopbackOnly,'http://127.0.0.1:4177');
+  assert.equal(unavailable.status,'failed');assert.deepEqual(unavailable.controllerOrigins,[]);
+  for(const [key,value] of Object.entries(certificate))assert.equal(unavailable[key],value,key);
+  assert.equal(loopbackOnly.status,'ready');assert.deepEqual(loopbackOnly.controllerOrigins,unusablePhoneOrigins);
+
+  for(const state of ['disabled','failed','error']){
+    const inactive=Object.freeze({...native,status:state});
+    const result=phoneSetupStatus(inactive,'http://192.168.1.7:4177');
+    assert.equal(result.status,state);assert.deepEqual(result.controllerOrigins,[],state);
+    for(const [key,value] of Object.entries(certificate))assert.equal(result[key],value,`${state}: ${key}`);
+    assert.deepEqual(inactive.controllerOrigins,original.controllerOrigins);
+  }
 });
 
 test('one authenticated realtime client forwards presence before views and survives whole-run rematches', () => {

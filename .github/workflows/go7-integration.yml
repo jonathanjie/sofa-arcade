@@ -170,6 +170,8 @@ jobs:
           sw_vers >> "$SOFA_EVIDENCE_DIR/runner.txt"
       - run: npm run install:ci
       - run: npm ci --prefix desktop --ignore-scripts --no-audit --no-fund
+      - name: Typecheck the bounded native foreground observer
+        run: /usr/bin/swiftc -typecheck tests/gravity-orchard-integration/native/ui-state.swift
       - name: Production dependency graph excludes the native test driver
         run: |
           cargo tree --locked --manifest-path desktop/src-tauri/Cargo.toml --edges normal > "$SOFA_EVIDENCE_DIR/production-dependencies.txt"

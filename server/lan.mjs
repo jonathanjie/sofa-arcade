@@ -2,6 +2,7 @@
 import { createServer } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { networkInterfaces } from 'node:os';
+import { performance } from 'node:perf_hooks';
 import { readFile, readdir, mkdir, realpath, chmod, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -152,9 +153,65 @@ function escapeAttribute(value) {
   return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 }
 
-async function openDatabase(filename, root) {
+/** Optional host-only observations: never include SQL, bindings, results or paths. */
+function observeSqlite(database, onRuntimeTiming) {
+  if (!onRuntimeTiming) return database;
+  const measure = (operation, action) => {
+    const atMs = performance.now();
+    try { return action(); }
+    finally {
+      try { onRuntimeTiming({ operation, atMs, durationMs: performance.now() - atMs }); }
+      catch { /* Diagnostics cannot alter the database result or exception. */ }
+    }
+  };
+  const statement = value => new Proxy(value, { get(target, key) {
+    const method = Reflect.get(target, key, target);
+    if (typeof method !== 'function') return method;
+    if (['get', 'all', 'run'].includes(key)) return (...args) => measure(`sqlite.${key}`, () => Reflect.apply(method, target, args));
+    return method.bind(target);
+  } });
+  return new Proxy(database, { get(target, key) {
+    const method = Reflect.get(target, key, target);
+    if (typeof method !== 'function') return method;
+    if (key === 'prepare') return (...args) => statement(measure('sqlite.prepare', () => Reflect.apply(method, target, args)));
+    if (key === 'exec') return (...args) => {
+      const command = typeof args[0] === 'string' ? args[0].trim().toUpperCase() : '';
+      const operation = command === 'BEGIN' || command === 'BEGIN IMMEDIATE' ? 'sqlite.begin'
+        : command === 'COMMIT' ? 'sqlite.commit' : command === 'ROLLBACK' ? 'sqlite.rollback' : 'sqlite.exec';
+      return measure(operation, () => Reflect.apply(method, target, args));
+    };
+    return method.bind(target);
+  } });
+}
+
+/** Preserve handles, cancellation, receiver and clock values while observing callbacks. */
+function observeRealtimeClock(clock, onRuntimeTiming) {
+  if (!onRuntimeTiming) return clock;
+  const source = clock === undefined ? {
+    now: () => performance.now(), setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: handle => clearTimeout(handle),
+  } : clock;
+  // Let the coordinator retain its existing validation/error for an invalid clock.
+  if (['now', 'setTimeout', 'clearTimeout'].some(key => typeof source?.[key] !== 'function')) return clock;
+  return {
+    now: () => source.now(),
+    setTimeout(fn, delayMs) {
+      const dueAt = source.now() + delayMs;
+      return source.setTimeout(function (...args) {
+        const atMs = performance.now(), lateByMs = Math.max(0, source.now() - dueAt);
+        try { return Reflect.apply(fn, this, args); }
+        finally {
+          try { onRuntimeTiming({ operation: 'realtime.timer', atMs, durationMs: performance.now() - atMs, delayMs, lateByMs }); }
+          catch { /* Diagnostics cannot alter scheduling or callback failures. */ }
+        }
+      }, delayMs);
+    },
+    clearTimeout: handle => source.clearTimeout(handle),
+  };
+}
+
+async function openDatabase(filename, root, onRuntimeTiming) {
   if (filename !== ':memory:') await mkdir(path.dirname(filename), { recursive: true, mode: 0o700 });
-  const sqlite = new DatabaseSync(filename);
+  const sqlite = observeSqlite(new DatabaseSync(filename), onRuntimeTiming);
   try {
     sqlite.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
     sqlite.exec('CREATE TABLE IF NOT EXISTS sofa_lan_migrations (name TEXT PRIMARY KEY NOT NULL)');
@@ -231,14 +288,16 @@ export async function startLanServer({
   enableGravityOrchard = getGame('gravity-orchard')?.status === 'playable',
   realtimeClock,
   realtimeSeed,
+  onRuntimeTiming,
 } = {}) {
   if (roomApi !== undefined && typeof roomApi !== 'function') throw new TypeError('roomApi must be an authoritative request handler.');
   if (realtimeSeed !== undefined && (typeof realtimeSeed !== 'string' || !/^[A-Za-z0-9._:-]{1,128}$/.test(realtimeSeed))) throw new TypeError('Invalid realtime seed.');
   if (typeof enableGravityOrchard !== 'boolean') throw new TypeError('enableGravityOrchard must be boolean.');
   if (!Number.isFinite(heartbeatMs) || heartbeatMs < 1) throw new TypeError('heartbeatMs must be positive.');
+  if (onRuntimeTiming !== undefined && typeof onRuntimeTiming !== 'function') throw new TypeError('onRuntimeTiming must be a function.');
   root = await realpath(root);
   const sources = await browserSources(root, browserModules);
-  const { sqlite, DB } = await openDatabase(databasePath, root);
+  const { sqlite, DB } = await openDatabase(databasePath, root, onRuntimeTiming);
   const addresses = localAddresses();
   const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]', ...addresses]);
   const streams = new Map();
@@ -314,7 +373,8 @@ export async function startLanServer({
     requestPolicy = policy;
     return structuredClone(secureStatus);
   }
-  const orchard = createGravityOrchardHost({ sqlite, DB, enabled: enableGravityOrchard, clock: realtimeClock, seed: realtimeSeed,
+  const orchard = createGravityOrchardHost({ sqlite, DB, enabled: enableGravityOrchard,
+    clock: observeRealtimeClock(realtimeClock, onRuntimeTiming), seed: realtimeSeed, onRuntimeTiming,
     validateUpgrade: request => !closed && requestPolicy?.validateUpgrade(request) === true,
     onLifecycle: ({ roomCode }) => {
       if (!closed) for (const client of streams.get(roomCode) || []) void push(client);

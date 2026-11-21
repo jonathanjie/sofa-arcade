@@ -12,21 +12,40 @@ export function readTransportConfig({ document: doc = globalThis.document, origi
   return Object.freeze({ mode, joinOrigin, realtime: mode === 'lan', ...(orchard ? {gravityOrchard: true} : {}) });
 }
 
-/** A phone QR must never point at the Mac's own loopback listener. */
-export function trustedPhoneOrigin(status, preferredOrigin) {
-  if (status?.status !== 'ready' || !Array.isArray(status.controllerOrigins)) return null;
+/** Keep native listener identities intact; phones receive only usable LAN links. */
+function phoneControllerOrigins(status, preferredOrigin) {
+  if (status?.status !== 'ready' || status.enabled === false || !Array.isArray(status.controllerOrigins)) return [];
   let preferredHostname = '';
   try { preferredHostname = new URL(preferredOrigin).hostname; } catch {}
   const candidates = status.controllerOrigins.flatMap(value => {
     try {
+      if (typeof value !== 'string' || value.length > 300) return [];
       const url = new URL(value), host = url.hostname.toLowerCase();
-      if (url.protocol !== 'https:' || url.username || url.password ||
-          host === 'localhost' || host.endsWith('.localhost') || /^127\./.test(host) ||
-          ['0.0.0.0', '::', '[::]', '::1', '[::1]'].includes(host)) return [];
+      if (url.protocol !== 'https:' || value !== url.origin || url.username || url.password ||
+          url.search || url.hash || url.pathname !== '/') return [];
+      const ip = host.split('.').map(Number);
+      const localV4 = /^\d+\.\d+\.\d+\.\d+$/.test(host) && ip.every(part => Number.isInteger(part) && part >= 0 && part <= 255)
+        && (ip[0] === 10 || (ip[0] === 172 && ip[1] >= 16 && ip[1] <= 31) || (ip[0] === 192 && ip[1] === 168) || (ip[0] === 169 && ip[1] === 254));
+      const localName = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+local$/.test(host);
+      const localV6 = /^\[(?:f[cd][0-9a-f]{2}|fe[89ab][0-9a-f]):[0-9a-f:]+\]$/.test(host);
+      if (!localV4 && !localName && !localV6) return [];
       return [url];
     } catch { return []; }
   });
-  return (candidates.find(url => url.hostname === preferredHostname) || candidates[0])?.origin || null;
+  candidates.sort((a, b) => Number(b.hostname === preferredHostname) - Number(a.hostname === preferredHostname));
+  return [...new Set(candidates.map(url => url.origin))];
+}
+
+/** A phone QR must never point at the Mac's own loopback listener. */
+export function trustedPhoneOrigin(status, preferredOrigin) {
+  return phoneControllerOrigins(status, preferredOrigin)[0] || null;
+}
+
+/** Presentation only: do not replace native authority/status with this projection. */
+export function phoneSetupStatus(status, preferredOrigin) {
+  const controllerOrigins = phoneControllerOrigins(status, preferredOrigin);
+  return { ...status, controllerOrigins,
+    status: status?.status === 'ready' && !controllerOrigins.length ? 'failed' : status?.status };
 }
 
 /** Handles arbitrary UTF-8/text chunk boundaries in a server-sent event stream. */
