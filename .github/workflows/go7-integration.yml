@@ -169,10 +169,24 @@ jobs:
           NODE
       - name: Build separate instrumented native acceptance app
         run: npm --prefix desktop run build:native:${{ matrix.suffix }}
+      - name: Record what already listens on the game ports
+        run: |
+          # Tilt setup listens on 4178 and the game host on 4177. A busy port on
+          # a runner would make setup fail, so record it before the test.
+          lsof -nP -iTCP:4177-4178 -sTCP:LISTEN > "$SOFA_EVIDENCE_DIR/ports-before.txt" 2>&1 || true
+          cat "$SOFA_EVIDENCE_DIR/ports-before.txt"
       - name: Actual WKWebView game, trusted setup, recovery and three-process Quit/relaunch
         run: node tests/gravity-orchard-integration/native/run.mjs
         env:
           SOFA_APP_PATH: ${{ github.workspace }}/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/Sofa Arcade.app
+      - name: Tilt setup diagnostics after a failure
+        if: failure()
+        run: |
+          # The host writes only a short fixed-vocabulary code here, such as
+          # PROVISION_FAILED:EADDRINUSE. No messages, paths or certificate data.
+          cat "$HOME/Library/Application Support/com.sofaarcade.desktop/secure-lan-last-error.json" 2>/dev/null \
+            | tee "$SOFA_EVIDENCE_DIR/secure-lan-last-error.json" || echo 'No tilt setup error was recorded.'
+          lsof -nP -iTCP:4177-4178 -sTCP:LISTEN 2>&1 | tee "$SOFA_EVIDENCE_DIR/ports-after.txt" || true
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

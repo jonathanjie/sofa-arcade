@@ -18759,6 +18759,7 @@ function createRequestPolicy({ httpOrigins = [], httpsOrigins = [], upgradePath 
 
 // server/secure-lan/host-capabilities.mjs
 var STATES = /* @__PURE__ */ new Set(["certificate-expired", "address-mismatch", "failed"]);
+var DIAGNOSTIC_SYSTEM_CODES = /* @__PURE__ */ new Set(["EADDRINUSE", "EADDRNOTAVAIL", "EACCES", "EPERM", "ENOENT", "ENOSPC", "EROFS", "ETIMEDOUT"]);
 var OPERATIONS = /* @__PURE__ */ new Set(["start", "provision", "exportPublicTrust", "remove"]);
 var LISTENER_CODES = /* @__PURE__ */ new Set(["tls_client_rejected", "request_rejected", "request_failed", "upgrade_failed", "certificate_expired", "listener_failed", "close_failed"]);
 function failure(code) {
@@ -18847,6 +18848,7 @@ function createSecureLanHost({
     } catch {
     }
   };
+  const causeCode = (error, fallback) => DIAGNOSTIC_SYSTEM_CODES.has(error?.code) ? `${fallback}:${error.code}` : fallback;
   const assertOpen = () => {
     if (disposed) throw failure("HOST_CLOSED");
   };
@@ -18974,7 +18976,7 @@ function createSecureLanHost({
           await stopListener();
           return await startExisting();
         } catch (error) {
-          report2("START_FAILED");
+          report2(causeCode(error, "START_FAILED"));
           return snapshot(disposed ? "disabled" : STATES.has(error?.status) ? error.status : "failed");
         }
       });
@@ -19001,7 +19003,7 @@ function createSecureLanHost({
         } catch (error) {
           await stopListener();
           snapshot(disposed ? "disabled" : STATES.has(error?.status) ? error.status : "failed");
-          report2("PROVISION_FAILED");
+          report2(causeCode(error, "PROVISION_FAILED"));
           throw failure(disposed ? "HOST_CLOSED" : "PROVISION_FAILED");
         }
       });

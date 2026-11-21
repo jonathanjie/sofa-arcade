@@ -147,7 +147,7 @@ try {
     await page.keyboard.press('Escape'); assert.equal(await page.getByRole('dialog').isVisible(), false);
     assert.deepEqual(await page.evaluate(() => window.__go6Fixture.operations), []);
     await page.getByRole('button', { name: 'Start over with a new setup…', exact: true }).click();
-    await page.getByRole('button', { name: 'Start over' }).click();
+    await page.getByRole('button', { name: 'Yes, start over', exact: true }).click();
     assert.deepEqual(await page.evaluate(() => window.__go6Fixture.operations), [{ operation: 'replace-root', result: 'simulated-success' }]);
     await page.getByRole('button', { name: 'Remove the setup from this Mac', exact: true }).click();
     await page.getByRole('button', { name: 'Remove setup', exact: true }).click();

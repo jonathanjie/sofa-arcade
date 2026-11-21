@@ -264,7 +264,7 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
     confirmationCopy.textContent = choice === 'remove'
       ? 'This turns tilt off and deletes the setup from this Mac. Touch controls still work. Remove Sofa Arcade from each phone yourself.'
       : 'Both phones will need to be set up again. Use this only if refreshing does not help.';
-    confirm.textContent = choice === 'remove' ? 'Remove setup' : 'Start over';
+    confirm.textContent = choice === 'remove' ? 'Remove setup' : 'Yes, start over';
     content.inert = true; header.inert = true; footer.inert = true;
     cancel.focus();
   }

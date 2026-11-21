@@ -96,7 +96,7 @@ describe(`Sofa Arcade actual native macOS window (${phase})`, () => {
     await screenshot('native-collection.png');
     await $('[data-action="open-game"][data-game="sofa-kingdoms"]').click();
     await waitRendered('[data-action="create"]', { scrollIntoView: true });
-    assert.match(await $('.lan-mode-label').getText(), /Local Wi-Fi/);
+    assert.match(await $('.lan-mode-label').getText(), /Home Wi-Fi/);
     await $('[data-action="create"]').click();
     await waitRendered('.room-code');
     const code = await browser.execute(() => document.querySelector('.room-code')?.textContent.trim());

@@ -3,8 +3,8 @@
   "builder": "esbuild@0.28.0",
   "output": {
     "path": "server/runtime/gravity-orchard-dependencies.mjs",
-    "bytes": 703336,
-    "sha256": "9cdcdab7837fb2fc189cd29b621dfb19ce223b7d5c181060ef18d82cd85e8472"
+    "bytes": 703645,
+    "sha256": "c4ce5f3f4fb95d3c17d241d3a76b999165ff46266609b3e5332f2eeed452d5f5"
   },
   "optionalUnbundledAccelerators": [
     "bufferutil",
@@ -1332,8 +1332,8 @@
     },
     {
       "path": "server/secure-lan/host-capabilities.mjs",
-      "bytes": 13066,
-      "sha256": "1a7dc897cbb0f7790a24f8fdde9f7969c7cae6e1454b0b80c02a328cf4989cef"
+      "bytes": 13636,
+      "sha256": "a7d12050cbcf4a86bc6f73e2ded4a1a2fb4662512ba92c2c60f085d42043acc8"
     },
     {
       "path": "server/secure-lan/index.mjs",
