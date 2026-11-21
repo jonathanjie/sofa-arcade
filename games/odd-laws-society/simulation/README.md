@@ -58,3 +58,46 @@ The initial Chair won 318 matches, lost 240, and tied 210 under this policy set.
 All four policies selected zero Lobby actions in this baseline. The Civic policy obtained influence from construction and spent more of it, but this run does **not** explore Lobby-heavy political play. Many building policies filled nine slots in session 5, with some in session 4; the Festival policy usually left room. Read `fullBySession`, `fullCityWork`, bid histograms, score components, and source/spend totals in the JSON when selecting future cases. Exact Lobby behavior is exercised in the rules/adversarial suites.
 
 No human playtests, observed teaching times, physical phone/TV sessions, or balance validation are represented by these files.
+
+## Rules v0.3 comparison (`compare.mjs`)
+
+`compare.mjs` runs rules v0.2 and the opt-in rules v0.3 with the same harness and five policies. These are the four original policies plus `politician`, which lobbies, bids hard and, under v0.3, scouts. Policies see projected views only. The v0.2-only policy behaviour is unchanged, and the `heuristics-1` baseline digest above still reproduces.
+
+```sh
+node games/odd-laws-society/simulation/compare.mjs --seeds 48
+```
+
+Rules v0.3 changes:
+
+- only the winning bid is paid, and a 0–0 council keeps the current law;
+- each term deals 8 of 10 designs, one copy each, with 4 face up and a refilling market;
+- Scout (1 influence) draws blind into a private reserve of up to 2 cards;
+- twelve effect designs are added.
+
+Results, 21 November 2026 (48 seeds, 2,400 games per version, policy `heuristics-v03-1`):
+
+| Measure | v0.2 | v0.3 |
+| --- | ---: | ---: |
+| Score range | 41–72 | 39–67 |
+| Tie rate | 0.29 | 0.08 |
+| Mirror-policy tie rate | 1.00 | 0.07 |
+| Initial Chair share of decided games | 0.55 | 0.47 |
+| Most one-sided pairing | 0.90 | 0.77 |
+| Mean bid per council | 0.4–1.3 | 1.3–2.0 |
+| Influence left at the end | 4.2–5.5 | 2.1–4.5 |
+| Scouts per game | — | 0.1–0.5 |
+
+| Policy | v0.2 win share | v0.3 win share |
+| --- | ---: | ---: |
+| economy | 0.29 | 0.67 |
+| festival | 0.55 | 0.47 |
+| civic | 0.40 | 0.42 |
+| efficient-building | 0.53 | 0.53 |
+| politician | 0.76 | 0.41 |
+
+What this shows:
+
+1. **The single-copy market works as intended.** Identical strategies no longer tie, because the player who moves first takes the only copy. The initial Chair's edge also falls.
+2. **Politics was strong in v0.2 when a bot actually played it.** The politician won 76%, because all-pay bids drain the opponent too. Under winner-pays, a losing bid is free, so both players bid more and influence decides less (the politician drops to 41%).
+3. **v0.3 has a new outlier: Economy wins 67%, and 70–77% against three policies.** The likely cause is that single copies make the one Corner Shop or Night Market decisive. Tune the income designs before anything else.
+4. **Scout and Lobby are still rarely chosen,** and influence is still left over. The reserve may need a cheaper Scout, a free Scout on Lobby, or a reason to spend influence late.

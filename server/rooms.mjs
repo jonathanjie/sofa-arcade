@@ -362,6 +362,8 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     stale_match: 'This command belongs to a different match. Refresh the board.',
     stale_phase: 'This command belongs to an earlier phase. Refresh the board.',
     game_finished: 'This match has finished. Wait for a rematch.',
+    reserve_full: 'Your reserve is full. Build from it first.',
+    insufficient_influence: 'You do not have enough influence for that action.',
   });
 
   function ruleError(error) {

@@ -56,6 +56,14 @@ This gives each game a shared feel, and it tells the designer where to add tensi
 | 2 | **Single-copy landmarks.** Term III has one copy of each landmark. In Terms I and II, the second copy of a design costs 1 more coin. | Building order matters. Taking Work now risks losing a card. Blocking has a price. |
 | 3 | **Sponsor dividend.** The player whose bill is enacted secures 1 prestige at each session end while it stays active, in addition to the Civic award. | A law now belongs to someone, so repealing it means something. Influence has a lasting return. |
 
+**Prototype result (rules v0.3, opt-in; details in [`games/odd-laws-society/simulation/README.md`](../../games/odd-laws-society/simulation/README.md)).** v0.3 combines winner-pays councils, a single-copy refilling market, Scout into a private reserve, and twelve effect designs.
+
+- Mirror-policy ties fall from 100% to 7%, overall ties from 29% to 8%, the initial Chair from 55% to 47%, and the most one-sided pairing from 90% to 77%.
+- Bids per council rise to 1.3–2.0.
+- New problem: Economy wins 67% of decided games.
+- Scout and Lobby are still rarely used.
+- A new lobbying bot shows that v0.2 politics was strong when played: it won 76%.
+
 **Test pass condition (extend the existing sweep):**
 
 - the mean bid is 1.2 or more per council;

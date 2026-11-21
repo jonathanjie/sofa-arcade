@@ -19,6 +19,9 @@ const oddLawsRoomCodes = Object.freeze({
   STALE_MATCH: 'stale_match',
   STALE_PHASE: 'stale_phase',
   GAME_FINISHED: 'game_finished',
+  // Rules v0.3 Scout.
+  RESERVE_FULL: 'reserve_full',
+  INSUFFICIENT_INFLUENCE: 'insufficient_influence',
 });
 
 function withRoomRuleCodes(method) {
