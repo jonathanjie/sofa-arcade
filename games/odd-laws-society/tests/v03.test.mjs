@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { engine, legalActions, RULES_V03, V03_STAPLES } from '../engine.mjs';
 import { ALL_BUILDINGS, EFFECT_BUILDINGS, termPool } from '../catalog.mjs';
-import { scoreBreakdown, buildQuote } from '../preview.mjs';
+import { scoreBreakdown, buildQuote, festivalPoints } from '../preview.mjs';
 import { OPENING_AGENDA, clone, council, take, cityOf } from './helpers.mjs';
 
 const fresh03 = (overrides = {}) => engine.create({
@@ -89,7 +89,7 @@ test('v0.3 build from the row removes the only copy and refills from the deck', 
   assertCardCounts(built);
 });
 
-test('v0.3 Scout costs 1 influence, fills the reserve to 2, and reserved cards can be built later', () => {
+test('v0.3 Scout is free, once per session, costs 1 influence, and fills the reserve to 2', () => {
   const state = toActions(fresh03());
   const seat = state.activePlayer;
   const top = state.deck.slice(0, 2);
@@ -97,10 +97,18 @@ test('v0.3 Scout costs 1 influence, fills the reserve to 2, and reserved cards c
   assert.deepEqual(scouted.players[seat].reserve, top);
   assert.equal(scouted.players[seat].influence, state.players[seat].influence - 1);
   assert.equal(scouted.deck.length, 2);
-  // A full reserve cannot scout again.
-  let back = take(scouted, 'work');
-  assert.throws(() => take(back, 'scout'), error => error.code === 'RESERVE_FULL');
+  // Scouting takes no city action: the same player keeps the same turn.
+  assert.equal(scouted.activePlayer, seat);
+  assert.equal(scouted.phaseId, state.phaseId);
+  assert.equal(scouted.actionsRemaining[seat], state.actionsRemaining[seat]);
+  assert.equal(scouted.players[seat].scoutedThisSession, true);
+  assert.throws(() => take(scouted, 'scout'), error => ['RESERVE_FULL', 'SCOUT_USED'].includes(error.code));
+  const emptied = clone(scouted);
+  emptied.players[seat].reserve = [];
+  assert.throws(() => take(emptied, 'scout'), error => error.code === 'SCOUT_USED');
   // A reserved card can be built on a later turn.
+  let back = take(take(scouted, 'work'), 'work');
+  assert.equal(back.activePlayer, seat);
   back.players[seat].coins = 30;
   const designId = back.players[seat].reserve[0];
   const built = take(back, 'build', { designId, row: 1, col: 1 });
@@ -108,10 +116,15 @@ test('v0.3 Scout costs 1 influence, fills the reserve to 2, and reserved cards c
   assert.deepEqual(built.players[seat].reserve, [top[1]]);
   assertCardCounts(built);
   // On the other player's turn, a design held in this reserve is not available to them.
-  const rival = scouted.activePlayer;
+  const rivalTurn = take(scouted, 'work');
+  const rival = rivalTurn.activePlayer;
   assert.notEqual(rival, seat);
-  scouted.players[rival].coins = 30;
-  assert.throws(() => take(scouted, 'build', { designId: top[1], row: 0, col: 0 }), error => error.code === 'NOT_AVAILABLE');
+  rivalTurn.players[rival].coins = 30;
+  assert.throws(() => take(rivalTurn, 'build', { designId: top[1], row: 0, col: 0 }), error => error.code === 'NOT_AVAILABLE');
+  // The Scout flag resets at the next session.
+  let later = scouted;
+  while (later.session === 1) later = later.stage === 'council' ? council(later) : take(later, 'work');
+  assert.equal(later.players[seat].scoutedThisSession, false);
 });
 
 test('v0.3 reserves survive term changes, and each term opens a new row', () => {
@@ -218,6 +231,58 @@ test('v0.3 forbids a second copy of a design in one city', () => {
   assert.match(quote.reason, /already have/);
   assert.equal(legalActions(state, seat).some(action => action.designId === 'corner-shop'), false);
   assert.throws(() => take(state, 'build', { designId: 'corner-shop', row: 1, col: 1 }), error => error.code === 'DUPLICATE_DESIGN');
+});
+
+test('v0.3 Festival scores 2 plus 1 per Culture building, at most 4', () => {
+  const state = toActions(fresh03());
+  const seat = state.activePlayer;
+  const view = clone(state);
+  const points = ids => { view.players[seat].city = cityOf(ids); return festivalPoints(view, seat); };
+  assert.equal(points([]), 2);
+  assert.equal(points(['community-garden']), 3);
+  // A Festival icon adds nothing extra in v0.3; it counts only as a Culture building.
+  assert.equal(points(['pocket-theatre']), 3);
+  assert.equal(points(['community-garden', 'pocket-theatre', 'opera-house']), 4);
+  view.players[seat].city = cityOf(['community-garden']);
+  view.players[seat].coins = 10;
+  const celebrated = take(view, 'festival');
+  assert.equal(celebrated.players[seat].score.festivals, 3);
+  // v0.2 keeps 3 plus the icon bonus.
+  const v02 = engine.create({ seed: 'v03-seed', matchId: 'v03-match', options: { firstChair: 'jon' } });
+  v02.players.jon.city = cityOf(['pocket-theatre']);
+  assert.equal(festivalPoints(v02, 'jon'), 4);
+});
+
+test('v0.3 Rebuild replaces a building for the new cost minus the old printed cost', () => {
+  const state = toActions(fresh03());
+  const seat = state.activePlayer;
+  state.players[seat].coins = 10;
+  // A full street of Tea Stall (2), Community Garden (2) and a Term I card.
+  const designId = rowCards(state).find(stack => !['tea-stall', 'community-garden'].includes(stack.designId)).designId;
+  state.players[seat].city = cityOf(['tea-stall', 'community-garden']);
+  const printed = byId.get(designId).cost;
+  const quote = buildQuote(state, seat, designId, 0);
+  assert.equal(quote.allowed, true);
+  assert.equal(quote.cost, Math.max(1, printed - 2));
+  assert.deepEqual(quote.rebuild, { replacedDesignId: 'tea-stall', credit: printed - quote.cost });
+  const rebuilt = take(state, 'build', { designId, row: 0, col: 0 });
+  assert.equal(rebuilt.players[seat].city[0].designId, designId);
+  assert.equal(rebuilt.players[seat].coins, 10 - quote.cost);
+  // The replaced building leaves the city and is not returned to the market or reserve.
+  assert.equal(rebuilt.players[seat].city.some(card => card?.designId === 'tea-stall'), false);
+  assert.equal(rebuilt.players[seat].reserve.includes('tea-stall'), false);
+  assert.equal(rebuilt.market.length, state.market.length);
+  assert.equal(rebuilt.players[seat].score.streets, 0, 'a rebuild never scores a street');
+  // Rebuilding is legal in a full city, and v0.2 still forbids building on an occupied plot.
+  const full = clone(state);
+  full.players[seat].city = cityOf(['tea-stall', 'community-garden', 'button-workshop', 'petition-kiosk', 'pocket-theatre', 'gossip-stand', 'town-crier', 'carpenters-lodge', 'street-musicians']);
+  full.players[seat].coins = 20;
+  const fullOptions = legalActions(full, seat).filter(action => action.type === 'build');
+  assert.ok(fullOptions.length > 0);
+  const v02 = council(engine.create({ seed: 'v03-seed', matchId: 'v03-match', options: { firstChair: 'jon' } }));
+  v02.players[v02.activePlayer].city = cityOf(['tea-stall']);
+  v02.players[v02.activePlayer].coins = 20;
+  assert.throws(() => take(v02, 'build', { designId: 'community-garden', row: 0, col: 0 }), error => error.code === 'PLOT_OCCUPIED');
 });
 
 test('random v0.3 matches finish, keep 8 designs per term in play and never duplicate a card', () => {

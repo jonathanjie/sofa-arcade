@@ -119,3 +119,30 @@ The income designs (Corner Shop in Term I, Night Market in Term II) became **sta
 | politician win share | 0.41 | 0.47 | 0.37 |
 
 **Staples fixed Economy, but the outlier moved to Festival.** Economy fell from 0.67 to 0.52. Festival rose to 0.77, and it beats Civic in 96% of decided games. The likely cause is that both players now get income, so both have more coins, and the repeatable Festival (3 coins for 3–4 prestige) becomes the best use of them. The gameplay analysis already flagged this. Adding the workshops as staples did not help. The next change to test is a Festival that scores 1 plus 1 per Culture building, at most 4.
+
+### Tuning round (rules v0.3, same 48 seeds)
+
+Each row adds one change to the row above, except where noted. "Range" is the spread of policy win shares.
+
+| Step | Ties | Initial Chair | Most one-sided pair | Policy win shares | Notes |
+| --- | ---: | ---: | ---: | --- | --- |
+| Income staples (start) | 0.05 | 0.53 | 0.96 | 0.31–0.77 | Festival 0.77 |
+| Festival = 1 + Culture, max 4 | 0.04 | 0.51 | 0.97 | 0.32–0.82 | Festival points fell, but Festival still won |
+| (alternatives) 0 + Culture; 1 + Culture, max 3 | 0.04–0.05 | 0.50–0.53 | 0.91–0.94 | up to 0.78–0.80 | The formula was not the cause |
+| **Rebuild** | 0.09 | 0.51 | 0.72 | 0.40–0.58 | The real cause was plot hoarding |
+| Scout free, once per session | 0.08 | 0.45 | 0.78 | 0.40–0.59 | Scouts rose from about 0 to 1–2 per game |
+| **Festival = 2 + Culture, max 4 (adopted)** | 0.08 | 0.47 | 0.69 | 0.42–0.59 | Only Economy vs Festival is above 0.65 |
+| (rejected) income cap +1 | 0.09 | 0.47 | 0.68 | 0.41–0.58 | No real effect, so not adopted |
+
+**Why Festival won.** It was not the Festival action. A design count showed that the Festival policy took Term III landmarks 3–5 times as often as its rivals. Other policies filled all nine plots with cheap Term I and II buildings, so the Festival policy alone had space and coins when single-copy landmarks appeared. Rebuild lets anyone replace an early building with a landmark: pay the new cost minus the old printed cost, at least 1. That removed the advantage.
+
+**Adopted v0.3 rules after tuning:**
+
+- winner-pays councils;
+- a single-copy refilling market with income staples;
+- no duplicate designs in one city;
+- Rebuild;
+- Scout is free, once per session, for 1 influence;
+- Festival scores 2 + 1 per Culture building, at most 4.
+
+All policies win 42–59% of decided games, and ties are 8%. Lobby is still used only by the politician, and 2–4 influence is still left over, so influence remains the weakest system. These remaining gaps are probably as much about the simple bots as about the rules, and they should be checked in human play.

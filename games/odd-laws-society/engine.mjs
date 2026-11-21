@@ -5,7 +5,7 @@
  */
 import { ALL_BUILDINGS, LAWS, termPool } from './catalog.mjs';
 import { RuleError, fail } from './errors.mjs';
-import { buildQuote, streetOutcome, civicAward, scoreBreakdown, incomeBonus, festivalBonus } from './preview.mjs';
+import { buildQuote, streetOutcome, civicAward, scoreBreakdown, incomeBonus, festivalPoints } from './preview.mjs';
 import { project } from './projection.mjs';
 
 export { project, RuleError };
@@ -16,11 +16,15 @@ export const RULES_VERSION = '0.2';
  * - Only the winning council bid is paid, and a 0–0 council keeps the current law.
  * - Each term deals 8 of its 10 designs, one copy each, into a hidden deck. Four
  *   are face up in the market, which refills after each purchase.
- * - Scout (1 influence) draws blind from the deck until your private reserve
- *   holds 2 cards. Reserved cards can be built in any later session.
+ * - Scout (1 influence, no city action, once per session) draws blind from the
+ *   deck until your private reserve holds 2 cards. Reserved cards can be built
+ *   in any later session.
  * - Twelve extra designs add new building effects.
  * - Staple designs have two copies, both face up for their whole term, so both
  *   players can get one. Nobody can build a design already in their own city.
+ * - Rebuild: Build onto your own occupied plot. Pay the new cost minus the old
+ *   building's printed cost (at least 1). The old building leaves the game, and
+ *   its street is not scored again.
  */
 export const RULES_V03 = '0.3';
 export const SUPPORTED_RULES = Object.freeze([RULES_VERSION, RULES_V03]);
@@ -232,7 +236,7 @@ function drawIntoReserve(state, playerId, maximumCards) {
 
 function startingPlayer(rulesVersion = RULES_VERSION) {
   return {
-    ...(rulesVersion === RULES_V03 ? { reserve: [] } : {}),
+    ...(rulesVersion === RULES_V03 ? { reserve: [], scoutedThisSession: false } : {}),
     coins: 4, influence: 2, city: Array(9).fill(null), streetEvaluated: [false, false, false],
     buildsThisSession: 0, festivalUsed: false,
     score: { buildings: 0, streets: 0, festivals: 0, civic: 0, treasury: 1, total: 1 },
@@ -358,9 +362,11 @@ function validateAction(state, playerId, action) {
     if (isV03(state) && player.city.some(instance => instance?.designId === action.designId)) {
       fail('DUPLICATE_DESIGN', 'You already have this building in your city.');
     }
-    if (!player.city.includes(null)) fail('CITY_FULL', 'Your city is full.');
-    if (player.city[action.row * 3 + action.col] !== null) fail('PLOT_OCCUPIED', 'That plot is occupied.');
-    if (player.coins < buildQuote(state, playerId, action.designId).cost) fail('INSUFFICIENT_COINS', 'You need more coins to build.');
+    const plotIndex = action.row * 3 + action.col;
+    const rebuild = isV03(state) && player.city[plotIndex] !== null;
+    if (!rebuild && !player.city.includes(null)) fail('CITY_FULL', 'Your city is full.');
+    if (!rebuild && player.city[plotIndex] !== null) fail('PLOT_OCCUPIED', 'That plot is occupied.');
+    if (player.coins < buildQuote(state, playerId, action.designId, plotIndex).cost) fail('INSUFFICIENT_COINS', 'You need more coins to build.');
   } else if (action.type === 'festival') {
     if (player.festivalUsed) fail('FESTIVAL_USED', 'You have already held a Festival this session.');
     if (player.coins < 3) fail('INSUFFICIENT_COINS', 'A Festival costs 3 coins.');
@@ -369,6 +375,7 @@ function validateAction(state, playerId, action) {
     if (player.reserve.length >= RESERVE_LIMIT) fail('RESERVE_FULL', 'Your reserve is full.');
     if (state.deck.length < 1) fail('NOT_AVAILABLE', 'The market deck is empty.');
     if (player.influence < SCOUT_COST) fail('INSUFFICIENT_INFLUENCE', 'Scouting costs 1 influence.');
+    if (player.scoutedThisSession) fail('SCOUT_USED', 'You have already scouted this session.');
   }
 }
 
@@ -446,6 +453,7 @@ function finishSession(state) {
     player.influence = Math.min(6, player.influence + 1);
     player.buildsThisSession = 0;
     player.festivalUsed = false;
+    if (isV03(state)) player.scoutedThisSession = false;
   }
   openCouncil(state);
   refreshScores(state);
@@ -476,8 +484,12 @@ export function apply(fullState, authenticatedPlayerId, rawAction) {
     resolveCouncil(state);
   } else {
     if (action.type === 'build') {
-      const quote = buildQuote(fullState, authenticatedPlayerId, action.designId);
-      const street = streetOutcome(fullState, authenticatedPlayerId, action.row, action.col, action.designId);
+      const plotIndex = action.row * 3 + action.col;
+      const quote = buildQuote(fullState, authenticatedPlayerId, action.designId, plotIndex);
+      // A rebuild never completes a street again; its row was already evaluated or is still open.
+      const street = player.city[plotIndex] === null
+        ? streetOutcome(fullState, authenticatedPlayerId, action.row, action.col, action.designId)
+        : { completes: false, prestige: 0 };
       const stack = state.market.find(item => item.designId === action.designId);
       let instanceId;
       if (isV03(state)) {
@@ -518,17 +530,19 @@ export function apply(fullState, authenticatedPlayerId, rawAction) {
       if (isV03(state)) player.coins += Math.min(1, abilityCount(player, 'lobbyCoin'));
     } else if (action.type === 'festival') {
       player.coins -= 3;
-      player.score.festivals += 3 + festivalBonus(fullState, authenticatedPlayerId);
+      player.score.festivals += festivalPoints(fullState, authenticatedPlayerId);
       player.festivalUsed = true;
       if (isV03(state)) {
         const rival = state.players[otherPlayer(authenticatedPlayerId)];
         rival.coins += Math.min(1, abilityCount(rival, 'rivalFestivalCoin'));
       }
     } else if (action.type === 'scout') {
+      // A free action: the turn and its phase ID do not advance.
       player.influence -= SCOUT_COST;
+      player.scoutedThisSession = true;
       drawIntoReserve(state, authenticatedPlayerId, RESERVE_LIMIT);
     }
-    advanceCityTurn(state, authenticatedPlayerId);
+    if (action.type !== 'scout') advanceCityTurn(state, authenticatedPlayerId);
   }
   refreshScores(state);
   return state;
@@ -555,14 +569,17 @@ export function legalActions(state, authenticatedPlayerId) {
   const actions = ['work', 'lobby'].map(type => normalizeAction({ type, ...base }));
   const player = state.players[authenticatedPlayerId];
   if (player.coins >= 3 && !player.festivalUsed) actions.push(normalizeAction({ type: 'festival', ...base }));
-  if (isV03(state) && player.reserve.length < RESERVE_LIMIT && state.deck.length > 0 && player.influence >= SCOUT_COST) {
+  if (isV03(state) && player.reserve.length < RESERVE_LIMIT && state.deck.length > 0 && player.influence >= SCOUT_COST
+      && !player.scoutedThisSession) {
     actions.push(normalizeAction({ type: 'scout', ...base }));
   }
   const designIds = [...state.market.map(stack => stack.designId), ...(isV03(state) ? player.reserve : [])];
   for (const designId of designIds) {
-    if (!buildQuote(state, authenticatedPlayerId, designId).allowed) continue;
     for (let index = 0; index < 9; index += 1) {
-      if (player.city[index] === null) actions.push(normalizeAction({
+      const rebuild = isV03(state) && player.city[index] !== null;
+      if (player.city[index] !== null && !rebuild) continue;
+      if (!buildQuote(state, authenticatedPlayerId, designId, index).allowed) continue;
+      actions.push(normalizeAction({
         type: 'build', ...base, designId, row: Math.floor(index / 3), col: index % 3,
       }));
     }
