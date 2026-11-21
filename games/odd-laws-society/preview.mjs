@@ -1,8 +1,9 @@
-/** Public, pure v0.2 arithmetic. Safe to ship to a browser; no authority imports. */
-import { BUILDINGS, LAWS } from './catalog.mjs';
+/** Public, pure v0.2/v0.3 arithmetic. Safe to ship to a browser; no authority imports. */
+import { ALL_BUILDINGS, LAWS } from './catalog.mjs';
 import { RuleError } from './errors.mjs';
 
-const buildings = new Map(BUILDINGS.map(building => [building.id, building]));
+const buildings = new Map(ALL_BUILDINGS.map(building => [building.id, building]));
+const isV03 = view => view?.rulesVersion === '0.3';
 const laws = new Map(LAWS.map(law => [law.id, law]));
 const playerIds = ['jon', 'lydia'];
 
@@ -84,7 +85,7 @@ export function buildQuote(view, playerId, designId) {
   let reason = null;
   if (view.phase !== 'playing' || view.stage !== 'actions') reason = 'Build during a city turn.';
   else if (view.activePlayer !== playerId) reason = 'Wait for your turn.';
-  else if (building.term !== view.term || !view.market?.some(stack => stack.designId === designId && stack.remaining > 0)) {
+  else if (!isAvailable(view, player, building)) {
     reason = 'This building is not available.';
   } else if (!player.city.includes(null)) reason = 'Your city is full.';
   else if (player.coins < cost) reason = 'Not enough coins.';
@@ -98,6 +99,16 @@ export function buildQuote(view, playerId, designId) {
     influenceGain,
     prestige: building.prestige,
   };
+}
+
+/**
+ * v0.2: the design must be in this term's market. v0.3: it must be in the open
+ * row (one copy) or in this player's own reserve, from any term.
+ */
+function isAvailable(view, player, building) {
+  const inMarket = view.market?.some(stack => stack.designId === building.id && stack.remaining > 0);
+  if (!isV03(view)) return building.term === view.term && inMarket;
+  return inMarket || (Array.isArray(player.reserve) && player.reserve.includes(building.id));
 }
 
 /** Hypothetical placement ignores action timing, affordability, and market stock. */
@@ -151,13 +162,45 @@ export function civicAward(view, playerId, lawId = view.activeLaws.civic) {
   return Math.min(2, points);
 }
 
+/**
+ * v0.3 building effects that score from the current city: street synergy and
+ * guild diversity. They are part of the Buildings score, and they change if the
+ * city changes, unlike secured prestige.
+ */
+export function buildingEffectPrestige(view, playerId) {
+  const player = playerFor(view, playerId);
+  let points = 0;
+  player.city.forEach((instance, index) => {
+    if (!instance) return;
+    const building = buildingFor(instance.designId);
+    const type = building.ability?.type;
+    if (type === 'streetGuildPrestige') {
+      const row = Math.floor(index / 3);
+      const neighbours = player.city.slice(row * 3, row * 3 + 3)
+        .filter((other, column) => other && row * 3 + column !== index && buildingFor(other.designId).guild === building.guild);
+      points += neighbours.length * building.ability.amount;
+    } else if (type === 'diversityPrestige') {
+      points += Math.min(4, new Set(cityBuildings(player).map(design => design.guild)).size) * building.ability.amount;
+    }
+  });
+  return points;
+}
+
+/** Treasury converts every 3 coins, or every 2 with a v0.3 treasury building; at most 4. */
+export function treasuryFor(view, playerId) {
+  const player = playerFor(view, playerId);
+  const rate = cityBuildings(player).some(building => building.ability?.type === 'treasuryRate') ? 2 : 3;
+  return Math.min(4, Math.floor(player.coins / rate));
+}
+
 /** Printed prestige is derived once from the city; secured components never rescore. */
 export function scoreBreakdown(view, playerId) {
   const player = playerFor(view, playerId);
-  const buildings = cityBuildings(player).reduce((sum, building) => sum + building.prestige, 0);
+  const buildings = cityBuildings(player).reduce((sum, building) => sum + building.prestige, 0)
+    + buildingEffectPrestige(view, playerId);
   const streets = player.score.streets;
   const festivals = player.score.festivals;
   const civic = player.score.civic;
-  const treasury = Math.min(4, Math.floor(player.coins / 3));
+  const treasury = treasuryFor(view, playerId);
   return { buildings, streets, festivals, civic, treasury, total: buildings + streets + festivals + civic + treasury };
 }

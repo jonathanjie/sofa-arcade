@@ -27,9 +27,21 @@ function commitmentView(commitment) {
   return commitment ? { choiceId: commitment.choiceId, bid: commitment.bid } : null;
 }
 
-function playerView(state, playerId) {
+/**
+ * v0.3 reserves are private: only their owner sees the designs. Everyone sees
+ * the count. The TV (host or public viewer) sees no designs.
+ */
+function reserveView(state, playerId, viewer) {
+  if (state.rulesVersion !== '0.3') return {};
+  const reserve = state.players[playerId].reserve;
+  const own = viewer.role === 'player' && viewer.playerId === playerId;
+  return { reserve: own ? reserve.map(designId => designId) : null, reserveCount: reserve.length };
+}
+
+function playerView(state, playerId, viewer) {
   const player = state.players[playerId];
   return {
+    ...reserveView(state, playerId, viewer),
     coins: player.coins,
     // The fixed pre-council budget is also the public balance until atomic reveal.
     influence: state.stage === 'council' ? state.council.budgets[playerId] : player.influence,
@@ -77,13 +89,16 @@ export function project(state, viewer) {
       ownCommitment: viewer.role === 'player' ? commitmentView(pending.commitments[viewer.playerId]) : null,
     } : null,
     market: state.market.map(stack => ({ designId: stack.designId, remaining: stack.remaining })),
-    players: { jon: playerView(state, 'jon'), lydia: playerView(state, 'lydia') },
+    // v0.3: the deck order is hidden; only its size is public.
+    ...(state.rulesVersion === '0.3' ? { deckCount: state.deck.length } : {}),
+    players: { jon: playerView(state, 'jon', viewer), lydia: playerView(state, 'lydia', viewer) },
     lastCouncil: revealed ? {
       session: revealed.session,
       phaseId: revealed.phaseId,
       choices: { jon: commitmentView(revealed.choices.jon), lydia: commitmentView(revealed.choices.lydia) },
       adoptedLawId: revealed.adoptedLawId,
       category: revealed.category,
+      ...(revealed.paid ? { paid: { jon: revealed.paid.jon, lydia: revealed.paid.lydia } } : {}),
     } : null,
     result: state.result ? {
       winner: state.result.winner,
