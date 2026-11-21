@@ -1,0 +1,1117 @@
+// Generated from the canonical JSON by sources/assemble.mjs. Do not edit by hand.
+export default {
+  "schemaVersion": 1,
+  "gameId": "gravity-orchard",
+  "assets": {
+    "fruit-apple": {
+      "src": "/assets/gravity-orchard/fruit/apple.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Apple · round with one leaf",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 64
+      },
+      "silhouette": "apple",
+      "pattern": "one-leaf",
+      "recommendedSize": 32
+    },
+    "basket-apple-ordinary": {
+      "src": "/assets/gravity-orchard/baskets/apple-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Apple basket · ordinary",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "apple",
+      "state": "ordinary",
+      "pattern": "one-leaf",
+      "recommendedSize": 76
+    },
+    "basket-apple-accepting": {
+      "src": "/assets/gravity-orchard/baskets/apple-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Apple basket · accepting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "apple",
+      "state": "accepting",
+      "pattern": "one-leaf",
+      "recommendedSize": 76
+    },
+    "basket-apple-rejecting": {
+      "src": "/assets/gravity-orchard/baskets/apple-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Apple basket · rejecting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "apple",
+      "state": "rejecting",
+      "pattern": "one-leaf",
+      "recommendedSize": 76
+    },
+    "basket-apple-full": {
+      "src": "/assets/gravity-orchard/baskets/apple-full.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Apple basket · full",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "apple",
+      "state": "full",
+      "pattern": "one-leaf",
+      "recommendedSize": 76
+    },
+    "fruit-plum": {
+      "src": "/assets/gravity-orchard/fruit/plum.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Plum · oval with split leaves",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 64
+      },
+      "silhouette": "plum",
+      "pattern": "split-leaf",
+      "recommendedSize": 32
+    },
+    "basket-plum-ordinary": {
+      "src": "/assets/gravity-orchard/baskets/plum-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Plum basket · ordinary",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "plum",
+      "state": "ordinary",
+      "pattern": "split-leaf",
+      "recommendedSize": 76
+    },
+    "basket-plum-accepting": {
+      "src": "/assets/gravity-orchard/baskets/plum-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Plum basket · accepting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "plum",
+      "state": "accepting",
+      "pattern": "split-leaf",
+      "recommendedSize": 76
+    },
+    "basket-plum-rejecting": {
+      "src": "/assets/gravity-orchard/baskets/plum-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Plum basket · rejecting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "plum",
+      "state": "rejecting",
+      "pattern": "split-leaf",
+      "recommendedSize": 76
+    },
+    "basket-plum-full": {
+      "src": "/assets/gravity-orchard/baskets/plum-full.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Plum basket · full",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "plum",
+      "state": "full",
+      "pattern": "split-leaf",
+      "recommendedSize": 76
+    },
+    "fruit-pear": {
+      "src": "/assets/gravity-orchard/fruit/pear.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Pear · tapered neck and dotted belly",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 64
+      },
+      "silhouette": "pear",
+      "pattern": "dotted",
+      "recommendedSize": 32
+    },
+    "basket-pear-ordinary": {
+      "src": "/assets/gravity-orchard/baskets/pear-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Pear basket · ordinary",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "pear",
+      "state": "ordinary",
+      "pattern": "dotted",
+      "recommendedSize": 76
+    },
+    "basket-pear-accepting": {
+      "src": "/assets/gravity-orchard/baskets/pear-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Pear basket · accepting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "pear",
+      "state": "accepting",
+      "pattern": "dotted",
+      "recommendedSize": 76
+    },
+    "basket-pear-rejecting": {
+      "src": "/assets/gravity-orchard/baskets/pear-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Pear basket · rejecting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "pear",
+      "state": "rejecting",
+      "pattern": "dotted",
+      "recommendedSize": 76
+    },
+    "basket-pear-full": {
+      "src": "/assets/gravity-orchard/baskets/pear-full.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Pear basket · full",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "pear",
+      "state": "full",
+      "pattern": "dotted",
+      "recommendedSize": 76
+    },
+    "fruit-starfruit": {
+      "src": "/assets/gravity-orchard/fruit/starfruit.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Starfruit · five-point cut face",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 64
+      },
+      "silhouette": "starfruit",
+      "pattern": "five-point",
+      "recommendedSize": 32
+    },
+    "basket-starfruit-ordinary": {
+      "src": "/assets/gravity-orchard/baskets/starfruit-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Starfruit basket · ordinary",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "starfruit",
+      "state": "ordinary",
+      "pattern": "five-point",
+      "recommendedSize": 76
+    },
+    "basket-starfruit-accepting": {
+      "src": "/assets/gravity-orchard/baskets/starfruit-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Starfruit basket · accepting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "starfruit",
+      "state": "accepting",
+      "pattern": "five-point",
+      "recommendedSize": 76
+    },
+    "basket-starfruit-rejecting": {
+      "src": "/assets/gravity-orchard/baskets/starfruit-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Starfruit basket · rejecting",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "starfruit",
+      "state": "rejecting",
+      "pattern": "five-point",
+      "recommendedSize": 76
+    },
+    "basket-starfruit-full": {
+      "src": "/assets/gravity-orchard/baskets/starfruit-full.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Starfruit basket · full",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 67
+      },
+      "fruitType": "starfruit",
+      "state": "full",
+      "pattern": "five-point",
+      "recommendedSize": 76
+    },
+    "tray-morning-delivery": {
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-tray.svg",
+      "width": 512,
+      "height": 384,
+      "kind": "image",
+      "alt": "morning-delivery wooden garden material",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-tray-bounds",
+      "recommendedSize": 512
+    },
+    "bridge-morning-delivery": {
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-bridge.svg",
+      "width": 256,
+      "height": 96,
+      "kind": "image",
+      "alt": "morning-delivery bridge planks",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-bridge-bounds"
+    },
+    "hedge-morning-delivery": {
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-hedge.svg",
+      "width": 256,
+      "height": 88,
+      "kind": "image",
+      "alt": "morning-delivery hedge edging",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-rect-bumper"
+    },
+    "bumper-morning-delivery": {
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-bumper.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "morning-delivery soft wooden bumper",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-circle-bumper",
+      "pivot": {
+        "x": 64,
+        "y": 64
+      }
+    },
+    "tray-switchback-grove": {
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-tray.svg",
+      "width": 512,
+      "height": 384,
+      "kind": "image",
+      "alt": "switchback-grove wooden garden material",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-tray-bounds",
+      "recommendedSize": 512
+    },
+    "bridge-switchback-grove": {
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-bridge.svg",
+      "width": 256,
+      "height": 96,
+      "kind": "image",
+      "alt": "switchback-grove bridge planks",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-bridge-bounds"
+    },
+    "hedge-switchback-grove": {
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-hedge.svg",
+      "width": 256,
+      "height": 88,
+      "kind": "image",
+      "alt": "switchback-grove hedge edging",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-rect-bumper"
+    },
+    "bumper-switchback-grove": {
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-bumper.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "switchback-grove soft wooden bumper",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-circle-bumper",
+      "pivot": {
+        "x": 64,
+        "y": 64
+      }
+    },
+    "tray-moonlight-picnic": {
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-tray.svg",
+      "width": 512,
+      "height": 384,
+      "kind": "image",
+      "alt": "moonlight-picnic wooden garden material",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-tray-bounds",
+      "recommendedSize": 512
+    },
+    "bridge-moonlight-picnic": {
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-bridge.svg",
+      "width": 256,
+      "height": 96,
+      "kind": "image",
+      "alt": "moonlight-picnic bridge planks",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-bridge-bounds"
+    },
+    "hedge-moonlight-picnic": {
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-hedge.svg",
+      "width": 256,
+      "height": 88,
+      "kind": "image",
+      "alt": "moonlight-picnic hedge edging",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-rect-bumper"
+    },
+    "bumper-moonlight-picnic": {
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-bumper.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "moonlight-picnic soft wooden bumper",
+      "transparent": true,
+      "role": "decoration",
+      "geometry": "clip-to-authored-circle-bumper",
+      "pivot": {
+        "x": 64,
+        "y": 64
+      }
+    },
+    "gate-open": {
+      "src": "/assets/gravity-orchard/cues/gate-open.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Bridge gate · open",
+      "transparent": true,
+      "state": "open",
+      "pivot": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    "gate-forecast": {
+      "src": "/assets/gravity-orchard/cues/gate-forecast.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Bridge gate · forecast",
+      "transparent": true,
+      "state": "forecast",
+      "pivot": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    "gate-closed": {
+      "src": "/assets/gravity-orchard/cues/gate-closed.svg",
+      "width": 160,
+      "height": 160,
+      "kind": "image",
+      "alt": "Bridge gate · closed",
+      "transparent": true,
+      "state": "closed",
+      "pivot": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    "compost": {
+      "src": "/assets/gravity-orchard/cues/compost.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Compost opening · leaf and downward arrow",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 66
+      }
+    },
+    "gust-forecast": {
+      "src": "/assets/gravity-orchard/cues/gust-forecast.svg",
+      "width": 160,
+      "height": 112,
+      "kind": "image",
+      "alt": "Rightward gust · forecast; rotate to public direction",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 56
+      },
+      "baseDirection": {
+        "x": 1,
+        "y": 0
+      }
+    },
+    "gust-active": {
+      "src": "/assets/gravity-orchard/cues/gust-active.svg",
+      "width": 160,
+      "height": 112,
+      "kind": "image",
+      "alt": "Rightward gust · active; rotate to public direction",
+      "transparent": true,
+      "pivot": {
+        "x": 80,
+        "y": 56
+      },
+      "baseDirection": {
+        "x": 1,
+        "y": 0
+      }
+    },
+    "effect-impact": {
+      "src": "/assets/gravity-orchard/effects/impact.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Soft impact rays",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 80
+      }
+    },
+    "effect-capture": {
+      "src": "/assets/gravity-orchard/effects/capture.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Captured fruit check and ring",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 64
+      }
+    },
+    "effect-compost": {
+      "src": "/assets/gravity-orchard/effects/compost.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Composted fruit leaf puff",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 105
+      }
+    },
+    "effect-order": {
+      "src": "/assets/gravity-orchard/effects/order.svg",
+      "width": 128,
+      "height": 128,
+      "kind": "image",
+      "alt": "Picnic order completed",
+      "transparent": true,
+      "pivot": {
+        "x": 64,
+        "y": 64
+      }
+    },
+    "cover": {
+      "src": "/assets/gravity-orchard/cover.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Jon and Lydia cooperate across two floating orchard trays while Lala prepares a picnic.",
+      "label": "Gravity Orchard",
+      "layer": "cover",
+      "transparent": false
+    },
+    "environment-morning-delivery": {
+      "src": "/assets/gravity-orchard/environments/morning-delivery.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Pale morning clouds with delicate orchard blossoms around a quiet center.",
+      "label": "Morning Delivery",
+      "layer": "backdrop",
+      "transparent": false
+    },
+    "environment-switchback-grove": {
+      "src": "/assets/gravity-orchard/environments/switchback-grove.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Warm afternoon sage mist framed by small orchard branches.",
+      "label": "Switchback Grove",
+      "layer": "backdrop",
+      "transparent": false
+    },
+    "environment-moonlight-picnic": {
+      "src": "/assets/gravity-orchard/environments/moonlight-picnic.webp",
+      "width": 1280,
+      "height": 720,
+      "kind": "image",
+      "alt": "Soft teal twilight clouds with a crescent moon and warm fireflies at the edges.",
+      "label": "Lala’s Moonlight Picnic",
+      "layer": "backdrop",
+      "transparent": false
+    },
+    "character-jon": {
+      "src": "/assets/gravity-orchard/characters/jon-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "kind": "atlas",
+      "frames": {
+        "idle-1": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 1800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-1": {
+          "x": 256,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-1": {
+          "x": 512,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-1": {
+          "x": 768,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "idle-2": {
+          "x": 0,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 180,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-2": {
+          "x": 256,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-2": {
+          "x": 512,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-2": {
+          "x": 768,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        }
+      },
+      "label": "Jon",
+      "transparent": true,
+      "pivot": {
+        "x": 128,
+        "y": 240
+      },
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "alt": "Jon: idle, lean, brace, cheer orchard poses"
+    },
+    "character-lydia": {
+      "src": "/assets/gravity-orchard/characters/lydia-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "kind": "atlas",
+      "frames": {
+        "idle-1": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 1800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-1": {
+          "x": 256,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-1": {
+          "x": 512,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-1": {
+          "x": 768,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "idle-2": {
+          "x": 0,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 180,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "lean-2": {
+          "x": 256,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 420,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "brace-2": {
+          "x": 512,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 500,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "cheer-2": {
+          "x": 768,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 300,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        }
+      },
+      "label": "Lydia",
+      "transparent": true,
+      "pivot": {
+        "x": 128,
+        "y": 240
+      },
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "alt": "Lydia: idle, lean, brace, cheer orchard poses"
+    },
+    "character-lala": {
+      "src": "/assets/gravity-orchard/characters/lala-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "kind": "atlas",
+      "frames": {
+        "idle-1": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 1800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "forecast-1": {
+          "x": 256,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 650,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "gust-1": {
+          "x": 512,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 240,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "pleased-1": {
+          "x": 768,
+          "y": 0,
+          "width": 256,
+          "height": 256,
+          "durationMs": 800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "idle-2": {
+          "x": 0,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 180,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "forecast-2": {
+          "x": 256,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 450,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "gust-2": {
+          "x": 512,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 240,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        },
+        "pleased-2": {
+          "x": 768,
+          "y": 256,
+          "width": 256,
+          "height": 256,
+          "durationMs": 800,
+          "pivot": {
+            "x": 128,
+            "y": 240
+          }
+        }
+      },
+      "label": "Lala",
+      "transparent": true,
+      "pivot": {
+        "x": 128,
+        "y": 240
+      },
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "alt": "Lala: idle, forecast, gust, pleased orchard poses"
+    }
+  },
+  "characterStates": {
+    "jon": {
+      "idle": {
+        "asset": "character-jon",
+        "frames": [
+          "idle-1",
+          "idle-2"
+        ],
+        "reducedMotionFrame": "idle-1",
+        "loop": true
+      },
+      "lean": {
+        "asset": "character-jon",
+        "frames": [
+          "lean-1",
+          "lean-2"
+        ],
+        "reducedMotionFrame": "lean-1",
+        "loop": true
+      },
+      "brace": {
+        "asset": "character-jon",
+        "frames": [
+          "brace-1",
+          "brace-2"
+        ],
+        "reducedMotionFrame": "brace-1",
+        "loop": true
+      },
+      "cheer": {
+        "asset": "character-jon",
+        "frames": [
+          "cheer-1",
+          "cheer-2"
+        ],
+        "reducedMotionFrame": "cheer-1",
+        "loop": true
+      }
+    },
+    "lydia": {
+      "idle": {
+        "asset": "character-lydia",
+        "frames": [
+          "idle-1",
+          "idle-2"
+        ],
+        "reducedMotionFrame": "idle-1",
+        "loop": true
+      },
+      "lean": {
+        "asset": "character-lydia",
+        "frames": [
+          "lean-1",
+          "lean-2"
+        ],
+        "reducedMotionFrame": "lean-1",
+        "loop": true
+      },
+      "brace": {
+        "asset": "character-lydia",
+        "frames": [
+          "brace-1",
+          "brace-2"
+        ],
+        "reducedMotionFrame": "brace-1",
+        "loop": true
+      },
+      "cheer": {
+        "asset": "character-lydia",
+        "frames": [
+          "cheer-1",
+          "cheer-2"
+        ],
+        "reducedMotionFrame": "cheer-1",
+        "loop": true
+      }
+    },
+    "lala": {
+      "idle": {
+        "asset": "character-lala",
+        "frames": [
+          "idle-1",
+          "idle-2"
+        ],
+        "reducedMotionFrame": "idle-1",
+        "loop": true
+      },
+      "forecast": {
+        "asset": "character-lala",
+        "frames": [
+          "forecast-1",
+          "forecast-2"
+        ],
+        "reducedMotionFrame": "forecast-1",
+        "loop": true
+      },
+      "gust": {
+        "asset": "character-lala",
+        "frames": [
+          "gust-1",
+          "gust-2"
+        ],
+        "reducedMotionFrame": "gust-1",
+        "loop": true
+      },
+      "pleased": {
+        "asset": "character-lala",
+        "frames": [
+          "pleased-1",
+          "pleased-2"
+        ],
+        "reducedMotionFrame": "pleased-1",
+        "loop": true
+      }
+    }
+  },
+  "runtimeFiles": [
+    "public/assets/gravity-orchard/baskets/apple-accepting.svg",
+    "public/assets/gravity-orchard/baskets/apple-full.svg",
+    "public/assets/gravity-orchard/baskets/apple-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/apple-rejecting.svg",
+    "public/assets/gravity-orchard/baskets/pear-accepting.svg",
+    "public/assets/gravity-orchard/baskets/pear-full.svg",
+    "public/assets/gravity-orchard/baskets/pear-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/pear-rejecting.svg",
+    "public/assets/gravity-orchard/baskets/plum-accepting.svg",
+    "public/assets/gravity-orchard/baskets/plum-full.svg",
+    "public/assets/gravity-orchard/baskets/plum-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/plum-rejecting.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-accepting.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-full.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-ordinary.svg",
+    "public/assets/gravity-orchard/baskets/starfruit-rejecting.svg",
+    "public/assets/gravity-orchard/characters/jon-atlas.webp",
+    "public/assets/gravity-orchard/characters/lala-atlas.webp",
+    "public/assets/gravity-orchard/characters/lydia-atlas.webp",
+    "public/assets/gravity-orchard/cover.webp",
+    "public/assets/gravity-orchard/cues/compost.svg",
+    "public/assets/gravity-orchard/cues/gate-closed.svg",
+    "public/assets/gravity-orchard/cues/gate-forecast.svg",
+    "public/assets/gravity-orchard/cues/gate-open.svg",
+    "public/assets/gravity-orchard/cues/gust-active.svg",
+    "public/assets/gravity-orchard/cues/gust-forecast.svg",
+    "public/assets/gravity-orchard/effects/capture.svg",
+    "public/assets/gravity-orchard/effects/compost.svg",
+    "public/assets/gravity-orchard/effects/impact.svg",
+    "public/assets/gravity-orchard/effects/order.svg",
+    "public/assets/gravity-orchard/environments/moonlight-picnic.webp",
+    "public/assets/gravity-orchard/environments/morning-delivery.webp",
+    "public/assets/gravity-orchard/environments/switchback-grove.webp",
+    "public/assets/gravity-orchard/fruit/apple.svg",
+    "public/assets/gravity-orchard/fruit/pear.svg",
+    "public/assets/gravity-orchard/fruit/plum.svg",
+    "public/assets/gravity-orchard/fruit/starfruit.svg",
+    "public/assets/gravity-orchard/manifest.json",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-bridge.svg",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-bumper.svg",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-hedge.svg",
+    "public/assets/gravity-orchard/terrain/moonlight-picnic-tray.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-bridge.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-bumper.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-hedge.svg",
+    "public/assets/gravity-orchard/terrain/morning-delivery-tray.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-bridge.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-bumper.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-hedge.svg",
+    "public/assets/gravity-orchard/terrain/switchback-grove-tray.svg",
+    "ui/media/gravity-orchard/events.mjs",
+    "ui/media/gravity-orchard/fallbacks.mjs",
+    "ui/media/gravity-orchard/manifest-data.mjs",
+    "ui/media/gravity-orchard/manifest.mjs",
+    "ui/media/gravity-orchard/score.mjs"
+  ]
+};

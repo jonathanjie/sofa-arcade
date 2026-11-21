@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     ".sites-runtime/**",
     "outputs/**",
     "work/**",
+    "desktop/src-tauri/target/**",
   ]),
 ]);
 

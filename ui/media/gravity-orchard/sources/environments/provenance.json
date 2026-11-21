@@ -1,0 +1,78 @@
+[
+  {
+    "id": "cover",
+    "generator": "OpenAI built-in image_gen.imagegen",
+    "generatorOutputId": "exec-29acdcab-9dff-48a7-acbf-ca76d3082dc8",
+    "generatedOn": "2026-11-21",
+    "nativeDimensions": [
+      1672,
+      941
+    ],
+    "originalPngSha256": "03583f3208a001293d4b00c3c747c469bfa5e25cc473971d08af567b3d9f7861",
+    "rawFile": "raw/cover.webp",
+    "rawSha256": "81593dc95d412a19d0dfcc50145e1af5a1bd8f2db380203c13275ecb3e93d5f3",
+    "rawBytes": 2485380,
+    "sourceReference": "Existing Sofa Arcade character identity, inspected and described in prompts. No third-party downloaded imagery.",
+    "promptFile": "generation-prompts.json",
+    "license": "See LICENSE-NOTES.md; original AI-assisted project artwork.",
+    "generatedTimezone": "Asia/Singapore",
+    "rawMatchesGeneratedPngPixels": true
+  },
+  {
+    "id": "morning-delivery",
+    "generator": "OpenAI built-in image_gen.imagegen",
+    "generatorOutputId": "exec-58bc599f-d0be-41de-8d97-57f60bd4fc2e",
+    "generatedOn": "2026-11-21",
+    "nativeDimensions": [
+      1672,
+      941
+    ],
+    "originalPngSha256": "4cfdbba0b70322f6bcc7b2077413016d67081bff742152645cb252895722892f",
+    "rawFile": "raw/morning-delivery.webp",
+    "rawSha256": "34d2f78f46da8c3f7f1bf903df31384337d29428780295a19a8f8f7ed7164519",
+    "rawBytes": 1438982,
+    "sourceReference": "Existing Sofa Arcade character identity, inspected and described in prompts. No third-party downloaded imagery.",
+    "promptFile": "generation-prompts.json",
+    "license": "See LICENSE-NOTES.md; original AI-assisted project artwork.",
+    "generatedTimezone": "Asia/Singapore",
+    "rawMatchesGeneratedPngPixels": true
+  },
+  {
+    "id": "switchback-grove",
+    "generator": "OpenAI built-in image_gen.imagegen",
+    "generatorOutputId": "exec-a5ee1221-c705-4c26-bd05-86fa256297f5",
+    "generatedOn": "2026-11-21",
+    "nativeDimensions": [
+      1672,
+      941
+    ],
+    "originalPngSha256": "1f4eb8051de824934ddcc857785f2ebdeb8f02ee783bd4bf0dff0363a5e866c7",
+    "rawFile": "raw/switchback-grove.webp",
+    "rawSha256": "7a29fedf3c07ebf58e3a88a733b08a4b24e019aa99e8fe0200eed940daefe271",
+    "rawBytes": 1614512,
+    "sourceReference": "Existing Sofa Arcade character identity, inspected and described in prompts. No third-party downloaded imagery.",
+    "promptFile": "generation-prompts.json",
+    "license": "See LICENSE-NOTES.md; original AI-assisted project artwork.",
+    "generatedTimezone": "Asia/Singapore",
+    "rawMatchesGeneratedPngPixels": true
+  },
+  {
+    "id": "moonlight-picnic",
+    "generator": "OpenAI built-in image_gen.imagegen",
+    "generatorOutputId": "exec-edb90ee1-5585-4cbb-8ce1-76ef24cb9f4d",
+    "generatedOn": "2026-11-21",
+    "nativeDimensions": [
+      1672,
+      941
+    ],
+    "originalPngSha256": "8a86c49d65c473eef7c66d8788a01420fe21c1aff5c42d245d3907f466aa8023",
+    "rawFile": "raw/moonlight-picnic.webp",
+    "rawSha256": "5e1c4c7edfe13b0c90278d178bac5939e9a53a6674682fa0d27078cfd5a344a9",
+    "rawBytes": 1608154,
+    "sourceReference": "Existing Sofa Arcade character identity, inspected and described in prompts. No third-party downloaded imagery.",
+    "promptFile": "generation-prompts.json",
+    "license": "See LICENSE-NOTES.md; original AI-assisted project artwork.",
+    "generatedTimezone": "Asia/Singapore",
+    "rawMatchesGeneratedPngPixels": true
+  }
+]

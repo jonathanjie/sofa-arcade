@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "browser": "151.0.7922.34",
+  "viewport": "1280x1080 and 390x844",
+  "transport": "loopback HTTP",
+  "certificateErrorsIgnored": false,
+  "simulatedHostOperations": true,
+  "realPhoneTrustVerified": false,
+  "realPhoneSensorsVerified": false,
+  "screenshots": [
+    "initial-1280.png",
+    "ready-1280.png",
+    "missing-trust-1280.png",
+    "permission-denied-1280.png",
+    "expired-1280.png",
+    "address-changed-1280.png",
+    "failed-1280.png",
+    "missing-trust-390.png",
+    "diagnostic-http-390.png"
+  ],
+  "checks": [
+    {
+      "name": "setup, status refresh and immediate touch fallback use only injected callbacks",
+      "passed": true
+    },
+    {
+      "name": "all required setup states are inspectable and produce safe links",
+      "passed": true
+    },
+    {
+      "name": "public PEM and CA-only profile download; no private bytes in download or UI",
+      "passed": true
+    },
+    {
+      "name": "callback failures and cancellation show safe retry copy without error contents",
+      "passed": true
+    },
+    {
+      "name": "unsafe origin and malformed status are rejected before rendering",
+      "passed": true
+    },
+    {
+      "name": "out-of-order refresh and late disposed callbacks cannot change the current view",
+      "passed": true
+    },
+    {
+      "name": "remove and root replacement require keyboard-accessible local confirmation",
+      "passed": true
+    },
+    {
+      "name": "disabling keeps the certificate; repeated mount/dispose owns only its root",
+      "passed": true
+    },
+    {
+      "name": "export rejects secret or mixed-purpose payloads without starting a download",
+      "passed": true
+    },
+    {
+      "name": "phone diagnostic reports actual page context and rejects synthetic events as sensor proof",
+      "passed": true
+    },
+    {
+      "name": "required wide states and 390px narrow layout fit with reduced motion and visible focus",
+      "passed": true
+    }
+  ]
+}

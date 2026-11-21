@@ -15,17 +15,23 @@
     "predev": "node scripts/prepare-game.mjs",
     "prebuild": "node scripts/prepare-game.mjs",
     "test": "node scripts/run-unit-tests.mjs",
-    "test:browser": "node --test server/room-browser.test.mjs",
+    "test:browser": "node --test server/room-browser.test.mjs server/realtime/gravity-orchard/tests/fixture-browser.test.mjs",
     "lan": "node scripts/lan-server.mjs",
     "package:lan": "node scripts/package-lan.mjs",
-    "test:integration": "node tests/integration/run.mjs"
+    "test:integration": "node tests/integration/run.mjs",
+    "bundle:runtime": "node scripts/bundle-runtime.mjs",
+    "test:gravity-orchard": "node tests/gravity-orchard-integration/run.mjs",
+    "test:gravity-browser": "node tests/gravity-orchard-integration/browser/run.mjs"
   },
   "dependencies": {
+    "@peculiar/x509": "3.1.0",
     "drizzle-orm": "0.45.2",
     "next": "16.3.4",
     "qrcode-generator": "^2.0.4",
     "react": "19.2.6",
     "react-dom": "19.2.6",
+    "reflect-metadata": "0.2.2",
+    "ws": "8.23.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -38,6 +44,7 @@
     "@vitejs/plugin-react": "6.0.2",
     "@vitejs/plugin-rsc": "0.5.26",
     "drizzle-kit": "0.31.10",
+    "esbuild": "0.28.0",
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.4",
     "json-rpc-2.0": "1.7.1",

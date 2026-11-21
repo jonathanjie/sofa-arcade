@@ -44,12 +44,17 @@ export const oddLawsRoomEngine = Object.freeze({
   apply: withRoomRuleCodes(oddLaws.apply),
 });
 
+/** Marker for the local realtime authority. No private simulation is browser/Worker wired. */
+export const gravityOrchardRoomEngine = Object.freeze({
+  playerIds: Object.freeze(['jon', 'lydia']), realtime: true,
+});
+
 /** Room infrastructure is shared; each playable game supplies its own rule engine. */
 const engines = new Map([[SOFA_GAME_ID, Object.freeze({
   playerIds: sofa.PLAYER_IDS,
   create: options => sofa.createGame({ ...options, maxRounds: 10 }),
   apply: sofa.applyAction,
-})], [ODD_LAWS_GAME_ID, oddLawsRoomEngine]]);
+})], [ODD_LAWS_GAME_ID, oddLawsRoomEngine], ['gravity-orchard', gravityOrchardRoomEngine]]);
 
 export function getGameEngine(id = SOFA_GAME_ID) {
   return getGame(id)?.status === 'playable' ? engines.get(id) || null : null;

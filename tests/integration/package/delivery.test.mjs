@@ -12,6 +12,13 @@ import { BROWSER_FILES, runtimeFiles } from '../../../scripts/runtime-files.mjs'
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const prefix = 'sofa-arcade-local/';
 const menuModules = ['effects.mjs', 'score.mjs'];
+// GO6's reviewed browser-only setup/diagnostic components live under desktop;
+// exact file exceptions do not expose native code, host tools or certificate stores.
+const publicSecureUi = new Set([
+  'desktop/secure-lan/index.mjs', 'desktop/secure-lan/setup.css',
+  'desktop/secure-lan/diagnostic.html', 'desktop/secure-lan/diagnostic.mjs',
+  'desktop/secure-lan/diagnostic-page.mjs', 'desktop/secure-lan/diagnostic.css',
+]);
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const forbidden = /(^|\/)(?:\.git|\.sofa-lan|\.env[^/]*|node_modules|fixtures|harness|tests?|__tests__|evidence|audio-evidence|sources|fragments)(?:\/|$)|\.(?:sqlite|sqlite3|db)(?:-wal|-shm)?$|\.test\.[cm]?js$|\.pem$/i;
 
@@ -112,7 +119,7 @@ test('generated production browser modules and root HTML match authored sources'
     menuModules.map(file => '/media/sofa-menu/' + file), 'Only pure menu audio modules are declared for browser delivery');
   for (const { url, source } of BROWSER_FILES) {
     assert.ok(!forbidden.test(url), `Browser path must not expose test/fixture state: ${url}`);
-    assert.ok(!source.startsWith('server/') && !source.startsWith('desktop/'));
+    assert.ok(!source.startsWith('server/') && (!source.startsWith('desktop/') || publicSecureUi.has(source)));
     if (source.startsWith('games/odd-laws-society/')) {
       // rules.mjs holds only the public v0.3 module switches; it imports nothing.
       assert.ok(['catalog.mjs', 'preview.mjs', 'errors.mjs', 'rules.mjs'].includes(source.slice('games/odd-laws-society/'.length)), `Only reviewed public engine helpers belong in browser delivery: ${source}`);

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "gameId": "gravity-orchard",
+  "title": "Over the Little Bridge",
+  "authoredFor": "jonathanjie/sofa-arcade",
+  "baseSha": "6c6eb9343958da591b4488366c2ada4000e3ba08",
+  "origin": "Original score, effect cues and arrangement data authored directly for this workstream; no recording, sound font, external sample, third-party melody or random-note generation.",
+  "sourceBrief": "Compose original music with recurring melody, deliberate harmony/bass, contrasting sections and cadences. Avoid random-note music. Provide the contracted scenes and restrained effects through the existing scheduler's event vocabulary; do not create another global AudioContext or preferences system. Music belongs on the host.",
+  "assignment": "docs/prompts/gravity-orchard/GO5-media.md",
+  "contract": "docs/GRAVITY_ORCHARD_CONTRACT.md section 8",
+  "inspectedReferences": [
+    { "path": "ui/audio.js", "role": "Unchanged shared scheduler, supported event fields, synthesis graph, user preferences and host/phone lifecycle" },
+    { "path": "ui/score.mjs", "role": "Existing collection composition and score conventions; melody not reused" },
+    { "path": "ui/media/odd-laws-society/score.mjs", "role": "Existing score/event interface and original-melody comparison" },
+    { "path": "ui/media/sofa-menu/score.mjs", "role": "Existing score/event interface and original-melody comparison" }
+  ],
+  "runtimeFiles": [
+    "ui/media/gravity-orchard/score.mjs",
+    "ui/media/gravity-orchard/events.mjs"
+  ],
+  "reviewOnly": [
+    "ui/media/gravity-orchard/audio-preview.mjs",
+    "ui/media/gravity-orchard/score.test.mjs",
+    "ui/media/gravity-orchard/sources/audio/**"
+  ],
+  "licenceNotes": "Original event data created for the repository owner. No third-party music recordings or samples are included. This notice does not change the owner's repository distribution terms or grant a separate repository-wide licence. Playwright, Chromium and ffmpeg are development tools, not runtime media dependencies.",
+  "auditionPolicy": "No human listening or physical-speaker audition is claimed. Browser rendering, numerical measurements and MP3 decoding are reported separately.",
+  "evidence": "render-report.json records source hashes, exact render methodology, measured levels, oscillator concurrency, seam checks, decoded-preview hashes and browser information. Missing render evidence is a failing test."
+}

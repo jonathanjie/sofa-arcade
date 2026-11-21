@@ -23,6 +23,7 @@ async function pollingHarness(error, gameId = 'odd-laws-society') {
     state, app: { querySelector: () => pill }, document: { hidden: false }, AbortController,
     SOFA_GAME_ID: 'sofa-kingdoms', roomEpoch: 1, pollInFlight: false, pollAbort: null,
     lastPollAt: 0, streamConnected: false, streamTerminalStatus: null, isLocal: () => false,
+    orchardGame: null, // These existing-game journeys have no mounted realtime orchard owner.
     collectionGame: { setConnection(next) { statuses.push(next); return next; } },
     api: async () => { throw error; }, stopPolling: () => { stopped++; },
     render: () => { rendered++; }, receiveNetworkRoom: () => assert.fail('An error must not supply a board'),

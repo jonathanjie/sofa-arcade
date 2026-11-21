@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "gameId": "gravity-orchard",
+  "component": "phone",
+  "productionDependencies": [],
+  "browserFiles": [
+    { "url": "/games/gravity-orchard/phone/index.mjs", "source": "ui/games/gravity-orchard/phone/index.mjs" },
+    { "url": "/games/gravity-orchard/phone/motion.mjs", "source": "ui/games/gravity-orchard/phone/motion.mjs" },
+    { "url": "/games/gravity-orchard/phone/tuning.mjs", "source": "ui/games/gravity-orchard/phone/tuning.mjs" },
+    { "url": "/games/gravity-orchard/phone/icons.mjs", "source": "ui/games/gravity-orchard/phone/icons.mjs" },
+    { "url": "/games/gravity-orchard/phone/phone.css", "source": "ui/games/gravity-orchard/phone/phone.css" }
+  ],
+  "exclude": ["fixture/**", "tests/**", "screenshots/**", "test-results/**", "node_modules/**", "package.json", "package-lock.json", "runtime-files.json"]
+}

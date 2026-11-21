@@ -10,7 +10,7 @@ A collection of living-room games for Jon and Lydia: one local Mac host, one sha
 | --- | --- | --- |
 | Sofa Kingdoms | Playable | A crumb-collecting rivalry on a board rearranged by Lala |
 | Borrowed Minutes | Planned | A cooperative time-loop heist with echoes of earlier attempts |
-| Gravity Orchard | Planned | Rotate gravity to guide falling fruit into your baskets |
+| Gravity Orchard | Playable on the local Mac host | Tilt your garden and pass fruit across the bridge to fill picnic orders together |
 | Afterglow Market | Planned | Build and trade at an unpredictable night market |
 | The Odd Laws Society | Playable in the local integration candidate | Build a nine-plot borough through six sealed councils, finite markets and changing laws |
 | The Last Ninety Seconds | Planned | Reconstruct a mystery from clues split across two phones |

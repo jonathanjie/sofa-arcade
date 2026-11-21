@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Gravity Orchard — Art & Sound</title><link rel="stylesheet" href="/ui/media/gravity-orchard/sources/gallery.css"></head>
+<body>
+  <header class="masthead"><a class="wordmark" href="/" aria-label="Gravity Orchard media gallery"><span class="brand-mark" aria-hidden="true">✦</span> SOFA ARCADE <span class="slash">/</span> <span class="wordmark-sub">MEDIA ATELIER</span></a><div class="edition">GRAVITY ORCHARD <span>01 — FINAL MEDIA</span></div></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">A NEW PICNIC IN THE COLLECTION</p><h1>Gravity Orchard</h1><p class="lede">Two gardens, one little bridge, and a picnic worth sharing.</p></div><div class="review-controls"><label><input id="motion" type="checkbox"> Reduce motion</label><label><input id="night" type="checkbox"> Dark surface</label><span id="asset-status" role="status">Decoding finished assets…</span></div></div>
+    <nav class="tabs" role="tablist" aria-label="Media categories">
+      <button role="tab" data-tab="overview" id="tab-overview" aria-controls="overview" aria-selected="true">The collection card</button>
+      <button role="tab" data-tab="symbols" id="tab-symbols" aria-controls="symbols" aria-selected="false" tabindex="-1">Fruit & baskets</button>
+      <button role="tab" data-tab="gardens" id="tab-gardens" aria-controls="gardens" aria-selected="false" tabindex="-1">Three gardens</button>
+      <button role="tab" data-tab="characters" id="tab-characters" aria-controls="characters" aria-selected="false" tabindex="-1">The cast in motion</button>
+      <button role="tab" data-tab="sound" id="tab-sound" aria-controls="sound" aria-selected="false" tabindex="-1">Listen to the orchard</button>
+      <button role="tab" data-tab="fallbacks" id="tab-fallbacks" aria-controls="fallbacks" aria-selected="false" tabindex="-1">Resilience</button>
+    </nav>
+    <section id="overview" role="tabpanel" aria-labelledby="tab-overview"></section>
+    <section id="symbols" role="tabpanel" aria-labelledby="tab-symbols" hidden></section>
+    <section id="gardens" role="tabpanel" aria-labelledby="tab-gardens" hidden><div class="section-heading"><div><h2>A different light in every garden</h2><p>Decoration stays beneath the public geometry. This is a material review, not a simulation.</p></div><label>Garden <select id="stage"><option value="morning-delivery">Morning Delivery</option><option value="switchback-grove">Switchback Grove</option><option value="moonlight-picnic">Lala’s Moonlight Picnic</option></select></label></div><canvas id="board" width="1280" height="720" aria-label="Garden material review with two trays, four fruit and baskets, Jon, Lydia and Lala" role="img"></canvas><div id="terrain-catalog" class="terrain-catalog"></div></section>
+    <section id="characters" role="tabpanel" aria-labelledby="tab-characters" hidden></section>
+    <section id="sound" role="tabpanel" aria-labelledby="tab-sound" hidden><div class="section-heading"><div><h2>Over the Little Bridge</h2><p>A returning melody, an answering phrase, and room for conversation.</p></div><span class="pill">D MAJOR · 4/4 · 104 BPM</span></div><div id="audio-preview"></div><p class="review-note">Live preview uses the collection’s shared host scheduler and saved music/effects controls. Audio begins only after a gesture. Rendered playback checks are not a human listening review.</p></section>
+    <section id="fallbacks" role="tabpanel" aria-labelledby="tab-fallbacks" hidden></section>
+    <footer>ORIGINAL ART & COMPOSITION <span>Review fixture · no live room · no gameplay authority</span></footer>
+  </main>
+  <script type="module" src="/ui/media/gravity-orchard/sources/gallery.mjs"></script>
+</body></html>

@@ -1,0 +1,20 @@
+{
+  "name": "sofa-arcade-secure-lan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "GO6 isolated trusted-local HTTPS certificate and listener components",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "test": "node --test certificates/tests/*.test.mjs tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@peculiar/x509": "3.1.0",
+    "reflect-metadata": "0.2.2"
+  },
+  "devDependencies": {
+    "ws": "8.23.0"
+  }
+}

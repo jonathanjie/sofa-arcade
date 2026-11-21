@@ -54,10 +54,24 @@
       "postHandoffCorrections": [
         {
           "path": "server/lan.mjs",
-          "blob": "e6c2d872a32179fddfe46e0c6d90f340249147cb",
+          "blob": "01a311b079e89fc31cb013ed9aaabd6789cd0612",
           "mode": "100644",
-          "reason": "Extend only explicit serving entries for shared adapters, reviewed public game/UI/media files and exact static assets; the menu-audio follow-up adds exactly /media/sofa-menu/score.mjs and effects.mjs. Canonicalization, Host/Origin/API/SSE logic remain as reviewed. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9.",
-          "verification": "Existing 81-test root suite passes. Focused real-LAN/portable checks verify exact menu source bytes and 404 for existing adjacent authoring/evidence canaries. Full package, shared-audio lifecycle and browser/native acceptance run at the PR head."
+          "reason": "Extend only explicit serving entries for shared adapters, reviewed public game/UI/media files and exact static assets; the menu-audio follow-up adds exactly /media/sofa-menu/score.mjs and effects.mjs. Canonicalization, Host/Origin/API/SSE logic remain as reviewed. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9. GO7: mount one shared authoritative coordinator on the existing HTTP upgrade path, serve only explicitly inventoried browser assets, and expose narrow shared HTTPS lifecycle seams. Add optional fixed-label timing around the same SQLite connection and realtime clock, without changing uninstrumented objects or scheduling.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit. The 35 GO7 tests include two timing regressions covering disk-backed SQLite, heartbeat, both clocks and observer failure isolation."
+        },
+        {
+          "path": "server/rooms.mjs",
+          "blob": "48675149012669a1aacf0a2f5e3f05af646b1687",
+          "mode": "100644",
+          "reason": "GO7: reuse existing credential verification and expiry, persist coarse authoritative lifecycle checkpoints in the same room database, and project the current realtime view through HTTP/SSE.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "ui/transport.mjs",
+          "blob": "ea727ac90c4402df361584cccb66f8ac1d6daa76",
+          "mode": "100644",
+          "reason": "GO7: preserve legacy lifecycle transport while reporting the optional trusted controller URL and integration-candidate flag. Actual GO7 Mac setup screenshots exposed loopback phone links and a loopback motion-check URL. Share canonical, non-loopback LAN origin selection between QR and the display-only setup status; retain the full native status, certificate identities and listener allowlist.",
+          "verification": "All 13 focused GO7 bridge tests pass, including immutable native status, canonical-origin rejection, preferred-LAN ordering, disabled/error suppression and no-LAN safe display. Independent authority review found no source blocker. Native DOM assertions require every setup link to be a member of the actual native allowlist and the motion-check URL to use the preferred LAN origin; corrected actual Mac evidence remains a required gate."
         }
       ],
       "review": {
@@ -205,39 +219,277 @@
       ],
       "postHandoffCorrections": [
         {
+          "path": "desktop/README.md",
+          "blob": "1e61814c80db2bb450913085903bb8a9e859ead5",
+          "mode": "100644",
+          "reason": "GO7: document the bounded native certificate setup capabilities, shared host lifecycle, and remaining physical acceptance gates.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/host/entry.mjs",
+          "blob": "94a7bd6d1226cdd6342e68c6548686e14faa3039",
+          "mode": "100644",
+          "reason": "GO7: accept private native secure-setup commands over the existing owned process pipe, and opt the native acceptance build into the planned candidate. Record bounded acceptance-only numeric host timing in memory and write a private file after owned shutdown; expose no diagnostic over HTTP or the native stdout protocol.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit. The actual owned child regression verifies private mode, bounded output, no room/token/path contents, public 404 and EOF shutdown."
+        },
+        {
+          "path": "desktop/host/lifecycle.mjs",
+          "blob": "713bf8b16bc10ce56397b026e94d53ae021adaa9",
+          "mode": "100644",
+          "reason": "GO7: manage optional HTTPS/WSS on the existing shared room host and coordinator, retain persistent settings, and stop both listeners during owned-process shutdown.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/host/secure-lan.mjs",
+          "blob": "fc10a66032e0f3e451be5851ac443c16da0e974a",
+          "mode": "100644",
+          "reason": "GO7: adapt the exact reviewed GO6 helper to the shared host with bounded status, provision, public certificate export and disable operations.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/native-bridge.js",
+          "blob": "ab26b0ed00043e09e7778cefb7a56a6cbace17c6",
+          "mode": "100644",
+          "reason": "GO7: expose four bounded secure-setup capabilities only through the owned native main window; this compile-time script is never served to browsers.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/package-lock.json",
+          "blob": "c3ca1403b74f4636b1b3e8cccca50290893c21f3",
+          "mode": "100644",
+          "reason": "GO7: lock the exact Acorn development parser and its integrity for runtime closure verification.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/package.json",
+          "blob": "f74a3fab695fd3b8455b6c212c456d464a96fc3e",
+          "mode": "100644",
+          "reason": "GO7: add pinned Acorn for syntax-aware runtime closure verification; no new player runtime package installation is required.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
           "path": "desktop/runtime-manifest.json",
-          "blob": "47cd486095958433960b20c09aae15348000c11b",
+          "blob": "3d9e42e59318a82f9fb9ac87ca3819d8978f1a2e",
           "mode": "100644",
-          "reason": "Retain the 79 reviewed integration entries added to the original25-file manifest and append exactly two pure menu audio modules. The separate normal Mac Quit correction is recorded under its precise native source, dependency and test paths below. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9.",
-          "verification": "Independent browser/Tauri closure and reproducible extracted-ZIP serving tests pass with exactly106 runtime entries. Shared lifecycle and real-browser menu playback tests accompany the change; existing combined macOS acceptance remains required before merge."
+          "reason": "Retain the 79 reviewed integration entries added to the original25-file manifest and append exactly two pure menu audio modules. The separate normal Mac Quit correction is recorded under its precise native source, dependency and test paths below. Add the requested original Odd Laws cover to the explicit runtime asset inventory; retain all menu-music and native-shutdown fixes from PR #9. GO7: extend the explicit native runtime inventory to the reviewed orchard browser, authority, media, private dependency bundle and secure-setup closure.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
         },
         {
-          "path": "desktop/src-tauri/src/native.rs",
-          "blob": "d0570b371baed28f2c4215efbfb7e159ad07f6c6",
+          "path": "desktop/scripts/runtime-files.mjs",
+          "blob": "44eed3ab474ca925603ddf425d94ceffd7959790",
           "mode": "100644",
-          "reason": "Preserve the stable bare-root resume correction and route normal AppKit Quit through the same acknowledged document-retirement and owned-child shutdown. Distinguish draining from complete, prevent queued window recreation during quit, and report failed shutdown truthfully.",
-          "verification": "The existing exact-head ARM relaunch lost its newest storage marker and recorded ready after Quit. Pinned Tao/AppKit termination was independently traced. Seventeen Rust tests pass; all unchanged recent-write, credential, audio-preference and explicit-exit checks must pass with stopped-state evidence on both native architectures."
+          "reason": "GO7: parse module dependencies with Acorn so bundled class methods and comments cannot masquerade as imports; preserve exact allowed nonliteral import seams and reject new ones.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
         },
         {
-          "path": "desktop/wdio.native.mjs",
-          "blob": "47e1b1907228e0e87730b2a3d27577b5fd7818a8",
+          "path": "desktop/secure-lan/.gitignore",
+          "blob": "c2658d7d1b31848c3b71960543cb0368e56cd4c7",
           "mode": "100644",
-          "reason": "Retain the PID-specific normal Mac Quit helper, executable/parent/sidecar ownership checks and closure waits; additionally require final supervisor state stopped before recording successful native shutdown.",
-          "verification": "Syntax and independent lifecycle review pass. The assertion gates both desktop acceptance and the integrated three-process suite. No sleeps, marker relocation, credential changes or relaxed assertions are introduced; corrected exact-head Mac CI is required."
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
         },
         {
-          "path": "desktop/src-tauri/src/termination.rs",
-          "blob": "0136cd910c366ac9d93339334e575392bb8e603f",
+          "path": "desktop/secure-lan/README.md",
+          "blob": "8280a8629dbcc9d529ce0a674da9d83e3a99c63b",
           "mode": "100644",
-          "reason": "Add a focused public AppKit applicationShouldTerminate callback to the existing Tao delegate without replacing callbacks or private API. A platform-independent coordinator prevents duplicate/racing Quit requests from exiting during cleanup; only successful completion permits a main-thread termination reply.",
-          "verification": "Six new coordinator ordering/failure tests are exercised by the existing Rust no-default-features suite, 17 passing overall. Same-delegate registration, typed Objective-C ABI, failure paths and common-mode dispatch independently reviewed. Both actual macOS architecture gates remain required."
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
         },
         {
-          "path": "desktop/src-tauri/src/lib.rs",
-          "blob": "cfe72c61666711fce9cdf1ff395966a583ede192",
+          "path": "desktop/secure-lan/diagnostic-page.mjs",
+          "blob": "638c4cffd18d906ae85613307aaee0846b6a3e08",
           "mode": "100644",
-          "reason": "Expose the focused termination coordinator for native builds and tests so the existing platform-independent Rust CI executes its ordering/failure cases.",
-          "verification": "Existing no-default-features Rust suite passes all 17 tests, including six coordinator regressions; production compilation remains a real Mac CI gate."
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/diagnostic.css",
+          "blob": "2d8e71fb992495c75ec1091275fc32628fc23714",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/diagnostic.html",
+          "blob": "1830f989d308f21053a42a9d67adda0968bcbf74",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/diagnostic.mjs",
+          "blob": "5fedbfe80f7794f6fe2df5a13528a93032f9b6b6",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/README.md",
+          "blob": "3078a025b3362fab6dc9c6afc6b2f74ffac0ef4c",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/address-changed-1280.png",
+          "blob": "4f2f41cd71970d62d6832dde23d883fd0436c54a",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/browser-results.json",
+          "blob": "ed7c426941fefe3642174fbab1d7f696a084bd4a",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/diagnostic-http-390.png",
+          "blob": "8213fde454c33a80b4f633d7d0f71b928f79d242",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/expired-1280.png",
+          "blob": "b0917dc340f619fd018a027534bf429e5ef71287",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/failed-1280.png",
+          "blob": "80ad5021fae5b5e3e6ceced405260500e53f6bba",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/initial-1280.png",
+          "blob": "727db363cf2164f18b62a116ea2f07d88cee8df5",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/missing-trust-1280.png",
+          "blob": "a65aed734daedcd3c586d524827328d2fd604db1",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/missing-trust-390.png",
+          "blob": "cb8f5ca3b434faa19517daf8a21a122b41e85d3a",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/permission-denied-1280.png",
+          "blob": "af8b62595cef9be02ba477b10d8acc24e3549ab5",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/ready-1280.png",
+          "blob": "44ffa3037e7ba21cc8d18bb994d1532d7f39276f",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/runtime.json",
+          "blob": "6f9a3edbccccb1f3d12afee76c33353fcc851429",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/evidence/tested-sha.txt",
+          "blob": "30ad2a9d434e96236519a2ec7bbca851ad067482",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/fixtures/assets.mjs",
+          "blob": "3987b6f72b98be25fcc229656847a828df086399",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/fixtures/fixture.mjs",
+          "blob": "76f3c77ca99dc962d68a44f8978603dcb3392992",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/fixtures/setup.html",
+          "blob": "6750263c672c6b9c1be7645de7e6f7b57575fdc3",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/index.mjs",
+          "blob": "1ad2c6c4859fdb5bf7cb85a4b458449b655cae50",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/package-lock.json",
+          "blob": "b9e959f0f7c8f1493577a7d442e2edd13b9be9ff",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/package.json",
+          "blob": "f0cfdf25dee5e8596824d70f1cfbf074cb4efe00",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/runtime-files.json",
+          "blob": "5fed6e16879f36d5a4969f37ba2eb74c6f7b27a4",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/setup.css",
+          "blob": "8d15263133855a3d68d7eb7f6ed455089fe96301",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/tests/browser.mjs",
+          "blob": "27f819bff9ed1226eb0da46ee448504fec2c7607",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/secure-lan/tests/diagnostic.test.mjs",
+          "blob": "9e6eae7322c3b33b43a42c75e69dbd7f707cdd12",
+          "mode": "100644",
+          "reason": "GO7: assemble this exact unmodified GO6 file from PR #16 at 33d36dc15f7174dec2066e4144b3f07c551fbc4f. WS5 protects the whole desktop tree, so the added GO6 source/evidence is recorded explicitly without changing WS5 or GO6 handoff heads.",
+          "verification": "Exact blob equals the reviewed GO6 handoff; GO6 workflow 44780325601 passed. GO7 separately verifies the complete assembled component lock and runtime inventory."
+        },
+        {
+          "path": "desktop/src-tauri/Cargo.lock",
+          "blob": "e6ddb64eec024acf02dcf7540707f9674dca3be8",
+          "mode": "100644",
+          "reason": "Record only the application dependency edges to the already-locked objc2 and objc2-app-kit packages used by the normal Mac Quit correction; preserve every resolved package version and checksum.",
+          "verification": "Diff inspection confirms exactly two dependency-list lines and no package/version/checksum changes. Locked Rust suite passes; native feature graphs/builds remain CI gates."
         },
         {
           "path": "desktop/src-tauri/Cargo.toml",
@@ -247,11 +499,60 @@
           "verification": "Locked dependency graph reviewed; the lockfile delta adds only two existing packages to this application dependency list. Existing Linux runtime/Rust and both production Mac builds must pass."
         },
         {
-          "path": "desktop/src-tauri/Cargo.lock",
-          "blob": "e6ddb64eec024acf02dcf7540707f9674dca3be8",
+          "path": "desktop/src-tauri/src/lib.rs",
+          "blob": "b0dd93c81fcaf0a249e1eddb51bb6b8b1a24d2bb",
           "mode": "100644",
-          "reason": "Record only the application dependency edges to the already-locked objc2 and objc2-app-kit packages used by the normal Mac Quit correction; preserve every resolved package version and checksum.",
-          "verification": "Diff inspection confirms exactly two dependency-list lines and no package/version/checksum changes. Locked Rust suite passes; native feature graphs/builds remain CI gates."
+          "reason": "Expose the focused termination coordinator for native builds and tests so the existing platform-independent Rust CI executes its ordering/failure cases. GO7: include the bounded secure capability module while retaining the normal Mac Quit termination coordinator.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/src-tauri/src/native.rs",
+          "blob": "7d077affeefe7d87b8f57be1741956243022d14e",
+          "mode": "100644",
+          "reason": "Preserve the stable bare-root resume correction and route normal AppKit Quit through the same acknowledged document-retirement and owned-child shutdown. Distinguish draining from complete, prevent queued window recreation during quit, and report failed shutdown truthfully. GO7: bind secure commands to the current owned main window and generation, safely export only public certificate material, and retain the stable bare-root origin and normal AppKit Quit path. Independent GO7 review also releases Status before synchronous WebView calls to prevent a UI-thread lock-order deadlock.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/src-tauri/src/process.rs",
+          "blob": "f617322625e696f991aa1c9264d1b5e3b1c2c7b9",
+          "mode": "100644",
+          "reason": "GO7: pass only the explicit native-test candidate flag to the owned sidecar; production follows the shared catalog state. Pass the fixed private runtime-timing switch only in the native-e2e build; production environment clearing prevents inheritance.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit. All 20 non-GUI Rust tests pass, including explicit production-switch exclusion."
+        },
+        {
+          "path": "desktop/src-tauri/src/protocol.rs",
+          "blob": "b440a9daadb096c24d87be5ecd3793d7fc0ef8c1",
+          "mode": "100644",
+          "reason": "GO7: validate bounded optional secure status in the private supervisor protocol while preserving readiness and shutdown semantics.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/src-tauri/src/secure.rs",
+          "blob": "ee43a4c6502ef8f29dbc691d01b5d5b7d591d38c",
+          "mode": "100644",
+          "reason": "GO7: validate the four secure capability requests and responses, rejecting unknown fields, stale window origins and private export material.",
+          "verification": "GO7 shared authority, browser bridge, native host and package-closure tests; exact integrated browser and real macOS results are tracked in docs/workstreams/gravity-orchard-go7.md and the integration PR. Hardware-only gates remain explicit."
+        },
+        {
+          "path": "desktop/src-tauri/src/termination.rs",
+          "blob": "0136cd910c366ac9d93339334e575392bb8e603f",
+          "mode": "100644",
+          "reason": "Add a focused public AppKit applicationShouldTerminate callback to the existing Tao delegate without replacing callbacks or private API. A platform-independent coordinator prevents duplicate/racing Quit requests from exiting during cleanup; only successful completion permits a main-thread termination reply.",
+          "verification": "Six new coordinator ordering/failure tests are exercised by the existing Rust no-default-features suite, 17 passing overall. Same-delegate registration, typed Objective-C ABI, failure paths and common-mode dispatch independently reviewed. Both actual macOS architecture gates remain required."
+        },
+        {
+          "path": "desktop/wdio.native.mjs",
+          "blob": "47e1b1907228e0e87730b2a3d27577b5fd7818a8",
+          "mode": "100644",
+          "reason": "Retain the PID-specific normal Mac Quit helper, executable/parent/sidecar ownership checks and closure waits; additionally require final supervisor state stopped before recording successful native shutdown.",
+          "verification": "Syntax and independent lifecycle review pass. The assertion gates both desktop acceptance and the integrated three-process suite. No sleeps, marker relocation, credential changes or relaxed assertions are introduced; corrected exact-head Mac CI is required."
+        },
+        {
+          "path": ".github/workflows/desktop.yml",
+          "blob": "93c6600fd91d25fae4bfde66d2a0724402346991",
+          "mode": "100644",
+          "reason": "GO7 actual Intel CI proved ripgrep is absent on the Mac runner. Replace the conditional rg check, which swallowed command-not-found, with installed Node reading that fails on missing/empty graph or any native test-driver dependency. Keep the production build, signing, DMG, startup and WKWebView gates intact.",
+          "verification": "The exact workflow script passes a production-only graph and rejects driver-bearing, empty and missing files. Required actual macOS ARM/Intel production graph and package results remain in the GO7 report and PR."
         }
       ],
       "review": {

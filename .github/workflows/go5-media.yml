@@ -1,0 +1,77 @@
+name: GO5 media
+
+on:
+  pull_request:
+    paths:
+      - 'public/assets/gravity-orchard/**'
+      - 'ui/media/gravity-orchard/**'
+      - 'ui/audio.js'
+      - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
+      - '.github/workflows/go5-media.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/assets/gravity-orchard/**'
+      - 'ui/media/gravity-orchard/**'
+      - '.github/workflows/go5-media.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  artwork-animation-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/media/gravity-orchard/package-lock.json
+      - name: Install locked media authoring tools
+        run: npm ci --prefix ui/media/gravity-orchard --no-audit --no-fund
+      - name: Reproduce symbols, canonical manifest, browser adapter and exact inventory
+        run: |
+          node ui/media/gravity-orchard/sources/symbols/build.mjs
+          node ui/media/gravity-orchard/sources/assemble.mjs
+          git diff --exit-code -- public/assets/gravity-orchard ui/media/gravity-orchard/manifest-data.mjs ui/media/gravity-orchard/runtime-files.json ui/media/gravity-orchard/sources/symbols/fragment.json
+      - name: Install Chromium and audio encoder for actual decode/render checks
+        run: |
+          browser_path=""
+          for candidate in chromium chromium-browser google-chrome google-chrome-stable; do
+            if candidate_path="$(command -v "$candidate")" && "$candidate_path" --version; then
+              browser_path="$candidate_path"
+              break
+            fi
+          done
+          if [ -z "$browser_path" ]; then
+            node ui/media/gravity-orchard/node_modules/playwright/cli.js install --with-deps chromium
+            browser_path="$(node -p 'require("./ui/media/gravity-orchard/node_modules/playwright").chromium.executablePath()')"
+            "$browser_path" --version
+          fi
+          echo "GO5_BROWSER=$browser_path" >> "$GITHUB_ENV"
+          echo "CHROMIUM_PATH=$browser_path" >> "$GITHUB_ENV"
+          command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+      - name: Render seven arrangements, cue reel and scene/loop transitions through the shared scheduler
+        run: node ui/media/gravity-orchard/sources/audio/render.mjs --write --encode
+      - name: Validate final assets, all atlas poses, inventory, score timing and rendered levels
+        run: npm test --prefix ui/media/gravity-orchard
+      - name: Preserve existing rules, room and audio contracts
+        run: npm test
+      - name: Render 720p, 1080p and phone galleries; test motion, errors and audio playback
+        run: node ui/media/gravity-orchard/sources/browser-check.mjs
+      - name: Retain exact-commit render evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gravity-orchard-media-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ui/media/gravity-orchard/sources/evidence/latest/
+            ui/media/gravity-orchard/sources/audio/render-report.json
+            ui/media/gravity-orchard/sources/audio/previews/
+          if-no-files-found: error
+          retention-days: 14

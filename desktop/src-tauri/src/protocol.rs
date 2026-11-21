@@ -2,7 +2,8 @@ use serde::Deserialize;
 use std::io::{self, BufRead};
 use url::Url;
 
-pub const MAX_RECORD_BYTES: usize = 4096;
+pub const MAX_RECORD_BYTES: usize = 16384;
+pub const MAX_READINESS_BYTES: usize = 4096;
 pub const MAX_CONTROLLER_URLS: usize = 32;
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
@@ -16,6 +17,8 @@ pub struct Readiness {
     pub controller_urls: Vec<String>,
     #[serde(default)]
     pub reason: Option<String>,
+    #[serde(default)]
+    pub secure_controller_status: Option<crate::secure::SecureControllerStatus>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,6 +36,7 @@ pub enum Record {
     Ready(Readiness),
     RefreshRequested,
     Failure(&'static str),
+    Secure(crate::secure::SecureResult),
 }
 
 /// Reads at most one bounded line. No unbounded `read_line`, retained logs, or raw error dumps.
@@ -70,6 +74,11 @@ pub fn parse_record(line: &[u8], expected_port: u16) -> Result<Record, &'static 
     if line.len() > MAX_RECORD_BYTES {
         return Err("oversized readiness record");
     }
+    if let Ok(value) = serde_json::from_slice::<crate::secure::SecureResult>(line) {
+        value.validate()?;
+        return Ok(Record::Secure(value));
+    }
+    if line.len() > MAX_READINESS_BYTES { return Err("oversized readiness record"); }
     if let Ok(error) = serde_json::from_slice::<HostError>(line) {
         if error.kind != "error" || error.protocol_version != 1 || error.message.len() > 512 {
             return Err("invalid readiness record");
@@ -137,6 +146,7 @@ pub fn parse_record(line: &[u8], expected_port: u16) -> Result<Record, &'static 
             return Err("invalid controller address");
         }
     }
+    if let Some(status) = &value.secure_controller_status { status.validate()?; }
     Ok(Record::Ready(value))
 }
 
@@ -249,5 +259,20 @@ mod tests {
         ] {
             assert!(!allowed_game_navigation(&Url::parse(bad).unwrap(), 4177));
         }
+    }
+    #[test]
+    fn secure_status_is_additive_but_readiness_and_result_shapes_remain_bounded() {
+        let mut value: serde_json::Value = serde_json::from_str(&good()).unwrap();
+        let status = serde_json::json!({"enabled": false, "status":"needs-setup", "controllerOrigins":[], "requiresPhoneTrust":false});
+        value["secureControllerStatus"] = status.clone();
+        assert!(matches!(parse_record(&serde_json::to_vec(&value).unwrap(), 4177), Ok(Record::Ready(_))));
+        value["secureControllerStatus"]["privateKey"] = serde_json::json!("untrusted");
+        assert!(parse_record(&serde_json::to_vec(&value).unwrap(), 4177).is_err());
+        let mut response = serde_json::json!({"type":"secure-result", "protocolVersion":1, "id":"native-1", "operation":"getStatus", "ok":true, "status":status});
+        assert!(matches!(parse_record(&serde_json::to_vec(&response).unwrap(), 4177), Ok(Record::Secure(_))));
+        response["operation"] = serde_json::json!("loadTlsMaterial");
+        assert!(parse_record(&serde_json::to_vec(&response).unwrap(), 4177).is_err());
+        let mut oversized = good().into_bytes(); oversized.resize(MAX_READINESS_BYTES + 1, b' ');
+        assert!(parse_record(&oversized, 4177).is_err());
     }
 }

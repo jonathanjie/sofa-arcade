@@ -39,6 +39,14 @@ pub fn host_command(paths: &Paths, port: u16) -> io::Result<Command> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
+    // A candidate is reachable only in the explicit instrumented acceptance
+    // build until GO7 enables the ordinary production catalog after its gates.
+    #[cfg(feature = "native-e2e")]
+    command.arg("--gravity-orchard-candidate");
+    // The bounded private timing file is collected by the acceptance harness;
+    // the production child never inherits or receives this diagnostic switch.
+    #[cfg(feature = "native-e2e")]
+    command.env("SOFA_NATIVE_E2E_TIMING", "1");
     Ok(command)
 }
 
@@ -112,6 +120,8 @@ mod tests {
         assert!(!command
             .get_envs()
             .any(|(k, _)| k == "NODE_OPTIONS" || k == "NODE_PATH"));
+        #[cfg(not(feature = "native-e2e"))]
+        assert!(!command.get_envs().any(|(key, _)| key == "SOFA_NATIVE_E2E_TIMING"));
         assert!(host_command(
             &Paths {
                 node: "node".into(),

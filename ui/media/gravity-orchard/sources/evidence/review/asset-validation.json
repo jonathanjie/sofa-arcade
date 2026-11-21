@@ -1,0 +1,650 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "assetCount": 49,
+  "runtimeFiles": 55,
+  "runtimeBytes": 996092,
+  "productionDependencies": [],
+  "assets": [
+    {
+      "key": "fruit-apple",
+      "src": "/assets/gravity-orchard/fruit/apple.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 720,
+      "format": "svg",
+      "transparentPixels": 10196,
+      "opaquePixels": 5791
+    },
+    {
+      "key": "basket-apple-ordinary",
+      "src": "/assets/gravity-orchard/baskets/apple-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1449,
+      "format": "svg",
+      "transparentPixels": 14529,
+      "opaquePixels": 10651
+    },
+    {
+      "key": "basket-apple-accepting",
+      "src": "/assets/gravity-orchard/baskets/apple-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1651,
+      "format": "svg",
+      "transparentPixels": 12803,
+      "opaquePixels": 12173
+    },
+    {
+      "key": "basket-apple-rejecting",
+      "src": "/assets/gravity-orchard/baskets/apple-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1684,
+      "format": "svg",
+      "transparentPixels": 12711,
+      "opaquePixels": 12253
+    },
+    {
+      "key": "basket-apple-full",
+      "src": "/assets/gravity-orchard/baskets/apple-full.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1756,
+      "format": "svg",
+      "transparentPixels": 13602,
+      "opaquePixels": 11381
+    },
+    {
+      "key": "fruit-plum",
+      "src": "/assets/gravity-orchard/fruit/plum.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 809,
+      "format": "svg",
+      "transparentPixels": 10428,
+      "opaquePixels": 5545
+    },
+    {
+      "key": "basket-plum-ordinary",
+      "src": "/assets/gravity-orchard/baskets/plum-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1538,
+      "format": "svg",
+      "transparentPixels": 14529,
+      "opaquePixels": 10651
+    },
+    {
+      "key": "basket-plum-accepting",
+      "src": "/assets/gravity-orchard/baskets/plum-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1740,
+      "format": "svg",
+      "transparentPixels": 12803,
+      "opaquePixels": 12173
+    },
+    {
+      "key": "basket-plum-rejecting",
+      "src": "/assets/gravity-orchard/baskets/plum-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1773,
+      "format": "svg",
+      "transparentPixels": 12711,
+      "opaquePixels": 12253
+    },
+    {
+      "key": "basket-plum-full",
+      "src": "/assets/gravity-orchard/baskets/plum-full.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1845,
+      "format": "svg",
+      "transparentPixels": 13602,
+      "opaquePixels": 11381
+    },
+    {
+      "key": "fruit-pear",
+      "src": "/assets/gravity-orchard/fruit/pear.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 906,
+      "format": "svg",
+      "transparentPixels": 10973,
+      "opaquePixels": 4984
+    },
+    {
+      "key": "basket-pear-ordinary",
+      "src": "/assets/gravity-orchard/baskets/pear-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1635,
+      "format": "svg",
+      "transparentPixels": 14529,
+      "opaquePixels": 10651
+    },
+    {
+      "key": "basket-pear-accepting",
+      "src": "/assets/gravity-orchard/baskets/pear-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1837,
+      "format": "svg",
+      "transparentPixels": 12803,
+      "opaquePixels": 12173
+    },
+    {
+      "key": "basket-pear-rejecting",
+      "src": "/assets/gravity-orchard/baskets/pear-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1870,
+      "format": "svg",
+      "transparentPixels": 12711,
+      "opaquePixels": 12253
+    },
+    {
+      "key": "basket-pear-full",
+      "src": "/assets/gravity-orchard/baskets/pear-full.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1942,
+      "format": "svg",
+      "transparentPixels": 13602,
+      "opaquePixels": 11381
+    },
+    {
+      "key": "fruit-starfruit",
+      "src": "/assets/gravity-orchard/fruit/starfruit.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 797,
+      "format": "svg",
+      "transparentPixels": 11972,
+      "opaquePixels": 4010
+    },
+    {
+      "key": "basket-starfruit-ordinary",
+      "src": "/assets/gravity-orchard/baskets/starfruit-ordinary.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1526,
+      "format": "svg",
+      "transparentPixels": 14529,
+      "opaquePixels": 10651
+    },
+    {
+      "key": "basket-starfruit-accepting",
+      "src": "/assets/gravity-orchard/baskets/starfruit-accepting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1728,
+      "format": "svg",
+      "transparentPixels": 12803,
+      "opaquePixels": 12173
+    },
+    {
+      "key": "basket-starfruit-rejecting",
+      "src": "/assets/gravity-orchard/baskets/starfruit-rejecting.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1761,
+      "format": "svg",
+      "transparentPixels": 12711,
+      "opaquePixels": 12253
+    },
+    {
+      "key": "basket-starfruit-full",
+      "src": "/assets/gravity-orchard/baskets/starfruit-full.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 1833,
+      "format": "svg",
+      "transparentPixels": 13602,
+      "opaquePixels": 11381
+    },
+    {
+      "key": "tray-morning-delivery",
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-tray.svg",
+      "width": 512,
+      "height": 384,
+      "bytes": 1959,
+      "format": "svg",
+      "transparentPixels": 4630,
+      "opaquePixels": 190220
+    },
+    {
+      "key": "bridge-morning-delivery",
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-bridge.svg",
+      "width": 256,
+      "height": 96,
+      "bytes": 1772,
+      "format": "svg",
+      "transparentPixels": 1079,
+      "opaquePixels": 23427
+    },
+    {
+      "key": "hedge-morning-delivery",
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-hedge.svg",
+      "width": 256,
+      "height": 88,
+      "bytes": 2000,
+      "format": "svg",
+      "transparentPixels": 5668,
+      "opaquePixels": 16712
+    },
+    {
+      "key": "bumper-morning-delivery",
+      "src": "/assets/gravity-orchard/terrain/morning-delivery-bumper.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 751,
+      "format": "svg",
+      "transparentPixels": 5248,
+      "opaquePixels": 10678
+    },
+    {
+      "key": "tray-switchback-grove",
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-tray.svg",
+      "width": 512,
+      "height": 384,
+      "bytes": 1959,
+      "format": "svg",
+      "transparentPixels": 4630,
+      "opaquePixels": 190220
+    },
+    {
+      "key": "bridge-switchback-grove",
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-bridge.svg",
+      "width": 256,
+      "height": 96,
+      "bytes": 1772,
+      "format": "svg",
+      "transparentPixels": 1079,
+      "opaquePixels": 23427
+    },
+    {
+      "key": "hedge-switchback-grove",
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-hedge.svg",
+      "width": 256,
+      "height": 88,
+      "bytes": 2000,
+      "format": "svg",
+      "transparentPixels": 5668,
+      "opaquePixels": 16712
+    },
+    {
+      "key": "bumper-switchback-grove",
+      "src": "/assets/gravity-orchard/terrain/switchback-grove-bumper.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 751,
+      "format": "svg",
+      "transparentPixels": 5248,
+      "opaquePixels": 10678
+    },
+    {
+      "key": "tray-moonlight-picnic",
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-tray.svg",
+      "width": 512,
+      "height": 384,
+      "bytes": 1959,
+      "format": "svg",
+      "transparentPixels": 4630,
+      "opaquePixels": 190220
+    },
+    {
+      "key": "bridge-moonlight-picnic",
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-bridge.svg",
+      "width": 256,
+      "height": 96,
+      "bytes": 1772,
+      "format": "svg",
+      "transparentPixels": 1079,
+      "opaquePixels": 23427
+    },
+    {
+      "key": "hedge-moonlight-picnic",
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-hedge.svg",
+      "width": 256,
+      "height": 88,
+      "bytes": 2000,
+      "format": "svg",
+      "transparentPixels": 5668,
+      "opaquePixels": 16712
+    },
+    {
+      "key": "bumper-moonlight-picnic",
+      "src": "/assets/gravity-orchard/terrain/moonlight-picnic-bumper.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 751,
+      "format": "svg",
+      "transparentPixels": 5248,
+      "opaquePixels": 10678
+    },
+    {
+      "key": "gate-open",
+      "src": "/assets/gravity-orchard/cues/gate-open.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 783,
+      "format": "svg",
+      "transparentPixels": 16142,
+      "opaquePixels": 8470
+    },
+    {
+      "key": "gate-forecast",
+      "src": "/assets/gravity-orchard/cues/gate-forecast.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 799,
+      "format": "svg",
+      "transparentPixels": 13454,
+      "opaquePixels": 7452
+    },
+    {
+      "key": "gate-closed",
+      "src": "/assets/gravity-orchard/cues/gate-closed.svg",
+      "width": 160,
+      "height": 160,
+      "bytes": 763,
+      "format": "svg",
+      "transparentPixels": 13048,
+      "opaquePixels": 11796
+    },
+    {
+      "key": "compost",
+      "src": "/assets/gravity-orchard/cues/compost.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 643,
+      "format": "svg",
+      "transparentPixels": 5636,
+      "opaquePixels": 10317
+    },
+    {
+      "key": "gust-forecast",
+      "src": "/assets/gravity-orchard/cues/gust-forecast.svg",
+      "width": 160,
+      "height": 112,
+      "bytes": 624,
+      "format": "svg",
+      "transparentPixels": 13604,
+      "opaquePixels": 3545
+    },
+    {
+      "key": "gust-active",
+      "src": "/assets/gravity-orchard/cues/gust-active.svg",
+      "width": 160,
+      "height": 112,
+      "bytes": 631,
+      "format": "svg",
+      "transparentPixels": 13834,
+      "opaquePixels": 3277
+    },
+    {
+      "key": "effect-impact",
+      "src": "/assets/gravity-orchard/effects/impact.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 395,
+      "format": "svg",
+      "transparentPixels": 15184,
+      "opaquePixels": 862
+    },
+    {
+      "key": "effect-capture",
+      "src": "/assets/gravity-orchard/effects/capture.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 449,
+      "format": "svg",
+      "transparentPixels": 12975,
+      "opaquePixels": 2669
+    },
+    {
+      "key": "effect-compost",
+      "src": "/assets/gravity-orchard/effects/compost.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 473,
+      "format": "svg",
+      "transparentPixels": 12132,
+      "opaquePixels": 3843
+    },
+    {
+      "key": "effect-order",
+      "src": "/assets/gravity-orchard/effects/order.svg",
+      "width": 128,
+      "height": 128,
+      "bytes": 423,
+      "format": "svg",
+      "transparentPixels": 11876,
+      "opaquePixels": 4106
+    },
+    {
+      "key": "cover",
+      "src": "/assets/gravity-orchard/cover.webp",
+      "width": 1280,
+      "height": 720,
+      "bytes": 309204,
+      "format": "webp",
+      "transparentPixels": 0,
+      "opaquePixels": 921600
+    },
+    {
+      "key": "environment-morning-delivery",
+      "src": "/assets/gravity-orchard/environments/morning-delivery.webp",
+      "width": 1280,
+      "height": 720,
+      "bytes": 35722,
+      "format": "webp",
+      "transparentPixels": 0,
+      "opaquePixels": 921600
+    },
+    {
+      "key": "environment-switchback-grove",
+      "src": "/assets/gravity-orchard/environments/switchback-grove.webp",
+      "width": 1280,
+      "height": 720,
+      "bytes": 53824,
+      "format": "webp",
+      "transparentPixels": 0,
+      "opaquePixels": 921600
+    },
+    {
+      "key": "environment-moonlight-picnic",
+      "src": "/assets/gravity-orchard/environments/moonlight-picnic.webp",
+      "width": 1280,
+      "height": 720,
+      "bytes": 40382,
+      "format": "webp",
+      "transparentPixels": 0,
+      "opaquePixels": 921600
+    },
+    {
+      "key": "character-jon",
+      "src": "/assets/gravity-orchard/characters/jon-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "bytes": 149564,
+      "format": "webp",
+      "transparentPixels": 360319,
+      "opaquePixels": 4728,
+      "frames": [
+        {
+          "name": "idle-1",
+          "coveredPixels": 18192,
+          "edgeAlpha": 0,
+          "sha256": "6e808403ce21bb47aa4941844438f1b2f851f347d25b5d9a3103b78213510c9d"
+        },
+        {
+          "name": "lean-1",
+          "coveredPixels": 19727,
+          "edgeAlpha": 0,
+          "sha256": "c424af36adf21a00866770215569dcb2c0c4690c8add4ac35158491b01fe5b2c"
+        },
+        {
+          "name": "brace-1",
+          "coveredPixels": 18794,
+          "edgeAlpha": 0,
+          "sha256": "b33e6529dfe7d124fbb36ec1cf5c6ea5e13d889bffaf84e51ec5d9b4b1dd56b4"
+        },
+        {
+          "name": "cheer-1",
+          "coveredPixels": 19884,
+          "edgeAlpha": 0,
+          "sha256": "75757b3e8d6a5f291d4ef8d7f0b2989016127523045e2c932383177da6d77fd3"
+        },
+        {
+          "name": "idle-2",
+          "coveredPixels": 18450,
+          "edgeAlpha": 0,
+          "sha256": "2b69cf4aab5e7b1cd9b88dd68cde35c6cb9deb40cd5d3da134e2e513ad2e65ca"
+        },
+        {
+          "name": "lean-2",
+          "coveredPixels": 19981,
+          "edgeAlpha": 0,
+          "sha256": "40dfa2c882e730514e12c3357b7e6fbbc7ce3ef45f69d1d97671d40919457fa4"
+        },
+        {
+          "name": "brace-2",
+          "coveredPixels": 18634,
+          "edgeAlpha": 0,
+          "sha256": "04ea92211cb6d3db9ec51733843e93835f5833fd319c2d7d9c77b29d45b3e560"
+        },
+        {
+          "name": "cheer-2",
+          "coveredPixels": 19280,
+          "edgeAlpha": 0,
+          "sha256": "ec9fbfb0f47ffa1e25d08f5b254a34622af448f26c1cdc9a98576832cc1aa171"
+        }
+      ]
+    },
+    {
+      "key": "character-lydia",
+      "src": "/assets/gravity-orchard/characters/lydia-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "bytes": 160890,
+      "format": "webp",
+      "transparentPixels": 343076,
+      "opaquePixels": 4392,
+      "frames": [
+        {
+          "name": "idle-1",
+          "coveredPixels": 20188,
+          "edgeAlpha": 0,
+          "sha256": "d74c3f84cacb540aa952ca8a0d210431167145384af04cdd4766b45f9a994a17"
+        },
+        {
+          "name": "lean-1",
+          "coveredPixels": 21309,
+          "edgeAlpha": 0,
+          "sha256": "39583aa66b54dee9e1ea6b21a6d44023d92df359a5c36f6d04e31cdbf4721f2d"
+        },
+        {
+          "name": "brace-1",
+          "coveredPixels": 21167,
+          "edgeAlpha": 0,
+          "sha256": "6d4aba731af9c5463f5374da5a7f1dbe4a4423d61419c4f9b87c4649472cbe29"
+        },
+        {
+          "name": "cheer-1",
+          "coveredPixels": 21610,
+          "edgeAlpha": 0,
+          "sha256": "e861c09db90f8958d443713463840add379885edf2116b4dd11e3253670d922b"
+        },
+        {
+          "name": "idle-2",
+          "coveredPixels": 20847,
+          "edgeAlpha": 0,
+          "sha256": "52c77e4ce6cc9dcae3840850ed5372f71d2dc344ac41c336e9a9fde4ba5b91d8"
+        },
+        {
+          "name": "lean-2",
+          "coveredPixels": 21269,
+          "edgeAlpha": 0,
+          "sha256": "2074e6103994896f1a17f1136c1c7f922eba4d0fb2c4c44b7b05adee8a8568c4"
+        },
+        {
+          "name": "brace-2",
+          "coveredPixels": 21416,
+          "edgeAlpha": 0,
+          "sha256": "e09f3d2ddb6c82b26533b8859ecd21018145d3afd7ed42b57c22bcf579a86c11"
+        },
+        {
+          "name": "cheer-2",
+          "coveredPixels": 21573,
+          "edgeAlpha": 0,
+          "sha256": "8c1598d85c38d14cca8052e925c7642f4b9ba4d913287cdd95a0f89528581bca"
+        }
+      ]
+    },
+    {
+      "key": "character-lala",
+      "src": "/assets/gravity-orchard/characters/lala-atlas.webp",
+      "width": 1024,
+      "height": 512,
+      "bytes": 113602,
+      "format": "webp",
+      "transparentPixels": 369940,
+      "opaquePixels": 2909,
+      "frames": [
+        {
+          "name": "idle-1",
+          "coveredPixels": 17772,
+          "edgeAlpha": 0,
+          "sha256": "59b2bc4e392f14d07b3a2b34e1668800bd2399f148f784fdfb0354fb81df2935"
+        },
+        {
+          "name": "forecast-1",
+          "coveredPixels": 17739,
+          "edgeAlpha": 0,
+          "sha256": "9ca7db39b3aebb06985ab18488e5732385643bbf59d6fc6344d508eb3dc31b5f"
+        },
+        {
+          "name": "gust-1",
+          "coveredPixels": 19641,
+          "edgeAlpha": 0,
+          "sha256": "2f7f7caa6834e9978e525e695888f6040427cd0025f413c95775b6e6d0462422"
+        },
+        {
+          "name": "pleased-1",
+          "coveredPixels": 18191,
+          "edgeAlpha": 0,
+          "sha256": "1a9f4a3e8093b366841f178c2f6bcbc64e24c95c42b4c370bc65c932eb05a068"
+        },
+        {
+          "name": "idle-2",
+          "coveredPixels": 17658,
+          "edgeAlpha": 0,
+          "sha256": "079a94112a6b3e7ce3c64486a51c78cdbf41ad88d642bd963b2004fa91ead57b"
+        },
+        {
+          "name": "forecast-2",
+          "coveredPixels": 17519,
+          "edgeAlpha": 0,
+          "sha256": "b128fff622cfadecbbe1b24010a4a7a10f2bda6a8f12079db72f8e59651a9ad4"
+        },
+        {
+          "name": "gust-2",
+          "coveredPixels": 18610,
+          "edgeAlpha": 0,
+          "sha256": "7b6d4c8387cecacef4ceab30bcc0455e25564a09378cf1206fa7bb2bf4d6df5e"
+        },
+        {
+          "name": "pleased-2",
+          "coveredPixels": 18363,
+          "edgeAlpha": 0,
+          "sha256": "21f3482045545bd7f4b45c168747f93bc46b7f391d39469a14d954954787375b"
+        }
+      ]
+    }
+  ]
+}

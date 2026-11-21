@@ -1,8 +1,10 @@
 /** Explicit delivery inputs. Authority modules never belong in BROWSER_FILES. */
 import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { GRAVITY_BROWSER_FILES, GRAVITY_ASSET_FILES, GRAVITY_HOST_FILES } from '../server/gravity-orchard-delivery.mjs';
 
 export const BROWSER_FILES = Object.freeze([
+  ...GRAVITY_BROWSER_FILES,
   { url: '/app.js', source: 'ui/app.js' },
   { url: '/styles.css', source: 'ui/styles.css' },
   { url: '/audio.js', source: 'ui/audio.js' },
@@ -36,6 +38,7 @@ export const BROWSER_FILES = Object.freeze([
 ].map(Object.freeze));
 
 export const SERVER_FILES = Object.freeze([
+  ...GRAVITY_HOST_FILES,
   'server/lan.mjs',
   'server/rooms.mjs',
   'game/engine.mjs',
@@ -47,6 +50,7 @@ export const SERVER_FILES = Object.freeze([
 ]);
 
 export const ASSET_FILES = Object.freeze([
+  ...GRAVITY_ASSET_FILES,
   'public/assets/sofa-room.png',
   'public/assets/odd-laws-cover.webp',
   'public/assets/characters.png',

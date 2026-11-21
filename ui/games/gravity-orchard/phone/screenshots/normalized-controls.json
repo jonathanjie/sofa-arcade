@@ -1,0 +1,6918 @@
+[
+  {
+    "case": "touch-jon-360",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.1625,
+        "y": 0.1375,
+        "brake": false
+      },
+      {
+        "x": 0.325,
+        "y": 0.275,
+        "brake": false
+      },
+      {
+        "x": 0.4875,
+        "y": 0.4125,
+        "brake": false
+      },
+      {
+        "x": 0.65,
+        "y": 0.55,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.7071,
+        "y": -0.7071,
+        "brake": false
+      },
+      {
+        "x": -0.7071,
+        "y": -0.7071,
+        "brake": false
+      },
+      {
+        "x": -0.7071,
+        "y": -0.7071,
+        "brake": false
+      },
+      {
+        "x": -0.7071,
+        "y": -0.7071,
+        "brake": true
+      },
+      {
+        "x": -0.7071,
+        "y": -0.7071,
+        "brake": true
+      },
+      {
+        "x": -0.7071,
+        "y": -0.7071,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -1,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -1,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-0eba58ed-3179-4868-8ae5-b10f2ec5ca17-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "touch-lydia-390-multitouch",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.8906,
+        "y": 0.4412,
+        "brake": false
+      },
+      {
+        "x": 0.8906,
+        "y": 0.4412,
+        "brake": true
+      },
+      {
+        "x": -0.8344,
+        "y": -0.5511,
+        "brake": true
+      },
+      {
+        "x": -0.8344,
+        "y": -0.5511,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-38768c9d-2927-4797-9711-7347539847fb-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "pointer-cancel-and-epoch-fence",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.8344,
+        "y": 0.5511,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.8906,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-18d0ae2a-66f3-440b-8401-77d748446896-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-18d0ae2a-66f3-440b-8401-77d748446896-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-18d0ae2a-66f3-440b-8401-77d748446896-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-18d0ae2a-66f3-440b-8401-77d748446896-4",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "help-focus-and-no-auto-resume",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-638c0ff9-c241-4ba5-bfa0-67fbf1dd7e33-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-638c0ff9-c241-4ba5-bfa0-67fbf1dd7e33-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "help"
+        }
+      },
+      {
+        "id": "go3-638c0ff9-c241-4ba5-bfa0-67fbf1dd7e33-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-638c0ff9-c241-4ba5-bfa0-67fbf1dd7e33-4",
+        "kind": "pause",
+        "payload": {
+          "reason": "recenter"
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      }
+    ]
+  },
+  {
+    "case": "permission-and-fallback-states",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.1625,
+        "y": 0.1625,
+        "brake": false
+      },
+      {
+        "x": -0.325,
+        "y": 0.325,
+        "brake": false
+      },
+      {
+        "x": -0.4875,
+        "y": 0.4875,
+        "brake": false
+      },
+      {
+        "x": -0.65,
+        "y": 0.65,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-00c12d05-ccb1-4d96-8d69-7f36f8c33e5f-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "permission-and-fallback-states",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.1625,
+        "y": 0.1625,
+        "brake": false
+      },
+      {
+        "x": -0.325,
+        "y": 0.325,
+        "brake": false
+      },
+      {
+        "x": -0.4875,
+        "y": 0.4875,
+        "brake": false
+      },
+      {
+        "x": -0.65,
+        "y": 0.65,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-f5afca9b-1d15-40ff-bcac-12bed3dc979b-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "unsupported",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "This browser has no orientation sensor. Use touch controls."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "permission-and-fallback-states",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.1625,
+        "y": 0.1625,
+        "brake": false
+      },
+      {
+        "x": -0.325,
+        "y": 0.325,
+        "brake": false
+      },
+      {
+        "x": -0.4875,
+        "y": 0.4875,
+        "brake": false
+      },
+      {
+        "x": -0.65,
+        "y": 0.65,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-656aa178-d88b-4275-bb51-96a68ae6f185-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Enable tilt while holding your phone comfortably."
+      },
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for motion permission. Touch remains available."
+      },
+      {
+        "state": "denied",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Motion access was declined. Use touch, or change browser permission and reload."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "permission-and-fallback-states",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.1625,
+        "y": 0.1625,
+        "brake": false
+      },
+      {
+        "x": -0.325,
+        "y": 0.325,
+        "brake": false
+      },
+      {
+        "x": -0.4875,
+        "y": 0.4875,
+        "brake": false
+      },
+      {
+        "x": -0.65,
+        "y": 0.65,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-6d60213f-e4fe-4fe0-9bbd-61925b122913-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Enable tilt while holding your phone comfortably."
+      },
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for motion permission. Touch remains available."
+      },
+      {
+        "state": "denied",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Motion access was declined. Use touch, or change browser permission and reload."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "permission-and-fallback-states",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.1625,
+        "y": 0.1625,
+        "brake": false
+      },
+      {
+        "x": -0.325,
+        "y": 0.325,
+        "brake": false
+      },
+      {
+        "x": -0.4875,
+        "y": 0.4875,
+        "brake": false
+      },
+      {
+        "x": -0.65,
+        "y": 0.65,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-e07a71aa-0bbe-4657-82b1-d8bc879b3745-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Enable tilt while holding your phone comfortably."
+      },
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for motion permission. Touch remains available."
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for a usable sensor reading.",
+        "progress": 0
+      },
+      {
+        "state": "no-samples",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Permission is allowed, but no usable readings arrived. Try again or use touch.",
+        "reason": "no-samples",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "tilt-calibration-stationary-recenter",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.102,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.1844,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.251,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.3048,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.3483,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.3834,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.4117,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.4346,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.4532,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.4681,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.4802,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.49,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.4978,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5042,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5094,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5135,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5169,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5196,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5218,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5236,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.525,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5261,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5271,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5278,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5284,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5289,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5293,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5296,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5299,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5301,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5303,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5304,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5305,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5306,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5307,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5308,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5308,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5308,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5309,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.5309,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.531,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.531,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0.531,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-e93bd3f6-d5a4-4362-a2a5-092294b41d09-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-e93bd3f6-d5a4-4362-a2a5-092294b41d09-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "recenter"
+        }
+      },
+      {
+        "id": "go3-e93bd3f6-d5a4-4362-a2a5-092294b41d09-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Enable tilt while holding your phone comfortably."
+      },
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for motion permission. Touch remains available."
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for a usable sensor reading.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": true
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold comfortably still for a moment.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      }
+    ]
+  },
+  {
+    "case": "all-screen-orientations",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.1921,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.3473,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.4727,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.574,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.6558,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.722,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.7754,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.8185,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.8534,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.8816,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9043,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9227,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9375,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9495,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9592,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9671,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9734,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9785,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9826,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.986,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9887,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9908,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9926,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.994,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9952,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9961,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9968,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9975,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9979,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9983,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9987,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9989,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9991,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9993,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9994,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9995,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.9996,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.1921,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.3473,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.4727,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.574,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.6558,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.722,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.7754,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.8185,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.8534,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.8816,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9043,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9227,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9375,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9495,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9592,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9671,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9734,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9785,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9826,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.986,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9887,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9908,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9926,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.994,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9952,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9961,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9968,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9975,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9979,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9983,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9987,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9989,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9991,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9993,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9994,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9995,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": -0.9996,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.1921,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.3473,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.4727,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.574,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.6558,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.722,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.7754,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.8185,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.8534,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.8816,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9043,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9227,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9375,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9495,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9592,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9671,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9734,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9785,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9826,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.986,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9887,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9908,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9926,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.994,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9952,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9961,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9968,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9975,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9979,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9983,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9987,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9989,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9991,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9993,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9994,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9995,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": -0.9996,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.1921,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.3473,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.4727,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.574,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.6558,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.722,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.7754,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.8185,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.8534,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.8816,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9043,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9227,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9375,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9495,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9592,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9671,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9734,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9785,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9826,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.986,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9887,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9908,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9926,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.994,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9952,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9961,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9968,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9975,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9979,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9983,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9987,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9989,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9991,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9993,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9994,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9995,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0.9996,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-3fcccdb1-af25-47b3-beb5-2287c1b44a9a-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-3fcccdb1-af25-47b3-beb5-2287c1b44a9a-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "recenter"
+        }
+      },
+      {
+        "id": "go3-3fcccdb1-af25-47b3-beb5-2287c1b44a9a-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-3fcccdb1-af25-47b3-beb5-2287c1b44a9a-4",
+        "kind": "pause",
+        "payload": {
+          "reason": "recenter"
+        }
+      },
+      {
+        "id": "go3-3fcccdb1-af25-47b3-beb5-2287c1b44a9a-5",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-3fcccdb1-af25-47b3-beb5-2287c1b44a9a-6",
+        "kind": "pause",
+        "payload": {
+          "reason": "recenter"
+        }
+      },
+      {
+        "id": "go3-3fcccdb1-af25-47b3-beb5-2287c1b44a9a-7",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Enable tilt while holding your phone comfortably."
+      },
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for motion permission. Touch remains available."
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Phone rotated. Recenter before you are ready.",
+        "reason": "rotation",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": true
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Phone rotated. Recenter before you are ready.",
+        "reason": "rotation",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": true
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Phone rotated. Recenter before you are ready.",
+        "reason": "rotation",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": true
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      }
+    ]
+  },
+  {
+    "case": "hidden-resume-disposal",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.175,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.35,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.525,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.7,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-7e75bbd3-10c2-4ce1-88bf-e5cb4be20257-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-7e75bbd3-10c2-4ce1-88bf-e5cb4be20257-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-7e75bbd3-10c2-4ce1-88bf-e5cb4be20257-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-7e75bbd3-10c2-4ce1-88bf-e5cb4be20257-4",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-7e75bbd3-10c2-4ce1-88bf-e5cb4be20257-5",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-7e75bbd3-10c2-4ce1-88bf-e5cb4be20257-6",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Return when you are ready.",
+        "reason": "hidden",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Return when you are ready.",
+        "reason": "blur",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Return when you are ready.",
+        "reason": "disposed",
+        "requestPause": true
+      }
+    ]
+  },
+  {
+    "case": "authoritative-phases-and-connection",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-24f38e6a-c38a-48d8-a8a4-3bd51db45ff6-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-24f38e6a-c38a-48d8-a8a4-3bd51db45ff6-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-24f38e6a-c38a-48d8-a8a4-3bd51db45ff6-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      }
+    ]
+  },
+  {
+    "case": "narrow-and-landscape-reduced-motion",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-f951a17d-09a4-4dce-bfb9-1da0d9a159c2-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-f951a17d-09a4-4dce-bfb9-1da0d9a159c2-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "help"
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      }
+    ]
+  },
+  {
+    "case": "narrow-and-landscape-reduced-motion",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-e2102375-a3f3-474c-8686-b06027d7a278-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-e2102375-a3f3-474c-8686-b06027d7a278-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "help"
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      }
+    ]
+  },
+  {
+    "case": "narrow-and-landscape-reduced-motion",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-db1fe8d8-4999-4219-8b04-1d82106b4475-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-db1fe8d8-4999-4219-8b04-1d82106b4475-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "help"
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      }
+    ]
+  },
+  {
+    "case": "narrow-and-landscape-reduced-motion",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-0493727b-ade0-479b-a9e3-12aa424f170c-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-0493727b-ade0-479b-a9e3-12aa424f170c-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "help"
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      }
+    ]
+  },
+  {
+    "case": "unready-boundary-and-command-failure",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-7fec86b4-6edc-4da8-8005-e53d912e3be3-1",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-7fec86b4-6edc-4da8-8005-e53d912e3be3-2",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-7fec86b4-6edc-4da8-8005-e53d912e3be3-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-7fec86b4-6edc-4da8-8005-e53d912e3be3-4",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-7fec86b4-6edc-4da8-8005-e53d912e3be3-5",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      }
+    ]
+  },
+  {
+    "case": "countdown-help-race-and-ready-withdrawal",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-e155b6b6-4f8f-48d8-9034-7b3f49e8d8b3-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-e155b6b6-4f8f-48d8-9034-7b3f49e8d8b3-2",
+        "kind": "ready",
+        "payload": {
+          "value": false
+        }
+      },
+      {
+        "id": "go3-e155b6b6-4f8f-48d8-9034-7b3f49e8d8b3-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-e155b6b6-4f8f-48d8-9034-7b3f49e8d8b3-4",
+        "kind": "pause",
+        "payload": {
+          "reason": "help"
+        }
+      },
+      {
+        "id": "go3-e155b6b6-4f8f-48d8-9034-7b3f49e8d8b3-5",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-e155b6b6-4f8f-48d8-9034-7b3f49e8d8b3-6",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "insecure",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Tilt needs a trusted secure connection. Touch is ready to use."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "granted-no-prompt-and-invalid-late-reading",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.0859,
+        "y": 0.1047,
+        "brake": false
+      },
+      {
+        "x": 0.1554,
+        "y": 0.1894,
+        "brake": false
+      },
+      {
+        "x": 0.2114,
+        "y": 0.2577,
+        "brake": false
+      },
+      {
+        "x": 0.2568,
+        "y": 0.3129,
+        "brake": false
+      },
+      {
+        "x": 0.2934,
+        "y": 0.3576,
+        "brake": false
+      },
+      {
+        "x": 0.3229,
+        "y": 0.3936,
+        "brake": false
+      },
+      {
+        "x": 0.3468,
+        "y": 0.4227,
+        "brake": false
+      },
+      {
+        "x": 0.3661,
+        "y": 0.4463,
+        "brake": false
+      },
+      {
+        "x": 0.3817,
+        "y": 0.4653,
+        "brake": false
+      },
+      {
+        "x": 0.3943,
+        "y": 0.4806,
+        "brake": false
+      },
+      {
+        "x": 0.4045,
+        "y": 0.493,
+        "brake": false
+      },
+      {
+        "x": 0.4127,
+        "y": 0.5031,
+        "brake": false
+      },
+      {
+        "x": 0.4194,
+        "y": 0.5112,
+        "brake": false
+      },
+      {
+        "x": 0.4247,
+        "y": 0.5177,
+        "brake": false
+      },
+      {
+        "x": 0.4291,
+        "y": 0.523,
+        "brake": false
+      },
+      {
+        "x": 0.4326,
+        "y": 0.5272,
+        "brake": false
+      },
+      {
+        "x": 0.4354,
+        "y": 0.5307,
+        "brake": false
+      },
+      {
+        "x": 0.4377,
+        "y": 0.5335,
+        "brake": false
+      },
+      {
+        "x": 0.4395,
+        "y": 0.5357,
+        "brake": false
+      },
+      {
+        "x": 0.441,
+        "y": 0.5376,
+        "brake": false
+      },
+      {
+        "x": 0.4422,
+        "y": 0.539,
+        "brake": false
+      },
+      {
+        "x": 0.4432,
+        "y": 0.5402,
+        "brake": false
+      },
+      {
+        "x": 0.444,
+        "y": 0.5412,
+        "brake": false
+      },
+      {
+        "x": 0.4446,
+        "y": 0.5419,
+        "brake": false
+      },
+      {
+        "x": 0.4451,
+        "y": 0.5426,
+        "brake": false
+      },
+      {
+        "x": 0.4456,
+        "y": 0.5431,
+        "brake": false
+      },
+      {
+        "x": 0.4459,
+        "y": 0.5435,
+        "brake": false
+      },
+      {
+        "x": 0.4462,
+        "y": 0.5438,
+        "brake": false
+      },
+      {
+        "x": 0.4464,
+        "y": 0.5441,
+        "brake": false
+      },
+      {
+        "x": 0.4466,
+        "y": 0.5443,
+        "brake": false
+      },
+      {
+        "x": 0.4467,
+        "y": 0.5445,
+        "brake": false
+      },
+      {
+        "x": 0.4468,
+        "y": 0.5446,
+        "brake": false
+      },
+      {
+        "x": 0.4469,
+        "y": 0.5447,
+        "brake": false
+      },
+      {
+        "x": 0.447,
+        "y": 0.5448,
+        "brake": false
+      },
+      {
+        "x": 0.447,
+        "y": 0.5449,
+        "brake": false
+      },
+      {
+        "x": 0.4471,
+        "y": 0.5449,
+        "brake": false
+      },
+      {
+        "x": 0.4471,
+        "y": 0.545,
+        "brake": false
+      },
+      {
+        "x": 0.4472,
+        "y": 0.545,
+        "brake": false
+      },
+      {
+        "x": 0.4472,
+        "y": 0.5451,
+        "brake": false
+      },
+      {
+        "x": 0.4472,
+        "y": 0.5451,
+        "brake": false
+      },
+      {
+        "x": 0.4473,
+        "y": 0.5452,
+        "brake": false
+      },
+      {
+        "x": 0.4473,
+        "y": 0.5452,
+        "brake": false
+      },
+      {
+        "x": 0.4473,
+        "y": 0.5452,
+        "brake": false
+      },
+      {
+        "x": 0.4473,
+        "y": 0.5452,
+        "brake": false
+      },
+      {
+        "x": 0.4473,
+        "y": 0.5452,
+        "brake": false
+      },
+      {
+        "x": 0.4473,
+        "y": 0.5452,
+        "brake": false
+      },
+      {
+        "x": 0.4473,
+        "y": 0.5452,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.15,
+        "y": -0.15,
+        "brake": false
+      },
+      {
+        "x": 0.3,
+        "y": -0.3,
+        "brake": false
+      },
+      {
+        "x": 0.45,
+        "y": -0.45,
+        "brake": false
+      },
+      {
+        "x": 0.6,
+        "y": -0.6,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-33eb39bb-13b3-4212-b29b-2d79d0d8023b-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      },
+      {
+        "id": "go3-33eb39bb-13b3-4212-b29b-2d79d0d8023b-2",
+        "kind": "pause",
+        "payload": {
+          "reason": "requested"
+        }
+      },
+      {
+        "id": "go3-33eb39bb-13b3-4212-b29b-2d79d0d8023b-3",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Enable tilt while holding your phone comfortably."
+      },
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for motion permission. Touch remains available."
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "no-samples",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "The sensor stopped returning usable readings. Recenter or use touch.",
+        "reason": "invalid-sample",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready.",
+        "reason": "mode",
+        "requestPause": true
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "touch",
+        "calibrated": true,
+        "message": "Touch controls ready."
+      }
+    ]
+  },
+  {
+    "case": "diagnostic-fixture",
+    "inputs": [
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "brake": false
+      },
+      {
+        "x": 0.0615,
+        "y": 0.0685,
+        "brake": false
+      },
+      {
+        "x": 0.1111,
+        "y": 0.1239,
+        "brake": false
+      },
+      {
+        "x": 0.1512,
+        "y": 0.1687,
+        "brake": false
+      },
+      {
+        "x": 0.1836,
+        "y": 0.2048,
+        "brake": false
+      },
+      {
+        "x": 0.2098,
+        "y": 0.234,
+        "brake": false
+      },
+      {
+        "x": 0.231,
+        "y": 0.2576,
+        "brake": false
+      },
+      {
+        "x": 0.248,
+        "y": 0.2767,
+        "brake": false
+      },
+      {
+        "x": 0.2618,
+        "y": 0.2921,
+        "brake": false
+      },
+      {
+        "x": 0.273,
+        "y": 0.3045,
+        "brake": false
+      },
+      {
+        "x": 0.282,
+        "y": 0.3145,
+        "brake": false
+      },
+      {
+        "x": 0.2893,
+        "y": 0.3227,
+        "brake": false
+      },
+      {
+        "x": 0.2952,
+        "y": 0.3292,
+        "brake": false
+      },
+      {
+        "x": 0.2999,
+        "y": 0.3345,
+        "brake": false
+      },
+      {
+        "x": 0.3038,
+        "y": 0.3388,
+        "brake": false
+      },
+      {
+        "x": 0.3069,
+        "y": 0.3423,
+        "brake": false
+      },
+      {
+        "x": 0.3094,
+        "y": 0.3451,
+        "brake": false
+      },
+      {
+        "x": 0.3114,
+        "y": 0.3473,
+        "brake": false
+      },
+      {
+        "x": 0.313,
+        "y": 0.3491,
+        "brake": false
+      },
+      {
+        "x": 0.3143,
+        "y": 0.3506,
+        "brake": false
+      },
+      {
+        "x": 0.3154,
+        "y": 0.3518,
+        "brake": false
+      },
+      {
+        "x": 0.3163,
+        "y": 0.3528,
+        "brake": false
+      },
+      {
+        "x": 0.317,
+        "y": 0.3535,
+        "brake": false
+      },
+      {
+        "x": 0.3175,
+        "y": 0.3542,
+        "brake": false
+      },
+      {
+        "x": 0.318,
+        "y": 0.3547,
+        "brake": false
+      },
+      {
+        "x": 0.3184,
+        "y": 0.3551,
+        "brake": false
+      },
+      {
+        "x": 0.3187,
+        "y": 0.3554,
+        "brake": false
+      },
+      {
+        "x": 0.3189,
+        "y": 0.3557,
+        "brake": false
+      },
+      {
+        "x": 0.3191,
+        "y": 0.3559,
+        "brake": false
+      },
+      {
+        "x": 0.3192,
+        "y": 0.3561,
+        "brake": false
+      },
+      {
+        "x": 0.3194,
+        "y": 0.3562,
+        "brake": false
+      },
+      {
+        "x": 0.3195,
+        "y": 0.3563,
+        "brake": false
+      },
+      {
+        "x": 0.3196,
+        "y": 0.3564,
+        "brake": false
+      },
+      {
+        "x": 0.3196,
+        "y": 0.3565,
+        "brake": false
+      },
+      {
+        "x": 0.3197,
+        "y": 0.3565,
+        "brake": false
+      },
+      {
+        "x": 0.3197,
+        "y": 0.3566,
+        "brake": false
+      },
+      {
+        "x": 0.3198,
+        "y": 0.3566,
+        "brake": false
+      },
+      {
+        "x": 0.3198,
+        "y": 0.3567,
+        "brake": false
+      },
+      {
+        "x": 0.3198,
+        "y": 0.3567,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      },
+      {
+        "x": 0.3199,
+        "y": 0.3568,
+        "brake": false
+      }
+    ],
+    "commands": [
+      {
+        "id": "go3-14614b10-5f01-4cca-8324-f37ae14c93a0-1",
+        "kind": "ready",
+        "payload": {
+          "value": true
+        }
+      }
+    ],
+    "statuses": [
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Enable tilt while holding your phone comfortably."
+      },
+      {
+        "state": "needs-permission",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Waiting for motion permission. Touch remains available."
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold your phone naturally; waiting for a sensor reading.",
+        "progress": 0,
+        "reason": "recenter",
+        "requestPause": false
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.08333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.16666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.25
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.3333333333333333
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.4166666666666667
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.5833333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.6666666666666666
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.75
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.8333333333333334
+      },
+      {
+        "state": "calibrating",
+        "mode": "tilt",
+        "calibrated": false,
+        "message": "Hold this comfortable position.",
+        "progress": 0.9166666666666666
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt centered. Ready when you are.",
+        "progress": 1
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "paused",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Controls paused. Ready when you are.",
+        "requestPause": false
+      },
+      {
+        "state": "ready",
+        "mode": "tilt",
+        "calibrated": true,
+        "message": "Tilt controls ready."
+      }
+    ]
+  }
+]

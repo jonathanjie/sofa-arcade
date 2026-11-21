@@ -4,15 +4,41 @@
  *
  * Tests that need a real browser are listed in BROWSER_TESTS. They run in the
  * browser CI jobs (`npm run test:browser`) after Playwright installs Chromium.
+ * Tests that need a component's own nested `npm ci` are listed in
+ * NESTED_INSTALL_TESTS; that component's workflow installs and runs them.
+ *
+ * Several CI jobs run `npm test` as a dependency-free regression step, without
+ * installing packages. A test whose import graph needs an npm package that is
+ * not installed (for example `ws` for the Gravity Orchard realtime server) is
+ * skipped there, and the runner prints each skipped test and the missing
+ * package. With packages installed (`npm ci`), every test runs. The component
+ * workflows that own those tests install their packages and run them.
  */
 import { spawnSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { builtinModules } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const SOURCE_FOLDERS = ['game', 'games', 'server', 'ui'];
-export const BROWSER_TESTS = new Set(['server/room-browser.test.mjs']);
+export const BROWSER_TESTS = new Set([
+  'server/room-browser.test.mjs',
+  'server/realtime/gravity-orchard/tests/fixture-browser.test.mjs',
+]);
+export const NESTED_INSTALL_TESTS = new Set([
+  // Reads server/secure-lan/node_modules, installed by the GO6 workflow.
+  'server/secure-lan/tests/inventory.test.mjs',
+]);
+
+const BUILTINS = new Set(builtinModules);
+// Top-level static imports only: Node must resolve these before a test file can
+// start. A line-anchored match ignores look-alike text inside strings and
+// bundled code; dynamic import() calls are left to fail or be guarded at runtime.
+const IMPORT_PATTERNS = [
+  /^\s*(?:import|export)\s[^'"]*?\bfrom\s*['"]([^'"]+)['"]/gm,
+  /^\s*import\s*['"]([^'"]+)['"]/gm,
+];
 
 function unitTestFiles() {
   const files = [];
@@ -20,13 +46,63 @@ function unitTestFiles() {
     for (const entry of readdirSync(path.join(root, folder), { recursive: true, withFileTypes: true })) {
       if (!entry.isFile() || !entry.name.endsWith('.test.mjs')) continue;
       const relative = path.relative(root, path.join(entry.parentPath, entry.name)).split(path.sep).join('/');
-      if (relative.split('/').includes('node_modules') || BROWSER_TESTS.has(relative)) continue;
+      if (relative.split('/').includes('node_modules') || BROWSER_TESTS.has(relative) || NESTED_INSTALL_TESTS.has(relative)) continue;
       files.push(relative);
     }
   }
   return files.sort();
 }
 
-const files = unitTestFiles();
-const result = spawnSync(process.execPath, ['--test', ...files], { cwd: root, stdio: 'inherit' });
+/** The package name of a bare specifier: `ws`, `@peculiar/x509`, `pkg/sub` → `pkg`. */
+function packageName(specifier) {
+  const parts = specifier.split('/');
+  return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+}
+
+/** Whether Node could find this package from `fromFile`, by walking up node_modules folders. */
+function packageInstalled(name, fromFile) {
+  let directory = path.dirname(fromFile);
+  while (true) {
+    if (existsSync(path.join(directory, 'node_modules', name, 'package.json'))) return true;
+    const parent = path.dirname(directory);
+    if (parent === directory) return false;
+    directory = parent;
+  }
+}
+
+/** The first missing npm package anywhere in this file's local import graph, or null. */
+function missingPackage(file, visited = new Set()) {
+  if (visited.has(file)) return null;
+  visited.add(file);
+  let source;
+  try { source = readFileSync(file, 'utf8'); } catch { return null; }
+  const specifiers = IMPORT_PATTERNS.flatMap(pattern => [...source.matchAll(pattern)].map(match => match[1]));
+  for (const specifier of specifiers) {
+    if (specifier.startsWith('node:') || BUILTINS.has(specifier)) continue;
+    if (specifier.startsWith('.') || specifier.startsWith('/')) {
+      const target = path.resolve(path.dirname(file), specifier);
+      if (/\.m?js$/.test(target)) {
+        const missing = missingPackage(target, visited);
+        if (missing) return missing;
+      }
+      continue;
+    }
+    const name = packageName(specifier);
+    if (!packageInstalled(name, file)) return name;
+  }
+  return null;
+}
+
+const runnable = [];
+const skipped = [];
+for (const file of unitTestFiles()) {
+  const missing = missingPackage(path.join(root, file));
+  if (missing) skipped.push({ file, missing });
+  else runnable.push(file);
+}
+if (skipped.length) {
+  console.log(`Skipping ${skipped.length} test file(s) whose packages are not installed (run \`npm ci\` to include them):`);
+  for (const { file, missing } of skipped) console.log(`  ${file} (needs ${missing})`);
+}
+const result = spawnSync(process.execPath, ['--test', ...runnable], { cwd: root, stdio: 'inherit' });
 process.exitCode = result.status ?? 1;

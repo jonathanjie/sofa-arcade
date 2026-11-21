@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "gameId": "gravity-orchard",
+  "owner": "GO4",
+  "productionDependencies": [],
+  "browserFiles": [
+    "ui/games/gravity-orchard/tv/index.mjs",
+    "ui/games/gravity-orchard/tv/public-view.mjs",
+    "ui/games/gravity-orchard/tv/timeline.mjs",
+    "ui/games/gravity-orchard/tv/effects.mjs",
+    "ui/games/gravity-orchard/tv/styles.mjs",
+    "ui/games/gravity-orchard/tv/scene.mjs",
+    "ui/games/gravity-orchard/tv/scene-style.mjs",
+    "ui/games/gravity-orchard/tutorial/index.mjs",
+    "ui/games/gravity-orchard/tutorial/lessons.mjs",
+    "ui/games/gravity-orchard/tutorial/graphics.mjs",
+    "ui/games/gravity-orchard/tutorial/styles.mjs"
+  ]
+}

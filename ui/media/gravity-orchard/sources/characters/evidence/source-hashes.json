@@ -1,0 +1,60 @@
+{
+  "baseSHA": "6c6eb9343958da591b4488366c2ada4000e3ba08",
+  "files": [
+    {
+      "path": "ui/media/gravity-orchard/sources/characters/jon-source.png",
+      "bytes": 1645633,
+      "sha256": "8ee02fd93fb214dfd6ffcb1664011d9d755eb5f4b056ea0c80c1366cc719f207"
+    },
+    {
+      "path": "ui/media/gravity-orchard/sources/characters/lydia-source.png",
+      "bytes": 1942024,
+      "sha256": "a5671ad8c814636d42fa27d11ea433375cd02b932df84949f2b3710f6e6aaee3"
+    },
+    {
+      "path": "ui/media/gravity-orchard/sources/characters/lydia-lean-input.png",
+      "bytes": 280430,
+      "sha256": "7e0c635d468604dfe2d0c307521c7a7c442b2cd04ff2db20dae26a7dd75da515"
+    },
+    {
+      "path": "ui/media/gravity-orchard/sources/characters/lydia-lean-source.png",
+      "bytes": 1505431,
+      "sha256": "d1be369ea7fc1f4aa231b285a56ae702805458824c98bb1aa09771938f4be74b"
+    },
+    {
+      "path": "ui/media/gravity-orchard/sources/characters/lala-source.png",
+      "bytes": 1624481,
+      "sha256": "3cadeba9ea2198dbc82e92aa4ca7052499b639d56ecda0c109b05d4ee11d7863"
+    },
+    {
+      "path": "ui/media/gravity-orchard/sources/characters/generation-prompts.json",
+      "bytes": 11289,
+      "sha256": "08b49edb18b1049cd2ad103d1ab840cd49720eb2e5edbc1cc65840f693613681"
+    },
+    {
+      "path": "public/assets/characters.png",
+      "bytes": 1843988,
+      "sha256": "cc57dffd9b1f77f32e5c4ee6bd1609d05efe58553a54741fe8deb0ee58f0e736"
+    },
+    {
+      "path": "public/assets/odd-laws-cover.webp",
+      "bytes": 501500,
+      "sha256": "647955df8f8cb916be8d59d3db73c9ae239277c38f6cb9bef3b08aa53b37a68b"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/jon-idle.webp",
+      "bytes": 48318,
+      "sha256": "e444de2e8b4ef6381777b2c719b44ec31e1016b57192531a1922317a7bf3d733"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/lydia-idle.webp",
+      "bytes": 60878,
+      "sha256": "7882bf16b2b99cd1e7603039f336c84520bb893bcc128739f19e17c9e480a6ff"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/lala-idle.webp",
+      "bytes": 56784,
+      "sha256": "ba4ddd2f699c06ee5550fa13444de15e920de3bcec87e6567809aa5fe210e753"
+    }
+  ]
+}

@@ -1,5 +1,27 @@
 # Sofa Arcade — continuation handoff
 
+
+## Gravity Orchard integration candidate — GO7
+
+Gravity Orchard's realtime integration (GO7) is merged into `main`. All six
+tested component heads are preserved in its history. See [the GO7 report](workstreams/gravity-orchard-go7.md)
+and the [archived component matrix](archive/gravity-orchard-components.json) for
+their SHAs, order, corrections, dependency closure and acceptance evidence. The
+component locks were retired after the integrations merged.
+
+The shared host now composes one credential authority/database/coordinator into
+HTTP/WS and optional native-owned HTTPS/WSS. The shared collection bridge mounts
+final phone/TV/tutorial/media and composed audio. Explicit delivery inventories,
+portable packaging and native setup/lifecycle are integrated. Rendered and
+packaged macOS (Apple Silicon and Intel) software acceptance passed at
+`8e29e68`, so Gravity Orchard is enabled (`playable`) on the local host. The
+hosted Site has no realtime coordinator and keeps it unavailable.
+
+Run `npm run test:gravity-orchard` in addition to the existing gates.
+Physical iOS/Android trust/sensors, WAN-disconnected cold start, Wi-Fi and casting
+are separate unverified gates. The report is authoritative for the latest GO7
+checkpoint; older sections below describe the merged collection baseline.
+
 This is a living-room game collection for Jon and Lydia: one Site, one source repository, a shared TV, and two phone controllers. Read [README.md](../README.md), [AGENTS.md](../AGENTS.md), and the current source before editing. This handoff includes the strategy, local-network, randomized-opening, GitHub migration, and parallel game-design updates; inspect version history and deployment status for the latest published release.
 
 ## Current continuation — Odd Laws feedback and the next game

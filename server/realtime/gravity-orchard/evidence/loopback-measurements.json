@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "environment": "Linux Node process, three actual WebSocket clients on loopback, real monotonic timers, deterministic mock simulation",
+  "node": "v24.22.3",
+  "platform": "linux",
+  "architecture": "x64",
+  "durationMs": 6009.38,
+  "configured": {
+    "simulationHz": 60,
+    "inputHz": 20,
+    "snapshotHz": 20
+  },
+  "observed": {
+    "simulationTicksPerSecond": 59.74,
+    "hostSnapshotsPerSecond": 19.8,
+    "jonInputsPerSecond": 19.8,
+    "lydiaInputsPerSecond": 19.97,
+    "checkpointWrites": 1,
+    "acceptedInputs": 239,
+    "tickOverruns": 0,
+    "maxBufferedBytes": 0,
+    "acknowledgments": {
+      "jon": {
+        "samples": 116,
+        "medianRttMs": 32.61,
+        "p95RttMs": 48.84,
+        "maxRttMs": 59.14
+      },
+      "lydia": {
+        "samples": 119,
+        "medianRttMs": 28.88,
+        "p95RttMs": 48.03,
+        "maxRttMs": 61.47
+      }
+    }
+  },
+  "meaning": "RTT is measured from each client sending an input to receiving an acknowledgment of that input being applied. It includes simulation scheduling and snapshot delivery. No clocks from different hosts are subtracted.",
+  "limitations": [
+    "No rendered browser in this measurement.",
+    "No actual phone, Wi-Fi, TV casting, sensors or native Tauri measurement.",
+    "Observed values are one sample, not latency or throughput guarantees."
+  ]
+}

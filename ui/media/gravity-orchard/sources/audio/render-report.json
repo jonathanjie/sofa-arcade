@@ -1,0 +1,4010 @@
+{
+  "schemaVersion": 1,
+  "title": "Over the Little Bridge",
+  "key": "D major",
+  "meter": "4/4",
+  "bpm": 104,
+  "beatsPerBar": 4,
+  "scoreSeconds": 73.84615384615384,
+  "sampleRate": 32000,
+  "browser": "157.0.8103.0",
+  "sourceSha256": {
+    "ui/audio.js": "c000359a146cdc1306d896b3e8c6f5c9f56154dd1aa415d2abbe4882306a01f5",
+    "ui/score.mjs": "1323e1867e136e09805a89948227d1b28343542334bde765ffb153fe0468b5b6",
+    "ui/media/sofa-menu/score.mjs": "1b7cab86dc7be5fb77d8511ca97e53d2a7488a4ad999909ff5b4eebe9b72a6ea",
+    "ui/media/sofa-menu/effects.mjs": "226973566e897ad8a6f505fa46963f772ceb85782e155f43bc0241a21df7e101",
+    "ui/media/gravity-orchard/score.mjs": "0da5c26f5e4bbbdeccbea304d41ec81c447aaf2d330e96137ba6db750687dbe6",
+    "ui/media/gravity-orchard/events.mjs": "3438a0e8240f1d5ac864b0f886afa1a43ff4c30dec4fc04b7b129a4007b793a6",
+    "ui/media/gravity-orchard/sources/audio/render-harness.mjs": "fd83ed20096decc35b1a8502acd0b876ba8b11cdba8e9b06f9d98e3786b6d7b0",
+    "ui/media/gravity-orchard/audio-preview.mjs": "40eff761d8d7f698c9be4026335698729afdb187873d2e9eb9b8ad61c2cbe793",
+    "ui/media/gravity-orchard/sources/audio/render.mjs": "9638b11e4b37edac6f9131609a677046b90db7d78ae75b56ea8a21854ce569d5"
+  },
+  "scenes": {
+    "menu": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 148.3873125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 1,
+      "scheduledBars": [
+        {
+          "index": 0,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 1,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 2,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 3,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 5,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 6,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 7,
+          "scene": "menu",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 9,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 10,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 11,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 13,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 14,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 15,
+          "scene": "menu",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "menu",
+          "eventCount": 10
+        },
+        {
+          "index": 17,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 18,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 19,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 21,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 22,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 23,
+          "scene": "menu",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 25,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 26,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 27,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 29,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 30,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 31,
+          "scene": "menu",
+          "eventCount": 6
+        },
+        {
+          "index": 0,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 1,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 2,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 3,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 5,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 6,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 7,
+          "scene": "menu",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 9,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 10,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 11,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 13,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 14,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 15,
+          "scene": "menu",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "menu",
+          "eventCount": 10
+        },
+        {
+          "index": 17,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 18,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 19,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 21,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 22,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 23,
+          "scene": "menu",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 25,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 26,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 27,
+          "scene": "menu",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "menu",
+          "eventCount": 13
+        },
+        {
+          "index": 29,
+          "scene": "menu",
+          "eventCount": 12
+        },
+        {
+          "index": 30,
+          "scene": "menu",
+          "eventCount": 11
+        },
+        {
+          "index": 31,
+          "scene": "menu",
+          "eventCount": 6
+        }
+      ],
+      "eventCount": 670,
+      "scheduledEffects": [],
+      "oscillatorCount": 676,
+      "maxConcurrentOscillators": 5,
+      "preCompressor": {
+        "peak": 0.103785627,
+        "peakDbFS": -19.677255767,
+        "rms": 0.034571129,
+        "rmsDbFS": -29.225728865,
+        "dcOffset": -0.000003099,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.170076281,
+        "peakDbFS": -15.387124994,
+        "rms": 0.056649324,
+        "rmsDbFS": -24.936105384,
+        "dcOffset": -0.000005076,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [
+        {
+          "atSeconds": 73.89115384615384,
+          "preCompressorSampleJump": 0,
+          "quietTail": {
+            "peak": 0,
+            "peakDbFS": -232.142170964,
+            "rms": 0,
+            "rmsDbFS": -247.480048747,
+            "dcOffset": 0,
+            "clippedSamples": 0,
+            "nonFiniteSamples": 0
+          }
+        }
+      ],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": true
+      }
+    },
+    "practice": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 148.3873125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 1,
+      "scheduledBars": [
+        {
+          "index": 0,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 1,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 2,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 3,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 4,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 5,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 6,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 7,
+          "scene": "practice",
+          "eventCount": 4
+        },
+        {
+          "index": 8,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 9,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 10,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 11,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 12,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 13,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 14,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 15,
+          "scene": "practice",
+          "eventCount": 4
+        },
+        {
+          "index": 16,
+          "scene": "practice",
+          "eventCount": 7
+        },
+        {
+          "index": 17,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 18,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 19,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 20,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 21,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 22,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 23,
+          "scene": "practice",
+          "eventCount": 5
+        },
+        {
+          "index": 24,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 25,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 26,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 27,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 28,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 29,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 30,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 31,
+          "scene": "practice",
+          "eventCount": 4
+        },
+        {
+          "index": 0,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 1,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 2,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 3,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 4,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 5,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 6,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 7,
+          "scene": "practice",
+          "eventCount": 4
+        },
+        {
+          "index": 8,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 9,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 10,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 11,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 12,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 13,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 14,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 15,
+          "scene": "practice",
+          "eventCount": 4
+        },
+        {
+          "index": 16,
+          "scene": "practice",
+          "eventCount": 7
+        },
+        {
+          "index": 17,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 18,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 19,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 20,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 21,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 22,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 23,
+          "scene": "practice",
+          "eventCount": 5
+        },
+        {
+          "index": 24,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 25,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 26,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 27,
+          "scene": "practice",
+          "eventCount": 6
+        },
+        {
+          "index": 28,
+          "scene": "practice",
+          "eventCount": 10
+        },
+        {
+          "index": 29,
+          "scene": "practice",
+          "eventCount": 9
+        },
+        {
+          "index": 30,
+          "scene": "practice",
+          "eventCount": 8
+        },
+        {
+          "index": 31,
+          "scene": "practice",
+          "eventCount": 4
+        }
+      ],
+      "eventCount": 504,
+      "scheduledEffects": [],
+      "oscillatorCount": 504,
+      "maxConcurrentOscillators": 4,
+      "preCompressor": {
+        "peak": 0.078220375,
+        "peakDbFS": -22.133602139,
+        "rms": 0.025747876,
+        "rmsDbFS": -31.785171786,
+        "dcOffset": -0.000002341,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.128181815,
+        "peakDbFS": -17.843471656,
+        "rms": 0.042191231,
+        "rmsDbFS": -27.495556125,
+        "dcOffset": -0.000003835,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [
+        {
+          "atSeconds": 73.89115384615384,
+          "preCompressorSampleJump": 0,
+          "quietTail": {
+            "peak": 0,
+            "peakDbFS": -234.195626391,
+            "rms": 0,
+            "rmsDbFS": -249.704248303,
+            "dcOffset": 0,
+            "clippedSamples": 0,
+            "nonFiniteSamples": 0
+          }
+        }
+      ],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": true
+      }
+    },
+    "stage1": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 148.3873125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 1,
+      "scheduledBars": [
+        {
+          "index": 0,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 1,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 2,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 3,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 5,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 6,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 7,
+          "scene": "stage1",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 9,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 10,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 11,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 13,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 14,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 15,
+          "scene": "stage1",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "stage1",
+          "eventCount": 10
+        },
+        {
+          "index": 17,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 18,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 19,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 21,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 22,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 23,
+          "scene": "stage1",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 25,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 26,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 27,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 29,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 30,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 31,
+          "scene": "stage1",
+          "eventCount": 6
+        },
+        {
+          "index": 0,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 1,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 2,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 3,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 5,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 6,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 7,
+          "scene": "stage1",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 9,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 10,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 11,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 13,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 14,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 15,
+          "scene": "stage1",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "stage1",
+          "eventCount": 10
+        },
+        {
+          "index": 17,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 18,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 19,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 21,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 22,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 23,
+          "scene": "stage1",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 25,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 26,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 27,
+          "scene": "stage1",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "stage1",
+          "eventCount": 13
+        },
+        {
+          "index": 29,
+          "scene": "stage1",
+          "eventCount": 12
+        },
+        {
+          "index": 30,
+          "scene": "stage1",
+          "eventCount": 11
+        },
+        {
+          "index": 31,
+          "scene": "stage1",
+          "eventCount": 6
+        }
+      ],
+      "eventCount": 670,
+      "scheduledEffects": [],
+      "oscillatorCount": 676,
+      "maxConcurrentOscillators": 5,
+      "preCompressor": {
+        "peak": 0.103757821,
+        "peakDbFS": -19.679583145,
+        "rms": 0.033949867,
+        "rmsDbFS": -29.383238576,
+        "dcOffset": -0.00000331,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.170030713,
+        "peakDbFS": -15.389452476,
+        "rms": 0.05563124,
+        "rmsDbFS": -25.093625262,
+        "dcOffset": -0.000005421,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [
+        {
+          "atSeconds": 73.89115384615384,
+          "preCompressorSampleJump": 0,
+          "quietTail": {
+            "peak": 0,
+            "peakDbFS": -232.275436397,
+            "rms": 0,
+            "rmsDbFS": -247.624780024,
+            "dcOffset": 0,
+            "clippedSamples": 0,
+            "nonFiniteSamples": 0
+          }
+        }
+      ],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": true
+      },
+      "captureSeconds": 73.89115625
+    },
+    "stage2": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 148.3873125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 1,
+      "scheduledBars": [
+        {
+          "index": 0,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 1,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 2,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 3,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 5,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 6,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 7,
+          "scene": "stage2",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 9,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 10,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 11,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 13,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 14,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 15,
+          "scene": "stage2",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "stage2",
+          "eventCount": 11
+        },
+        {
+          "index": 17,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 18,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 19,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 21,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 22,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 23,
+          "scene": "stage2",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 25,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 26,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 27,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 29,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 30,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 31,
+          "scene": "stage2",
+          "eventCount": 6
+        },
+        {
+          "index": 0,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 1,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 2,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 3,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 5,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 6,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 7,
+          "scene": "stage2",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 9,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 10,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 11,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 13,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 14,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 15,
+          "scene": "stage2",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "stage2",
+          "eventCount": 11
+        },
+        {
+          "index": 17,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 18,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 19,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 21,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 22,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 23,
+          "scene": "stage2",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 25,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 26,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 27,
+          "scene": "stage2",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "stage2",
+          "eventCount": 14
+        },
+        {
+          "index": 29,
+          "scene": "stage2",
+          "eventCount": 13
+        },
+        {
+          "index": 30,
+          "scene": "stage2",
+          "eventCount": 12
+        },
+        {
+          "index": 31,
+          "scene": "stage2",
+          "eventCount": 6
+        }
+      ],
+      "eventCount": 718,
+      "scheduledEffects": [],
+      "oscillatorCount": 724,
+      "maxConcurrentOscillators": 5,
+      "preCompressor": {
+        "peak": 0.102568097,
+        "peakDbFS": -19.779754007,
+        "rms": 0.032986797,
+        "rmsDbFS": -29.633197116,
+        "dcOffset": -0.000003478,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.168081075,
+        "peakDbFS": -15.489623662,
+        "rms": 0.054053056,
+        "rmsDbFS": -25.343594954,
+        "dcOffset": -0.000005696,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [
+        {
+          "atSeconds": 73.89115384615384,
+          "preCompressorSampleJump": 0,
+          "quietTail": {
+            "peak": 0,
+            "peakDbFS": -232.480174427,
+            "rms": 0,
+            "rmsDbFS": -247.847017108,
+            "dcOffset": 0,
+            "clippedSamples": 0,
+            "nonFiniteSamples": 0
+          }
+        }
+      ],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": true
+      }
+    },
+    "stage3": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 148.3873125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 1,
+      "scheduledBars": [
+        {
+          "index": 0,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 1,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 2,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 3,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 4,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 5,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 6,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 7,
+          "scene": "stage3",
+          "eventCount": 5
+        },
+        {
+          "index": 8,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 9,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 10,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 11,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 12,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 13,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 14,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 15,
+          "scene": "stage3",
+          "eventCount": 5
+        },
+        {
+          "index": 16,
+          "scene": "stage3",
+          "eventCount": 8
+        },
+        {
+          "index": 17,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 18,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 19,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 20,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 21,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 22,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 23,
+          "scene": "stage3",
+          "eventCount": 5
+        },
+        {
+          "index": 24,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 25,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 26,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 27,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 28,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 29,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 30,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 31,
+          "scene": "stage3",
+          "eventCount": 5
+        },
+        {
+          "index": 0,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 1,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 2,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 3,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 4,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 5,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 6,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 7,
+          "scene": "stage3",
+          "eventCount": 5
+        },
+        {
+          "index": 8,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 9,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 10,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 11,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 12,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 13,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 14,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 15,
+          "scene": "stage3",
+          "eventCount": 5
+        },
+        {
+          "index": 16,
+          "scene": "stage3",
+          "eventCount": 8
+        },
+        {
+          "index": 17,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 18,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 19,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 20,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 21,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 22,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 23,
+          "scene": "stage3",
+          "eventCount": 5
+        },
+        {
+          "index": 24,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 25,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 26,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 27,
+          "scene": "stage3",
+          "eventCount": 6
+        },
+        {
+          "index": 28,
+          "scene": "stage3",
+          "eventCount": 11
+        },
+        {
+          "index": 29,
+          "scene": "stage3",
+          "eventCount": 10
+        },
+        {
+          "index": 30,
+          "scene": "stage3",
+          "eventCount": 9
+        },
+        {
+          "index": 31,
+          "scene": "stage3",
+          "eventCount": 5
+        }
+      ],
+      "eventCount": 558,
+      "scheduledEffects": [],
+      "oscillatorCount": 564,
+      "maxConcurrentOscillators": 4,
+      "preCompressor": {
+        "peak": 0.088303924,
+        "peakDbFS": -21.08039998,
+        "rms": 0.029335567,
+        "rmsDbFS": -30.652110169,
+        "dcOffset": -0.000002754,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.144705996,
+        "peakDbFS": -16.790269469,
+        "rms": 0.048070159,
+        "rmsDbFS": -26.36248886,
+        "dcOffset": -0.000004511,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [
+        {
+          "atSeconds": 73.89115384615384,
+          "preCompressorSampleJump": 0,
+          "quietTail": {
+            "peak": 0,
+            "peakDbFS": -233.286042232,
+            "rms": 0,
+            "rmsDbFS": -248.720564223,
+            "dcOffset": 0,
+            "clippedSamples": 0,
+            "nonFiniteSamples": 0
+          }
+        }
+      ],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": true
+      },
+      "captureSeconds": 73.89115625
+    },
+    "paused": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 148.3873125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 1,
+      "scheduledBars": [
+        {
+          "index": 0,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 1,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 2,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 3,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 4,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 5,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 6,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 7,
+          "scene": "paused",
+          "eventCount": 2
+        },
+        {
+          "index": 8,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 9,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 10,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 11,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 12,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 13,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 14,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 15,
+          "scene": "paused",
+          "eventCount": 2
+        },
+        {
+          "index": 16,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 17,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 18,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 19,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 20,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 21,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 22,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 23,
+          "scene": "paused",
+          "eventCount": 3
+        },
+        {
+          "index": 24,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 25,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 26,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 27,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 28,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 29,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 30,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 31,
+          "scene": "paused",
+          "eventCount": 2
+        },
+        {
+          "index": 0,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 1,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 2,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 3,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 4,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 5,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 6,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 7,
+          "scene": "paused",
+          "eventCount": 2
+        },
+        {
+          "index": 8,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 9,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 10,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 11,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 12,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 13,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 14,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 15,
+          "scene": "paused",
+          "eventCount": 2
+        },
+        {
+          "index": 16,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 17,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 18,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 19,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 20,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 21,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 22,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 23,
+          "scene": "paused",
+          "eventCount": 3
+        },
+        {
+          "index": 24,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 25,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 26,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 27,
+          "scene": "paused",
+          "eventCount": 4
+        },
+        {
+          "index": 28,
+          "scene": "paused",
+          "eventCount": 7
+        },
+        {
+          "index": 29,
+          "scene": "paused",
+          "eventCount": 6
+        },
+        {
+          "index": 30,
+          "scene": "paused",
+          "eventCount": 5
+        },
+        {
+          "index": 31,
+          "scene": "paused",
+          "eventCount": 2
+        }
+      ],
+      "eventCount": 328,
+      "scheduledEffects": [],
+      "oscillatorCount": 328,
+      "maxConcurrentOscillators": 3,
+      "preCompressor": {
+        "peak": 0.033727344,
+        "peakDbFS": -29.440357123,
+        "rms": 0.010800638,
+        "rmsDbFS": -39.331011463,
+        "dcOffset": -8.89e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.055269901,
+        "peakDbFS": -25.150226312,
+        "rms": 0.017698208,
+        "rmsDbFS": -35.041414242,
+        "dcOffset": -0.000001458,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [
+        {
+          "atSeconds": 73.89115384615384,
+          "preCompressorSampleJump": 0,
+          "quietTail": {
+            "peak": 0,
+            "peakDbFS": -240.226106683,
+            "rms": 0,
+            "rmsDbFS": -256.164119055,
+            "dcOffset": 0,
+            "clippedSamples": 0,
+            "nonFiniteSamples": 0
+          }
+        }
+      ],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": true
+      }
+    },
+    "celebrate": {
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 148.3873125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 1,
+      "scheduledBars": [
+        {
+          "index": 0,
+          "scene": "celebrate",
+          "eventCount": 14
+        },
+        {
+          "index": 1,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 2,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 3,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 5,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 6,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 7,
+          "scene": "celebrate",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "celebrate",
+          "eventCount": 14
+        },
+        {
+          "index": 9,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 10,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 11,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 13,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 14,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 15,
+          "scene": "celebrate",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 17,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 18,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 19,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 21,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 22,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 23,
+          "scene": "celebrate",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "celebrate",
+          "eventCount": 14
+        },
+        {
+          "index": 25,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 26,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 27,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 29,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 30,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 31,
+          "scene": "celebrate",
+          "eventCount": 6
+        },
+        {
+          "index": 0,
+          "scene": "celebrate",
+          "eventCount": 14
+        },
+        {
+          "index": 1,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 2,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 3,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 4,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 5,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 6,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 7,
+          "scene": "celebrate",
+          "eventCount": 6
+        },
+        {
+          "index": 8,
+          "scene": "celebrate",
+          "eventCount": 14
+        },
+        {
+          "index": 9,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 10,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 11,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 12,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 13,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 14,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 15,
+          "scene": "celebrate",
+          "eventCount": 6
+        },
+        {
+          "index": 16,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 17,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 18,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 19,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 20,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 21,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 22,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 23,
+          "scene": "celebrate",
+          "eventCount": 6
+        },
+        {
+          "index": 24,
+          "scene": "celebrate",
+          "eventCount": 14
+        },
+        {
+          "index": 25,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 26,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 27,
+          "scene": "celebrate",
+          "eventCount": 7
+        },
+        {
+          "index": 28,
+          "scene": "celebrate",
+          "eventCount": 13
+        },
+        {
+          "index": 29,
+          "scene": "celebrate",
+          "eventCount": 12
+        },
+        {
+          "index": 30,
+          "scene": "celebrate",
+          "eventCount": 11
+        },
+        {
+          "index": 31,
+          "scene": "celebrate",
+          "eventCount": 6
+        }
+      ],
+      "eventCount": 678,
+      "scheduledEffects": [],
+      "oscillatorCount": 692,
+      "maxConcurrentOscillators": 5,
+      "preCompressor": {
+        "peak": 0.116482764,
+        "peakDbFS": -18.674766616,
+        "rms": 0.038178817,
+        "rmsDbFS": -28.363550585,
+        "dcOffset": -0.000003785,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.190883413,
+        "peakDbFS": -14.38463617,
+        "rms": 0.062560942,
+        "rmsDbFS": -24.073934391,
+        "dcOffset": -0.000006198,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [
+        {
+          "atSeconds": 73.89115384615384,
+          "preCompressorSampleJump": 0,
+          "quietTail": {
+            "peak": 0,
+            "peakDbFS": -231.450945628,
+            "rms": 0,
+            "rmsDbFS": -246.728523337,
+            "dcOffset": 0,
+            "clippedSamples": 0,
+            "nonFiniteSamples": 0
+          }
+        }
+      ],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": true
+      }
+    }
+  },
+  "cues": {
+    "catch": {
+      "atSecondsInPreview": 0.51,
+      "cueSeconds": 0.2423076923076923,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.0423125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "catch",
+          "atSeconds": 0.11,
+          "eventCount": 2
+        }
+      ],
+      "oscillatorCount": 3,
+      "maxConcurrentOscillators": 3,
+      "preCompressor": {
+        "peak": 0.027800862,
+        "peakDbFS": -31.11883484,
+        "rms": 0.002470731,
+        "rmsDbFS": -52.143492133,
+        "dcOffset": -5.93e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.043261241,
+        "peakDbFS": -27.278020496,
+        "rms": 0.003949536,
+        "rmsDbFS": -48.069079254,
+        "dcOffset": -9.3e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "reject": {
+      "atSecondsInPreview": 1.7523076923076923,
+      "cueSeconds": 0.2826923076923077,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.08271875,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "reject",
+          "atSeconds": 0.11,
+          "eventCount": 2
+        }
+      ],
+      "oscillatorCount": 2,
+      "maxConcurrentOscillators": 2,
+      "preCompressor": {
+        "peak": 0.022406455,
+        "peakDbFS": -32.992536934,
+        "rms": 0.002001748,
+        "rmsDbFS": -53.971813886,
+        "dcOffset": 0.00000244,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.034906015,
+        "peakDbFS": -29.14199463,
+        "rms": 0.003210654,
+        "rmsDbFS": -49.86813102,
+        "dcOffset": 0.000003884,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "compost": {
+      "atSecondsInPreview": 3.0349999999999997,
+      "cueSeconds": 0.2596153846153846,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.059625,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "compost",
+          "atSeconds": 0.11,
+          "eventCount": 2
+        }
+      ],
+      "oscillatorCount": 2,
+      "maxConcurrentOscillators": 2,
+      "preCompressor": {
+        "peak": 0.026912417,
+        "peakDbFS": -31.400945846,
+        "rms": 0.002584509,
+        "rmsDbFS": -51.752437743,
+        "dcOffset": -0.000008808,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.04189761,
+        "peakDbFS": -27.556215038,
+        "rms": 0.004134733,
+        "rmsDbFS": -47.671050857,
+        "dcOffset": -0.000013671,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "order": {
+      "atSecondsInPreview": 4.294615384615384,
+      "cueSeconds": 0.6807692307692307,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.48078125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "order",
+          "atSeconds": 0.11,
+          "eventCount": 5
+        }
+      ],
+      "oscillatorCount": 5,
+      "maxConcurrentOscillators": 3,
+      "preCompressor": {
+        "peak": 0.05185717,
+        "peakDbFS": -25.703823801,
+        "rms": 0.013014069,
+        "rmsDbFS": -37.71173815,
+        "dcOffset": -0.000003594,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.084979728,
+        "peakDbFS": -21.41369328,
+        "rms": 0.021269747,
+        "rmsDbFS": -33.444753559,
+        "dcOffset": -0.000005793,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "forecast": {
+      "atSecondsInPreview": 5.975384615384614,
+      "cueSeconds": 0.5769230769230769,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.3769375,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "forecast",
+          "atSeconds": 0.11,
+          "eventCount": 2
+        }
+      ],
+      "oscillatorCount": 4,
+      "maxConcurrentOscillators": 2,
+      "preCompressor": {
+        "peak": 0.034083784,
+        "peakDbFS": -29.349044008,
+        "rms": 0.00350415,
+        "rmsDbFS": -49.108346438,
+        "dcOffset": 0.000001482,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.055854008,
+        "peakDbFS": -25.058913204,
+        "rms": 0.005668326,
+        "rmsDbFS": -44.930903028,
+        "dcOffset": 0.000002347,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "gate-warning": {
+      "atSecondsInPreview": 7.552307692307691,
+      "cueSeconds": 0.41538461538461535,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.21540625,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "gate-warning",
+          "atSeconds": 0.11,
+          "eventCount": 3
+        }
+      ],
+      "oscillatorCount": 3,
+      "maxConcurrentOscillators": 1,
+      "preCompressor": {
+        "peak": 0.018673338,
+        "peakDbFS": -34.575560836,
+        "rms": 0.001804303,
+        "rmsDbFS": -54.87380904,
+        "dcOffset": -0.000001705,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.030305147,
+        "peakDbFS": -30.369672052,
+        "rms": 0.002917934,
+        "rmsDbFS": -50.698490216,
+        "dcOffset": -0.000002744,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "gust": {
+      "atSecondsInPreview": 8.967692307692307,
+      "cueSeconds": 0.41538461538461535,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.21540625,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "gust",
+          "atSeconds": 0.11,
+          "eventCount": 3
+        }
+      ],
+      "oscillatorCount": 3,
+      "maxConcurrentOscillators": 2,
+      "preCompressor": {
+        "peak": 0.032639407,
+        "peakDbFS": -29.725154905,
+        "rms": 0.006206042,
+        "rmsDbFS": -44.1437062,
+        "dcOffset": 4.98e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.05124912,
+        "peakDbFS": -25.806271685,
+        "rms": 0.01008621,
+        "rmsDbFS": -39.925439573,
+        "dcOffset": 7.88e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "countdown": {
+      "atSecondsInPreview": 10.383076923076922,
+      "cueSeconds": 0.15576923076923077,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 0.95578125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "countdown",
+          "atSeconds": 0.11,
+          "eventCount": 2
+        }
+      ],
+      "oscillatorCount": 3,
+      "maxConcurrentOscillators": 3,
+      "preCompressor": {
+        "peak": 0.035851464,
+        "peakDbFS": -28.909862182,
+        "rms": 0.002385351,
+        "rmsDbFS": -52.448954188,
+        "dcOffset": -0.000001232,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.05584519,
+        "peakDbFS": -25.060284568,
+        "rms": 0.003764015,
+        "rmsDbFS": -48.486973894,
+        "dcOffset": -0.000001944,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "stage-result": {
+      "atSecondsInPreview": 11.538846153846153,
+      "cueSeconds": 1.0673076923076923,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 1.8673125,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "stage-result",
+          "atSeconds": 0.11,
+          "eventCount": 5
+        }
+      ],
+      "oscillatorCount": 6,
+      "maxConcurrentOscillators": 4,
+      "preCompressor": {
+        "peak": 0.058703955,
+        "peakDbFS": -24.626652731,
+        "rms": 0.016205987,
+        "rmsDbFS": -35.806490345,
+        "dcOffset": -5.08e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.096199736,
+        "peakDbFS": -20.336522396,
+        "rms": 0.026544629,
+        "rmsDbFS": -31.520466884,
+        "dcOffset": -8.46e-7,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    },
+    "finish": {
+      "atSecondsInPreview": 13.606153846153846,
+      "cueSeconds": 1.5576923076923077,
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+      "sampleRate": 32000,
+      "durationSeconds": 2.35771875,
+      "contextsBeforeUnlock": 0,
+      "contextsCreated": 1,
+      "intervalStarts": 0,
+      "scheduledBars": [],
+      "eventCount": 0,
+      "scheduledEffects": [
+        {
+          "name": "finish",
+          "atSeconds": 0.11,
+          "eventCount": 9
+        }
+      ],
+      "oscillatorCount": 10,
+      "maxConcurrentOscillators": 6,
+      "preCompressor": {
+        "peak": 0.069782913,
+        "peakDbFS": -23.125018142,
+        "rms": 0.020369893,
+        "rmsDbFS": -33.820224956,
+        "dcOffset": 0.000008521,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "output": {
+        "peak": 0.114355125,
+        "peakDbFS": -18.834887376,
+        "rms": 0.033356351,
+        "rmsDbFS": -29.536429329,
+        "dcOffset": 0.000013994,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      },
+      "loopSeams": [],
+      "settings": {
+        "trackTitle": "Over the Little Bridge",
+        "music": true,
+        "effects": true,
+        "volume": 1,
+        "unlocked": true,
+        "supported": true,
+        "canPlayMusic": false
+      }
+    }
+  },
+  "previews": {
+    "over-the-little-bridge-stage1": {
+      "pcmWavSha256": "29fdb68c03cf6542895c88df8e7f46493e7672aef585a42002ac19ecdb48345e",
+      "durationSeconds": 73.89115625,
+      "file": "over-the-little-bridge-stage1.mp3",
+      "bytes": 739844,
+      "sha256": "62b413a4a1f2b1623744fa64b1e937d4b95c2cc8dd88923459e3ca335f2c444b",
+      "decodedSeconds": 73.89115625,
+      "decodedMeasurements": {
+        "peak": 0.16148819,
+        "peakDbFS": -15.837184647,
+        "rms": 0.052948697,
+        "rmsDbFS": -25.522894471,
+        "dcOffset": -0.000006452,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "over-the-little-bridge-stage3": {
+      "pcmWavSha256": "408dfde8d90b7a5334c91f706d6e1b149dfd7958b1a2d2fb257ba3517663ed8c",
+      "durationSeconds": 73.89115625,
+      "file": "over-the-little-bridge-stage3.mp3",
+      "bytes": 739844,
+      "sha256": "2edb5639e61bbd21e206b04c036895d05e6b58bb1d1cf7fcece453e9a49baf73",
+      "decodedSeconds": 73.89115625,
+      "decodedMeasurements": {
+        "peak": 0.137453482,
+        "peakDbFS": -17.236885109,
+        "rms": 0.0457538,
+        "rmsDbFS": -26.791456618,
+        "dcOffset": -0.000005436,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "orchard-scene-transitions": {
+      "pcmWavSha256": "ab17a76b08fcc4a8f0e44a511c3caf8e8e53964e4b5520b5fe8449ba71ac302b",
+      "durationSeconds": 73.89115625,
+      "file": "orchard-scene-transitions.mp3",
+      "bytes": 739844,
+      "sha256": "5bd75e779475de4cf14e76d40aa666c77c1310b3c7a155b15fe28aa1187f63dc",
+      "decodedSeconds": 73.89115625,
+      "decodedMeasurements": {
+        "peak": 0.16455926,
+        "peakDbFS": -15.673553485,
+        "rms": 0.048641763,
+        "rmsDbFS": -26.259813799,
+        "dcOffset": -0.00000401,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    },
+    "orchard-cues": {
+      "pcmWavSha256": "e07888b38fd8662f571be7b62bb1afc2752bbc41173b066bfedef49583d9dfaa",
+      "durationSeconds": 16.35384375,
+      "file": "orchard-cues.mp3",
+      "bytes": 164564,
+      "sha256": "d6c399f1f10d003dd9b27d03c22c6103af72b4bd6a7bc9266cf041085b41a01c",
+      "decodedSeconds": 16.35384375,
+      "decodedMeasurements": {
+        "peak": 0.108307168,
+        "peakDbFS": -19.306856007,
+        "rms": 0.01638163,
+        "rmsDbFS": -35.712857689,
+        "dcOffset": 0.000006592,
+        "clippedSamples": 0,
+        "nonFiniteSamples": 0
+      }
+    }
+  },
+  "methodology": "Chromium OfflineAudioContext runs the unchanged ui/audio.js scheduler and synthesis graph through an authoring-only clock facade. One channel captures final output, one taps the master before the existing compressor. Two complete loops per scene, actual phrase-boundary scene requests, every cue, overlap stress and quiet phone defaults are rendered. No loudness normalization or additional runtime audio engine.",
+  "auditoryEvaluation": "No human audition or physical-speaker listening was performed. Offline Web Audio rendering, finite-signal measurements, MP3 decoding and preview interaction are structural checks.",
+  "defaultVolumeStage1": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "sampleRate": 32000,
+    "durationSeconds": 74.54115625,
+    "contextsBeforeUnlock": 0,
+    "contextsCreated": 1,
+    "intervalStarts": 1,
+    "scheduledBars": [
+      {
+        "index": 0,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 1,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 2,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 3,
+        "scene": "stage1",
+        "eventCount": 7
+      },
+      {
+        "index": 4,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 5,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 6,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 7,
+        "scene": "stage1",
+        "eventCount": 6
+      },
+      {
+        "index": 8,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 9,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 10,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 11,
+        "scene": "stage1",
+        "eventCount": 7
+      },
+      {
+        "index": 12,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 13,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 14,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 15,
+        "scene": "stage1",
+        "eventCount": 6
+      },
+      {
+        "index": 16,
+        "scene": "stage1",
+        "eventCount": 10
+      },
+      {
+        "index": 17,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 18,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 19,
+        "scene": "stage1",
+        "eventCount": 7
+      },
+      {
+        "index": 20,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 21,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 22,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 23,
+        "scene": "stage1",
+        "eventCount": 6
+      },
+      {
+        "index": 24,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 25,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 26,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 27,
+        "scene": "stage1",
+        "eventCount": 7
+      },
+      {
+        "index": 28,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 29,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 30,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 31,
+        "scene": "stage1",
+        "eventCount": 6
+      }
+    ],
+    "eventCount": 335,
+    "scheduledEffects": [],
+    "oscillatorCount": 338,
+    "maxConcurrentOscillators": 5,
+    "preCompressor": {
+      "peak": 0.046691019,
+      "peakDbFS": -26.615332939,
+      "rms": 0.015240379,
+      "rmsDbFS": -36.340084896,
+      "dcOffset": -0.000001847,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "output": {
+      "peak": 0.076513819,
+      "peakDbFS": -22.32520237,
+      "rms": 0.02497184,
+      "rmsDbFS": -32.050989177,
+      "dcOffset": -0.000003024,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "loopSeams": [],
+    "settings": {
+      "trackTitle": "Over the Little Bridge",
+      "music": true,
+      "effects": true,
+      "volume": 0.45,
+      "unlocked": true,
+      "supported": true,
+      "canPlayMusic": true
+    }
+  },
+  "sceneTransitions": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "sampleRate": 32000,
+    "durationSeconds": 74.54115625,
+    "contextsBeforeUnlock": 0,
+    "contextsCreated": 1,
+    "intervalStarts": 1,
+    "scheduledBars": [
+      {
+        "index": 0,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 1,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 2,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 3,
+        "scene": "stage1",
+        "eventCount": 7
+      },
+      {
+        "index": 4,
+        "scene": "stage1",
+        "eventCount": 13
+      },
+      {
+        "index": 5,
+        "scene": "stage1",
+        "eventCount": 12
+      },
+      {
+        "index": 6,
+        "scene": "stage1",
+        "eventCount": 11
+      },
+      {
+        "index": 7,
+        "scene": "stage1",
+        "eventCount": 6
+      },
+      {
+        "index": 8,
+        "scene": "stage2",
+        "eventCount": 14
+      },
+      {
+        "index": 9,
+        "scene": "stage2",
+        "eventCount": 12
+      },
+      {
+        "index": 10,
+        "scene": "stage2",
+        "eventCount": 13
+      },
+      {
+        "index": 11,
+        "scene": "stage2",
+        "eventCount": 7
+      },
+      {
+        "index": 12,
+        "scene": "stage2",
+        "eventCount": 14
+      },
+      {
+        "index": 13,
+        "scene": "stage2",
+        "eventCount": 13
+      },
+      {
+        "index": 14,
+        "scene": "stage2",
+        "eventCount": 12
+      },
+      {
+        "index": 15,
+        "scene": "stage2",
+        "eventCount": 6
+      },
+      {
+        "index": 16,
+        "scene": "stage3",
+        "eventCount": 8
+      },
+      {
+        "index": 17,
+        "scene": "stage3",
+        "eventCount": 9
+      },
+      {
+        "index": 18,
+        "scene": "stage3",
+        "eventCount": 9
+      },
+      {
+        "index": 19,
+        "scene": "stage3",
+        "eventCount": 6
+      },
+      {
+        "index": 20,
+        "scene": "stage3",
+        "eventCount": 9
+      },
+      {
+        "index": 21,
+        "scene": "stage3",
+        "eventCount": 9
+      },
+      {
+        "index": 22,
+        "scene": "stage3",
+        "eventCount": 11
+      },
+      {
+        "index": 23,
+        "scene": "stage3",
+        "eventCount": 5
+      },
+      {
+        "index": 24,
+        "scene": "paused",
+        "eventCount": 7
+      },
+      {
+        "index": 25,
+        "scene": "paused",
+        "eventCount": 5
+      },
+      {
+        "index": 26,
+        "scene": "paused",
+        "eventCount": 6
+      },
+      {
+        "index": 27,
+        "scene": "paused",
+        "eventCount": 4
+      },
+      {
+        "index": 28,
+        "scene": "celebrate",
+        "eventCount": 13
+      },
+      {
+        "index": 29,
+        "scene": "celebrate",
+        "eventCount": 12
+      },
+      {
+        "index": 30,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 31,
+        "scene": "celebrate",
+        "eventCount": 6
+      }
+    ],
+    "eventCount": 306,
+    "scheduledEffects": [],
+    "oscillatorCount": 309,
+    "maxConcurrentOscillators": 5,
+    "preCompressor": {
+      "peak": 0.105707392,
+      "peakDbFS": -19.51789283,
+      "rms": 0.031113316,
+      "rmsDbFS": -30.141073895,
+      "dcOffset": -0.000002569,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "output": {
+      "peak": 0.173225522,
+      "peakDbFS": -15.227762424,
+      "rms": 0.050979025,
+      "rmsDbFS": -25.85216954,
+      "dcOffset": -0.000004203,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "loopSeams": [],
+    "settings": {
+      "trackTitle": "Over the Little Bridge",
+      "music": true,
+      "effects": true,
+      "volume": 1,
+      "unlocked": true,
+      "supported": true,
+      "canPlayMusic": true
+    },
+    "captureSeconds": 73.89115625
+  },
+  "cueReel": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "sampleRate": 32000,
+    "durationSeconds": 16.353875,
+    "contextsBeforeUnlock": 0,
+    "contextsCreated": 1,
+    "intervalStarts": 0,
+    "scheduledBars": [],
+    "eventCount": 0,
+    "scheduledEffects": [
+      {
+        "name": "catch",
+        "atSeconds": 0.51,
+        "eventCount": 2
+      },
+      {
+        "name": "reject",
+        "atSeconds": 1.7523076923076923,
+        "eventCount": 2
+      },
+      {
+        "name": "compost",
+        "atSeconds": 3.0349999999999997,
+        "eventCount": 2
+      },
+      {
+        "name": "order",
+        "atSeconds": 4.294615384615384,
+        "eventCount": 5
+      },
+      {
+        "name": "forecast",
+        "atSeconds": 5.975384615384614,
+        "eventCount": 2
+      },
+      {
+        "name": "gate-warning",
+        "atSeconds": 7.552307692307691,
+        "eventCount": 3
+      },
+      {
+        "name": "gust",
+        "atSeconds": 8.967692307692307,
+        "eventCount": 3
+      },
+      {
+        "name": "countdown",
+        "atSeconds": 10.383076923076922,
+        "eventCount": 2
+      },
+      {
+        "name": "stage-result",
+        "atSeconds": 11.538846153846153,
+        "eventCount": 5
+      },
+      {
+        "name": "finish",
+        "atSeconds": 13.606153846153846,
+        "eventCount": 9
+      }
+    ],
+    "oscillatorCount": 41,
+    "maxConcurrentOscillators": 6,
+    "preCompressor": {
+      "peak": 0.069584817,
+      "peakDbFS": -23.14971025,
+      "rms": 0.01052141,
+      "rmsDbFS": -39.558520964,
+      "dcOffset": 0.000004349,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "output": {
+      "peak": 0.114030495,
+      "peakDbFS": -18.859579787,
+      "rms": 0.017241716,
+      "rmsDbFS": -35.268390307,
+      "dcOffset": 0.000007126,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "loopSeams": [],
+    "settings": {
+      "trackTitle": "Over the Little Bridge",
+      "music": true,
+      "effects": true,
+      "volume": 1,
+      "unlocked": true,
+      "supported": true,
+      "canPlayMusic": false
+    },
+    "captureSeconds": 16.35384375
+  },
+  "musicAndCueOverlap": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "sampleRate": 32000,
+    "durationSeconds": 74.54115625,
+    "contextsBeforeUnlock": 0,
+    "contextsCreated": 1,
+    "intervalStarts": 1,
+    "scheduledBars": [
+      {
+        "index": 0,
+        "scene": "celebrate",
+        "eventCount": 14
+      },
+      {
+        "index": 1,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 2,
+        "scene": "celebrate",
+        "eventCount": 12
+      },
+      {
+        "index": 3,
+        "scene": "celebrate",
+        "eventCount": 7
+      },
+      {
+        "index": 4,
+        "scene": "celebrate",
+        "eventCount": 13
+      },
+      {
+        "index": 5,
+        "scene": "celebrate",
+        "eventCount": 12
+      },
+      {
+        "index": 6,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 7,
+        "scene": "celebrate",
+        "eventCount": 6
+      },
+      {
+        "index": 8,
+        "scene": "celebrate",
+        "eventCount": 14
+      },
+      {
+        "index": 9,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 10,
+        "scene": "celebrate",
+        "eventCount": 12
+      },
+      {
+        "index": 11,
+        "scene": "celebrate",
+        "eventCount": 7
+      },
+      {
+        "index": 12,
+        "scene": "celebrate",
+        "eventCount": 13
+      },
+      {
+        "index": 13,
+        "scene": "celebrate",
+        "eventCount": 12
+      },
+      {
+        "index": 14,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 15,
+        "scene": "celebrate",
+        "eventCount": 6
+      },
+      {
+        "index": 16,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 17,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 18,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 19,
+        "scene": "celebrate",
+        "eventCount": 7
+      },
+      {
+        "index": 20,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 21,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 22,
+        "scene": "celebrate",
+        "eventCount": 13
+      },
+      {
+        "index": 23,
+        "scene": "celebrate",
+        "eventCount": 6
+      },
+      {
+        "index": 24,
+        "scene": "celebrate",
+        "eventCount": 14
+      },
+      {
+        "index": 25,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 26,
+        "scene": "celebrate",
+        "eventCount": 12
+      },
+      {
+        "index": 27,
+        "scene": "celebrate",
+        "eventCount": 7
+      },
+      {
+        "index": 28,
+        "scene": "celebrate",
+        "eventCount": 13
+      },
+      {
+        "index": 29,
+        "scene": "celebrate",
+        "eventCount": 12
+      },
+      {
+        "index": 30,
+        "scene": "celebrate",
+        "eventCount": 11
+      },
+      {
+        "index": 31,
+        "scene": "celebrate",
+        "eventCount": 6
+      }
+    ],
+    "eventCount": 339,
+    "scheduledEffects": [
+      {
+        "name": "catch",
+        "atSeconds": 0.51,
+        "eventCount": 2
+      },
+      {
+        "name": "catch",
+        "atSeconds": 0.63,
+        "eventCount": 2
+      },
+      {
+        "name": "reject",
+        "atSeconds": 0.65,
+        "eventCount": 2
+      },
+      {
+        "name": "order",
+        "atSeconds": 0.71,
+        "eventCount": 5
+      },
+      {
+        "name": "forecast",
+        "atSeconds": 2.01,
+        "eventCount": 2
+      },
+      {
+        "name": "gate-warning",
+        "atSeconds": 2.01,
+        "eventCount": 3
+      },
+      {
+        "name": "gust",
+        "atSeconds": 3.01,
+        "eventCount": 3
+      },
+      {
+        "name": "compost",
+        "atSeconds": 3.11,
+        "eventCount": 2
+      },
+      {
+        "name": "finish",
+        "atSeconds": 8.01,
+        "eventCount": 9
+      }
+    ],
+    "oscillatorCount": 381,
+    "maxConcurrentOscillators": 8,
+    "preCompressor": {
+      "peak": 0.134428963,
+      "peakDbFS": -17.430143027,
+      "rms": 0.038324632,
+      "rmsDbFS": -28.330440217,
+      "dcOffset": -0.000004588,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "output": {
+      "peak": 0.220274717,
+      "peakDbFS": -13.140706976,
+      "rms": 0.062796236,
+      "rmsDbFS": -24.041327764,
+      "dcOffset": -0.000007509,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "loopSeams": [],
+    "settings": {
+      "trackTitle": "Over the Little Bridge",
+      "music": true,
+      "effects": true,
+      "volume": 1,
+      "unlocked": true,
+      "supported": true,
+      "canPlayMusic": true
+    }
+  },
+  "phoneDefaults": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "sampleRate": 32000,
+    "durationSeconds": 2,
+    "contextsBeforeUnlock": 0,
+    "contextsCreated": 1,
+    "intervalStarts": 0,
+    "scheduledBars": [],
+    "eventCount": 0,
+    "scheduledEffects": [],
+    "oscillatorCount": 0,
+    "maxConcurrentOscillators": 0,
+    "preCompressor": {
+      "peak": 0,
+      "peakDbFS": null,
+      "rms": 0,
+      "rmsDbFS": null,
+      "dcOffset": 0,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "output": {
+      "peak": 0,
+      "peakDbFS": null,
+      "rms": 0,
+      "rmsDbFS": null,
+      "dcOffset": 0,
+      "clippedSamples": 0,
+      "nonFiniteSamples": 0
+    },
+    "loopSeams": [],
+    "settings": {
+      "trackTitle": "Over the Little Bridge",
+      "music": true,
+      "effects": false,
+      "volume": 1,
+      "unlocked": true,
+      "supported": true,
+      "canPlayMusic": false
+    }
+  },
+  "encoder": "ffmpeg version 8.0.1-3ubuntu2 Copyright (c) 2000-2025 the FFmpeg developers"
+}

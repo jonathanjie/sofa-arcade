@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "gameId": "gravity-orchard",
+  "browserFiles": [
+    "games/gravity-orchard/catalog.mjs",
+    "games/gravity-orchard/geometry.mjs",
+    "games/gravity-orchard/public.mjs"
+  ],
+  "authorityFiles": [
+    "games/gravity-orchard/engine.mjs",
+    "games/gravity-orchard/physics.mjs",
+    "games/gravity-orchard/supply.mjs",
+    "games/gravity-orchard/catalog.mjs",
+    "games/gravity-orchard/geometry.mjs",
+    "games/gravity-orchard/public.mjs"
+  ],
+  "productionDependencies": [],
+  "excludedFromProduction": ["harness/", "validation/", "checks/", "tests/", "fixtures/", ".evidence/"]
+}

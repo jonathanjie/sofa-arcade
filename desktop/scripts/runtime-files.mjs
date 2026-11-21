@@ -2,6 +2,43 @@ import { readFile, lstat, realpath, mkdir, copyFile, chmod, rm, readdir, writeFi
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { isBuiltin } from 'node:module';
+import { parse } from 'acorn';
+
+// The native parent validates a fixed staged resource root. Preserve its one
+// deliberate runtime-root import and require that exact named module to ship.
+const boundedDynamicImports = new Map([
+  ['desktop/host/entry.mjs', new Map([
+    ["import(pathToFileURL(path.join(options.root, 'server/lan.mjs')).href)", '../../server/lan.mjs'],
+  ])],
+  ['ui/collection-load.mjs', new Map([
+    ['import(path)', ['/games/odd-laws-society/index.mjs', '/games/odd-laws-society/tutorial.mjs',
+      '/games/odd-laws-society/catalog.mjs', '/games/odd-laws-society/preview.mjs',
+      '/room-client.mjs', '/media/odd-laws-society/score.mjs', '/media/odd-laws-society/effects.mjs']],
+  ])],
+]);
+
+/** Parse actual imports; diagnostic strings/comments must not invent dependencies. */
+export function runtimeModuleSpecifiers(text, filename = 'runtime.mjs') {
+  const syntax = parse(text, {ecmaVersion: 'latest', sourceType: 'module'});
+  const specifiers = [];
+  const visit = node => {
+    if (!node || typeof node !== 'object') return;
+    if (['ImportDeclaration','ExportNamedDeclaration','ExportAllDeclaration'].includes(node.type) && node.source) specifiers.push(node.source.value);
+    if (node.type === 'ImportExpression') {
+      const specifier = node.source.type === 'Literal' ? node.source.value
+        : boundedDynamicImports.get(filename)?.get(text.slice(node.start, node.end));
+      if (typeof specifier !== 'string' && !Array.isArray(specifier)) throw new Error(`Unbounded dynamic runtime import in ${filename}`);
+      specifiers.push(...(Array.isArray(specifier) ? specifier : [specifier]));
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach(visit);
+      else if (value && typeof value === 'object') visit(value);
+    }
+  };
+  visit(syntax);
+  return specifiers;
+}
 
 export const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 export const desktopRoot = path.join(repoRoot, 'desktop');
@@ -62,13 +99,12 @@ export async function stageRuntime({ root = repoRoot, destination = path.join(de
     const contents = await readFile(source.filename);
     if (/\.m?js$/.test(entry.path)) {
       const text = contents.toString('utf8');
-      const imports = [...text.matchAll(/\b(?:import|export)\s+(?:[^;\n]*?\s+from\s*)?['"]([^'"]+)['"]/g), ...text.matchAll(/\bimport\(['"]([^'"]+)['"]\)/g)];
-      for (const match of imports) {
-        const specifier = match[1].split('?')[0];
+      for (const imported of runtimeModuleSpecifiers(text, entry.path)) {
+        const specifier = imported.split('?')[0];
         if (specifier.startsWith('.')) {
           const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(entry.path), specifier));
           if (!filenames.has(resolved)) throw new Error(`Missing runtime import ${specifier} from ${entry.path}`);
-        } else if (!specifier.startsWith('/') && !specifier.startsWith('node:')) throw new Error(`Runtime has an unbundled dependency: ${specifier}`);
+        } else if (!specifier.startsWith('/') && !isBuiltin(specifier)) throw new Error(`Runtime has an unbundled dependency: ${specifier}`);
       }
     }
     sources.push({ ...entry, ...source, mode: entry.mode ?? source.mode, contents });

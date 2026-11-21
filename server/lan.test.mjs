@@ -253,7 +253,8 @@ test('explicit browser module entries serve only named public helpers/UI files a
   await writeFile(path.join(root, 'server/private.mjs'), 'PRIVATE-AUTHORITY');
   await symlink(path.join(root, 'server/private.mjs'), path.join(root, 'ui/games/sample-game/alias.mjs'));
   const entries = sources.map(source => ({ source, url: '/' + source }));
-  const host = await startLanServer({ root, databasePath: ':memory:', host: '127.0.0.1', port: 0, browserModules: entries });
+  // This synthetic root has no database migrations, so the realtime host stays off.
+  const host = await startLanServer({ root, databasePath: ':memory:', host: '127.0.0.1', port: 0, browserModules: entries, enableGravityOrchard: false });
   t.after(() => host.close());
   for (const entry of entries) {
     const response = await fetch(host.origin + entry.url);
