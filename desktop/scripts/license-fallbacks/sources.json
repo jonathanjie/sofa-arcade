@@ -110,6 +110,16 @@
       "MIT.txt",
       "Apache-2.0.txt",
       "Zlib.txt"
+    ],
+    "objc2-osa-kit@0.3.2": [
+      "objc2-LICENSE.md",
+      "MIT.txt",
+      "Apache-2.0.txt",
+      "Zlib.txt"
+    ],
+    "tauri-plugin@2.7.4": [
+      "Apache-2.0.txt",
+      "MIT.txt"
     ]
   }
 }

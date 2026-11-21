@@ -10,7 +10,7 @@
   "scripts": {
     "stage": "node scripts/prepare.mjs",
     "licenses": "node scripts/licenses.mjs",
-    "test": "node --test tests/runtime*.test.mjs tests/host*.test.mjs",
+    "test": "node --test tests/runtime*.test.mjs tests/host*.test.mjs tests/release*.test.mjs",
     "test:rust": "cargo test --locked --manifest-path src-tauri/Cargo.toml --no-default-features",
     "test:native:release": "node tests/native/packaged.mjs",
     "test:native:ui": "node tests/native/run-ui.mjs",
@@ -18,7 +18,8 @@
     "build:mac:arm64": "node scripts/prepare.mjs --target aarch64-apple-darwin && node scripts/licenses.mjs --target aarch64-apple-darwin && tauri build --ci --target aarch64-apple-darwin --bundles app,dmg -- --locked",
     "build:mac:intel": "node scripts/prepare.mjs --target x86_64-apple-darwin && node scripts/licenses.mjs --target x86_64-apple-darwin && tauri build --ci --target x86_64-apple-darwin --bundles app,dmg -- --locked",
     "build:native:arm64": "node scripts/prepare.mjs --target aarch64-apple-darwin && node scripts/licenses.mjs --target aarch64-apple-darwin && tauri build --ci --target aarch64-apple-darwin --features native-e2e --bundles app -- --locked",
-    "build:native:intel": "node scripts/prepare.mjs --target x86_64-apple-darwin && node scripts/licenses.mjs --target x86_64-apple-darwin && tauri build --ci --target x86_64-apple-darwin --features native-e2e --bundles app -- --locked"
+    "build:native:intel": "node scripts/prepare.mjs --target x86_64-apple-darwin && node scripts/licenses.mjs --target x86_64-apple-darwin && tauri build --ci --target x86_64-apple-darwin --features native-e2e --bundles app -- --locked",
+    "version:set": "node scripts/set-version.mjs"
   },
   "devDependencies": {
     "@tauri-apps/cli": "2.12.6",
