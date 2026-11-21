@@ -574,6 +574,25 @@ covered by focused bridge/transport checks. Later integrated acceptance exposed
 the GO2 recovery correction recorded above; the strict lock enumerates every
 component-source exception while preserving all original handoff heads.
 
+### One stall recovery per stage run (post-merge, PR 18)
+
+Intel run 44919586108 (commit `574ba40`) failed the one-recovery cap again.
+The game paused for `host-stall` in stage one (epoch two, tick 825) and in
+stage three (epoch eight, tick 6,359). It recovered correctly from the first
+pause. The host timing evidence now shows the cause. The realtime timer was
+up to 289 ms late, but the late callbacks took less than 1 ms. SQLite and
+checkpoint work stayed below 43 ms. The whole host process was waiting, which
+points to scheduling on the shared runner, not to game or storage work.
+This is the same pattern as the earlier `1d67f9a` failure: two stalls in
+different stages.
+
+The native acceptance now allows one recovery per stage run instead of one per
+campaign. A second stall in a run that already resumed from a stall still
+fails, as does a pause during the recovery countdown. The run epoch changes at
+every stage boundary, so the test identifies a stage run by its resumed epoch.
+The 250 ms stall guard, the stage deadlines and the result checks are
+unchanged.
+
 ### Reproduce
 
 ```sh
