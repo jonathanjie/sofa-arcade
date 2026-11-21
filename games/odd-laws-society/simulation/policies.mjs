@@ -59,6 +59,20 @@ function ownLawValue(view, seat, policyId, lawId, category) {
   return construction + work;
 }
 
+/**
+ * v0.3 sponsorship: enacting a law earns 1 prestige at each remaining Civic
+ * session end until it is replaced, and replacing the rival's law ends their
+ * dividend. These weights are heuristics, not exact expected values.
+ */
+function sponsorValue(view, seat, choiceId, category) {
+  if (!view.sponsors) return 0;
+  const sessionEnds = 7 - view.session;
+  const expectedLife = Math.min(sessionEnds, 2.5);
+  if (choiceId === 'keep') return view.sponsors[category] === seat ? expectedLife * 0.8 : 0;
+  const endsRivalDividend = view.sponsors[category] === other(seat) ? expectedLife * 0.6 : 0;
+  return expectedLife * 0.8 + endsRivalDividend;
+}
+
 /** Both policies decide before either commitment is submitted by the harness. */
 export function chooseCouncil(view, seat, policyId) {
   validatePolicy(policyId);
@@ -69,7 +83,7 @@ export function chooseCouncil(view, seat, policyId) {
     const lawId = choiceId === 'keep' ? currentLaw : choiceId;
     const own = ownLawValue(view, seat, policyId, lawId, category);
     const rival = ownLawValue(view, other(seat), policyId, lawId, category);
-    return { choiceId, value: own - rival * 0.55 };
+    return { choiceId, value: own - rival * 0.55 + sponsorValue(view, seat, choiceId, category) };
   }).sort((a, b) => b.value - a.value || compareText(a.choiceId, b.choiceId));
   const best = ranked[0];
   const spread = best.value - ranked[ranked.length - 1].value;

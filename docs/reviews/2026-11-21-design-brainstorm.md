@@ -64,7 +64,8 @@ This gives each game a shared feel, and it tells the designer where to add tensi
 - Scout and Lobby are still rarely used.
 - A new lobbying bot shows that v0.2 politics was strong when played: it won 76%.
 - Follow-up: the income designs became two-copy **staples**, and a city cannot hold two copies of a design. Economy fell from 67% to 52%, but Festival rose to 77% (96% against Civic).
-- Tuning round: the real cause was **plot hoarding for single-copy landmarks**, so **Rebuild** was added. Scout became a free once-per-session action, and Festival became 2 + 1 per Culture building (at most 4). All policies now win 42–59% of decided games; the most one-sided pairing is 69%, ties are 8%, and the initial Chair is at 47%. Influence is still the weakest system.
+- Tuning round: the real cause was **plot hoarding for single-copy landmarks**, so **Rebuild** was added. Scout became a free once-per-session action, and Festival became 2 + 1 per Culture building (at most 4). All policies now win 42–59% of decided games; the most one-sided pairing is 69%, ties are 8%, and the initial Chair is at 47%.
+- Influence round: a **sponsor dividend** (1 prestige at each Civic session end for the player whose bid enacted an active law) and **+1 influence per Festival**. Every strategy now uses influence; influence paid per game is 6.6–9.4. Win shares are 36–56%, and average final scores are within 1.3 points.
 
 **Test pass condition (extend the existing sweep):**
 

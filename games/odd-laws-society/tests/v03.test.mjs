@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { engine, legalActions, RULES_V03, V03_STAPLES } from '../engine.mjs';
+import { engine, legalActions, RULES_V03, V03_STAPLES, V03_SPONSOR_PRESTIGE } from '../engine.mjs';
 import { ALL_BUILDINGS, EFFECT_BUILDINGS, termPool } from '../catalog.mjs';
 import { scoreBreakdown, buildQuote, festivalPoints } from '../preview.mjs';
 import { OPENING_AGENDA, clone, council, take, cityOf } from './helpers.mjs';
@@ -283,6 +283,38 @@ test('v0.3 Rebuild replaces a building for the new cost minus the old printed co
   v02.players[v02.activePlayer].city = cityOf(['tea-stall']);
   v02.players[v02.activePlayer].coins = 20;
   assert.throws(() => take(v02, 'build', { designId: 'community-garden', row: 0, col: 0 }), error => error.code === 'PLOT_OCCUPIED');
+});
+
+test('v0.3 sponsors: the winning bid sponsors the law, paid only at Civic session ends', () => {
+  // Session 1 (Economy): Lydia wins and sponsors Honest Wages.
+  let state = council(fresh03(), { choiceId: 'small-shop-supremacy', bid: 1 }, { choiceId: 'honest-wages', bid: 2 });
+  assert.deepEqual(state.sponsors, { economy: 'lydia', civic: null });
+  const civicBefore = state.players.lydia.score.civic;
+  while (state.session === 1) state = take(state, 'work');
+  // No dividend after session 1, which is an Economy session.
+  assert.equal(state.players.lydia.score.civic, civicBefore);
+  // Session 2 (Civic): nobody bids, so the law is kept and sponsors do not change.
+  state = council(state);
+  assert.deepEqual(state.sponsors, { economy: 'lydia', civic: null });
+  while (state.session === 2) state = take(state, 'work');
+  assert.equal(state.players.lydia.score.civic, civicBefore + V03_SPONSOR_PRESTIGE);
+  assert.equal(state.players.jon.score.civic, 0);
+  // Projection shows sponsors to everyone.
+  assert.deepEqual(engine.project(state, { role: 'host' }).sponsors, state.sponsors);
+  // Session 3: Jon replaces Lydia's law and becomes its sponsor.
+  state = council(state, { choiceId: 'workshop-week', bid: 1 }, { choiceId: 'keep', bid: 0 });
+  assert.equal(state.activeLaws.economy, 'workshop-week');
+  assert.equal(state.sponsors.economy, 'jon');
+});
+
+test('v0.3 Festival also gains 1 influence, up to 6', () => {
+  const state = toActions(fresh03());
+  const seat = state.activePlayer;
+  state.players[seat].coins = 10;
+  state.players[seat].influence = 2;
+  assert.equal(take(state, 'festival').players[seat].influence, 3);
+  state.players[seat].influence = 6;
+  assert.equal(take(state, 'festival').players[seat].influence, 6);
 });
 
 test('random v0.3 matches finish, keep 8 designs per term in play and never duplicate a card', () => {
