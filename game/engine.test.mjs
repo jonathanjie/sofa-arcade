@@ -490,3 +490,114 @@ test('saved v2 matches retain Jon-first round parity, scoring, and field shape',
   assert.equal(state.firstPlayer, undefined);
   assert.ok(Object.values(state.players).every(player => player.openingBonus === undefined));
 });
+
+// Rules v4 prototype: centre crumbs, no opening point, seeded pounces, pounce toys.
+const advanceToRound = (state, round) => {
+  while (state.round < round) state = endRound(state);
+  return state;
+};
+const pounceRounds = state => {
+  const rounds = [];
+  let current = state;
+  for (let round = 1; round <= current.maxRounds; round++) {
+    if (current.forecast.type === 'pounce') rounds.push(round);
+    if (round < current.maxRounds) current = endRound(current);
+  }
+  return rounds;
+};
+
+test('rules v4 is opt-in and rejects unknown rule versions', () => {
+  assert.equal(createGame({ seed: 'v4' }).version, 3);
+  assert.equal(createGame({ seed: 'v4', rulesVersion: 4 }).version, 4);
+  assert.throws(() => createGame({ rulesVersion: 5 }), /version 3 or 4/);
+});
+
+test('rules v4 puts 29 mirrored crumbs mostly in the centre and gives no opening point', () => {
+  for (let seed = 0; seed < 30; seed++) {
+    const state = createGame({ seed: `v4-layout-${seed}`, rulesVersion: 4 });
+    assert.equal(crumbsInWorld(state), 29);
+    assert.equal(tileAt(state, 2, 2).crumbs, 5);
+    for (const [row, col] of [[1, 2], [3, 2], [2, 1], [2, 3]]) assert.equal(tileAt(state, row, col).crumbs, 3);
+    for (const [row, col] of [[3, 0], [4, 1], [1, 4], [0, 3]]) assert.equal(tileAt(state, row, col).crumbs, 2);
+    for (const tile of state.tiles) assert.equal(tile.crumbs, tileAt(state, SIZE - 1 - tile.row, SIZE - 1 - tile.col).crumbs);
+    for (const player of Object.values(state.players)) assert.equal(player.openingBonus, 0);
+    assertInvariants(state);
+  }
+});
+
+test('rules v4 draws one odd and one even pounce round per seed, and keeps the round 6 nap', () => {
+  const seen = new Set();
+  for (let seed = 0; seed < 40; seed++) {
+    const state = createGame({ seed: `v4-beats-${seed}`, rulesVersion: 4 });
+    const rounds = pounceRounds(state);
+    seen.add(rounds.join(','));
+    assert.ok(['3,8', '4,9'].includes(rounds.join(',')), rounds.join(','));
+    assert.equal(advanceToRound(state, 6).forecast.type, 'nap');
+  }
+  assert.deepEqual([...seen].sort(), ['3,8', '4,9']);
+  assert.deepEqual(pounceRounds(createGame({ seed: 'v3-beats' })), [3, 9]);
+});
+
+test('rules v4 toys change the next round: a pounce moves one square, never onto a burrow', () => {
+  let state = createGame({ seed: 'v4-toy', rulesVersion: 4, firstPlayer: 'jon' });
+  const round = pounceRounds(state)[0];
+  state = advanceToRound(state, round - 1);
+  assert.equal(upcomingForecasts(state)[0].type, 'pounce');
+  const actor = state.activePlayer;
+  // Put next round's pounce beside Jon's burrow to check that the burrow is excluded.
+  state.nextForecast = { ...state.nextForecast, row: 3, col: 0 };
+  const nudges = legalActions(state, actor).filter(action => action.type === 'lure');
+  assert.deepEqual(nudges.map(({ row, col }) => `${row},${col}`).sort(), ['2,0', '3,1']);
+  assert.throws(() => applyAction(state, actor, { type: 'lure', row: 4, col: 0 }), /burrow/);
+  assert.throws(() => applyAction(state, actor, { type: 'lure', row: 1, col: 0 }), /one square/);
+  const nudged = applyAction(state, actor, { type: 'lure', row: 2, col: 0 });
+  assert.deepEqual([nudged.nextForecast.row, nudged.nextForecast.col], [2, 0]);
+  assert.deepEqual(nudged.forecast, state.forecast, 'this round is unchanged');
+  assert.equal(nudged.players[actor].lures, state.players[actor].lures - 1);
+  assert.equal(state.nextForecast.row, 3, 'the input state is not mutated');
+  assert.deepEqual({ ...upcomingForecasts(nudged)[0] }, { round, ...nudged.nextForecast });
+  // The changed event becomes the next round's forecast.
+  const endTurn = current => applyAction(current, current.activePlayer, { type: 'end' });
+  const next = endTurn(endTurn(nudged));
+  assert.equal(next.round, round);
+  assert.deepEqual([next.forecast.row, next.forecast.col], [2, 0]);
+  assertInvariants(next);
+});
+
+test('rules v4 toys change next round\'s swipe and cannot be used in the last round', () => {
+  let state = createGame({ seed: 'v4-swipe-toy', rulesVersion: 4, maxRounds: 2, firstPlayer: 'jon' });
+  state.nextForecast = { type: 'swipe', axis: 'row', index: 0, direction: 1 };
+  const redirected = applyAction(state, 'jon', { type: 'lure', axis: 'column', index: 4, direction: -1 });
+  assert.deepEqual(redirected.forecast, state.forecast);
+  assert.equal(redirected.nextForecast.axis, 'column');
+  const endTurn = current => applyAction(current, current.activePlayer, { type: 'end' });
+  // Jon used one action on the toy; ending Jon's and Lydia's turns ends round 1.
+  const last = endTurn(endTurn(redirected));
+  assert.equal(last.round, 2);
+  assert.equal(last.forecast.axis, 'column');
+  assert.equal(last.nextForecast, null);
+  assert.equal(legalActions(last, last.activePlayer).some(action => action.type === 'lure'), false);
+  assert.throws(() => applyAction(last, last.activePlayer, { type: 'lure', axis: 'row', index: 1, direction: 1 }), /last round/);
+});
+
+test('rules v3 toys still cannot change a pounce', () => {
+  let state = createGame({ seed: 'v3-toy', firstPlayer: 'jon' });
+  state = advanceToRound(state, 3);
+  assert.equal(state.forecast.type, 'pounce');
+  assert.equal(legalActions(state, state.activePlayer).some(action => action.type === 'lure'), false);
+  assert.throws(() => applyAction(state, state.activePlayer, { type: 'lure', row: 1, col: 1 }), /not a pounce/);
+});
+
+test('random rules v4 matches keep their invariants to the end', () => {
+  for (let seed = 0; seed < 25; seed++) {
+    let state = createGame({ seed: `v4-random-${seed}`, rulesVersion: 4 });
+    let pick = seed;
+    while (state.phase === 'playing') {
+      const actions = legalActions(state, state.activePlayer);
+      pick = (pick * 1103515245 + 12345) % 2147483648;
+      state = applyAction(state, state.activePlayer, actions[pick % actions.length]);
+      assertInvariants(state);
+      assert.equal(crumbsInWorld(state), 29);
+    }
+  }
+});
