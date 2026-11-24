@@ -439,7 +439,10 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
             return reject('unavailable_controllers');
           }
           const applied = simulation.applyCommand(room.state, conn.viewer, { kind: value.kind, payload: value.payload });
-          if (!applied?.accepted) return reject(SAFE_SIMULATION_CODES.has(applied?.code) ? applied.code : 'invalid_command');
+          if (!applied?.accepted) {
+            const code = typeof applied?.code === 'string' ? applied.code.toLowerCase() : '';
+            return reject(SAFE_SIMULATION_CODES.has(code) ? code : 'invalid_command');
+          }
           state = applied.state;
           const view = checkedView(simulation, state);
           if (view.phase === 'countdown' && room.view.phase !== 'countdown' && !PLAYERS.every((id) => fresh(room.seats[id]))) {

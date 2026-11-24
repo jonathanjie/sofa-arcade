@@ -373,3 +373,16 @@ test('countdown input is first acknowledged on a playing tick', async (t) => {
   assert.equal(packet.ack.appliedTick, firstPlayingTick);
   assert.deepEqual(packet.view.players.jon.input, tilt);
 });
+
+test('valid commands rejected by the production engine keep their wire reason', async (t) => {
+  const h = await harness({ simulation: orchard });
+  t.after(() => h.close());
+  const host = await h.connect('host'), jon = await h.connect('jon');
+  const before = h.coordinator.getPublicView('UNIT');
+  const pause = await host.command('pause', { reason: 'requested' });
+  const retry = await jon.command('retry-stage', {});
+  assert.deepEqual([pause.result.code, retry.result.code], ['invalid_phase', 'forbidden']);
+  assert.equal(pause.result.accepted, false);
+  assert.equal(retry.result.accepted, false);
+  assert.deepEqual(h.coordinator.getPublicView('UNIT'), before);
+});
