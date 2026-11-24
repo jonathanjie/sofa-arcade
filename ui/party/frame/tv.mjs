@@ -183,7 +183,8 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
   const menuLabel = menu.querySelector('summary');
   const menuPanel = find('.party-setting-panel');
   const menuSettings = find('[data-menu-settings]');
-  const canvas = find('[data-party-canvas]');
+  let canvas = find('[data-party-canvas]');
+  const emptyCanvas = canvas.cloneNode(false);
   const stage = find('.party-stage');
   const grid = find('.party-tv-grid');
   const statusLabel = find('[data-party-connection]');
@@ -332,14 +333,24 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     setText(togglePlayers, showingPlayers ? 'Podium' : 'Players');
   }
 
+  function disposeRenderer() {
+    if (!renderer) return;
+    renderer.dispose();
+    renderer = null;
+    // The next game starts with a fresh canvas and the frame's default label.
+    const replacement = emptyCanvas.cloneNode(false);
+    canvas.replaceWith(replacement);
+    canvas = replacement;
+    stage.removeAttribute('data-adaptive');
+  }
+
   function finishDisplay() {
     clearTimeout(finishTimer);
     finishTimer = undefined;
     stage.hidden = true;
     showStage(false);
     grid.hidden = false;
-    renderer?.dispose();
-    renderer = null;
+    disposeRenderer();
     showRoundPanel();
   }
 
@@ -373,7 +384,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
       stage.hidden = false;
       grid.hidden = true;
       if (!renderer || playingGame !== view.gameId) {
-        renderer?.dispose();
+        disposeRenderer();
         playingGame = view.gameId;
         renderer = partyGameView(playingGame).mountTv(canvas, { art, sound });
         renderer.setReducedMotion(motion.checked);
@@ -429,8 +440,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
       if (previous) updateActions(previous);
       if (value === 'seat-lost' || value === 'replaced') {
         clearTimeout(finishTimer);
-        renderer?.dispose();
-        renderer = null;
+        disposeRenderer();
         stage.hidden = true;
         showStage(false);
         grid.hidden = true;
@@ -440,7 +450,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
       clearTimeout(finishTimer);
       stageObserver.disconnect();
       motionPreference.removeEventListener('change', motionChanged);
-      renderer?.dispose();
+      disposeRenderer();
     },
   };
 }
