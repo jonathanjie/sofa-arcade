@@ -22,10 +22,13 @@ export function publicChanges(previous,next) {
  if(previous.stage!=='finished'&&next.stage==='finished')event(next.result?.winner==='tie'?'tie':'win','result');
  return events;
 }
+const motionEasing = 'cubic-bezier(.2,.7,.25,1)';
+const reducedFadeDuration = 120;
+
 export function createMotion(root,{sound={},reducedMotion=false}={}) {
  const seen=new Set(),animations=new Set(),timers=new Set();let stopped=false;
  const play=name=>{try{sound.effect?.(name);}catch{}};
- const animate=(nodes,frames,options={})=>{for(const node of nodes){if(!node?.animate)continue;const a=node.animate(reducedMotion?[{opacity:.65},{opacity:1}]:frames,{duration:480,easing:'cubic-bezier(.2,.7,.2,1)',...options,...(reducedMotion?{duration:120}:{})});animations.add(a);a.finished.then(()=>animations.delete(a),()=>animations.delete(a));}};
+ const animate=(nodes,frames,options={})=>{for(const node of nodes){if(!node?.animate)continue;const a=node.animate(reducedMotion?[{opacity:.65},{opacity:1}]:frames,{duration:480,easing:motionEasing,...options,...(reducedMotion?{duration:reducedFadeDuration}:{})});animations.add(a);a.finished.then(()=>animations.delete(a),()=>animations.delete(a));}};
  const clear=()=>{for(const a of animations)a.cancel();animations.clear();for(const timer of timers)clearTimeout(timer);timers.clear();root.querySelectorAll('[data-ols-floating]').forEach(n=>n.remove());};
  function consume(previous,next,{animate:shouldAnimate=true}={}) {
   if(stopped)return [];
@@ -52,5 +55,14 @@ export function createMotion(root,{sound={},reducedMotion=false}={}) {
   }
   return fresh;
  }
- return {consume,clear,dispose(){stopped=true;clear();seen.clear();}};
+ return {
+  consume,
+  clear,
+  setReducedMotion(value) {
+   if (reducedMotion === value) return;
+   clear();
+   reducedMotion = value;
+  },
+  dispose(){stopped=true;clear();seen.clear();},
+ };
 }

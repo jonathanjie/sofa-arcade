@@ -7,7 +7,45 @@ import {escapeHtml as esc,icon} from './shared.mjs';
 import {createMotion} from './motion.mjs';
 
 const stylesByDocument=new WeakMap();
-function acquireStyles(doc) {let entry=stylesByDocument.get(doc);if(!entry){entry={count:0,links:['view.css','tv.css','phone.css','tutorial.css'].map(file=>{const link=doc.createElement('link');link.rel='stylesheet';link.href=new URL(file,import.meta.url).href;link.dataset.oddLawsStyle='';doc.head.append(link);return link;})};stylesByDocument.set(doc,entry);}entry.count++;return ()=>{entry.count--;if(!entry.count){entry.links.forEach(link=>link.remove());stylesByDocument.delete(doc);}};}
+export function prepareStyles(doc, role) {
+ const files = ['view.css', role === 'player' ? 'phone.css' : 'tv.css', 'tutorial.css'];
+ let styles = stylesByDocument.get(doc);
+ if (!styles) {
+  styles = new Map();
+  stylesByDocument.set(doc, styles);
+ }
+ const entries = files.map(file => {
+  if (!styles.has(file)) {
+   const link = doc.createElement('link');
+   link.rel = 'stylesheet';
+   link.href = new URL(file, import.meta.url).href;
+   link.dataset.oddLawsStyle = '';
+   const ready = new Promise((resolve, reject) => {
+    link.addEventListener('load', resolve, { once: true });
+    link.addEventListener('error', () => reject(new Error('The council styles could not load.')), { once: true });
+   });
+   styles.set(file, { link, ready, count: 0 });
+   doc.head.append(link);
+  }
+  const entry = styles.get(file);
+  entry.count++;
+  return entry;
+ });
+ const ready = Promise.all(entries.map(entry => entry.ready));
+ // Standalone mounts also acquire styles. The collection shell awaits readiness.
+ ready.catch(() => {});
+ return {
+  ready,
+  release() {
+   entries.forEach((entry, index) => {
+    if (--entry.count > 0) return;
+    entry.link.remove();
+    styles.delete(files[index]);
+   });
+  },
+ };
+}
+
 const emptyDraft=()=>({phonePanel:'actions',choiceId:'keep',bid:0,selectedDesignId:null,selectedPlot:null,phoneNotice:null});
 const safeText=(value,fallback)=>typeof value==='string'&&value.trim()?value.trim().slice(0,220):fallback;
 const focusSelector=node=>{if(!node?.dataset?.action)return null;return ['action','designId','choiceId','bid','row','col','playerId','plot','scoreId'].filter(k=>node.dataset[k]!==undefined).map(k=>`[data-${k.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}="${CSS.escape(node.dataset[k])}"]`).join('');};
@@ -16,7 +54,7 @@ export function mount(root,{viewer={role:'public'},dispatch,rules,assets={},soun
  if(!root?.ownerDocument)throw new TypeError('A game root is required.');
  if(!['public','host','player'].includes(viewer.role)||viewer.role==='player'&&!['jon','lydia'].includes(viewer.playerId))throw new TypeError('A valid authenticated viewer is required.');
  if(!rules||!['buildings','laws','guilds'].every(key=>Array.isArray(rules[key]))||!['buildQuote','streetOutcome','civicAward'].every(key=>typeof rules[key]==='function'))throw new TypeError('The public rules adapter is required.');
- const doc=root.ownerDocument,win=doc.defaultView,releaseStyles=acquireStyles(doc);
+ const doc=root.ownerDocument,win=doc.defaultView,styles=prepareStyles(doc,viewer.role);
  const originalClass=root.className;
  root.classList.add('ols');root.dataset.viewer=viewer.role;
  const mediaQuery=win.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -106,7 +144,13 @@ export function mount(root,{viewer={role:'public'},dispatch,rules,assets={},soun
  function mediaLoaded(event) {if(event.target.matches?.('img[data-ols-media]'))event.target.parentElement.classList.add('ols-media-loaded');}
  function mediaFailed(event) {if(event.target.matches?.('img[data-ols-media]')){event.target.hidden=true;event.target.parentElement.classList.remove('ols-media-loaded');}}
  root.addEventListener('click',click);root.addEventListener('keydown',keydown);root.addEventListener('load',mediaLoaded,true);root.addEventListener('error',mediaFailed,true);
- function dispose() {if(disposed)return;disposed=true;commandToken++;tutorial.dispose();motion.dispose();root.removeEventListener('click',click);root.removeEventListener('keydown',keydown);root.removeEventListener('load',mediaLoaded,true);root.removeEventListener('error',mediaFailed,true);root.replaceChildren();root.className=originalClass;delete root.dataset.viewer;releaseStyles();room=null;retiredMatches.clear();Object.assign(ui,emptyDraft(),{drawer:null,error:null,busy:false});}
+ function dispose() {if(disposed)return;disposed=true;commandToken++;tutorial.dispose();motion.dispose();root.removeEventListener('click',click);root.removeEventListener('keydown',keydown);root.removeEventListener('load',mediaLoaded,true);root.removeEventListener('error',mediaFailed,true);root.replaceChildren();root.className=originalClass;delete root.dataset.viewer;styles.release();room=null;retiredMatches.clear();Object.assign(ui,emptyDraft(),{drawer:null,error:null,busy:false});}
  render();
- return Object.freeze({update,setConnection,dispose});
+ function setReducedMotion(value) {
+  if(disposed)return;
+  const reduced = value === true;
+  root.classList.toggle('ols-reduced-motion',reduced);
+  motion.setReducedMotion(reduced);
+ }
+ return Object.freeze({update,setConnection,setReducedMotion,dispose});
 }

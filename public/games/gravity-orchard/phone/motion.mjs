@@ -177,7 +177,7 @@ export function createMotionController({ emitInput, onStatus = () => {}, environ
     neutral = neutralFrame(calibration.sum);
     clearCalibration();
     clearForce();
-    report('ready', 'Tilt centered. Ready when you are.', { progress: 1 });
+    report('ready', 'Tilt centred. Ready when you are.', { progress: 1 });
     // Keep paused until the mounted view observes the authoritative start.
   }
   function feedCalibration(direction) {
@@ -214,7 +214,7 @@ export function createMotionController({ emitInput, onStatus = () => {}, environ
     latest = null;
     clearForce();
     if (mode === 'touch') {
-      report('ready', 'Touch controls centered.', { reason: 'recenter', requestPause: notifyPause });
+      report('ready', 'Touch controls centred.', { reason: 'recenter', requestPause: notifyPause });
       return true;
     }
     if (available() || permission !== 'granted') {

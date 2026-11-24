@@ -393,7 +393,7 @@ export function mountScene(root, { geometry, assets, reducedMotion = false } = {
       node(document, 'path', { d: `M${x} ${bridge.y + 3}V${bridge.y + bridge.height - 3}`, stroke: '#8c7855', 'stroke-width': 2, opacity: .7 }, layers.terrain);
     }
     bridgeRing = node(document, 'rect', { ...bridge, rx: 7, fill: 'none', stroke: '#e9c558', 'stroke-width': 6, opacity: 0, 'data-bridge-transfer': '' }, layers.cues);
-    label(document, layers.terrain, 'BRIDGE', bridge.x + bridge.width / 2, bridge.y - 14, 'go-scene-micro', { 'text-anchor': 'middle' });
+    label(document, layers.terrain, 'BRIDGE', bridge.x + bridge.width / 2, bridge.y - 14, 'go-scene-bridge-label', { 'text-anchor': 'middle' });
 
     for (const tray of level.trays) {
       const area = tray.bounds;

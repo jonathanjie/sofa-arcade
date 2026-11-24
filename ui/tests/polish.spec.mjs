@@ -24,9 +24,9 @@ async function openArcade(t) {
 test('a rejected room leaves the attempted code selected and offers no seats', { timeout: 120_000 }, async t => {
   const { origin, phone } = await openArcade(t);
   await phone.goto(origin, { waitUntil: 'domcontentloaded' });
-  await phone.locator('[data-action="join-menu"]').evaluate(button => button.click());
+  await phone.getByRole('button', { name: 'Join a room', exact: true }).evaluate(button => button.click());
   await phone.locator('#room-input').fill('zzzzzz');
-  await phone.locator('#join-form button').evaluate(button => button.click());
+  await phone.getByRole('button', { name: 'Find room', exact: true }).evaluate(button => button.click());
   await phone.getByRole('alert').waitFor();
   assert.equal(await phone.locator('[data-action="claim"]').count(), 0);
   assert.equal(await phone.getByText('Room connected', { exact: true }).filter({ visible: true }).count(), 0);
@@ -154,7 +154,8 @@ test('the Orchard Ready button holds its position through reconnect', { timeout:
   await page.goto(fixture.url + '?scenario=insecure', { waitUntil: 'domcontentloaded' });
   await page.locator('[data-go3="touch-mode"]').evaluate(button => button.click());
   const ready = '[data-go3="ready"]';
-  await page.locator(ready + ':enabled').waitFor();
+  await page.getByRole('button', { name: 'Ready', exact: true }).waitFor();
+  assert.equal(await page.locator(ready).isEnabled(), true);
   const before = await position(page, ready);
   for (const state of ['reconnecting', 'connected']) {
     await page.evaluate(value => window.go3Fixture.setConnection(value), state);
