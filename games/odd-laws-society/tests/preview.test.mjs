@@ -184,3 +184,31 @@ test('committed Build matches public preview payment, influence and one-time str
     assert.equal(after.players.lydia.score.buildings, 3 + quote.prestige);
   }
 });
+
+test('plot-specific Build quotes agree with the placement rules on each rules version', () => {
+  for (const rulesVersion of ['0.2', '0.3']) {
+    const options = { rulesVersion, firstChair: 'lydia' };
+    let state = council(fresh({ options }));
+    state = take(state, 'build', { designId: 'tea-stall', row: 0, col: 0 });
+    state = take(state, 'work');
+    state = take(state, 'work');
+    state = take(state, 'work');
+    assert.equal(state.activePlayer, 'jon');
+    const view = engine.project(state, { role: 'player', playerId: 'jon' });
+    const quote = index => buildQuote(view, 'jon', 'corner-shop', index);
+    const build = col => take(state, 'build', { designId: 'corner-shop', row: 0, col });
+    assert.equal(quote().allowed, true);
+    assert.equal(quote(1).allowed, true);
+    assert.equal(build(1).players.jon.city[1].designId, 'corner-shop');
+    if (rulesVersion === '0.2') {
+      assert.throws(() => build(0), error => error.code === 'PLOT_OCCUPIED');
+      assert.equal(quote(0).allowed, false);
+    } else {
+      assert.equal(quote(0).allowed, true);
+      const rebuilt = build(0);
+      assert.equal(rebuilt.players.jon.city[0].designId, 'corner-shop');
+      assert.equal(state.players.jon.coins - rebuilt.players.jon.coins, quote(0).cost);
+    }
+    for (const invalid of [-1, 9, 0.5, '0']) assert.equal(quote(invalid).allowed, false);
+  }
+});
