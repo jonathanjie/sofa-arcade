@@ -2,7 +2,7 @@
 
 Status: research and proposed next work, 19 November 2026. This note does not claim that hosted push or WebRTC has been implemented. The existing hosted and local transports described below were inspected in source; no physical home-network latency was measured.
 
-The 20 November [hosting and desktop design note](DEPLOYMENT_OPTIONS.md) expands the GitHub Pages versus Sites decision, distinguishes WebSocket clients from server hosting, and specifies a proposed Tauri wrapper for the existing LAN host.
+The 20 November [hosting and desktop design note](archive/DEPLOYMENT_OPTIONS.md) expands the GitHub Pages versus Sites decision, distinguishes WebSocket clients from server hosting, and specifies a proposed Tauri wrapper for the existing LAN host.
 
 ## Recommendation
 

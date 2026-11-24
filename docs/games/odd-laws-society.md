@@ -6,7 +6,7 @@ This document replaces the earlier 5×5 movement-and-star prototype. That protot
 
 All costs, values, caps, and duration estimates are starting hypotheses. The specification is detailed enough to implement a rules prototype; its balance and intended weight still require actual play. Keep the catalog entry `planned` until the release gates pass.
 
-Read [parallel development](../PARALLEL_DEVELOPMENT.md), [hosting and Tauri options](../DEPLOYMENT_OPTIONS.md), and [networking](../NETWORKING.md). **Sealed council bids require private state projection and simultaneous commitments.** This is no longer a public-information-only integration.
+Read [parallel development](../PARALLEL_DEVELOPMENT.md), [hosting and Tauri options](../archive/DEPLOYMENT_OPTIONS.md), and [networking](../NETWORKING.md). **Sealed council bids require private state projection and simultaneous commitments.** This is no longer a public-information-only integration.
 
 ## 0. Rules v0.3 prototype: base game and modules (21 November 2026)
 

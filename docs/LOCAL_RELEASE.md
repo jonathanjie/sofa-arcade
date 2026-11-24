@@ -2,7 +2,7 @@
 
 This guide follows the WS6 integration candidate. Its dependency checkpoint is
 archived at [`docs/archive/local-release-components.json`](archive/local-release-components.json)
-and is no longer enforced. Executed results are in [the integration report](workstreams/integration.md).
+and is no longer enforced. Executed results are in [the integration report](archive/workstreams/integration.md).
 The candidate remains a draft until every essential component and the complete
 automated/native acceptance gates pass. All five components are included; Odd
 Laws is enabled after the complete browser candidate passed at `4695643`.
@@ -263,7 +263,7 @@ casting or human-input latency.
 | ZIP member manifest | `sofa-arcade-local/artifact-manifest.json` inside the archive; path, byte count, mode and SHA-256 for every other member |
 | Desktop runtime | WS5's `desktop/runtime-manifest.json`; explicit repo-shaped files, checksum-verified bundled Node, staging inventory |
 | Native artifacts | CI production `.app.zip`/DMG plus SHA-256 evidence; exact source and architecture named in artifact metadata |
-| Acceptance evidence | CI JSON reports/screenshots and `docs/workstreams/integration.md`; failed-run artifacts are identified as diagnostics |
+| Acceptance evidence | CI JSON reports/screenshots and `docs/archive/workstreams/integration.md`; failed-run artifacts are identified as diagnostics |
 
 Odd Laws browser code receives only public catalogs/helpers and authenticated
 projected room state. Its authority and projection modules belong on the host.

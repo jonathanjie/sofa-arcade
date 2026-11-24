@@ -2,9 +2,9 @@
 
 **Status:** implementation brief; not implemented or enabled by this document. **Catalog ID:** `gravity-orchard`. **Mode:** real-time cooperation for two players. **Target session:** 6–10 minutes, plus optional practice. **Design version:** `0.2`.
 
-This version supersedes the [archived v0.1 turn-based rivalry](archive/gravity-orchard-v0.1.md). Do not combine that draft's planting turns, ownership scoring or discrete 5×5 settling rules with this game. Jon asked for a less turn-based game that uses phone motion. Both players now steer at the same time toward a shared result.
+This version supersedes the [archived v0.1 turn-based rivalry](../archive/games/gravity-orchard-v0.1.md). Do not combine that draft's planting turns, ownership scoring or discrete 5×5 settling rules with this game. Jon asked for a less turn-based game that uses phone motion. Both players now steer at the same time toward a shared result.
 
-Read [the implementation contract](../GRAVITY_ORCHARD_CONTRACT.md) and [the seven-stream dispatch plan](../DISPATCH_GRAVITY_ORCHARD.md) before writing code. The contract owns exact API signatures, wire schemas, file ownership and compatibility rules. This PRD owns the player experience and starting rules. Resolve an inconsistency explicitly instead of implementing a private interpretation.
+Read [the implementation contract](../GRAVITY_ORCHARD_CONTRACT.md) and [the seven-stream dispatch plan](../archive/DISPATCH_GRAVITY_ORCHARD.md) before writing code. The contract owns exact API signatures, wire schemas, file ownership and compatibility rules. This PRD owns the player experience and starting rules. Resolve an inconsistency explicitly instead of implementing a private interpretation.
 
 All durations, rates and difficulty values below are initial engineering/design hypotheses. No physical-phone playtest, human balance result or measured home-network latency is claimed.
 

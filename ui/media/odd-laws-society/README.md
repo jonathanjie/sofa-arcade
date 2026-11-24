@@ -81,4 +81,4 @@ audio review files, evidence, and nested dependencies are development material.
 `runtime-files.json` is the explicit repository-relative handoff inventory.
 
 For scope, tested commands, visual evidence, and remaining integrated-device
-checks, see `docs/workstreams/odd-laws-media.md` and the PR's pinned head SHA.
+checks, see `docs/archive/workstreams/odd-laws-media.md` and the PR's pinned head SHA.

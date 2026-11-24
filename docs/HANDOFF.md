@@ -4,7 +4,7 @@
 ## Gravity Orchard integration candidate — GO7
 
 Gravity Orchard's realtime integration (GO7) is merged into `main`. All six
-tested component heads are preserved in its history. See [the GO7 report](workstreams/gravity-orchard-go7.md)
+tested component heads are preserved in its history. See [the GO7 report](archive/workstreams/gravity-orchard-go7.md)
 and the [archived component matrix](archive/gravity-orchard-components.json) for
 their SHAs, order, corrections, dependency closure and acceptance evidence. The
 component locks were retired after the integrations merged.
@@ -28,16 +28,16 @@ This is a living-room game collection for Jon and Lydia: one Site, one source re
 
 The initial local workstreams were merged through PRs #3–#8; main reached `a96fd477d2a3239d715421ed711682648e16eccc` with the combined browser/native acceptance complete. PR #9 then added composed collection music and the acknowledged AppKit Quit shutdown path at `392345f4fbdfdb65218482bd204403264ae7a34c`. Preserve those changes when reconciling newer branches.
 
-PR #10 adds an original Odd Laws cover, larger labelled/coloured guild cards, and read-only **My city** inspection that preserves policy/bid/build drafts. Its exact CI results and corrections are recorded in the PR and [UI feedback report](workstreams/odd-laws-ui-feedback.md). Inspect current PR/main status before calling that feedback released; a GitHub merge does not deploy the Site.
+PR #10 adds an original Odd Laws cover, larger labelled/coloured guild cards, and read-only **My city** inspection that preserves policy/bid/build drafts. Its exact CI results and corrections are recorded in the PR and [UI feedback report](archive/workstreams/odd-laws-ui-feedback.md). Inspect current PR/main status before calling that feedback released; a GitHub merge does not deploy the Site.
 
-The next assignment is **Gravity Orchard v0.2**, a real-time cooperative game with two phone-controlled garden trays, bridge transfers, shared picnic recipes and Brake. Read the [seven-session dispatch pack](DISPATCH_GRAVITY_ORCHARD.md), [frozen implementation contract](GRAVITY_ORCHARD_CONTRACT.md), [PRD](games/gravity-orchard.md) and [browser/LAN technical notes](GRAVITY_ORCHARD_TECHNICAL_NOTES.md). These supersede the old turn-based Gravity Orchard draft and overlapping broad ownership for this game. Six components can start in parallel; GO7 owns shared server/native/shell wiring and final acceptance. The catalog remains planned.
+The next assignment is **Gravity Orchard v0.2**, a real-time cooperative game with two phone-controlled garden trays, bridge transfers, shared picnic recipes and Brake. Read the [seven-session dispatch pack](archive/DISPATCH_GRAVITY_ORCHARD.md), [frozen implementation contract](GRAVITY_ORCHARD_CONTRACT.md), [PRD](games/gravity-orchard.md) and [browser/LAN technical notes](GRAVITY_ORCHARD_TECHNICAL_NOTES.md). These supersede the old turn-based Gravity Orchard draft and overlapping broad ownership for this game. Six components can start in parallel; GO7 owns shared server/native/shell wiring and final acceptance. The catalog remains planned.
 
 ## Historical local integration checkpoint
 
 WS6 works on `feature/local-integration` from base
 `e34b0015399cb9791b175987adf1fab1b542565a`. Read
 [the archived component matrix](archive/local-release-components.json),
-[the executed acceptance report](workstreams/integration.md), and
+[the executed acceptance report](archive/workstreams/integration.md), and
 [local setup/build instructions](LOCAL_RELEASE.md) before continuing.
 All five ready component heads are included by merge ancestry. The complete
 browser candidate passed at `4695643`; Odd Laws is now enabled. The ordinary
@@ -70,7 +70,7 @@ The URL, package, and folder retain the earlier `sofa-kingdoms` name. Preserve t
 
 ## Product intent and playable scope
 
-**Current execution plan:** Jon chose Tauri/local play and requested independent implementation sessions ending in tested GitHub PRs. The initial [local dispatch](DISPATCH_LOCAL.md) is implemented and remains useful architecture history. New work uses the [Gravity Orchard dispatch](DISPATCH_GRAVITY_ORCHARD.md): GO1 simulation, GO2 realtime, GO3 phone, GO4 TV/tutorial, GO5 media, GO6 secure LAN, GO7 integration. Each has a separate branch, exclusive write set and report. No hosted migration/deployment is part of these scopes.
+**Current execution plan:** Jon chose Tauri/local play and requested independent implementation sessions ending in tested GitHub PRs. The initial [local dispatch](archive/DISPATCH_LOCAL.md) is implemented and remains useful architecture history. New work uses the [Gravity Orchard dispatch](archive/DISPATCH_GRAVITY_ORCHARD.md): GO1 simulation, GO2 realtime, GO3 phone, GO4 TV/tutorial, GO5 media, GO6 secure LAN, GO7 integration. Each has a separate branch, exclusive write set and report. No hosted migration/deployment is part of these scopes.
 
 The TV displays the shared board, normally from a Mac browser cast to the living-room TV. Each phone owns one controller seat. Jon and Lydia are illustrated tiny mouse adventurers; their orange cat Lala rearranges the sofa kingdom. Generated game art is in `public/assets/`; original character sheets are not committed.
 
@@ -92,7 +92,7 @@ A planned catalog entry cannot create rooms. Odd Laws has all five integrated co
 
 Jon requested strategy-game depth comparable in weight to Citadels / 7 Wonders. [Odd Laws Society v0.2](games/odd-laws-society.md) replaces the earlier 5×5 movement race with a six-session, four-action city builder: 3×3 boroughs, scarce public building stock, 18 building designs, 12 bounded laws, two active law slots, and simultaneous sealed influence bids. All five components are integrated at the reviewed heads in the WS6 matrix; automated component, protocol and rendered checks are recorded in the integration report. Human balance/playtime validation and combined native acceptance remain distinct gates. Private commitments require per-viewer projection; the old public-only integration advice is obsolete. The [parallel guide](PARALLEL_DEVELOPMENT.md) and session prompt have been updated accordingly.
 
-[DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md) preserves the hosting and desktop research. The implemented local Tauri shell bundles the HTTP/SSE host, SQLite and assets; its current build and acceptance instructions are in [LOCAL_RELEASE.md](LOCAL_RELEASE.md). This integration does not publish the existing Site, migrate to Pages, introduce a cloud service or claim a measured casting/Wi-Fi improvement.
+[DEPLOYMENT_OPTIONS.md](archive/DEPLOYMENT_OPTIONS.md) preserves the hosting and desktop research. The implemented local Tauri shell bundles the HTTP/SSE host, SQLite and assets; its current build and acceptance instructions are in [LOCAL_RELEASE.md](LOCAL_RELEASE.md). This integration does not publish the existing Site, migrate to Pages, introduce a cloud service or claim a measured casting/Wi-Fi improvement.
 
 ## Architecture
 

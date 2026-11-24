@@ -1,6 +1,6 @@
 # Gravity Orchard implementation contract v0.2
 
-Prepared 20 November 2026. This is a **frozen starting implementation contract**, not a claim that the game, sensor setup or measured latency already works. Read the [game PRD](games/gravity-orchard.md), [dispatch ownership](DISPATCH_GRAVITY_ORCHARD.md), and [technical notes](GRAVITY_ORCHARD_TECHNICAL_NOTES.md). The v0.1 turn-based concept is archived and superseded.
+Prepared 20 November 2026. This is a **frozen starting implementation contract**, not a claim that the game, sensor setup or measured latency already works. Read the [game PRD](games/gravity-orchard.md), [dispatch ownership](archive/DISPATCH_GRAVITY_ORCHARD.md), and [technical notes](GRAVITY_ORCHARD_TECHNICAL_NOTES.md). The v0.1 turn-based concept is archived and superseded.
 
 This packet applies to the next game only. Sofa Kingdoms, Odd Laws Society, their existing rooms, private projections, composed music, local HTTP host and Tauri lifecycle must remain working. Keep Gravity Orchard marked planned until GO7 completes integrated acceptance. No Sites deployment, hosted relay, phone app, public desktop release, or automatic system-trust change is part of these assignments.
 

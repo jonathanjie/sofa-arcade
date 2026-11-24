@@ -1,6 +1,6 @@
 # Gravity Orchard: local motion and realtime notes
 
-Research baseline: 20 November 2026. These are design findings and acceptance requirements, not a claim that the proposed transport or sensor support is already implemented. Read the [v0.2 game PRD](games/gravity-orchard.md), [implementation contract](GRAVITY_ORCHARD_CONTRACT.md), and [dispatch packet](DISPATCH_GRAVITY_ORCHARD.md) together. The old turn-based Gravity Orchard draft is superseded by the two-tray cooperative game.
+Research baseline: 20 November 2026. These are design findings and acceptance requirements, not a claim that the proposed transport or sensor support is already implemented. Read the [v0.2 game PRD](games/gravity-orchard.md), [implementation contract](GRAVITY_ORCHARD_CONTRACT.md), and [dispatch packet](archive/DISPATCH_GRAVITY_ORCHARD.md) together. The old turn-based Gravity Orchard draft is superseded by the two-tray cooperative game.
 
 ## Decision
 

@@ -170,7 +170,7 @@ credentials and a separate Gatekeeper acceptance check.
 Native CI cannot establish behavior on Jon's physical Mac, two phones, home
 Wi-Fi, TV casting, or device speakers. Real internet-disconnected play and
 physical sleep/wake also remain hardware acceptance checks. See the
-[WS5 report](../docs/workstreams/tauri.md) and the PR for actual completed
+[WS5 report](../docs/archive/workstreams/tauri.md) and the PR for actual completed
 evidence and remaining gates.
 
 ## Automatic updates

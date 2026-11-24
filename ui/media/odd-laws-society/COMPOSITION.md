@@ -162,4 +162,4 @@ The synthesizer approximation follows the repository's inspected `ui/audio.js`
 timbres, not external recordings. This work introduces no third-party music
 licence or sample attribution. It does not change the repository-wide licensing
 policy. Source files are the editable composition, and the exact base source
-revision for this workstream is recorded in `docs/workstreams/odd-laws-media.md`.
+revision for this workstream is recorded in `docs/archive/workstreams/odd-laws-media.md`.

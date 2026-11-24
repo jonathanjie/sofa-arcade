@@ -2,7 +2,7 @@
 
 A collection of living-room games for Jon and Lydia: one local Mac host, one shared TV, two phone browsers, and one source repository. **Sofa Kingdoms** is a crumb-collecting rivalry; **The Odd Laws Society** adds a six-session strategy city builder with sealed councils.
 
-**Canonical source:** [jonathanjie/sofa-arcade](https://github.com/jonathanjie/sofa-arcade). This branch integrates the local Tauri release. See [local setup, builds and acceptance](docs/LOCAL_RELEASE.md), the [archived component checkpoint](docs/archive/local-release-components.json), and [integration evidence](docs/workstreams/integration.md). The existing hosted version is a separate delivery path; this work does not publish it.
+**Canonical source:** [jonathanjie/sofa-arcade](https://github.com/jonathanjie/sofa-arcade). This branch integrates the local Tauri release. See [local setup, builds and acceptance](docs/LOCAL_RELEASE.md), the [archived component checkpoint](docs/archive/local-release-components.json), and [integration evidence](docs/archive/workstreams/integration.md). The existing hosted version is a separate delivery path; this work does not publish it.
 
 ## The collection
 
@@ -83,11 +83,11 @@ New matches use rules version 3. Existing version 2 matches retain Jon as their 
 
 ## Development
 
-**Current integration: Tauri and local play.** The [dispatch pack](docs/DISPATCH_LOCAL.md) and [local implementation contracts](docs/LOCAL_IMPLEMENTATION_CONTRACT.md) define the five components and shared acceptance. All five reviewed immutable heads are assembled. Four complete Odd Laws browser matches and the Sofa regression journey passed at `4695643`; the Odd Laws card is now enabled. The normal collection-create rerun and combined native acceptance remain gates, so the aggregate PR is still draft. See the [acceptance report](docs/workstreams/integration.md) for exact source and evidence.
+**Current integration: Tauri and local play.** The [dispatch pack](docs/archive/DISPATCH_LOCAL.md) and [local implementation contracts](docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md) define the five components and shared acceptance. All five reviewed immutable heads are assembled. Four complete Odd Laws browser matches and the Sofa regression journey passed at `4695643`; the Odd Laws card is now enabled. The normal collection-create rerun and combined native acceptance remain gates, so the aggregate PR is still draft. See the [acceptance report](docs/archive/workstreams/integration.md) for exact source and evidence.
 
 Start with [AGENTS.md](AGENTS.md) and [docs/HANDOFF.md](docs/HANDOFF.md) to continue the project in another coding session. **GitHub `jonathanjie/sofa-arcade` is the source of truth.** Branch from its latest `main`, keep one game per feature branch, and reconcile upstream changes before merging. Sites keeps a deployment mirror for its publication workflow; it is not a competing development branch. [GitHub workflow](docs/GITHUB_WORKFLOW.md) describes the separate source and deployment checkouts.
 
-For game designs and the five remaining planned games, start with the [game design documents](docs/games/README.md) and [parallel development guide](docs/PARALLEL_DEVELOPMENT.md). The [networking design note](docs/NETWORKING.md) and [hosting and desktop options](docs/DEPLOYMENT_OPTIONS.md) preserve the earlier research and alternatives. Current local implementation and acceptance are tracked in [the release guide](docs/LOCAL_RELEASE.md); the existing public Site has not been republished by this integration.
+For game designs and the five remaining planned games, start with the [game design documents](docs/games/README.md) and [parallel development guide](docs/PARALLEL_DEVELOPMENT.md). The [networking design note](docs/NETWORKING.md) and [hosting and desktop options](docs/archive/DEPLOYMENT_OPTIONS.md) preserve the earlier research and alternatives. Current local implementation and acceptance are tracked in [the release guide](docs/LOCAL_RELEASE.md); the existing public Site has not been republished by this integration.
 
 Requires Node.js 22.13 or newer. The application uses the Sites Vinext starter, a Cloudflare Worker and D1 for shared room state. Sofa Kingdoms rules are in the dependency-free `game/engine.mjs`; `server/rooms.mjs` validates multiplayer actions.
 
