@@ -4,18 +4,23 @@ import { performance } from 'node:perf_hooks';
 import WebSocket from 'ws';
 import { createFixtureServer } from '../fixture/server.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
+import { fakeClock } from './unit-support/harness.mjs';
 import { createRealtimeClient } from '../../../../ui/realtime/gravity-orchard/index.mjs';
 
-async function until(check, message) {
-  const deadline = performance.now() + 5000;
-  while (!check()) {
-    if (performance.now() > deadline) assert.fail(message);
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  }
-}
-
 test('real browser-client seam interoperates with fixture authority for two simultaneous seats, ACKs, pause and rematch', { timeout: 15_000 }, async (t) => {
-  const fixture = await createFixtureServer({ simulation: createMockSimulation({ countdownTicks: 2 }) });
+  // Keep real sockets while giving the client pump and host one clock.
+  // Runner delays must not turn into transport stalls or stale samples.
+  const scheduler = fakeClock();
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const fixture = await createFixtureServer({ scheduler, simulation: createMockSimulation({ countdownTicks: 2 }) });
+  async function until(check, message) {
+    const deadline = performance.now() + 5000;
+    while (!check()) {
+      if (performance.now() > deadline) assert.fail(message);
+      t.mock.timers.tick(10);
+      await scheduler.advance(10);
+    }
+  }
   const clients = [];
   t.after(async () => { clients.forEach((peer) => peer.client.dispose()); await fixture.close(); });
   class OriginSocket extends WebSocket {
@@ -29,7 +34,7 @@ test('real browser-client seam interoperates with fixture authority for two simu
     const peer = { client: null, snapshot: null, status: null };
     peer.client = createRealtimeClient({
       url: fixture.origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
-      roomCode: fixture.roomCode, token: credential.token, now: () => performance.now(), WebSocketImpl: OriginSocket,
+      roomCode: fixture.roomCode, token: credential.token, now: scheduler.now, WebSocketImpl: OriginSocket,
       onSnapshot: (snapshot) => { peer.snapshot = snapshot; }, onStatus: (status) => { peer.status = status; },
     });
     clients.push(peer);

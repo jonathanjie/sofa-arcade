@@ -48,7 +48,12 @@ async function readJSON(request) {
  * must never be mounted in production. Tokens are random, in memory, no-store,
  * and issued only by same-origin POST; no URL, logs or diagnostics contain them.
  */
-export async function createFixtureServer({ port = 0, simulation = defaultSimulation, roomCode = FIXTURE_ROOM } = {}) {
+export async function createFixtureServer({
+  port = 0,
+  simulation = defaultSimulation,
+  roomCode = FIXTURE_ROOM,
+  scheduler = { now: () => performance.now(), setTimeout, clearTimeout },
+} = {}) {
   const sessions = new Map();
   const checkpoints = new Map();
   const lifecycle = [];
@@ -58,7 +63,7 @@ export async function createFixtureServer({ port = 0, simulation = defaultSimula
   let origin;
   let policy = () => false;
   let closed = false;
-  const clock = { now: () => performance.now() + clockOffset, setTimeout, clearTimeout };
+  const clock = { ...scheduler, now: () => scheduler.now() + clockOffset };
   const authorize = async ({ roomCode: requestedRoom, bearer }) => {
     const session = sessions.get(bearer);
     if (requestedRoom !== roomCode || !session || session.expiresAt <= performance.now()) return null;
