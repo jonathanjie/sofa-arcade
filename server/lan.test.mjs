@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { once } from 'node:events';
+import { connect } from 'node:net';
 import { request as httpRequest } from 'node:http';
 import { startLanServer } from './lan.mjs';
 import { handleApi } from './rooms.mjs';
@@ -316,4 +318,59 @@ test('LAN room creation budgets remote peers and stops concurrent creates at the
   assert.deepEqual(creates.map(result => result.status).sort(), [201, 201, 503, 503]);
   t.mock.timers.tick(24 * 60 * 60 * 1000);
   assert.equal((await request(host, '/api/rooms', { body: {} })).status, 201);
+});
+
+test('HTTP socket ceiling reserves a connection for loopback and closes stalled sockets', async t => {
+  const host = await startLanServer({ port: 0, databasePath: ':memory:',
+    httpSocketLimit: 2, loopbackSocketReserve: 1, shutdownGraceMs: 25 });
+  const remote = new URL(host.urls[0]).hostname;
+  const stalled = connect({ host: remote, port: host.port });
+  t.after(async () => { stalled.destroy(); await host.close(); });
+  await once(stalled, 'connect');
+  stalled.write('GET / HTTP/1.1\r\nHost: ');
+  const excess = connect({ host: remote, port: host.port });
+  t.after(() => excess.destroy());
+  excess.on('error', () => {});
+  const remoteClosed = new Promise(resolve => excess.once('close', resolve));
+  const admissionDeadline = AbortSignal.timeout(180);
+  assert.equal(await Promise.race([remoteClosed.then(() => 'closed'),
+    once(admissionDeadline, 'abort').then(() => 'excess connection stayed open')]), 'closed');
+  const response = await fetch(host.origin, { headers: { Connection: 'close' } });
+  assert.equal(response.status, 200);
+  await response.text();
+  const stalledClosed = once(stalled, 'close');
+  const deadline = AbortSignal.timeout(180);
+  await Promise.race([Promise.all([host.close(), stalledClosed]), once(deadline, 'abort').then(() => assert.fail('HTTP shutdown timed out'))]);
+});
+
+test('SSE caps simultaneous subscriptions per seat and host-wide, and releases them on shutdown', async t => {
+  const host = await startLanServer({ port: 0, host: '127.0.0.1', databasePath: ':memory:',
+    seatStreamLimit: 1, totalStreamLimit: 2, shutdownGraceMs: 25 });
+  t.after(() => host.close());
+  const live = await room(host);
+  const open = token => fetch(`${host.origin}/api/rooms/${live.code}/events`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const streams = [];
+  t.after(() => Promise.all(streams.map(response => response.body.cancel().catch(() => {}))));
+  const expectStream = async token => {
+    const response = await open(token);
+    streams.push(response);
+    assert.equal(response.status, 200);
+  };
+  const expectDenied = async token => {
+    const response = await open(token);
+    await response.body.cancel();
+    assert.equal(response.status, 429);
+  };
+  await expectStream(live.tokens.jon);
+  await expectDenied(live.tokens.jon);
+  await expectStream(live.tokens.lydia);
+  await expectDenied(live.hostToken);
+  await streams[1].body.cancel();
+  // A local room read gives the server an I/O turn to process the stream close.
+  await request(host, `/api/rooms/${live.code}`);
+  await expectStream(live.hostToken);
+  await host.close();
+  for (const response of [streams[0], streams[2]]) assert.match(await response.text(), /event: room/);
 });

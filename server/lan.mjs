@@ -20,6 +20,15 @@ const ROOM_CREATE_BUDGET = 6;
 const ROOM_CREATE_WINDOW_MS = 60_000;
 // Bound memory even if many distinct addresses reach the host within a window.
 const ROOM_CREATE_PEER_LIMIT = 1024;
+// Allow parallel asset loads and controller reconnects, with TV capacity held back.
+const HTTP_SOCKET_LIMIT = 64;
+const LOOPBACK_SOCKET_RESERVE = 8;
+// A seat may briefly have two connections while a phone or TV reloads.
+const SEAT_STREAM_LIMIT = 2;
+// Leave HTTP sockets available for assets and commands even with many live rooms.
+const TOTAL_STREAM_LIMIT = 24;
+// Let final responses drain briefly, then release stalled or upgraded sockets.
+const SHUTDOWN_GRACE_MS = 250;
 
 function peerAddress(socket) {
   return socket.remoteAddress?.replace(/^::ffff:/, '');
@@ -304,6 +313,11 @@ export async function startLanServer({
   roomCreateBudget = ROOM_CREATE_BUDGET,
   roomCreateWindowMs = ROOM_CREATE_WINDOW_MS,
   orchardRoomLimit,
+  httpSocketLimit = HTTP_SOCKET_LIMIT,
+  loopbackSocketReserve = LOOPBACK_SOCKET_RESERVE,
+  seatStreamLimit = SEAT_STREAM_LIMIT,
+  totalStreamLimit = TOTAL_STREAM_LIMIT,
+  shutdownGraceMs = SHUTDOWN_GRACE_MS,
   roomApi,
   browserModules = [],
   enableGravityOrchard = getGame('gravity-orchard')?.status === 'playable',
@@ -322,6 +336,7 @@ export async function startLanServer({
   const addresses = localAddresses();
   const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]', ...addresses]);
   const streams = new Map();
+  let streamCount = 0;
   let activeRoomCount;
   const peerBudgets = new Map();
   let budgetWindowEnds = 0;
@@ -433,22 +448,22 @@ export async function startLanServer({
 
   // The exact same injected authority handles HTTP and every subscriber's GET.
   // Neither this adapter nor a broadcast cache ever sees a full engine state.
-  const callApi = request => {
-    const pending = Promise.resolve().then(() => effectiveRoomApi(request, { DB }));
+  const callApi = (request, onRoomRead) => {
+    const pending = Promise.resolve().then(() => effectiveRoomApi(request, { DB, onRoomRead }));
     pendingApi.add(pending);
     pending.finally(() => pendingApi.delete(pending)).catch(() => {});
     return pending;
   };
-  const roomRead = (code, authorization, origin) => callApi(new Request(`${origin}/api/rooms/${code}`, {
+  const roomRead = (code, authorization, origin, onRoomRead) => callApi(new Request(`${origin}/api/rooms/${code}`, {
     headers: { Authorization: authorization },
-  }));
+  }), onRoomRead);
 
   function removeClient(client) {
     if (client.closed) return;
     client.closed = true;
     clearInterval(client.keepAlive);
     const clients = streams.get(client.code);
-    clients?.delete(client);
+    if (clients?.delete(client)) streamCount--;
     if (!clients?.size) streams.delete(client.code);
   }
 
@@ -491,19 +506,31 @@ export async function startLanServer({
     if (!/^Bearer [A-Za-z0-9_-]{24,128}$/.test(authorization)) {
       return respondJson(response, 401, { error: 'Join the room before receiving live updates.', code: 'session_required' });
     }
-    const initial = await roomRead(code, authorization, origin);
+    const rejectCapacity = () => respondJson(response, 429, {
+      error: 'Too many live connections. Reconnect in a moment.', code: 'stream_capacity',
+    });
+    if (streamCount >= totalStreamLimit) return rejectCapacity();
+    let seat;
+    const initial = await roomRead(code, authorization, origin, viewer => {
+      seat = viewer.role === 'host' ? 'host' : viewer.playerId;
+    });
     if (closed || response.destroyed) { response.end(); return; }
     if (!initial.ok) return respondWeb(response, initial);
     const value = await initial.json();
     if (closed || response.destroyed) { response.end(); return; }
+    if (!seat) return respondJson(response, 403, { error: 'This live connection has no room seat.', code: 'session_required' });
+    const clients = streams.get(code) || new Set();
+    const seatCount = [...clients].filter(client => client.seat === seat).length;
+    if (streamCount >= totalStreamLimit || seatCount >= seatStreamLimit) return rejectCapacity();
     response.writeHead(200, {
       'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store, private',
       Connection: 'keep-alive', 'X-Accel-Buffering': 'no', 'X-Content-Type-Options': 'nosniff',
     });
     response.flushHeaders();
-    const client = { code, authorization, origin, response, closed: false, pending: false, again: false, keepAlive: null };
-    if (!streams.has(code)) streams.set(code, new Set());
-    streams.get(code).add(client);
+    const client = { code, seat, authorization, origin, response, closed: false, pending: false, again: false, keepAlive: null };
+    streams.set(code, clients);
+    clients.add(client);
+    streamCount++;
     response.on('close', () => removeClient(client));
     event(client, 'room', value);
     client.keepAlive = setInterval(() => { void push(client); }, heartbeatMs);
@@ -588,6 +615,34 @@ export async function startLanServer({
     }
   };
   const server = createServer(requestHandler);
+  const sockets = new Set();
+  let remoteSocketCount = 0;
+  server.on('connection', socket => {
+    const local = isLoopback(peerAddress(socket));
+    if (closed || sockets.size >= httpSocketLimit
+      || (!local && remoteSocketCount >= httpSocketLimit - loopbackSocketReserve)) {
+      socket.destroy();
+      return;
+    }
+    sockets.add(socket);
+    if (!local) remoteSocketCount++;
+    socket.once('close', () => {
+      sockets.delete(socket);
+      if (!local) remoteSocketCount--;
+    });
+  });
+
+  async function closeHttp() {
+    const deadline = setTimeout(() => {
+      for (const socket of sockets) socket.destroy();
+    }, shutdownGraceMs);
+    deadline.unref();
+    try {
+      await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    } finally {
+      clearTimeout(deadline);
+    }
+  }
   const handleUpgrade = (request, socket, head) => orchard.handleUpgrade(request, socket, head);
   server.on('upgrade', handleUpgrade);
   server.requestTimeout = 15_000;
@@ -602,7 +657,7 @@ export async function startLanServer({
     refreshPolicy();
   } catch (error) {
     await orchard.close();
-    if (server.listening) await new Promise(resolve => server.close(resolve));
+    if (server.listening) await closeHttp();
     sqlite.close(); throw error;
   }
 
@@ -616,10 +671,13 @@ export async function startLanServer({
       closed = true;
       for (const clients of streams.values()) for (const client of [...clients]) { removeClient(client); client.response.end(); }
       closing = (async () => {
-        await Promise.allSettled([...pendingApi]);
-        await orchard.close();
-        await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+        const drain = async () => {
+          await Promise.allSettled([...pendingApi]);
+          await orchard.close();
+        };
+        const results = await Promise.allSettled([closeHttp(), drain()]);
         sqlite.close();
+        for (const result of results) if (result.status === 'rejected') throw result.reason;
       })();
       return closing;
     },

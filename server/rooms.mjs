@@ -551,7 +551,10 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
           room = await loadRoom(db, code);
         }
         if (auth.role === 'player') room = await heartbeat(db, room, auth.playerId);
-        return json(envelope(room, auth));
+        const view = envelope(room, auth);
+        // Internal callback for local stream admission. The viewer stays out of the response.
+        env.onRoomRead?.(auth);
+        return json(view);
       }
       if (operation === 'join') return await joinRoom(db, request, code, body);
       if (operation === 'start' || operation === 'rematch') return await startRoom(db, request, code, operation === 'rematch');
