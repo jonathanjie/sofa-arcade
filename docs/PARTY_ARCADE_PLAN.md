@@ -23,7 +23,7 @@ Add arcade games for 2 to 16 phones and one TV to Sofa Arcade, as described in [
 
 1. **Party rooms** (`server/party/`): create, join by QR or code, name and look choice, seats for 2–16 players, host controls (start, kick, next game), late join (waits for next round), reconnect keeps a seat for 30 s. Credentials and Origin rules follow the existing room code. Separate storage from two-seat rooms.
 2. **Party realtime coordinator** (`server/realtime/party/`): one WebSocket per phone and one for the TV. Fixed-tick simulation on the host. Phones send inputs; the TV receives full snapshots; each phone receives only its own state and round events. Short host stalls are absorbed with bounded catch-up ticks (same approach as the Gravity Orchard fix). Connection limits sized for 16 phones, 1 TV, and reconnect churn.
-3. **Party game interface** (`games/party/`): a game module supplies `id`, player range, `createRound(players, seed)`, `step(state, inputs, dt)`, `projectForPhone(state, playerId)`, `projectForTv(state)`, `isRoundOver(state)`, `scores(state)`. Deterministic for a given seed and input log. One registry file lists party games.
+3. **Party game interface** (`games/party/`): a game module supplies `id`, player range, `createRound(players, seed, gameRound, match)`, `step(state, inputs, dt, context)`, `projectForPhone(state, playerId)`, `projectForTv(state)`, `isRoundOver(state)`, `scores(state)`. Deterministic for the same seed, round context and tick log. One registry file lists party games.
 4. **Arcade kit** (`ui/party/kit/`): TV canvas loop at display rate, interpolation between snapshots, coded-sprite renderer and palette swap, juice effects (shake, hit-stop, particles, squash, pop-up numbers) that respect reduced motion, sound hooks into the existing audio engine.
 5. **Phone controller kit** (`ui/party/phone/`): large touch zones, one-button, stick, slide, tilt (with permission tap and touch fallback), player colour tint, connection state. No render loop.
 6. **Round frame** (`ui/party/frame/`): lobby wall on the TV, countdown, round timer, results, podium, "next round / next game".
@@ -45,8 +45,9 @@ First five games: **Don't Wake Lala**, **Dust Bunny Sumo**, **Wall of Paddles**,
 | Phase | State | Branch | Notes |
 | --- | --- | --- | --- |
 | 1 | Done | `party/platform` | Tap Race and the shared party kit. Real sockets verified 16 phones, reconnects, late join, and two rounds. Chromium verified 3 phone pages plus 13 simulated phones, with 16.6 ms median and 17.6 ms p95 frame time. Peak phone downstream was 1,165 B/s. See the [party contract](PARTY_CONTRACT.md). |
-| 2 | Not started | | |
-| 3 | Not started | | |
+| 2 | Done | `party/platform` | Hardened room authority, peer admission, reconnects, fixed ticks and slow-phone handling. Verified 2, 8 and 16 phones, caught ten deliberate regressions, and reviewed the TV and phone captures. In Chromium at 1920×1080, the 16-runner draw callback took 0.3 ms at p95 and the display interval was 16.7 ms at p95. Browser join took 2.1 s. See the [additive contract changes](PARTY_CONTRACT.md#contract-changes-after-review). |
+| 3 | Game branches built | `party/game-*` | Five games were built on separate branches. Their game reports identify the shared platform gaps below. |
+| 3 follow-up | Platform changes complete | `party/platform-2` | Added round context, departures, duration-based harness budgets, phone clock sync, a full-stage TV layout and sprite scale guidance. Chromium verified the new frame and the 64 CSS px minimum for 16 Tap Race runners at 1920×1080. See the [party contract](PARTY_CONTRACT.md). |
 | 4 | Not started | | |
 | 5 | Not started | | |
 

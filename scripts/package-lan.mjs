@@ -32,7 +32,7 @@ If you prefer to start it directly:
    node scripts/lan-server.mjs
 
 Two-seat rooms are saved in .sofa-lan/rooms.sqlite and last 24 hours.
-Party rooms and their seats live in memory until the host stops.
+Party rooms and seats live in memory. Use End party on the TV to close the room.
 Local rooms are separate from the public website's rooms.
 See docs/LAN.md for connection help and technical details.
 
