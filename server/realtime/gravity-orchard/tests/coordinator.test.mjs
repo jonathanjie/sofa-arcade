@@ -103,20 +103,46 @@ test('host stall pauses rather than fast-forwarding; smaller catch-up never exce
   assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').hostStalls, 1);
 });
 
-test('600 controller samples produce only bounded five-second checkpoints', async (t) => {
+const exhaustiveInputs = process.env.SOFA_EXHAUSTIVE === '1';
+test(exhaustiveInputs
+  ? '600 controller samples produce only bounded five-second checkpoints'
+  : 'two active controllers receive ACKs and persist one five-second checkpoint', async (t) => {
   const h = await harness(); t.after(() => h.close());
   const { jon, lydia } = await h.players();
   const baseline = h.writes.length;
-  for (let index = 0; index < 300; index++) {
-    jon.input({ x: index % 2 ? 0.25 : -0.25, y: 0, brake: false });
-    lydia.input();
-    await flush();
-    // One 50 ms scheduler wake runs three 60 Hz physics ticks per input pair.
-    await h.clock.jump(50);
+  if (exhaustiveInputs) {
+    for (let index = 0; index < 300; index++) {
+      jon.input({ x: index % 2 ? 0.25 : -0.25, y: 0, brake: false }); lydia.input();
+      await flush(); await h.clock.advance(50);
+    }
+    assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing');
+    assert.ok(h.writes.length - baseline >= 2 && h.writes.length - baseline <= 3);
+    assert.ok(readCoordinatorDiagnostics(h.coordinator, 'UNIT').inputsAccepted >= 600);
+    return;
   }
-  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing');
-  assert.ok(h.writes.length - baseline >= 2 && h.writes.length - baseline <= 3);
-  assert.ok(readCoordinatorDiagnostics(h.coordinator, 'UNIT').inputsAccepted >= 600);
+
+  const initial = h.coordinator.getPublicView('UNIT');
+  const writesBeforePeriodic = h.writes.at(-1);
+  for (let second = 0; second < 5; second++) {
+    const jonSample = jon.input({ x: 0.25, y: 0, brake: false });
+    const lydiaSample = lydia.input({ x: 0, y: 0.25, brake: false });
+    await flush();
+    // Each 62.5 ms wake runs at most four ticks, within the five-tick catch-up limit.
+    for (let wake = 0; wake < 16; wake++) {
+      assert.equal(h.writes.at(-1), writesBeforePeriodic);
+      await h.clock.jump(62.5);
+    }
+    for (const [peer, sample] of [[jon, jonSample], [lydia, lydiaSample]]) {
+      assert.ok(peer.messages.some(message => message.ack?.seq === sample.seq
+        && message.ack.controllerEpoch === peer.welcome.controllerEpoch));
+    }
+  }
+  assert.equal(h.writes.length, baseline + 1);
+  const saved = h.writes.at(-1);
+  assert.equal(saved.matchId, initial.matchId);
+  assert.equal(saved.runEpoch, initial.runEpoch);
+  assert.equal(saved.engine.state.phase, 'playing');
+  assert.equal(saved.engine.state.tick, initial.tick + 300);
 });
 
 test('durable epoch is saved before publication; a failed boundary freezes the room', async (t) => {

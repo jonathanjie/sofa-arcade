@@ -97,7 +97,7 @@ npm test
 npm run dev
 ```
 
-The default suite runs representative simulations. Use `npm run test:exhaustive` for all proof seeds and replays. Use `npm run test:standalone` when dependencies are unavailable. After `npm run build`, run `npm run test:cloud` for the local Worker/D1 council test.
+The default suite runs representative simulations. Use `npm run test:exhaustive` for all proof seeds and replays. Use `npm run test:standalone` when dependencies are unavailable. Use `npm run test:realtime:exhaustive` for the complete realtime input and checkpoint runs. After `npm run build`, run `npm run test:cloud` for the local Worker/D1 council test.
 
 `npm run db:generate` is needed only for schema changes. The database migration is checked in under `drizzle/`. Apply it to the local D1 database before testing multiplayer in a local preview; production migrations are applied by Sites publication. See the installed Sites workflow for local migration and hosting commands.
 

@@ -24,6 +24,7 @@
     "test:gravity-browser": "node tests/gravity-orchard-integration/browser/run.mjs",
     "test:standalone": "node scripts/run-unit-tests.mjs --standalone",
     "test:exhaustive": "node scripts/run-unit-tests.mjs --exhaustive",
+    "test:realtime:exhaustive": "node server/realtime/gravity-orchard/tests/run.mjs --exhaustive",
     "test:cloud": "node --import ./scripts/sites-env.mjs --test tests/cloud/council-d1.test.mjs"
   },
   "dependencies": {

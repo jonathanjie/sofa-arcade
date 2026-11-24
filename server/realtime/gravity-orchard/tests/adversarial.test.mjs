@@ -361,12 +361,33 @@ test('actual SQLite checkpoint hook writes at coarse intervals, never per input'
   const jon = await h.connect();
   const lydia = await h.connect({ playerId: 'lydia' });
   const baseline = writes;
-  for (let seq = 0; seq < 120; seq++) {
-    await send(jon, input(jon, { seq, x: seq % 2 ? 0.6 : -0.6, brake: false }));
-    await send(lydia, input(lydia, { seq, y: 0.2, brake: false }));
-    await h.clock.advance(50);
+  const exhaustiveInputs = process.env.SOFA_EXHAUSTIVE === '1';
+  if (exhaustiveInputs) {
+    for (let seq = 0; seq < 120; seq++) {
+      await send(jon, input(jon, { seq, x: seq % 2 ? 0.6 : -0.6, brake: false }));
+      await send(lydia, input(lydia, { seq, y: 0.2, brake: false }));
+      await h.clock.advance(50);
+    }
+    assert.ok(writes - baseline <= 2, `Expected coarse persistence; observed ${writes - baseline} writes for 240 samples.`);
+    assert.ok(jon.latest().ack.seq >= 115);
+  } else {
+    for (let seq = 0; seq < 5; seq++) {
+      await Promise.all([
+        send(jon, input(jon, { seq, x: 0.6, brake: false })),
+        send(lydia, input(lydia, { seq, y: 0.2, brake: false })),
+      ]);
+      // Sixteen short scheduler wakes advance one second without dropping physics ticks.
+      for (let wake = 0; wake < 16; wake++) {
+        assert.equal(writes, baseline);
+        await h.clock.jump(62.5);
+      }
+      for (const peer of [jon, lydia]) {
+        assert.ok(peer.received.some(message => message.ack?.seq === seq
+          && message.ack.controllerEpoch === peer.welcome().controllerEpoch));
+      }
+    }
+    assert.equal(writes, baseline + 1);
   }
-  assert.ok(writes - baseline <= 2, `Expected coarse persistence; observed ${writes - baseline} writes for 240 samples.`);
   assert.equal(h.coordinator.getPublicView(ROOM, { role: 'public', playerId: null }).phase, 'playing');
   const saved = JSON.parse(database.prepare('SELECT value FROM checkpoints WHERE room = ?').get(ROOM).value);
   assert.equal(saved.matchId, `match-${ROOM}`);
@@ -375,7 +396,6 @@ test('actual SQLite checkpoint hook writes at coarse intervals, never per input'
   assert.equal(saved.engine.state.runEpoch, saved.runEpoch);
   // The periodic write at five seconds captures 300 physics ticks (60 Hz).
   assert.equal(saved.engine.state.tick, 300);
-  assert.ok(jon.latest().ack.seq >= 115);
 });
 
 test('diagnostics/public snapshots redact credentials and private engine state; disposal removes scheduled work', async () => {

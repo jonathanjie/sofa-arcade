@@ -3,13 +3,20 @@ name: GO2 Gravity Orchard realtime
 on:
   pull_request:
     paths:
+      - 'package.json'
       - 'server/realtime/gravity-orchard/**'
       - 'ui/realtime/gravity-orchard/**'
       - '.github/workflows/go2-realtime.yml'
       - 'docs/workstreams/gravity-orchard-go2.md'
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
   push:
-    branches: [feature/gravity-orchard-realtime]
+    branches: [main, feature/gravity-orchard-realtime]
+    paths:
+      - 'package.json'
+      - 'server/realtime/gravity-orchard/**'
+      - 'ui/realtime/gravity-orchard/**'
+      - '.github/workflows/go2-realtime.yml'
+      - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
   workflow_dispatch:
 
 permissions:
@@ -50,7 +57,7 @@ jobs:
       - name: Install only the pinned realtime runtime dependency
         run: npm ci --prefix server/realtime/gravity-orchard --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Run all GO2 coordinator, client, fixture and adversarial suites
-        run: node server/realtime/gravity-orchard/tests/run.mjs
+        run: npm run test:realtime:exhaustive
       - name: Preserve existing rooms, games and secret projection
         run: node --test server/room-platform.test.mjs server/room-lan-integration.test.mjs ui/room-client.test.mjs
 

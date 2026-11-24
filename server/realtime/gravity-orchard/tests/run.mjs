@@ -17,7 +17,10 @@ const files = [
 ].filter(file => file.includes('fixture-browser.test.mjs') === browser).sort();
 if (!files.length) throw new Error(`No GO2 ${browser ? 'browser' : 'protocol/client'} suites were discovered.`);
 console.log(`GO2 ${browser ? 'browser' : 'protocol/client'}: ${files.length} suites; ${process.version} ${process.platform}/${process.arch}`);
-const result = spawnSync(process.execPath, ['--test', '--test-concurrency=1', ...files], { cwd: root, stdio: 'inherit' });
+const result = spawnSync(process.execPath, ['--test', '--test-concurrency=1', ...files], {
+  cwd: root, stdio: 'inherit',
+  env: process.argv.includes('--exhaustive') ? { ...process.env, SOFA_EXHAUSTIVE: '1' } : process.env,
+});
 if (result.error) throw result.error;
 if (result.signal) process.kill(process.pid, result.signal);
 process.exitCode = result.status ?? 1;

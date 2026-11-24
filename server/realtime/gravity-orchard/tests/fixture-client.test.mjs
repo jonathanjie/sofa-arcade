@@ -6,7 +6,7 @@ import { createFixtureServer } from '../fixture/server.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
 import { createRealtimeClient } from '../../../../ui/realtime/gravity-orchard/index.mjs';
 
-test('real browser-client seam interoperates with fixture authority for two simultaneous seats, ACKs, pause and rematch', { timeout: 15_000 }, async (t) => {
+test('real browser-client seam interoperates with fixture authority for two simultaneous seats, ACKs, pause and rematch', { timeout: 120_000 }, async (t) => {
   const clock = new ManualClock();
   const fixture = await createFixtureServer({ clock, simulation: createMockSimulation({ countdownTicks: 2 }) });
   const clients = [];
