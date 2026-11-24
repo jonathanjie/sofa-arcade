@@ -41,7 +41,11 @@ This is a local HTTP host for a trusted home network. It does not expose a publi
 
 Open **Party → Tap Race → Host on the TV** for 2–16 phones. Guests can scan the QR code or choose **Join a party** and enter the TV code. Each guest chooses a name and look, then taps **Ready**. On the TV, select **Start** once at least two guests are ready. The podium has **Next round** and a **Players** button for managing seats.
 
-Party rooms end when the host stops. If a phone disconnects, its seat stays reserved for 30 seconds after the host detects the disconnect. See the [party contract](PARTY_CONTRACT.md) for limits, routes, and game authoring.
+Select **End party** on the TV to close the room and release its seats. Stopping the host also closes its parties. If a phone disconnects, its seat stays reserved for 30 seconds after the host detects the disconnect.
+
+The Mac app can show a second phone link when trusted local access is ready. Select **Show phone link with tilt** on the TV to use the HTTPS QR code. Games that offer tilt keep touch controls available until the phone sends a valid sensor sample.
+
+See the [party contract](PARTY_CONTRACT.md) for limits, routes, and game authoring.
 
 ## Implementation and tests
 

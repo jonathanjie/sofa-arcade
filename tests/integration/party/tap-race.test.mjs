@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runPartyRounds } from '../../party/harness.mjs';
 
-test('sixteen phones race, reconnect, queue a late guest and race again', { timeout: 12_000 }, async t => {
+for (const playerCount of [2, 8, 16]) test(`${playerCount} phones race, reconnect, queue a late guest and race again`, { timeout: 12_000 }, async t => {
   const { phones } = await runPartyRounds(t, {
     gameId: 'tap-race',
+    playerCount,
     drive(phones, tick) {
       phones[0].input({ kind: 'tap' });
       if (tick % 2 === 0) {

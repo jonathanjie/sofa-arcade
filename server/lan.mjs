@@ -43,19 +43,29 @@ function isLoopback(address) {
   return address === '::1' || address?.startsWith('127.');
 }
 
-function socketAdmission(limit, loopbackReserve) {
+function socketAdmission(limit, loopbackReserve, perPeerLimit) {
   const sockets = new Set();
+  const counts = perPeerLimit ? new Map() : null;
   let remoteCount = 0;
   return {
     sockets,
     admit(socket) {
-      const local = isLoopback(peerAddress(socket));
+      const address = peerAddress(socket);
+      const local = isLoopback(address);
       if (sockets.size >= limit || (!local && remoteCount >= limit - loopbackReserve)) return false;
+      const used = counts && !local ? counts.get(address) ?? 0 : null;
+      if (used !== null && used >= perPeerLimit) return false;
+      if (used !== null) counts.set(address, used + 1);
       sockets.add(socket);
       if (!local) remoteCount++;
       socket.once('close', () => {
         sockets.delete(socket);
         if (!local) remoteCount--;
+        if (used !== null) {
+          const remaining = counts.get(address) - 1;
+          if (remaining) counts.set(address, remaining);
+          else counts.delete(address);
+        }
       });
       return true;
     },
@@ -421,6 +431,7 @@ export async function startLanServer({
   let activeRoomCount;
   const takeCreateBudget = createPeerBudget(roomCreateBudget, roomCreateWindowMs);
   const takePartyCreateBudget = createPeerBudget(roomCreateBudget, roomCreateWindowMs);
+  const takePartyJoinBudget = createPeerBudget(24, roomCreateWindowMs);
   let pendingCreates = 0;
 
   function admitCreate(socket) {
@@ -520,7 +531,7 @@ export async function startLanServer({
     },
   });
   const effectiveRoomApi = roomApi || orchard.authority;
-  const partySockets = socketAdmission(PARTY_LIMITS.sockets, PARTY_LIMITS.localSocketReserve);
+  const partySockets = socketAdmission(PARTY_LIMITS.sockets, PARTY_LIMITS.localSocketReserve, PARTY_LIMITS.socketsPerPeer);
   const party = createPartyRealtime({
     clock: partyClock, seed: partySeed, admitSocket: partySockets.admit,
     validateUpgrade: request => !closed && requestPolicy?.validateUpgrade(request, true) === true,
@@ -694,11 +705,15 @@ export async function startLanServer({
           : await bodyBytes(request, partyRoute ? PARTY_ROOM_LIMITS.bodyBytes : MAX_BODY_BYTES);
         const webRequest = new Request(url, { method: request.method, headers: request.headers, ...(body ? { body } : {}) });
         if (partyRoute) {
-          if (url.search) return respondJson(response, 400, { code: 'invalid_address', error: 'Use the party address without a query.' });
+          if (request.url.includes('?')) return respondJson(response, 400, { code: 'invalid_address', error: 'Use the party address without a query.' });
           if (request.method === 'POST' && url.pathname === PARTY_ROOMS_PATH && !takePartyCreateBudget(request.socket, Date.now())) {
             return respondJson(response, 429, { code: 'party_create_rate', error: 'Too many new parties. Try again in a minute.' });
           }
-          const result = await handlePartyRequest(webRequest, url.pathname, party.rooms);
+          if (request.method === 'POST' && url.pathname.endsWith('/join') && !takePartyJoinBudget(request.socket, Date.now())) {
+            return respondJson(response, 429, { code: 'party_join_rate', error: 'Too many join attempts. Try again in a minute.' });
+          }
+          const address = peerAddress(request.socket);
+          const result = await handlePartyRequest(webRequest, url.pathname, party.rooms, isLoopback(address) ? undefined : address);
           return respondJson(response, result.status, result.body);
         }
         const creating = request.method === 'POST' && /^\/api\/rooms\/?$/.test(url.pathname);

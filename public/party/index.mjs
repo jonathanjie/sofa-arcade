@@ -3,7 +3,7 @@ import { cleanCode, connectParty, newRequestId, partyRequest, partySession } fro
 import { mountPartyTv } from './frame/tv.mjs';
 import { mountPartyPhone, mountPhoneJoin } from './frame/phone.mjs';
 
-export function mountParty(root, { params, joinOrigin, sound, motionPreference }) {
+export function mountParty(root, { params, joinOrigin, getSecureOrigin, sound, motionPreference }) {
   const role = params.get('party') === 'host' ? 'host' : 'player';
   const code = cleanCode(params.get('code') ?? '');
   document.title = role === 'host' ? 'Party TV — Sofa Arcade' : 'Party controller — Sofa Arcade';
@@ -15,11 +15,17 @@ export function mountParty(root, { params, joinOrigin, sound, motionPreference }
     const actions = {
       send: command => client?.send(command),
       input: input => client?.input(input),
+      serverNow: () => client?.serverNow() ?? null,
     };
     const joinUrl = new URL(`/?party=join&code=${credential.code}`, joinOrigin).href;
     const presentation = role === 'host'
       ? mountPartyTv(root, { actions, sound, motionPreference, joinUrl, code: credential.code })
       : mountPartyPhone(root, { credential, actions });
+    if (role === 'host' && getSecureOrigin && new URL(joinUrl).protocol === 'http:') {
+      void getSecureOrigin().then(origin => {
+        if (origin) presentation.setSecureJoinUrl(new URL(`/?party=join&code=${credential.code}`, origin).href);
+      }).catch(() => {});
+    }
     const onStatus = value => {
       if (value === 'seat-lost' && role === 'host') partySession('host', credential.code, null);
       presentation.status(value);

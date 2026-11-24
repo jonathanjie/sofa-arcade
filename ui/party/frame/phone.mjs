@@ -128,7 +128,8 @@ export function mountPhoneJoin(root, initialCode, onJoin) {
       onJoin(session);
     } catch (failure) {
       showError(failure.status ? failure.message : 'Could not reach the host. Tap Ready to retry.');
-      if (failure.code === 'look_taken' || failure.code === 'party_full') {
+      if (failure.code === 'seat_lost') receipt = null;
+      if (['look_taken', 'party_full', 'seat_lost'].includes(failure.code)) {
         const room = await partyRequest('/' + code).catch(() => null);
         if (room) updateLooks(room.occupiedLooks);
       }
@@ -154,6 +155,51 @@ export function mountPhoneJoin(root, initialCode, onJoin) {
   } else codeInput.focus();
 }
 
+function screenWakeLock(document) {
+  const api = document.defaultView.navigator.wakeLock;
+  let playing = false;
+  let pending = false;
+  let lock;
+  const wanted = () => playing && !document.hidden;
+
+  async function update() {
+    if (!wanted()) {
+      const held = lock;
+      lock = undefined;
+      if (held && !held.released) await held.release().catch(() => {});
+      return;
+    }
+    if (!api || pending || lock) return;
+    pending = true;
+    try {
+      const acquired = await api.request('screen');
+      if (!wanted()) await acquired.release();
+      else if (!acquired.released) {
+        lock = acquired;
+        acquired.addEventListener('release', () => {
+          if (lock === acquired) lock = undefined;
+        }, { once: true });
+      }
+    } catch { /* Play can continue when the device declines a wake lock. */ }
+    finally { pending = false; }
+  }
+
+  const visibilityChanged = () => { void update(); };
+  document.addEventListener('visibilitychange', visibilityChanged);
+  return {
+    setPlaying(value) {
+      if (playing === value) return;
+      playing = value;
+      void update();
+    },
+    dispose() {
+      playing = false;
+      document.removeEventListener('visibilitychange', visibilityChanged);
+      void update();
+    },
+  };
+}
+
 export function mountPartyPhone(root, { credential, actions }) {
   root.innerHTML = `<main class="party party-phone">
     <header class="party-bar"><a class="party-back" href="/?shelf=1">‹ Game shelf</a><span data-room></span></header>
@@ -174,6 +220,8 @@ export function mountPartyPhone(root, { credential, actions }) {
   const readyButton = find('[data-ready]');
   const controls = find('[data-controls]');
   const art = createLookArt(root.ownerDocument);
+  const phone = find('.party-phone');
+  const wakeLock = screenWakeLock(root.ownerDocument);
   find('[data-room]').textContent = credential.code;
   let connection = 'connecting';
   let previous;
@@ -186,14 +234,17 @@ export function mountPartyPhone(root, { credential, actions }) {
   }
 
   function paint() {
+    const active = connection === 'connected' && previous?.phase === 'playing' && !previous.waiting;
+    phone.toggleAttribute('data-playing', active);
+    wakeLock.setPlaying(active);
     if (connection !== 'connected' || !previous) {
       setText(statusLabel, STATUS[connection] ?? 'Connecting…');
       readyButton.hidden = true;
+      controls.hidden = true;
       renderer?.update(previous?.state, false);
       return;
     }
     const view = previous;
-    const active = view.phase === 'playing' && !view.waiting;
     const lobby = view.phase === 'lobby' || view.phase === 'results';
     const status = view.waiting ? 'You’re in the next round'
       : view.phase === 'countdown' ? `Get ready · ${Math.ceil(view.ms / 1000)}`
@@ -216,11 +267,11 @@ export function mountPartyPhone(root, { credential, actions }) {
     update(view) {
       if (!previous || previous.self.look !== view.self.look) {
         art.portrait(find('canvas'), view.self.look);
-        find('.party-phone').style.setProperty('--phone-look', LOOKS[view.self.look].colour);
+        phone.style.setProperty('--phone-look', LOOKS[view.self.look].colour);
       }
       if (!previous || previous.gameId !== view.gameId) {
         renderer?.dispose();
-        renderer = partyGameView(view.gameId).mountPhone(controls, { input: actions.input });
+        renderer = partyGameView(view.gameId).mountPhone(controls, { input: actions.input, serverNow: actions.serverNow });
         setText(find('[data-game]'), getGame(view.gameId)?.title ?? 'Party');
       }
       setText(find('[data-you]'), view.self.name);
@@ -242,6 +293,9 @@ export function mountPartyPhone(root, { credential, actions }) {
       paint();
     },
     error: showError,
-    dispose() { renderer?.dispose(); },
+    dispose() {
+      wakeLock.dispose();
+      renderer?.dispose();
+    },
   };
 }
