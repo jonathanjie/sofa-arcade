@@ -311,7 +311,15 @@ test('a complete game, retried final action, and host rematch preserve controlle
   assert.ok(rematch.body.players.jon.joined && rematch.body.players.lydia.joined);
   assert.equal((await api(f, `/api/rooms/${live.code}`, { token: live.tokens.jon })).status, 200);
   assert.equal((await api(f, `/api/rooms/${live.code}`, { token: live.tokens.lydia })).status, 200);
-  assert.deepEqual(JSON.parse(rawRoom(f, live.code).data).recentActions, []);
+  const replay = body => api(f, `/api/rooms/${live.code}/action`, { method: 'POST', token: live.tokens[lastPlayer], body });
+  const writes = f.stats.writes;
+  const late = await replay(lastBody);
+  assert.equal(late.status, 200);
+  assert.equal(late.body.revision, rematch.body.revision);
+  assert.deepEqual(late.body.state, rematch.body.state);
+  assert.equal((await replay({ ...lastBody, action: { type: 'collect' } })).body.code, 'action_id_reused');
+  assert.equal((await replay({ ...lastBody, revision: rematch.body.revision })).body.code, 'stale_revision');
+  assert.equal(f.stats.writes, writes);
   f.sqlite.close();
 });
 
