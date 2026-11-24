@@ -108,8 +108,11 @@ test('600 controller samples produce only bounded five-second checkpoints', asyn
   const { jon, lydia } = await h.players();
   const baseline = h.writes.length;
   for (let index = 0; index < 300; index++) {
-    jon.input({ x: index % 2 ? 0.25 : -0.25, y: 0, brake: false }); lydia.input();
-    await flush(); await h.clock.advance(50);
+    jon.input({ x: index % 2 ? 0.25 : -0.25, y: 0, brake: false });
+    lydia.input();
+    await flush();
+    // One 50 ms scheduler wake runs three 60 Hz physics ticks per input pair.
+    await h.clock.jump(50);
   }
   assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing');
   assert.ok(h.writes.length - baseline >= 2 && h.writes.length - baseline <= 3);
