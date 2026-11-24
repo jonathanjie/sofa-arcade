@@ -576,7 +576,6 @@ export function mountPhone(root, {
       interlude: 'Catch your breath before the next garden.', finished: '',
     };
     refs['phase-note'].textContent = connection.state !== 'connected' ? 'Your controls are paused while we reconnect.' : notes[phase];
-    refs['phase-note'].hidden = !refs['phase-note'].textContent;
     refs.setup.hidden = !setupOpen;
     const setupCopy = {
       insecure: ['Touch is ready to play', 'Tilt needs the one-time setup on your Mac. You can play the whole game with touch.'],

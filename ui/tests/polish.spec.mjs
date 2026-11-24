@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { startLanServer } from '../../server/lan.mjs';
+import { startFixture } from '../games/gravity-orchard/phone/fixture/server.mjs';
 
 async function openArcade(t) {
   const host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath: ':memory:' });
@@ -135,4 +136,32 @@ test('reduced motion preserves the Odd Laws vote draft and drawer focus', { time
   assert.equal(await law.getAttribute('aria-pressed'), 'true');
   assert.equal(await bid.getAttribute('aria-pressed'), 'true');
   assert.match(await phone.locator('[data-action="phone-seal"]').textContent(), /Seal vote · 1 influence/);
+});
+
+test('the Orchard Ready button holds its position through reconnect', { timeout: 120_000 }, async t => {
+  const fixture = await startFixture();
+  const browser = await chromium.launch({
+    executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE,
+    args: ['--no-proxy-server', '--disable-gpu'],
+  });
+  t.after(async () => {
+    await browser.close();
+    await fixture.close();
+  });
+  const page = await browser.newPage({
+    viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+  });
+  await page.goto(fixture.url + '?scenario=insecure', { waitUntil: 'domcontentloaded' });
+  await page.locator('[data-go3="touch-mode"]').evaluate(button => button.click());
+  const ready = '[data-go3="ready"]';
+  await page.locator(ready + ':enabled').waitFor();
+  const before = await position(page, ready);
+  for (const state of ['reconnecting', 'connected']) {
+    await page.evaluate(value => window.go3Fixture.setConnection(value), state);
+    const after = await position(page, ready);
+    t.diagnostic(`${state}: Ready top ${before.y} → ${after.y} CSS px`);
+    assert.deepEqual(after, before);
+    assert.equal(await page.locator(ready).isDisabled(), state === 'reconnecting');
+    assert.ok(after.y + after.height <= 844);
+  }
 });
