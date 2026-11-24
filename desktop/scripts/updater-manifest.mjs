@@ -26,7 +26,14 @@ export async function buildManifest({ version, repo, dir, notes = '', pubDate = 
   const platforms = {};
   for (const [platform, bundle] of Object.entries(PLATFORMS)) {
     const signature = (await readFile(path.join(dir, `${bundle}.sig`), 'utf8')).trim();
-    if (!signature) throw new Error(`Empty signature for ${bundle}`);
+    // Mirror Tauri's tab-delimited version field so both published entries can
+    // pass its version check. The installer verifies the cryptographic signature.
+    const comment = Buffer.from(signature, 'base64').toString('utf8').split(/\r?\n/)[2];
+    const prefix = 'trusted comment: ';
+    const signedVersion = comment?.startsWith(prefix)
+      ? comment.slice(prefix.length).split('\t').find(field => field.startsWith('version:'))
+      : undefined;
+    if (signedVersion !== 'version:' + version) throw new Error(`Invalid signed version for ${bundle}`);
     platforms[platform] = {
       signature,
       url: `https://github.com/${repo}/releases/download/v${version}/${bundle}`,
