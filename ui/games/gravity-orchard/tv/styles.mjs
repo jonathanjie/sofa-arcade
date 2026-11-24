@@ -22,7 +22,8 @@ export const TV_STYLES = `
 .go-tv-ingredient{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:clamp(16px,1.4vw,24px);white-space:nowrap}
 .go-tv-fruit-icon{width:clamp(24px,2.6vw,44px);height:clamp(24px,2.6vw,44px);flex:none;display:inline-block}
 .go-tv-preview{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-left:1px solid var(--go-edge);padding-left:16px;min-width:0}
-.go-tv-preview .go-tv-eyebrow{font-size:clamp(10px,.94vw,var(--tv-type-label,18px));letter-spacing:.06em}
+.go-tv-preview .go-tv-eyebrow{font-size:clamp(10px,.77vw,14px);letter-spacing:.06em}
+@media(min-width:1000px){.go-tv-preview .go-tv-eyebrow{font-size:var(--tv-type-label,18px)}}
 .go-tv-preview .go-tv-ingredient{font-size:clamp(13px,1.02vw,19px);gap:2px}
 .go-tv-preview .go-tv-ingredients{gap:4px}
 .go-tv-preview .go-tv-fruit-icon{width:clamp(19px,1.8vw,30px);height:clamp(19px,1.8vw,30px)}

@@ -25,15 +25,43 @@ test('a rejected room leaves the attempted code selected and offers no seats', {
   const { origin, phone } = await openArcade(t);
   await phone.goto(origin, { waitUntil: 'domcontentloaded' });
   await phone.getByRole('button', { name: 'Join a room', exact: true }).evaluate(button => button.click());
-  await phone.locator('#room-input').fill('zzzzzz');
-  await phone.getByRole('button', { name: 'Find room', exact: true }).evaluate(button => button.click());
-  await phone.getByRole('alert').waitFor();
-  assert.equal(await phone.locator('[data-action="claim"]').count(), 0);
-  assert.equal(await phone.getByText('Room connected', { exact: true }).filter({ visible: true }).count(), 0);
-  const input = phone.locator('#room-input');
-  assert.equal(await input.inputValue(), 'ZZZZZZ');
-  assert.deepEqual(await input.evaluate(el => [document.activeElement === el, el.selectionStart, el.selectionEnd]),
-    [true, 0, 6]);
+  const input = phone.getByRole('textbox', { name: 'Room code' });
+  const cases = [
+    ['ZZZZZZ', /That room could not be found/],
+    ['ABC234', /This room has expired/],
+    ['ABC235', /Check your connection/],
+  ];
+  await phone.route('**/api/rooms/ABC234', route => route.fulfill({
+    status: 410, json: { error: 'This room has expired. Start a new game on the TV.', code: 'room_expired' },
+  }));
+  await phone.route('**/api/rooms/ABC235', route => route.abort('internetdisconnected'));
+  for (const [code, message] of cases) {
+    await input.fill(code.toLowerCase());
+    await input.press('Tab');
+    const submit = phone.getByRole('button', { name: 'Find room', exact: true });
+    assert.ok(await submit.evaluate(el => el.matches(':focus-visible')));
+    await submit.press('Enter');
+    await phone.getByRole('alert').filter({ hasText: message }).waitFor();
+    assert.equal(await phone.locator('[data-action="claim"]').count(), 0);
+    assert.equal(await phone.getByText('Room connected', { exact: true }).filter({ visible: true }).count(), 0);
+    assert.equal(await input.inputValue(), code);
+    assert.deepEqual(await input.evaluate(el => [document.activeElement === el, el.selectionStart, el.selectionEnd]),
+      [true, 0, 6]);
+  }
+});
+
+test('collection shows both hero actions on phones and a planned title on TV', async t => {
+  const { origin, phone } = await openArcade(t);
+  await phone.goto(origin);
+  for (const [width, height] of [[390, 844], [320, 568]]) {
+    await phone.setViewportSize({ width, height });
+    const play = await phone.getByRole('button', { name: 'Play Sofa Kingdoms' }).boundingBox();
+    const learn = await phone.getByRole('button', { name: 'Learn with Lala' }).boundingBox();
+    assert.ok(play.y >= 0 && play.y + play.height <= learn.y && learn.y + learn.height <= height);
+  }
+  await phone.setViewportSize({ width: 1920, height: 1080 });
+  const plan = await phone.getByRole('heading', { name: 'Borrowed Minutes' }).boundingBox();
+  assert.ok(plan.y >= 0 && plan.y + plan.height <= 1080);
 });
 
 async function press(page, action) {
@@ -119,6 +147,16 @@ test('Odd Laws shows the council at its styled position on the first paint', { t
   }
 });
 
+test('a failed council stylesheet offers a working retry', { timeout: 120_000 }, async t => {
+  const { tv } = await prepareCouncil(t, async ({ tv }) => {
+    await tv.route('**/odd-laws-society/tv.css', route => route.abort(), { times: 1 });
+  });
+  await tv.getByRole('alert').filter({ hasText: 'The council styles could not load.' }).waitFor();
+  const retry = tv.getByRole('button', { name: 'Try again' });
+  await retry.press('Enter');
+  await tv.locator('.ols-tv-board').waitFor();
+});
+
 test('reduced motion preserves the Odd Laws vote draft and drawer focus', { timeout: 120_000 }, async t => {
   const { phone } = await prepareCouncil(t);
   const law = phone.locator('[data-action="phone-law"]:not([data-choice-id="keep"])').first();
@@ -151,18 +189,25 @@ test('the Orchard Ready button holds its position through reconnect', { timeout:
   const page = await browser.newPage({
     viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
   });
-  await page.goto(fixture.url + '?scenario=insecure', { waitUntil: 'domcontentloaded' });
+  await page.goto(fixture.url + '?scenario=insecure&mode=controller', { waitUntil: 'domcontentloaded' });
   await page.locator('[data-go3="touch-mode"]').evaluate(button => button.click());
   const ready = '[data-go3="ready"]';
   await page.getByRole('button', { name: 'Ready', exact: true }).waitFor();
   assert.equal(await page.locator(ready).isEnabled(), true);
-  const before = await position(page, ready);
-  for (const state of ['reconnecting', 'connected']) {
-    await page.evaluate(value => window.go3Fixture.setConnection(value), state);
-    const after = await position(page, ready);
-    t.diagnostic(`${state}: Ready top ${before.y} → ${after.y} CSS px`);
-    assert.deepEqual(after, before);
-    assert.equal(await page.locator(ready).isDisabled(), state === 'reconnecting');
-    assert.ok(after.y + after.height <= 844);
+  for (const [width, height] of [[390, 844], [320, 568], [844, 390]]) {
+    await page.setViewportSize({ width, height });
+    const before = await position(page, ready);
+    assert.ok(before.y >= 0 && before.y + before.height <= height);
+    for (const state of ['connecting', 'reconnecting', 'error', 'connected']) {
+      await page.evaluate(value => window.go3Fixture.setConnection(value), state);
+      assert.deepEqual(await position(page, ready), before, `${width}×${height} · ${state}`);
+      assert.equal(await page.locator(ready).isDisabled(), state !== 'connected');
+    }
   }
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  assert.equal(await page.locator('[data-go3="phone"]').getAttribute('data-mode'), 'touch');
+  await page.getByRole('button', { name: 'Ready', exact: true }).press('Enter');
+  await page.getByRole('button', { name: 'Cancel ready', exact: true }).waitFor();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  assert.ok(await page.getByRole('button', { name: 'Cancel ready', exact: true }).isVisible());
 });

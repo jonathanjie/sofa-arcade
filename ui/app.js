@@ -136,8 +136,16 @@ function collection() {
   const sofa=gameById(SOFA_GAME_ID);
   const otherGames=GAME_CATALOG.filter(g=>g.id!==SOFA_GAME_ID);
   const ready=otherGames.filter(canPlayGame),planned=otherGames.filter(g=>!canPlayGame(g));
-  const shelf=(title,games,availability)=>games.length?`<section class="drawing-board"><div class="shelf-section-title"><h2>${title}</h2></div><div class="game-shelf">${games.map(g=>`<button class="game-card" data-action="open-game" data-game="${esc(g.id)}" style="--game-accent:${esc(g.accent)}">${gameArtwork(g.id)}<span class="concept-status">${availability}</span><h3>${esc(g.title)}</h3><p>${esc(g.tagline)}</p><span class="concept-meta">${esc(g.mode)} <span>·</span> ${esc(g.duration)}</span></button>`).join('')}</div></section>`:'';
-  return `<main class="arcade-home"><section class="shelf-intro"><div><span class="eyebrow">Stay in. Play something wonderful.</span><h1>Your next adventure<br>starts on the sofa.</h1></div><button class="button secondary" data-action="join-menu">${icon('phone')} Join a room</button></section><section class="featured-game"><div class="featured-image"><img src="/assets/sofa-room.png" alt="Lala the orange cat towers over two tiny adventurers on a cozy sofa"><span class="playable-stamp">${icon('paw')} Ready to play</span></div><div class="featured-copy"><span class="eyebrow">Tonight’s little adventure</span><h2>${esc(sofa.title)}</h2><p>${esc(sofa.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(sofa.mode)}</span><span>${icon('clock')} ${esc(sofa.duration)}</span></div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button><button class="text-button" data-action="tutorial">${icon('help')} Learn with Lala</button></div></section>${shelf('More games on the sofa',ready,'Ready to play')}${shelf('On the drawing board',planned,'On the drawing board')}</main>`;
+  function shelf(title, games, availability) {
+    if (!games.length) return '';
+    const cards = games.map(game => `<button class="game-card" data-action="open-game" data-game="${esc(game.id)}" style="--game-accent:${esc(game.accent)}">
+      ${gameArtwork(game.id)}
+      <span class="concept-status">${availability}</span><h3>${esc(game.title)}</h3>
+      <p>${esc(game.tagline)}</p><span class="concept-meta">${esc(game.mode)} <span>·</span> ${esc(game.duration)}</span>
+    </button>`).join('');
+    return `<section class="drawing-board"><div class="shelf-section-title"><h2>${title}</h2></div><div class="game-shelf">${cards}</div></section>`;
+  }
+  return `<main class="arcade-home"><section class="shelf-intro"><div><span class="eyebrow">Stay in. Play something wonderful.</span><h1>Your next adventure<br> starts on the sofa.</h1></div><button class="button secondary" data-action="join-menu">${icon('phone')} Join a room</button></section><section class="featured-game"><div class="featured-image"><img src="/assets/sofa-room.png" alt="Lala the orange cat towers over two tiny adventurers on a cozy sofa"><span class="playable-stamp">${icon('paw')} Ready to play</span></div><div class="featured-copy"><span class="eyebrow">Tonight’s little adventure</span><h2>${esc(sofa.title)}</h2><p>${esc(sofa.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(sofa.mode)}</span><span>${icon('clock')} ${esc(sofa.duration)}</span></div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button><button class="text-button" data-action="tutorial">${icon('help')} Learn with Lala</button></div></section><div class="collection-shelves">${shelf('More games on the sofa',ready,'Ready to play')}${shelf('On the drawing board',planned,'On the drawing board')}</div></main>`;
 }
 function gameDetail() {
   const selected=gameById(state.gameId),planned=!canPlayGame(selected);
@@ -418,7 +426,7 @@ async function openOrchardTutorial(){
     const modules=await ensureOrchardModules();
     if(epoch!==roomEpoch||serial!==orchardTutorialSerial)return;
     state.modal=null;render();
-    orchardTutorial=modules.mountTutorial(document.body,{onClose:()=>{orchardTutorial=null;},inputMode:'touch',reducedMotion:motionPreference.matches});
+    orchardTutorial=modules.mountTutorial(document.body,{onClose:()=>{orchardTutorial=null;},inputMode:'touch',reducedMotion:motionPreference});
   }catch(error){if(epoch===roomEpoch){state.error=error.message;render();}}
 }
 function renderOrchardMatch(){
@@ -585,7 +593,7 @@ function render() {
   if(collectionGame||collectionIdentity)releaseCollectionGame();
   const focused = document.activeElement;
   const hadModal = !!app.querySelector('.modal');
-  const focusSelector = focused?.id ? '#'+CSS.escape(focused.id) : focused?.dataset?.action ? '[data-action="'+CSS.escape(focused.dataset.action)+'"]'+['command','direction','player','index','axis','value'].filter(k=>focused.dataset[k]!==undefined).map(k=>'[data-'+k+'="'+CSS.escape(focused.dataset[k])+'"]') .join('') : null;
+  const focusSelector = focused?.id ? '#'+CSS.escape(focused.id) : focused?.dataset?.action ? '[data-action="'+CSS.escape(focused.dataset.action)+'"]'+['game','command','direction','player','index','axis','value'].filter(k=>focused.dataset[k]!==undefined).map(k=>'[data-'+k+'="'+CSS.escape(focused.dataset[k])+'"]') .join('') : null;
   const inputState = focused?.tagName === 'INPUT' ? {value:focused.value,start:focused.selectionStart,end:focused.selectionEnd} : null;
   const old = new Map([...app.querySelectorAll('[data-piece]')].map(n=>[n.dataset.piece,n.getBoundingClientRect()]));
   let content=collection();
@@ -631,6 +639,7 @@ async function api(path, options={}) {
     return body;
   } catch(err) {
     if(err.name==='AbortError')throw new Error('The room is taking a little longer to respond. Please try again.');
+    if(err instanceof TypeError)throw new Error('The room could not be reached. Check your connection and try again.');
     throw err;
   } finally {clearTimeout(timeout);options.signal?.removeEventListener('abort',abort);}
 }
@@ -802,8 +811,14 @@ async function createRoom(mode='campaign') {
 }
 async function findRoom(code,preferredSeat=null,recovering=false) {
   code=code.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(code.length<4){state.error='Enter the room code shown on your TV.';render();return;}
   stopPolling();state.code=code;state.role='player';state.mode='network';state.room=null;state.playerId=null;state.playerToken=null;state.hostToken=null;state.error='';state.busy=true;state.view='join';
+  if(code.length !== 6) {
+    state.busy=false;
+    state.error='Enter the six-character room code shown on your TV.';
+    render();
+    $('#room-input')?.focus();
+    return;
+  }
   const epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.preferredSeat=['jon','lydia'].includes(preferredSeat)?preferredSeat:null;
   const creds=readCredentials(code),seat=state.preferredSeat||creds.lastSeat||creds.playerId;
@@ -940,7 +955,7 @@ app.addEventListener('click', async event=>{
   if(a==='fullscreen'){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{state.notice='Use your browser’s full-screen control to fill the TV.';render();}}
   if(a==='create')await createRoom();
   if(a==='join-menu'){persist(LAST_SESSION_KEY,null);stopPolling();state.view='join';state.role='player';state.code='';state.room=null;state.error='';render();setTimeout(()=>$('#room-input')?.focus(),50);}
-  if(a==='different-room'){persist(LAST_SESSION_KEY,null);stopPolling();state.code='';state.playerId=null;state.playerToken=null;state.room=null;state.view='join';state.error='';history.replaceState({},'', '/');render();}
+  if(a==='different-room'){persist(LAST_SESSION_KEY,null);stopPolling();state.code='';state.playerId=null;state.playerToken=null;state.room=null;state.view='join';state.error='';history.replaceState({},'', '/');render();$('#room-input')?.focus();}
   if(a==='switch-seat'){stopPolling();state.playerId=null;state.playerToken=null;state.preferredSeat=null;state.view='join';state.error='';state.modal=null;history.replaceState({},'', '/?join='+encodeURIComponent(state.code));render();}
   if(a==='claim')await claimPlayer(button.dataset.player);
   if(a==='start')await startGame();

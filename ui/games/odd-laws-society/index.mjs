@@ -7,6 +7,7 @@ import {escapeHtml as esc,icon} from './shared.mjs';
 import {createMotion} from './motion.mjs';
 
 const stylesByDocument=new WeakMap();
+const STYLE_LOAD_TIMEOUT_MS = 10000;
 export function prepareStyles(doc, role) {
  const files = ['view.css', role === 'player' ? 'phone.css' : 'tv.css', 'tutorial.css'];
  let styles = stylesByDocument.get(doc);
@@ -21,8 +22,10 @@ export function prepareStyles(doc, role) {
    link.href = new URL(file, import.meta.url).href;
    link.dataset.oddLawsStyle = '';
    const ready = new Promise((resolve, reject) => {
-    link.addEventListener('load', resolve, { once: true });
-    link.addEventListener('error', () => reject(new Error('The council styles could not load.')), { once: true });
+    const fail = () => reject(new Error('The council styles could not load.'));
+    const timeout = setTimeout(fail, STYLE_LOAD_TIMEOUT_MS);
+    link.addEventListener('load', () => { clearTimeout(timeout); resolve(); }, { once: true });
+    link.addEventListener('error', () => { clearTimeout(timeout); fail(); }, { once: true });
    });
    styles.set(file, { link, ready, count: 0 });
    doc.head.append(link);
