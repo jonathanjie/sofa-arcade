@@ -8,17 +8,26 @@ export function createTimeline({ intervalMs = FRAME_INTERVAL_MS } = {}) {
   let current;
   let arrivedAt;
   let currentKey;
+  let displayed;
   return {
     push(scene, key, at) {
-      previous = key === currentKey ? current : null;
+      if (at < arrivedAt || (typeof key === 'number' && typeof currentKey === 'number' && key < currentKey)) return;
+      const sameRound = key === currentKey;
+      const inTransition = previous != null && at - arrivedAt < intervalMs;
+      previous = sameRound ? (inTransition ? displayed ?? previous : current) : null;
       current = scene;
       currentKey = key;
       arrivedAt = at;
+      displayed = undefined;
     },
     sample(at, interpolate, reduced = false) {
-      if (!previous || !current || reduced) return current;
+      if (previous == null || current == null || reduced) {
+        displayed = current;
+        return current;
+      }
       const amount = Math.max(0, Math.min(1, (at - arrivedAt) / intervalMs));
-      return interpolate(previous, current, amount, lerp);
+      displayed = amount === 1 ? current : interpolate(previous, current, amount, lerp);
+      return displayed;
     },
   };
 }
@@ -26,22 +35,34 @@ export function createTimeline({ intervalMs = FRAME_INTERVAL_MS } = {}) {
 export function createArcadeLoop(draw, onMotionChange = () => {}) {
   const media = matchMedia('(prefers-reduced-motion: reduce)');
   let request;
+  let disposed = false;
   let appReduced = false;
   const reduced = () => media.matches || appReduced;
   function drawFrame(at) {
+    request = undefined;
+    if (document.hidden || disposed) return;
     draw(at, reduced());
-    request = requestAnimationFrame(drawFrame);
+    updateVisibility();
+  }
+  function updateVisibility() {
+    if (document.hidden || disposed) {
+      if (request !== undefined) cancelAnimationFrame(request);
+      request = undefined;
+    } else if (request === undefined) request = requestAnimationFrame(drawFrame);
   }
   const update = () => onMotionChange(reduced());
   media.addEventListener('change', update);
-  request = requestAnimationFrame(drawFrame);
+  document.addEventListener('visibilitychange', updateVisibility);
+  updateVisibility();
   return {
     setReducedMotion(value) {
       appReduced = Boolean(value);
       update();
     },
     dispose() {
-      cancelAnimationFrame(request);
+      disposed = true;
+      updateVisibility();
+      document.removeEventListener('visibilitychange', updateVisibility);
       media.removeEventListener('change', update);
     },
   };
@@ -80,7 +101,11 @@ export function createJuice() {
         labels.push({ x, y, label, time });
         labels = labels.slice(-16);
       }
-      if (id) pulses.set(id, time + 120);
+      if (id) {
+        pulses.delete(id);
+        pulses.set(id, time + 120);
+        if (pulses.size > MAX_EFFECTS) pulses.delete(pulses.keys().next().value);
+      }
       if (strong) {
         freezeUntil = time + 85;
         shakeUntil = time + 220;

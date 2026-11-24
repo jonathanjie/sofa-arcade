@@ -2,7 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { createPartyRooms, PartyError } from '../../party/rooms.mjs';
 import { rejectUpgrade } from '../../reject-upgrade.mjs';
 import { WebSocketServer } from '../../runtime/gravity-orchard-dependencies.mjs';
-import { PARTY_LIMITS as limits, takeBudget, validAuth } from './protocol.mjs';
+import { PARTY_LIMITS as limits, exactFields, takeBudget, validAuth, validSequence } from './protocol.mjs';
 import { PARTY_TICK_MS } from './round.mjs';
 
 const realClock = {
@@ -14,15 +14,16 @@ const OPEN = 1;
 const CLOSE_GRACE_MS = 150;
 
 export function createPartyRealtime({ validateUpgrade, admitSocket, clock = realClock, seed }) {
-  const rooms = createPartyRooms({ now: () => clock.now(), seed });
+  const rooms = createPartyRooms({ now: () => clock.now(), seed, onRoomCountChange });
   const server = new WebSocketServer({
     noServer: true, clientTracking: false, perMessageDeflate: false, autoPong: false,
     maxPayload: limits.frameBytes, maxFragments: limits.maxFragments, maxBufferedChunks: limits.maxBufferedChunks,
   });
   const connections = new Set();
   let closed = false;
-  let previousPump = clock.now();
-  let nextPing = previousPump + limits.pingMs;
+  let roomCount = 0;
+  let previousPump;
+  let nextPing;
   let timer;
 
   function schedule(fn, ms) {
@@ -31,16 +32,32 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
     return handle;
   }
 
+  function onRoomCountChange(count) {
+    const wasIdle = roomCount === 0;
+    roomCount = count;
+    if (count === 0) {
+      clock.clearTimeout(timer);
+      timer = undefined;
+    } else if (wasIdle && !closed) {
+      previousPump = clock.now();
+      nextPing = previousPump + limits.pingMs;
+      timer = schedule(pump, PARTY_TICK_MS);
+    }
+  }
+
   function send(connection, packet) {
     const { ws } = connection;
     if (connection.closing || ws.readyState !== OPEN) return;
     const payload = JSON.stringify(packet);
+    const bytes = Buffer.byteLength(payload);
+    const phone = connection.seat !== connection.room.host;
     if (ws.bufferedAmount > limits.sendBufferBytes
-      || (connection.seat !== connection.room.host && Buffer.byteLength(payload) > limits.phoneSnapshotBytes)) {
+      || (phone && (bytes > limits.phoneSnapshotBytes || ws.bufferedAmount + bytes + 4 > limits.sendBufferBytes))) {
       connection.terminate(1011);
       return;
     }
     ws.send(payload);
+    if (ws.bufferedAmount > limits.sendBufferBytes) connection.terminate(1011);
   }
 
   function snapshot(connection, time, type) {
@@ -49,10 +66,13 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
   }
 
   function authenticate(connection, message, time) {
-    if (!validAuth(message)) return connection.terminate(1008);
+    if (time >= connection.authDeadline || !validAuth(message)) return connection.terminate(1008);
     const room = rooms.find(message.code);
     const seat = rooms.authorize(room, message.token);
     if (!seat) return connection.terminate(4403);
+    if (!takeBudget(seat.messageBudget, time, limits.messagesPerSecond, limits.messageBurst)) {
+      return connection.terminate(1008);
+    }
     clock.clearTimeout(connection.authTimer);
     connection.room = room;
     connection.seat = seat;
@@ -78,6 +98,13 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
       return;
     }
     if (!seat) return authenticate(connection, message, time);
+    if (message.type === 'clock-ping') {
+      if (seat !== room.host && exactFields(message, 'type', 'id') && validSequence(message.id)
+        && takeBudget(seat.clockBudget, time, limits.clocksPerSecond, limits.clockBurst)) {
+        send(connection, { type: 'clock-pong', id: message.id, serverAt: time });
+      }
+      return;
+    }
     if (message.type === 'input') {
       rooms.acceptInput(room, seat, message, connection);
       return;
@@ -87,20 +114,22 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
     } catch (error) {
       if (!(error instanceof PartyError)) throw error;
       // Administrative rejections are useful, but cannot become a reply flood.
-      if (time >= connection.nextError) {
-        connection.nextError = time + 1000;
+      if (time >= seat.nextError) {
+        seat.nextError = time + 1000;
         send(connection, { type: 'error', code: error.code, message: error.message });
       }
     }
   }
 
   function open(ws) {
+    const time = clock.now();
     const connection = {
-      ws, seat: null, room: null, closing: false, lastPong: clock.now(), lastSeq: -1,
-      nextSnapshot: 0, nextError: 0, authTimer: null, closeTimer: null,
+      ws, seat: null, room: null, closing: false, lastPong: time, lastSeq: -1,
+      nextSnapshot: 0, authDeadline: time + limits.authMs, authTimer: null, closeTimer: null,
       terminate(code) {
         if (connection.closing) return;
         connection.closing = true;
+        clock.clearTimeout(connection.authTimer);
         if (connection.seat) rooms.detach(connection.seat, connection, connection.room);
         ws.close(code);
         connection.closeTimer = schedule(() => ws.terminate(), CLOSE_GRACE_MS);
@@ -120,6 +149,7 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
   }
 
   function pump() {
+    timer = undefined;
     const time = clock.now();
     const hostSlept = time - previousPump >= limits.pongMs;
     previousPump = time;
@@ -128,6 +158,10 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
     if (ping) nextPing = time + limits.pingMs;
     for (const connection of connections) {
       if (!connection.seat || connection.closing) continue;
+      if (connection.ws.bufferedAmount > limits.sendBufferBytes) {
+        connection.terminate(1011);
+        continue;
+      }
       // A sleeping host cannot observe pongs. Probe once more on wake.
       if (hostSlept) connection.lastPong = time;
       if (time - connection.lastPong >= limits.pongMs) {
@@ -137,9 +171,8 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
       if (ping && connection.ws.readyState === OPEN) connection.ws.ping();
       if (time >= connection.nextSnapshot) snapshot(connection, time, 'snapshot');
     }
-    if (!closed) timer = schedule(pump, PARTY_TICK_MS);
+    if (!closed && roomCount > 0) timer = schedule(pump, PARTY_TICK_MS);
   }
-  timer = schedule(pump, PARTY_TICK_MS);
 
   return {
     rooms,
@@ -149,9 +182,16 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
       return server.handleUpgrade(request, socket, head, open);
     },
     close() {
+      if (closed) return;
       closed = true;
       clock.clearTimeout(timer);
-      for (const connection of connections) connection.ws.terminate();
+      rooms.close();
+      for (const connection of connections) {
+        clock.clearTimeout(connection.authTimer);
+        if (connection.closeTimer !== null) clock.clearTimeout(connection.closeTimer);
+        connection.ws.terminate();
+      }
+      connections.clear();
       server.close();
     },
   };

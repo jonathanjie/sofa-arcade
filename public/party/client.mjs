@@ -2,6 +2,10 @@ const ROOMS = '/api/party/rooms';
 const ROOM_CODE = /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/;
 const RETRY_MIN_MS = 250;
 const RETRY_MAX_MS = 2000;
+const CLOCK_SAMPLES = 3;
+const CLOCK_GAP_MS = 100;
+const CLOCK_TIMEOUT_MS = 350;
+const CLOCK_REFRESH_MS = 30_000;
 
 export function cleanCode(value) {
   const code = value.trim().toUpperCase();
@@ -34,6 +38,55 @@ export function partySession(role, code, value) {
   return null;
 }
 
+export function createPartyClockSync(send, now = () => performance.now()) {
+  let timer;
+  let pending;
+  let sequence = 0;
+  let remaining = 0;
+  let bestTrip = Infinity;
+  let offset = null;
+
+  function nextSample() {
+    remaining--;
+    pending = { id: sequence++, sentAt: now() };
+    send({ type: 'clock-ping', id: pending.id });
+    timer = setTimeout(completeSample, CLOCK_TIMEOUT_MS);
+  }
+
+  function start() {
+    stop();
+    remaining = CLOCK_SAMPLES;
+    bestTrip = Infinity;
+    nextSample();
+  }
+
+  function completeSample() {
+    clearTimeout(timer);
+    pending = undefined;
+    timer = remaining > 0 ? setTimeout(nextSample, CLOCK_GAP_MS) : setTimeout(start, CLOCK_REFRESH_MS);
+  }
+
+  function stop() {
+    clearTimeout(timer);
+    pending = undefined;
+  }
+
+  return {
+    start,
+    stop,
+    receive({ id, serverAt }) {
+      if (!pending || id !== pending.id || !Number.isFinite(serverAt) || serverAt < 0) return;
+      const trip = now() - pending.sentAt;
+      if (trip >= 0 && trip < CLOCK_TIMEOUT_MS && trip < bestTrip) {
+        bestTrip = trip;
+        offset = serverAt - (pending.sentAt + trip / 2);
+      }
+      completeSample();
+    },
+    serverNow: () => offset === null ? null : now() + offset,
+  };
+}
+
 export function connectParty({ credential, onView, onStatus, onError }) {
   const url = new URL('/api/realtime/party', location.origin);
   url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -44,6 +97,7 @@ export function connectParty({ credential, onView, onStatus, onError }) {
   let delay = RETRY_MIN_MS;
   let round = 0;
   let seq = 0;
+  const clock = credential.playerId ? createPartyClockSync(send) : null;
 
   function send(command) {
     if (!ready || socket?.readyState !== WebSocket.OPEN) return false;
@@ -56,26 +110,36 @@ export function connectParty({ credential, onView, onStatus, onError }) {
     const active = new WebSocket(url);
     socket = active;
     active.addEventListener('open', () => {
+      if (stopped || socket !== active) return;
       active.send(JSON.stringify({ type: 'auth', protocol: 1, code: credential.code, token: credential.token }));
     });
     active.addEventListener('message', ({ data }) => {
       if (stopped || socket !== active) return;
       let packet;
       try { packet = JSON.parse(data); } catch { return; }
-      if (packet.type === 'error') onError(packet.message);
-      if (packet.type !== 'welcome' && packet.type !== 'snapshot') return;
-      round = packet.view.round;
+      if (!packet || typeof packet !== 'object') return;
       if (packet.type === 'welcome') {
+        if (ready || !Number.isSafeInteger(packet.view?.round)) return;
+        round = packet.view.round;
         ready = true;
         seq = 0;
         delay = RETRY_MIN_MS;
+        onView(packet.view);
         onStatus('connected');
+        if (!stopped) clock?.start();
+      } else if (ready && packet.type === 'clock-pong') {
+        clock?.receive(packet);
+      } else if (ready && packet.type === 'snapshot' && Number.isSafeInteger(packet.view?.round) && packet.view.round >= round) {
+        round = packet.view.round;
+        onView(packet.view);
+      } else if (ready && packet.type === 'error') {
+        onError(packet.message);
       }
-      onView(packet.view);
     });
     active.addEventListener('close', ({ code }) => {
       if (stopped || socket !== active) return;
       ready = false;
+      clock?.stop();
       if (code === 4403 || code === 4409) {
         stopped = true;
         onStatus(code === 4403 ? 'seat-lost' : 'replaced');
@@ -91,9 +155,11 @@ export function connectParty({ credential, onView, onStatus, onError }) {
   open();
   return {
     send,
+    serverNow: () => clock?.serverNow() ?? null,
     input(input) { return send({ type: 'input', round, seq: seq++, input }); },
     dispose() {
       stopped = true;
+      clock?.stop();
       clearTimeout(timer);
       if (socket && socket.readyState === WebSocket.OPEN) socket.close();
       // Closing CONNECTING produces a browser console error. Close on open instead.

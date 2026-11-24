@@ -1160,7 +1160,10 @@ async function init() {
     css.href = '/party/party.css';
     document.head.append(css);
     const { mountParty } = await import('/party/index.mjs');
-    mountParty(app, { params, joinOrigin: transport.joinOrigin, sound: audio, motionPreference });
+    const getSecureOrigin = nativeSecureAvailable()
+      ? async () => trustedPhoneOrigin(await window.sofaDesktopSecureLan.getStatus(), transport.joinOrigin)
+      : undefined;
+    mountParty(app, { params, joinOrigin: transport.joinOrigin, getSecureOrigin, sound: audio, motionPreference });
     return;
   }
   if (params.has('party')) { openGame(params.get('game') || 'tap-race'); return; }
