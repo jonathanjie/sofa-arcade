@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 20 November 2026 at `392345f`.
+
 # Collection menu music and sound
 
 ## Source and request
@@ -63,7 +65,7 @@ the explicit LAN routes, and the Tauri runtime manifest. The manifest contains
 106 runtime entries; the reproducible portable ZIP contains 109 files including
 its generated notices/manifest. Adjacent tests, notes, render tools, WAVs and
 MP3 evidence remain excluded. The two affected protected delivery files have
-exact Git blob hashes and review notes in `tests/integration/components.json`.
+recorded Git blob hashes and review notes in the [archived local matrix](../local-release-components.json). The original verifier was retired in `bc2620d`.
 
 Local verification includes:
 

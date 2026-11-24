@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 21 November 2026 at `6c6eb93`.
+
 # Odd Laws Society — guild legibility and city inspection
 
 ## Scope

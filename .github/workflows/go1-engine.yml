@@ -6,6 +6,7 @@ on:
       - 'games/gravity-orchard/**'
       - '.github/workflows/go1-engine.yml'
       - 'docs/workstreams/gravity-orchard-go1.md'
+      - 'docs/archive/workstreams/gravity-orchard-go1.md'
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
       - 'docs/games/gravity-orchard.md'
   push:
@@ -14,6 +15,7 @@ on:
       - 'games/gravity-orchard/**'
       - '.github/workflows/go1-engine.yml'
       - 'docs/workstreams/gravity-orchard-go1.md'
+      - 'docs/archive/workstreams/gravity-orchard-go1.md'
   workflow_dispatch:
 
 permissions:

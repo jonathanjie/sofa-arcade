@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+
 # GO6 — Secure local phone access and Tauri setup components
 
 Copy this entire prompt into a new coding session. Implement the work, test it, push a branch and open a GitHub PR. Do not stop at a plan. Do not self-merge or deploy.
@@ -13,7 +15,7 @@ Your assignment is the secure-local-access component and host setup experience, 
 ## Start correctly
 
 1. Fetch current GitHub `main`, use your own clean worktree/clone, record the exact base SHA, and create `feature/gravity-orchard-secure-lan` or a collision-free branch with that prefix.
-2. Start from main containing this packet. If the reviewed packet has not merged, explicitly pin the exact reviewed packet commit identified by `docs/DISPATCH_GRAVITY_ORCHARD.md` and record that dependency; do not wait unnecessarily or follow a moving branch tip. Read `AGENTS.md`, `README.md`, `docs/HANDOFF.md`, `docs/GITHUB_WORKFLOW.md`, `docs/DISPATCH_GRAVITY_ORCHARD.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md` and the v0.2 `docs/games/gravity-orchard.md`. Reconcile a stale checkout rather than using the superseded turn-based draft.
+2. Start from main containing this packet. If the reviewed packet has not merged, explicitly pin the exact reviewed packet commit identified by `docs/archive/DISPATCH_GRAVITY_ORCHARD.md` and record that dependency; do not wait unnecessarily or follow a moving branch tip. Read `AGENTS.md`, `README.md`, `docs/HANDOFF.md`, `docs/GITHUB_WORKFLOW.md`, `docs/archive/DISPATCH_GRAVITY_ORCHARD.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md` and the v0.2 `docs/games/gravity-orchard.md`. Reconcile a stale checkout rather than using the superseded turn-based draft.
 3. Inspect current `server/lan.mjs`, `desktop/host/entry.mjs`, `desktop/host/lifecycle.mjs`, `desktop/src-tauri/src/protocol.rs`, `desktop/src-tauri/src/config.rs`, native/runtime tests and pinned Node/Rust versions. Those shared sources remain read-only to you.
 4. This dispatch's ownership overrides older broad WS assignments. You may use up to three subagents if that capacity is available, assigning disjoint files before edits. You retain responsibility for assembly, tests and the PR. Do not assume a universal account concurrency limit.
 
@@ -24,7 +26,7 @@ You may create or modify only:
 - `server/secure-lan/**`
 - `desktop/secure-lan/**`
 - `.github/workflows/go6-secure-lan.yml`
-- `docs/workstreams/gravity-orchard-go6.md`
+- `docs/archive/workstreams/gravity-orchard-go6.md`
 
 Tests, fixtures, test-only certificate generation, evidence indexes and any nested manifests/lockfiles must stay inside those owned directories. Do not commit runtime private material or installed dependencies.
 
@@ -128,7 +130,7 @@ GO7 owns actual Tauri bridge registration, packaged Mac lifecycle, source/runtim
 
 ## Handoff and tested PR
 
-Write `docs/workstreams/gravity-orchard-go6.md` containing scope/base SHA, exact exported interfaces/status and callback contracts, certificate lifecycle/security decisions, all runtime/browser files, dependency/license inventory, reproducible commands, actual test results, safe screenshot/evidence paths, hardware evidence or explicit gaps, known limitations and component readiness.
+Write `docs/archive/workstreams/gravity-orchard-go6.md` containing scope/base SHA, exact exported interfaces/status and callback contracts, certificate lifecycle/security decisions, all runtime/browser files, dependency/license inventory, reproducible commands, actual test results, safe screenshot/evidence paths, hardware evidence or explicit gaps, known limitations and component readiness.
 
 Give GO7 concrete composition instructions: which request/upgrade callbacks to inject, how to retain one authority/database, required scheme-aware Host/Origin handling, additive secure-controller readiness metadata, native privileged callbacks, private storage location requirements, shutdown ordering and runtime inventory additions. Shared files stay unchanged in your branch.
 

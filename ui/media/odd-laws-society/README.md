@@ -1,7 +1,7 @@
 # Odd Laws Society media pack
 
 This is the isolated WS4 artwork, score data, and review harness. The game view,
-shared sound engine, LAN routes, and desktop packaging are integrated by WS6.
+shared sound engine, LAN routes, and desktop packaging were integrated in the local release.
 
 ## Review locally
 
@@ -68,7 +68,7 @@ coordinates in that full image, with the top-left at `[0,0]`. They support
 procedural transforms and prop placement; no timeline or frame-by-frame sprite
 animation is implied. The interface owns motion and reduced-motion behavior.
 
-The score supplies authored events in **beats**, not seconds. WS6 selects its
+The score supplies authored events in **beats**, not seconds. The shared scheduler uses its
 tempo, meter, and loop length in the existing scheduler: **100 BPM, four beats
 per bar, 32 bars**. Select arrangements at four-bar phrase boundaries. Retain
 gesture unlock, independent saved music/effects settings, host-only music,
@@ -81,4 +81,4 @@ audio review files, evidence, and nested dependencies are development material.
 `runtime-files.json` is the explicit repository-relative handoff inventory.
 
 For scope, tested commands, visual evidence, and remaining integrated-device
-checks, see `docs/workstreams/odd-laws-media.md` and the PR's pinned head SHA.
+checks, see `docs/archive/workstreams/odd-laws-media.md` and the PR's pinned head SHA.

@@ -1,43 +1,18 @@
 # Local Sofa Arcade — build and acceptance guide
 
-This guide follows the WS6 integration candidate. Its dependency checkpoint is
-archived at [`docs/archive/local-release-components.json`](archive/local-release-components.json)
-and is no longer enforced. Executed results are in [the integration report](workstreams/integration.md).
-The candidate remains a draft until every essential component and the complete
-automated/native acceptance gates pass. All five components are included; Odd
-Laws is enabled after the complete browser candidate passed at `4695643`.
-The enabled collection path and combined native artifacts are being revalidated.
-A planned game cannot create a room.
+Use this guide for the merged local collection. Choose a CI artifact for a specific tested commit or a GitHub Release for a tagged Mac build. The [source handoff](HANDOFF.md) identifies the desktop tag and the later Gravity Orchard merge.
 
-## Play from a source checkout or portable ZIP
+## Toolchain
 
-The dependency-free LAN host requires **Node.js 22.13 or newer**. It uses Node's
-built-in HTTP server and SQLite. You do not need to install the development
-dependencies or build the framework to play from a complete checkout.
+| Task | Required version |
+| --- | --- |
+| Root project and portable play | Node.js 22.13 or newer |
+| Reproduce committed ZIP bytes | Node.js 24.22.3, as in the Gravity integration workflow |
+| Build a Mac artifact | Node.js 24.22.3, Rust 1.100.0, Xcode Command Line Tools and a matching Mac architecture. See the [desktop build recipe](../desktop/README.md#build-requirements). |
 
-```sh
-node --version
-node scripts/lan-server.mjs
-# Optional, if the default port is occupied:
-node scripts/lan-server.mjs --port 4178
-```
+## Player setup and reconnection
 
-On a Mac, the portable ZIP also supplies `start-sofa.command`. Unzip it before
-opening that launcher. Leave its Terminal window open for the duration of play.
-The launcher checks the installed Node version and prints a useful error when
-the runtime is missing. The portable ZIP does not bundle Node.
-
-Use the LAN address printed by the host on the Mac, choose an available game,
-and create a room. Scan its QR code on two separate phone browsers. Choose Jon
-on one phone and Lydia on the other, then start from the TV/host. The QR contains
-a join address and room code; it does not contain either player's credential.
-All three devices must reach the Mac on the same local network. Allow incoming
-connections for the host if macOS asks. A guest network may isolate devices.
-
-The Mac's browser can be shown on the TV. Casting delay is additional to game
-transport time. Local play needs no internet connection after the runtime and
-assets have been obtained. Existing public-hosted rooms use a different room
-store and do not migrate into the local host.
+Use the [LAN instructions](LAN.md) for the portable host and the [play instructions](../README.md#play) for room creation and both phones. The portable host, native app and hosted Site each have their own room store.
 
 Refresh preserves a seat in the same browser profile at the same origin
 (protocol, address and port). Relaunching that origin restores the last active
@@ -53,94 +28,24 @@ Use the same browser profile that originally joined. When only the Mac's LAN
 address changes, the native app keeps its separate loopback origin and saved
 host state; it cannot transfer a phone's browser identity across LAN origins.
 
-The portable host saves rooms in `.sofa-lan/rooms.sqlite`, outside the download
-inputs. Closing the host preserves the database. Rooms still have their normal
-24-hour lifetime. Stop with Control+C before moving a saved database; do not
-include it in an archive, screenshot bundle, or bug report.
-
 ## Native Mac application
 
-The tested WS5 component is included in the component matrix. The combined
-Mac artifacts must still pass final acceptance before becoming an accepted
-release. The Tauri app starts its bundled local host itself;
-players do not install Node or keep Terminal open. Its saved origin and private
-application-data database allow quit/relaunch recovery.
+Open **Sofa Arcade.app** and host the board. The app starts its bundled Node host. Use **View → Full Screen** for the board and **Connection → Refresh Network** to update the advertised LAN addresses. **Connection → Retry Local Host** retries a failed launch. If the saved port is occupied, identify the other application before closing it.
 
-Once a tested native artifact is available, open **Sofa Arcade.app**, choose an
-available game and **Host on the TV**. Both phones scan the room QR and choose
-different seats. **View → Full Screen** controls the board window.
-**Connection → Refresh Network** refreshes the Mac's advertised LAN addresses
-and reloads its board at the same loopback origin. The phone-origin limitation
-above still applies. **Connection → Retry Local Host** retries a failed host.
-If another application occupies the saved port, close that application only
-after identifying it, then retry; Sofa Arcade does not attach to or stop it.
+Quit stops the owned host. The native database is `~/Library/Application Support/com.sofaarcade.desktop/rooms.sqlite`. The app retains its saved loopback port. The webview’s saved session controls room restoration. An explicit exit to the collection takes precedence over any stale native route.
 
-Quit Sofa Arcade to stop its owned host. The native database lives in
-`~/Library/Application Support/com.sofaarcade.desktop/rooms.sqlite`, with the
-normal 24-hour room lifetime. `config.json` stores the selected port and public
-room route. Host and phone credentials remain in their respective webview or
-browser storage. The portable `.sofa-lan` store and native application-data
-store are separate; switching packages does not migrate an in-progress room.
-
-For the incorporated tested WS5 component, use the commands in
-`desktop/README.md` on the matching Mac architecture. The owner currently
-targets macOS 13.5 or newer, Apple Silicon and Intel, with a pinned Node
-24.22.3 runtime and locked nested build dependencies. Development requires
-Xcode Command Line Tools, Rust 1.100.0 and Node 24.22.3. Initial installation,
-runtime staging and dependency downloads require internet access. The installed
-app obtains its runtime and assets from its bundle.
-
-From the repository root on an Apple Silicon Mac:
+Use the [desktop build and smoke tests](../desktop/README.md#reproducible-tests) on the matching Mac architecture. Preserve the production app before building the instrumented app, since they use the same output directory. On a disposable Mac user account, set `SOFA_APP_PATH` to the instrumented app and run each collection journey from the repository root:
 
 ```sh
-cd desktop
-npm ci --ignore-scripts
-npm run stage
-npm test
-node scripts/verify-runtime.mjs
-RUSTUP_TOOLCHAIN=1.100.0 npm run test:rust
-RUSTUP_TOOLCHAIN=1.100.0 APPLE_SIGNING_IDENTITY=- npm run build:mac:arm64
-# On an Intel Mac, use build:mac:intel instead.
-mkdir -p artifacts/production
-ditto "src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Sofa Arcade.app" \
-  "artifacts/production/Sofa Arcade.app"
-npm run test:native:release -- --app "$PWD/artifacts/production/Sofa Arcade.app"
+node tests/integration/native/run.mjs
+node tests/gravity-orchard-integration/native/run.mjs
 ```
 
-The Intel target path is `x86_64-apple-darwin`. Build and execute each artifact
-on its matching native architecture. These commands do not create a universal
-binary. The `.app` and `.dmg` outputs are under
-`desktop/src-tauri/target/<target>/release/bundle/`.
-
-The ad-hoc signature used for CI/local validation is not Developer ID signing
-or notarization. Native acceptance must execute the packaged application and
-its bundled Node. A generated app directory or a Linux host test does not prove
-a Mac launch. Use a disposable Mac user for the native acceptance scripts;
-they refuse to overwrite an existing Sofa Arcade profile.
-
-Preserve the production bundle before building the separate instrumented
-application, because both build variants use the target's bundle directory.
-From `desktop/`, on Apple Silicon:
-
-```sh
-RUSTUP_TOOLCHAIN=1.100.0 APPLE_SIGNING_IDENTITY=- npm run build:native:arm64
-SOFA_APP_PATH="$PWD/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Sofa Arcade.app" \
-  npm run test:native:ui
-```
-
-Use `build:native:intel` and the Intel target path on an Intel Mac. The
-instrumented build enables the native test driver and is for acceptance only.
-The production app/DMG omits that driver. WS6's separate
-`tests/integration/native/run.mjs` verifies the combined Odd Laws runtime in
-WKWebView and must pass after the final runtime manifest is assembled; the
-component's Sofa Kingdoms native run does not cover that combination.
+The first runner checks Odd Laws in WKWebView. The second checks the Gravity Orchard campaign, trusted-access setup and native lifecycle. Keep the reports for each architecture and commit.
 
 ### Choose and verify a native test download
 
-Until the final integrated native gates pass, GitHub Actions artifacts are
-evaluation builds, not an accepted release. Follow the final integration PR's
-artifact links for its exact tested commit. An older WS5-only artifact proves
-its own component checkpoint, not the completed Odd Laws collection.
+Use the desktop workflow for the intended commit. Match the artifact and acceptance evidence to the same SHA.
 
 Choose `aarch64-apple-darwin` for an Apple Silicon Mac or
 `x86_64-apple-darwin` for an Intel Mac. The desktop workflow's artifact name is
@@ -166,10 +71,12 @@ shasum -a 256 -c evidence/production-sha256.txt
 
 Every listed file must report `OK`. Open the matching `.dmg` and copy the app
 to Applications, or extract the matching production `.app.zip`. Check the
-separate WS6 `local-native-<target>-<tested-commit>` evidence artifact for the
-integrated Odd Laws checks and screenshots at that same commit. A failed or
-missing native report is an unresolved gate, even if the workflow uploaded a
-bundle.
+separate `local-native-<target>-<tested-commit>` evidence artifact for the
+integrated Odd Laws checks and `go7-native-<target>-<tested-commit>` for the
+Gravity Orchard WKWebView checks. Match `tested-commit.txt` to the build and
+check the reports and screenshots in each artifact, including
+`go7-native.json` for Gravity Orchard. A failed or missing native report is an
+unresolved gate, even if the workflow uploaded a bundle.
 
 CI artifacts use ad-hoc signing. `codesign --verify --deep --strict` checks a
 bundle's signature integrity; it does not establish Developer ID identity,
@@ -181,7 +88,7 @@ gate; do not remove quarantine or disable Gatekeeper to record a pass.
 ## Reproduce the automated checks
 
 Use a clean checkout of the exact SHA named in the PR or evidence report.
-Dependency-free rules and protocol checks can run immediately:
+Install root dependencies with `npm run install:ci` for full coverage. The unit runner discovers eligible `*.test.mjs` source files and reports skips for unavailable static imports. Browser tests and the nested secure-LAN inventory have separate commands.
 
 ```sh
 npm test
@@ -194,56 +101,35 @@ node --test server/rooms.test.mjs server/lan.test.mjs \
 node --test tests/integration/protocol/*.test.mjs
 ```
 
-Build and inspect the browser/portable deliverables before release acceptance:
+Run `npm ci --prefix desktop --ignore-scripts` for the desktop tooling used by integration CI. Use these suites on the assembled checkout:
 
-Use Node **24.22.3** for committed ZIP regeneration, matching release CI. The
-playable host still supports the wider runtime range above; pinning the packager
-also pins compression output for byte-for-byte archive checks.
+| Check | Command |
+| --- | --- |
+| Local room protocol, package and integration | `npm run test:integration` |
+| Gravity Orchard integration | `npm run test:gravity-orchard` |
+| Room and realtime fixture browser tests | `npm run test:browser` |
+| Gravity Orchard TV and two phones in three browser contexts | `npm run test:gravity-browser` |
+| Secure-LAN component including its dependency inventory | `npm ci --prefix server/secure-lan`, then `npm test --prefix server/secure-lan` |
 
-```sh
-npm run install:ci
-node scripts/prepare-game.mjs
-npm run package:lan
-node scripts/check-derived.mjs
-npm run test:integration
-npm run build
-node tests/integration/package/production.mjs
-```
-
-`check-derived.mjs` requires regenerated browser assets and the ZIP to match
-the committed checkout, including newly introduced public files. When authoring
-a change, review and commit those derived files before running that clean-tree
-gate. CI must not silently repair a stale committed download.
-
-The strict verification commands fail when a component is missing or its
-recorded head is absent from the candidate's ancestry. Preparatory dependency
-skips are not a release pass. These Node checks are necessary; rendered browser
-and macOS native CI must pass separately. The postbuild checker compares the
-actual `dist/client` bytes with the declared modules/assets/ZIP and rejects
-authoring sources, private paths and undeclared browser files. The package
-test also starts a host from an
-extracted ZIP, follows its public module/asset graph, and probes forbidden
-authority, fixture, credential and database paths.
-
-Rendered acceptance requires Chromium and an environment that permits its
-normal process/socket operations:
+Install Chromium with `npx playwright install chromium` before the browser suites. Linux CI uses `npx playwright install --with-deps chromium` to install system dependencies too. The Gravity browser journey starts its own loopback host on a free port with a temporary SQLite database. Set `SOFA_GO7_EVIDENCE_DIR` to select the report and screenshot directory. Run the two turn-based collection journeys separately:
 
 ```sh
-npx playwright install --with-deps chromium
-SOFA_EVIDENCE_DIR=/absolute/path/to/evidence \
-  node tests/integration/browser/sofa-kingdoms.mjs
-SOFA_EVIDENCE_DIR=/absolute/path/to/evidence \
-  node tests/integration/browser/odd-laws.mjs
+SOFA_EVIDENCE_DIR=/absolute/path/to/evidence node tests/integration/browser/sofa-kingdoms.mjs
+SOFA_EVIDENCE_DIR=/absolute/path/to/evidence node tests/integration/browser/odd-laws.mjs
 ```
 
-The Odd Laws final journey requires a playable collection entry. Before initial
-enablement, WS6 may set `SOFA_ACCEPTANCE_CANDIDATE=1` solely in the acceptance
-driver. This test creates a real authenticated room through an injected game
-resolver while retaining the delivered engine, actual HTTP/SSE, SQLite and
-phone views. It does not change the shipped catalog. After candidate acceptance,
-enable the game and rerun the normal collection-to-results journey without that
-flag. `SOFA_ACCEPTANCE_CHAIR` is for a targeted failure investigation; final
-acceptance runs both initial Chairs.
+Run the Gravity campaign and transport measurements on loopback as in the [Gravity CI workflow](../.github/workflows/go7-integration.yml):
+
+```sh
+export SOFA_GO7_EVIDENCE_DIR=/absolute/path/to/evidence
+mkdir -p "$SOFA_GO7_EVIDENCE_DIR"
+node tests/gravity-orchard-integration/protocol/campaign.mjs
+node tests/gravity-orchard-integration/protocol/measure.mjs --out="$SOFA_GO7_EVIDENCE_DIR/transport.json"
+node tests/gravity-orchard-integration/protocol/stress.mjs --out="$SOFA_GO7_EVIDENCE_DIR/stress.json"
+```
+Check skip counts and retain separate browser and matching-architecture native results. The [delivery checks](#delivery-inventory-and-publicprivate-boundary) verify the built files and extracted ZIP.
+
+Run the Odd Laws collection-to-results journey with the normal catalog and both initial Chairs. `SOFA_ACCEPTANCE_CANDIDATE=1` injects an optional pre-enablement fixture into the acceptance driver. `SOFA_ACCEPTANCE_CHAIR` selects a Chair for diagnosis.
 
 Protocol timing measures successful action POST start to the resulting parsed
 SSE revision for the host and both seats on loopback. A 60-second heartbeat and
@@ -258,48 +144,36 @@ casting or human-input latency.
 | Deliverable | Inventory and verification |
 | --- | --- |
 | Browser modules | `scripts/runtime-files.mjs` → `BROWSER_FILES`; preparation copies each exact authored source into `public/` and regenerates `app/route.ts` |
-| Secure LAN routes | Explicit `SOURCES` entries in `server/lan.mjs`; no source-directory serving or URL-supplied module registration |
+| Browser assets | `ASSET_FILES` in `scripts/runtime-files.mjs` lists the public assets to stage alongside the modules and ZIP. |
+| Explicit LAN static routes | `SOURCES` for authored modules and `ASSETS` for public assets in `server/lan.mjs`. Keep requests limited to the declared routes. |
 | Portable ZIP | `public/downloads/sofa-arcade-local.zip`; explicit `runtimeFiles()` entries, deterministic bytes, executable launcher |
 | ZIP member manifest | `sofa-arcade-local/artifact-manifest.json` inside the archive; path, byte count, mode and SHA-256 for every other member |
-| Desktop runtime | WS5's `desktop/runtime-manifest.json`; explicit repo-shaped files, checksum-verified bundled Node, staging inventory |
+| Desktop runtime | `desktop/runtime-manifest.json`; explicit repo-shaped files, checksum-verified bundled Node, staging inventory |
 | Native artifacts | CI production `.app.zip`/DMG plus SHA-256 evidence; exact source and architecture named in artifact metadata |
-| Acceptance evidence | CI JSON reports/screenshots and `docs/workstreams/integration.md`; failed-run artifacts are identified as diagnostics |
+| Acceptance evidence | CI JSON reports/screenshots and `docs/archive/workstreams/integration.md`; failed-run artifacts are identified as diagnostics |
 
-Odd Laws browser code receives only public catalogs/helpers and authenticated
-projected room state. Its authority and projection modules belong on the host.
-Engine fixtures, simulation harnesses, tests, evidence, package dependencies,
-credentials and runtime databases are not browser assets or package members.
-The final media manifest must resolve to packaged local files, and its declared
-final/placeholder status must be accurate.
+Update `scripts/runtime-files.mjs`, the LAN mappings and the desktop manifest when their delivered files change. Gravity’s browser, asset and host entries are shared in `server/gravity-orchard-delivery.mjs`. Framework preparation and portable packaging consume the shared inventory. The framework stages only declared public files and the portable ZIP.
+
+Odd Laws exposes public catalog/preview helpers and the authenticated viewer’s projection. Keep private engine modules and the Gravity dependency bundle on the host. Exclude credentials, runtime databases, checkout metadata, installed development dependencies, fixtures, evidence and authoring sources from release packages. Retain runtime artwork and license notices.
+
+If a change affects an import in `scripts/runtime-dependencies-entry.mjs`, its transitive sources or locked dependencies, run `npm run bundle:runtime`. Retain the generated host bundle, license notices and dependency inventory. Check reproducibility with `node scripts/bundle-runtime.mjs --check`.
+
+After changing included source, assets or portable instructions, use the ZIP toolchain above and regenerate before release:
+
+```sh
+node scripts/prepare-game.mjs
+npm run package:lan
+```
+
+Review and commit the regenerated files. Run `node scripts/check-derived.mjs` after clean regeneration to detect any drift in the tracked browser files, route or ZIP. Run `npm run test:integration` to exercise the extracted package, then `npm run build` and `node tests/integration/package/production.mjs` to check the staged production files.
 
 ## Hardware and distribution sign-off
 
 Record the hardware, operating systems/browsers, network and exact artifact SHA
 when Jon and Lydia run physical acceptance. Native CI evidence does not test
 their Mac, home Wi-Fi, phone browsers, television or speakers. The remaining
-checks are a real Mac app launch; two separate phone browsers; TV/fullscreen/
-casting; both games; device sound after a gesture; saved preferences and reduced
-motion; internet-disconnected play while the local network remains connected;
-physical sleep/wake; quit/relaunch recovery; and downloaded-app Gatekeeper
-behavior. Report Apple Silicon and Intel results separately.
+checks include a Mac app launch, two physical phones and all three local games. For Gravity Orchard, check touch over HTTP, certificate trust on iOS Safari and Android Chrome, motion permission, finite tilt readings, rotation, recenter and recovery after locking a phone. Record phone-to-Mac response and the additional TV casting delay separately.
 
-For a LAN-address-change test, confirm that **Refresh Network** presents the
-new reachable address and the Mac retains its room. A phone's old seat is
-restorable only at its original origin with its original saved browser
-identity. Record restoration at that origin or successful joining of a new
-room at the new origin; do not label a refreshed QR as credential recovery.
-Retain private databases and browser stores on the devices rather than in
-screenshots, CI artifacts or bug reports. Developer ID signing and notarization
-require a separate distribution step.
+Check fullscreen and casting, sound after a gesture, saved preferences, reduced motion, WAN-disconnected cold start, physical sleep/wake, quit/relaunch, and Gatekeeper behavior for a downloaded app. Evaluate actual playtime, balance and seated comfort with both players. Report Apple Silicon and Intel results separately.
 
-No merge, deployment, or release publication is part of this integration task.
-
-### Public delivery boundary
-
-`BROWSER_FILES` and `ASSET_FILES` in `scripts/runtime-files.mjs` name every
-shipped browser module and static asset. The framework copies only those files
-and the named portable ZIP into its generated public directory. LAN serving
-uses the same explicit paths. Authoring `sources/`, preview recordings,
-fixtures, galleries, credentials, databases and engine authority modules are
-not public delivery inputs. The Odd Laws media inventory remains the owner's
-57 runtime files, plus its distribution provenance notice.
+During a LAN address change, verify the refreshed address on the Mac and follow the [seat recovery procedure](#player-setup-and-reconnection) on each phone. Keep private databases and browser stores out of screenshots and reports.

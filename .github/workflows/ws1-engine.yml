@@ -7,15 +7,19 @@ on:
       - 'games/odd-laws-society/**'
       - '.github/workflows/ws1-engine.yml'
       - 'docs/workstreams/odd-laws-engine.md'
+      - 'docs/archive/workstreams/odd-laws-engine.md'
       - 'docs/games/odd-laws-society.md'
       - 'docs/LOCAL_IMPLEMENTATION_CONTRACT.md'
+      - 'docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md'
   pull_request:
     paths:
       - 'games/odd-laws-society/**'
       - '.github/workflows/ws1-engine.yml'
       - 'docs/workstreams/odd-laws-engine.md'
+      - 'docs/archive/workstreams/odd-laws-engine.md'
       - 'docs/games/odd-laws-society.md'
       - 'docs/LOCAL_IMPLEMENTATION_CONTRACT.md'
+      - 'docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md'
   workflow_dispatch:
 
 permissions:

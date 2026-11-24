@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+
 # GO7 — Collection, realtime host and Tauri integration
 
 Copy the complete prompt below into a separate implementation session.
@@ -8,7 +10,7 @@ You are implementing **GO7, final integration and acceptance**, for Gravity Orch
 
 Repository: https://github.com/jonathanjie/sofa-arcade
 
-Use an isolated clone/worktree. Fetch current main, record its SHA, and create feature/gravity-orchard-integration. Start from main containing the Gravity Orchard v0.2 dispatch packet. If it is still on the reviewed packet branch, explicitly pin that exact reviewed commit and record the dependency, as the dispatch permits; do not use the old PRD. Read AGENTS.md, docs/HANDOFF.md, docs/GITHUB_WORKFLOW.md, docs/DISPATCH_GRAVITY_ORCHARD.md, docs/GRAVITY_ORCHARD_CONTRACT.md, docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md, and docs/games/gravity-orchard.md. Inspect actual source and open GO1–GO6 PRs; do not assume handoff prose proves implementation or that a PR's latest head is its tested head.
+Use an isolated clone/worktree. Fetch current main, record its SHA, and create feature/gravity-orchard-integration. Start from main containing the Gravity Orchard v0.2 dispatch packet. If it is still on the reviewed packet branch, explicitly pin that exact reviewed commit and record the dependency, as the dispatch permits; do not use the old PRD. Read AGENTS.md, docs/HANDOFF.md, docs/GITHUB_WORKFLOW.md, docs/archive/DISPATCH_GRAVITY_ORCHARD.md, docs/GRAVITY_ORCHARD_CONTRACT.md, docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md, and docs/games/gravity-orchard.md. Inspect actual source and open GO1–GO6 PRs; do not assume handoff prose proves implementation or that a PR's latest head is its tested head.
 
 ## Context and objective
 
@@ -20,7 +22,7 @@ Your job is to assemble the actual tested components into a playable collection 
 
 ## Exclusive write ownership
 
-You own shared catalog/registry, shell routing/global integration styles, the new ui/games/gravity-orchard/index.mjs bridge, existing server/rooms.mjs and server/lan.mjs integration seams, existing desktop host/native/protocol/config entrypoints, shared audio wiring, root production dependencies/locks, explicit runtime/browser allowlists, generated public/app route files and portable package, tests/gravity-orchard-integration/**, .github/workflows/go7-integration.yml, shared handoff documentation, and docs/workstreams/gravity-orchard-go7.md.
+You own shared catalog/registry, shell routing/global integration styles, the new ui/games/gravity-orchard/index.mjs bridge, existing server/rooms.mjs and server/lan.mjs integration seams, existing desktop host/native/protocol/config entrypoints, shared audio wiring, root production dependencies/locks, explicit runtime/browser allowlists, generated public/app route files and portable package, tests/gravity-orchard-integration/**, .github/workflows/go7-integration.yml, shared handoff documentation, and docs/archive/workstreams/gravity-orchard-go7.md.
 
 GO1–GO6 exclusively own the subtrees/workflows in the dispatch table. Do not edit them concurrently. After an explicit tested handoff, any necessary component correction must be small, reviewed, listed with exact path/blob/reason and reverified; preserve the original PR and its tested SHA. Do not weaken existing tests or CI checks to get green.
 

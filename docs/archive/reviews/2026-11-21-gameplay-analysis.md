@@ -1,3 +1,5 @@
+> Historical review of the 21 November 2026 baseline. The later merges that day superseded this snapshot.
+
 # Gameplay analysis — Sofa Kingdoms, Odd Laws Society, Gravity Orchard
 
 **Date:** 21 November 2026. **Sources:** `game/engine.mjs`; `games/odd-laws-society/` and its `simulation/baseline-24.json`; `games/gravity-orchard/` on `feature/gravity-orchard-integration` (draft PR 17) with its route-proof table; the PRDs in `docs/games/`.
@@ -89,7 +91,7 @@ There are 6 sessions, each starting with a sealed council and followed by 3 city
 - **Fix the Chair asymmetry:** run a sweep with a 3+3 Chair schedule, or give the player with fewer first actions 1 starting influence.
 - **Keep late sessions interesting:** add 1–2 "renovate" options, such as replacing a building at a cost, so a full city still has decisions.
 
-## 3. Gravity Orchard (v0.2, in integration)
+## 3. Gravity Orchard (v0.2, PR 17 before the 21 November merge)
 
 ### How it plays
 

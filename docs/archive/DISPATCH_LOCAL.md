@@ -1,12 +1,12 @@
+> Historical record. This assignment ended on 20 November 2026 at `a96fd47`.
+
 # Sofa Arcade: local Tauri dispatch pack
 
-Prepared 20 November 2026. Jon selected Tauri/local play and requested independent, sustained implementation sessions ending in tested GitHub PRs. This is the current dispatch plan for Odd Laws Society and local packaging; its file ownership supersedes conflicting broad assignments in the older [parallel guide](PARALLEL_DEVELOPMENT.md).
+Jon selected Tauri and local play on 20 November 2026. This dispatch assigned five components and a sixth integration session. The [frozen implementation contract](LOCAL_IMPLEMENTATION_CONTRACT.md) defined their interfaces. The [integration report](workstreams/integration.md) records the outcome.
 
-The complete implementation contracts are in [LOCAL_IMPLEMENTATION_CONTRACT.md](LOCAL_IMPLEMENTATION_CONTRACT.md). The game rules remain [Odd Laws Society v0.2](games/odd-laws-society.md). None of these documents claims the implementation is already built.
+## Original dispatch order
 
-## Dispatch order
-
-Start **WS1–WS5 in parallel**. WS6 can prepare its harness/checklist immediately and assemble the final build after component PRs are ready. Each prompt is self-contained; copy one into each separate coding session. Ask for up to three subagents where actually available, without assuming a universal subscription limit.
+The plan assigned WS1–WS5 to parallel sessions. WS6 could prepare the harness before assembling the reviewed components. The table and prompts below preserve the original write sets.
 
 | Workstream | Branch | Exclusive parallel write set |
 | --- | --- | --- |
@@ -35,9 +35,9 @@ Create an isolated clone/worktree and branch feature/odd-laws-engine from the la
 
 Context: Sofa Arcade is one collection/repository. Sofa Kingdoms is already playable. Jon has chosen a local-first Tauri app on a Mac, with the TV displaying the board and two ordinary phone browsers as controllers. We are now building Odd Laws Society at roughly Citadels / 7 Wonders decision weight. No cloud migration or deployment is part of this task.
 
-Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, and docs/HANDOFF.md. The full v0.2 city-building specification supersedes the old movement game. Preserve its exact starting rules; numerical balance is unproven.
+Read AGENTS.md, docs/archive/DISPATCH_LOCAL.md, docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, and docs/HANDOFF.md. The full v0.2 city-building specification supersedes the old movement game. Preserve its exact starting rules; numerical balance is unproven.
 
-WRITE OWNERSHIP: games/odd-laws-society/**, .github/workflows/ws1-engine.yml, and docs/workstreams/odd-laws-engine.md only. Do not edit registry/catalog, server, UI, shared manifests/lockfiles, other workstream reports, or the PRD. Record integration requests in your report.
+WRITE OWNERSHIP: games/odd-laws-society/**, .github/workflows/ws1-engine.yml, and docs/archive/workstreams/odd-laws-engine.md only. Do not edit registry/catalog, server, UI, shared manifests/lockfiles, other workstream reports, or the PRD. Record integration requests in your report.
 
 Build the complete six-session rules engine: three terms of finite public stock, 18 building designs with two copies each, 12 laws, two active law slots, 3×3 cities, and Build/Work/Lobby/Festival. Implement the term-aware Chair schedule, sealed all-pay council bids, irreversible street placement, exact income/discount timing, final scores/ties, and fresh match/individual-turn phase IDs. Follow the contract's engine exports, explicit catalog effect objects, exact public preview return shapes, and projected view shape. Keep private authority/fixtures separate from browser-safe data.
 
@@ -62,9 +62,9 @@ Use a separate clone/worktree and branch feature/local-platform from current mai
 
 Context: Jon and Lydia play a shared TV board with two browser phones. The selected destination is a Tauri Mac app bundling the existing local Node/SQLite host. That host already sends immediate SSE updates after HTTP actions. Sofa Kingdoms must remain playable and compatible. Odd Laws Society adds two simultaneous sealed votes and requires per-viewer state; the current room envelope exposes the entire public Sofa Kingdoms state and cannot be reused unchanged for secrets. No hosted WebSocket service, Pages migration, or deployment is requested.
 
-Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, docs/LAN.md, and current server/transport tests.
+Read AGENTS.md, docs/archive/DISPATCH_LOCAL.md, docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, docs/LAN.md, and current server/transport tests.
 
-WRITE OWNERSHIP: server/rooms.mjs and server/rooms.test.mjs; server/lan.mjs and server/lan.test.mjs; new server/room-*.mjs modules/tests; ui/transport.mjs and ui/transport.test.mjs; new ui/room-client.mjs and ui/room-client.test.mjs; .github/workflows/ws2-platform.yml; docs/workstreams/room-platform.md. Do not edit game engines, registry/catalog, ui/app.js/global styles/audio, desktop, root dependencies, release scripts, or another stream's report.
+WRITE OWNERSHIP: server/rooms.mjs and server/rooms.test.mjs; server/lan.mjs and server/lan.test.mjs; new server/room-*.mjs modules/tests; ui/transport.mjs and ui/transport.test.mjs; new ui/room-client.mjs and ui/room-client.test.mjs; .github/workflows/ws2-platform.yml; docs/archive/workstreams/room-platform.md. Do not edit game engines, registry/catalog, ui/app.js/global styles/audio, desktop, root dependencies, release scripts, or another stream's report.
 
 Generalize action normalization and safe retry identity through the engine contract while preserving legacy Sofa Kingdoms actions and room versions. Introduce per-viewer projection on every outward path: public/host/player GET, join, start/rematch, action success, duplicate retry, errors/history, reconnection, and each LAN stream. Derive viewer identity from credentials, never caller-controlled role parameters. Do not broadcast one shared full-state snapshot to every subscriber.
 
@@ -89,9 +89,9 @@ Start an isolated clone/worktree on feature/odd-laws-ui from latest main and rec
 
 Context: Jon and Lydia play from their living-room sofa. A local-first Tauri app on a Mac displays/casts the shared board; their two phones are browser controllers. Odd Laws is a deeper two-player city builder: 3×3 boroughs, six sessions, a shared six-stack market, four actions, and two shared laws decided through private influence bids. Instructions belong in an optional tutorial/Help; ordinary TV and phone screens should maximize board and control space. Characters should feel alive and audio should remain composed and restrained.
 
-Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, and relevant existing ui/ files. Implement the new city game, not the old movement prototype.
+Read AGENTS.md, docs/archive/DISPATCH_LOCAL.md, docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, and relevant existing ui/ files. Implement the new city game, not the old movement prototype.
 
-WRITE OWNERSHIP: ui/games/odd-laws-society/**, .github/workflows/ws3-ui.yml, and docs/workstreams/odd-laws-ui.md only. Keep your fixture harness, tests, fallback vectors, and screenshots there. Do not edit ui/app.js, global styles/audio/motion, transport, server, engine, public final assets, root dependencies, or other reports. WS4 owns final art plus ui/media/odd-laws-society/**; use its manifest contract and local mock assets until available.
+WRITE OWNERSHIP: ui/games/odd-laws-society/**, .github/workflows/ws3-ui.yml, and docs/archive/workstreams/odd-laws-ui.md only. Keep your fixture harness, tests, fallback vectors, and screenshots there. Do not edit ui/app.js, global styles/audio/motion, transport, server, engine, public final assets, root dependencies, or other reports. WS4 owns final art plus ui/media/odd-laws-society/**; use its manifest contract and local mock assets until available.
 
 Implement mount/update/setConnection/dispose with the contract's injected dispatch, viewer, public rules adapter, assets, sound, and preferences. Use the exact quote/placement result shapes and manifestUrl semantics; call sound.unlock directly in a user gesture before awaiting a command. Build against matching projected fixtures immediately; do not wait for engine/platform PRs or invent a different schema. Include a standalone local browser harness with TV and separate Jon/Lydia contexts. Label fixture behavior honestly; it is not integrated multiplayer.
 
@@ -118,9 +118,9 @@ Use an isolated clone/worktree and feature/odd-laws-media from current main; rec
 
 Context: Jon and Lydia are building one local-first living-room game collection: a Tauri Mac host/TV and two quiet browser phones. Odd Laws is a whimsical medium-depth civic city builder with 18 building designs, 12 laws, four guilds, and Lala chairing the council. The look should be warm, illustrated, cohesive, and readable from the sofa. Characters must support dynamic behavior. Music needs a recognizable composed tune, not random piano-like notes.
 
-Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, ui/score.mjs, and ui/audio.js. Inspect the actual images public/assets/characters.png and public/assets/sofa-room.png before designing. The character atlas contains Jon mouse, Lydia mouse, and Lala the orange cat. Do not assume the original human character sheets or this chat's attachments exist in your session.
+Read AGENTS.md, docs/archive/DISPATCH_LOCAL.md, docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, ui/score.mjs, and ui/audio.js. Inspect the actual images public/assets/characters.png and public/assets/sofa-room.png before designing. The character atlas contains Jon mouse, Lydia mouse, and Lala the orange cat. Do not assume the original human character sheets or this chat's attachments exist in your session.
 
-WRITE OWNERSHIP: public/assets/odd-laws-society/**, ui/media/odd-laws-society/**, .github/workflows/ws4-media.yml, and docs/workstreams/odd-laws-media.md only. Keep manifests, validation tools, provenance, and preview gallery in those areas. Do not edit UI view/styles, shared audio/motion, rules, transport, desktop, root manifests, or existing art.
+WRITE OWNERSHIP: public/assets/odd-laws-society/**, ui/media/odd-laws-society/**, .github/workflows/ws4-media.yml, and docs/archive/workstreams/odd-laws-media.md only. Keep manifests, validation tools, provenance, and preview gallery in those areas. Do not edit UI view/styles, shared audio/motion, rules, transport, desktop, root manifests, or existing art.
 
 Create all 18 exact building IDs and all 12 law emblems from the PRD, plus four accessible guild icons. Preserve a consistent camera angle, scale, palette, and visual vocabulary. Keep names, prices, rules, and score numbers as interface text; do not bake them into images. Provide Jon/Lydia civic variants and Lala as Chair using the contract's lowercase characters.*.states keys and guaranteed flat image for each required state. Add layers or extra frames when useful and describe reused poses accurately. Include the six required envelope/stamp/coin/influence/street props.
 
@@ -149,9 +149,9 @@ Use a separate clone/worktree and feature/tauri-local from latest main; record t
 
 Context: Jon selected Tauri and local play. Target Apple Silicon first as a build assumption, verify the actual target architecture, and report Intel support separately; Jon's Mac architecture has not been confirmed. The Mac app displays/casts the board, and two ordinary phone browsers join over the same LAN. After installation, gameplay must not require internet, a separately installed Node runtime, Terminal, or a phone app. The existing Sofa Kingdoms is playable now, so package and test it immediately; do not wait for Odd Laws. Later integration includes that game through the same shared runtime.
 
-Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/DEPLOYMENT_OPTIONS.md, docs/LAN.md, server/lan.mjs, and scripts/lan-server.mjs.
+Read AGENTS.md, docs/archive/DISPATCH_LOCAL.md, docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/archive/DEPLOYMENT_OPTIONS.md, docs/LAN.md, server/lan.mjs, and scripts/lan-server.mjs.
 
-WRITE OWNERSHIP: desktop/**, .github/workflows/desktop.yml, and docs/workstreams/tauri.md only. Use nested Node/Cargo manifests and lockfiles. Do not edit shared server/UI/game code, root manifests/locks, any other workflow, existing launchers/package scripts, or other reports. Derive app icons from available assets within desktop/. Record integration needs instead of forking the game.
+WRITE OWNERSHIP: desktop/**, .github/workflows/desktop.yml, and docs/archive/workstreams/tauri.md only. Use nested Node/Cargo manifests and lockfiles. Do not edit shared server/UI/game code, root manifests/locks, any other workflow, existing launchers/package scripts, or other reports. Derive app icons from available assets within desktop/. Record integration needs instead of forking the game.
 
 Build an Apple Silicon Tauri shell that supervises a bundled compatible Node runtime and the existing Node/SQLite/SSE host. Reuse startLanServer({root,databasePath,host,port}) and its returned port/origin/urls/close. Put a structured-readiness bootstrap under desktop/host/; wait until the host actually listens before opening its loopback URL. Show phone QR/LAN addresses through the existing game flow. Keep SQLite in writable app data outside the application bundle.
 
@@ -178,9 +178,9 @@ Use a dedicated clone/worktree and feature/local-integration from current main. 
 
 Context: Jon and Lydia want one local-first collection on a Mac/Tauri host, a TV board, and two browser phones on the LAN. Sofa Kingdoms already works; Odd Laws Society is the new six-session strategy city builder. Five parallel sessions deliver WS1 engine, WS2 private multiplayer, WS3 TV/phone UI, WS4 art/music, and WS5 Tauri packaging. This task integrates those components and proves the actual player journey. Do not build another cloud service or publish Sites/Pages.
 
-Read AGENTS.md, docs/DISPATCH_LOCAL.md, docs/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, docs/DEPLOYMENT_OPTIONS.md, and every available docs/workstreams report. Discover component PRs by their WS1–WS5 titles/branches; inspect their changes, tests, and immutable head SHAs rather than trusting summaries.
+Read AGENTS.md, docs/archive/DISPATCH_LOCAL.md, docs/archive/LOCAL_IMPLEMENTATION_CONTRACT.md, docs/games/odd-laws-society.md, docs/archive/DEPLOYMENT_OPTIONS.md, and every available docs/workstreams report. Discover component PRs by their WS1–WS5 titles/branches; inspect their changes, tests, and immutable head SHAs rather than trusting summaries.
 
-WRITE OWNERSHIP: shared collection wiring (ui/app.js, ui/index.html, shared styles, shared audio/motion adapters), games/catalog.mjs and games/registry.mjs, root package manifests/lockfiles, existing preparation/local-package/launcher scripts, root test/integration CI excluding desktop.yml and ws1-engine.yml/ws2-platform.yml/ws3-ui.yml/ws4-media.yml, tests/integration/**, generated public module copies/app/route.ts, and shared README/HANDOFF/release documentation. Do not concurrently edit unfinished component-owned modules. After explicit tested owner handoffs, you may update server/lan.mjs serving entries and desktop/runtime-manifest.json runtime entries, rerunning their checks. Other native/component files remain with their owners. Keep your progress/evidence in docs/workstreams/integration.md and tests/integration/**.
+WRITE OWNERSHIP: shared collection wiring (ui/app.js, ui/index.html, shared styles, shared audio/motion adapters), games/catalog.mjs and games/registry.mjs, root package manifests/lockfiles, existing preparation/local-package/launcher scripts, root test/integration CI excluding desktop.yml and ws1-engine.yml/ws2-platform.yml/ws3-ui.yml/ws4-media.yml, tests/integration/**, generated public module copies/app/route.ts, and shared README/HANDOFF/release documentation. Do not concurrently edit unfinished component-owned modules. After explicit tested owner handoffs, you may update server/lan.mjs serving entries and desktop/runtime-manifest.json runtime entries, rerunning their checks. Other native/component files remain with their owners. Keep your progress/evidence in docs/archive/workstreams/integration.md and tests/integration/**.
 
 Start now by preparing acceptance fixtures, harnesses, and an integration checklist against the frozen contracts. Do not wait idly or replace another stream's unfinished component with your own implementation. Prefer merged components; otherwise fetch exact reviewed ready PR heads into your candidate branch without changing their branches. Record PR numbers/head SHAs and avoid duplicate cherry-picks. The preferred merge order is WS1–WS5, then reconcile WS6 against the resulting main and rerun final acceptance. Until then, label your aggregate PR as dependent on its included component PRs. A still-missing essential component means a draft integration PR, not a claim that the product is complete.
 

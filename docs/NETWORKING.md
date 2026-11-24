@@ -1,14 +1,16 @@
 # Sofa Arcade networking design note
 
-Status: research and proposed next work, 19 November 2026. This note does not claim that hosted push or WebRTC has been implemented. The existing hosted and local transports described below were inspected in source; no physical home-network latency was measured.
+The browser and hosting research below dates from 19 November 2026. Hosted push and WebRTC remain options for future work.
 
-The 20 November [hosting and desktop design note](DEPLOYMENT_OPTIONS.md) expands the GitHub Pages versus Sites decision, distinguishes WebSocket clients from server hosting, and specifies a proposed Tauri wrapper for the existing LAN host.
+## Implemented transports
 
-## Recommendation
+| Host and game | Commands and board updates |
+| --- | --- |
+| Hosted turn-based games | HTTP actions and polling through the Worker/D1 room API |
+| Local Sofa Kingdoms and Odd Laws Society | HTTP actions and authenticated SSE, with polling on reconnect |
+| Local Gravity Orchard | Continuous controls and public snapshots over WebSocket. The Tauri app can add trusted HTTPS/WSS for tilt. |
 
-Keep the website and browser controllers. Improve the transport before changing the hosting provider: use a persistent, authenticated room connection with immediate broadcasts instead of periodic room reads. An owned server in Singapore could provide that connection, but moving the current polling code unchanged would retain the polling delay. Cloudflare itself also supports this pattern through Durable Objects and WebSockets [6].
-
-For internet-free play now, the Mac/LAN host already implements direct local HTTP commands plus pushed SSE room updates. For an installation-free browser experience later, evaluate WebRTC between the phones and the TV browser, with a hosted signaling service and relay fallback. Treat this as an additional mode with explicit authority and reconnection rules, not a transparent switch that magically makes every session offline.
+See the [Gravity wire contract](GRAVITY_ORCHARD_CONTRACT.md) and the [desktop decision record](archive/DEPLOYMENT_OPTIONS.md). Physical Wi-Fi and casting latency still need measurement.
 
 ## What AirConsole actually documents
 
@@ -25,7 +27,7 @@ The production game is already browser JavaScript; Sites hosts a Cloudflare Work
 
 | Component | Current behavior | Consequence |
 | --- | --- | --- |
-| `ui/app.js` controller input | Predicts legal actions immediately through `ui/action-queue.mjs`; sends authoritative action requests in sequence | The phone can respond before a round trip, while the server still validates the result |
+| Sofa Kingdoms controller input | Predicts legal actions immediately through `ui/action-queue.mjs`; sends authoritative action requests in sequence | The phone can respond before a round trip, while the server still validates the result |
 | Hosted TV/other controller | `poll()` targets 250 ms during visible play; one read can be in flight at a time; a 250 ms timer drives eligibility | The TV can wait for a later read, its network round trip, and rendering; 250 ms is a scheduling target, not an end-to-end promise |
 | `app/api/[...path]/route.ts` | Starts each request with `DB.withSession('first-primary')` | Room reads and mutations go through primary-backed sessions for consistency; database geography and query timings require measurement [8] |
 | `server/rooms.mjs` | Loads authoritative state, checks credential/revision/idempotency, writes successful moves with compare-and-swap | Correctness is preserved; database work and network distance remain on the authoritative path |
@@ -56,7 +58,7 @@ Use per-command IDs and monotonic clocks within each device. Report round-trip m
 
 WebRTC provides data channels for arbitrary messages. Peers must first exchange session descriptions and connectivity candidates through a separate signaling mechanism; the standard does not supply that service [9]. A successfully negotiated local connection can avoid carrying gameplay through a remote server, but a relay candidate or a later reconnection can reintroduce internet dependence. Do not promise a universal direct LAN connection merely because both devices share Wi-Fi.
 
-## Proposed next implementation: hosted push
+## Future option for hosted push
 
 ### Service choice
 
@@ -72,7 +74,7 @@ The current Sites manifest declares D1 only. **Verify supported bindings and upg
 - Include protocol version and match identifier. Reject stale-match commands and incompatible protocol versions. Bound frame size, queue size, authentication time, and message rate.
 - On reconnect, request the current authoritative snapshot and last acknowledged action ID. Never blindly replay old predicted moves into a new match.
 - Preserve the existing HTTP API as a fallback until real-device testing confirms reliable push. A new stream/connection must not duplicate mutations if a response is lost.
-- Before any secret-information game ships, add role-specific state projection to every read, acknowledgment, broadcast, log, and reconnect path. Current Sofa Kingdoms intentionally exposes the full public board; that envelope cannot be reused for hidden cards or clue answers.
+- Preserve the Odd Laws role projections on every read, acknowledgment, broadcast and reconnect path, and keep secrets out of logs. Current Sofa Kingdoms intentionally exposes the full public board; that envelope cannot be reused for hidden cards or clue answers.
 
 ### Work packages
 

@@ -1,8 +1,10 @@
+> Historical design. The realtime design superseded this proposal on 21 November 2026 at `6c6eb93`.
+
 # Gravity Orchard — provisional PRD and design
 
 **Status:** design draft; not implemented. **Catalog ID:** `gravity-orchard`. **Mode:** tactical rivalry. **Target:** 15–20 minutes. **Branch:** `feature/gravity-orchard`.
 
-Read [parallel development](../PARALLEL_DEVELOPMENT.md) first. This is the recommended first new game to integrate because all gameplay information is public.
+Read [parallel development](../../PARALLEL_DEVELOPMENT.md) first. This is the recommended first new game to integrate because all gameplay information is public.
 
 ## Experience and core idea
 

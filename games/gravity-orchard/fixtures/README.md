@@ -30,4 +30,4 @@ The generator runs the real constructor, readiness, fixed steps, pause, checkpoi
 
 Browser fixture consumers may import `PROJECTED_FIXTURES`, `FIXTURE_NAMES` and `getProjectedFixture(name, viewer = 'public')` from `projected/index.mjs`. Stored fixtures are deeply frozen; the accessor returns a detached mutable copy. The optional viewer accepts `public`, `host`, `tv`, `jon` or `lydia`; this cooperative game's public view is identical for all roles. Presence, sensor permission, calibration and connection metadata are owned by other components and are intentionally absent.
 
-The production browser closure is exactly `catalog.mjs`, `geometry.mjs` and `public.mjs`. It has no authority, checkpoint, filesystem or fixture import. Final inventory wiring belongs to GO7.
+The production browser closure is exactly `catalog.mjs`, `geometry.mjs` and `public.mjs`. It has no authority, checkpoint, filesystem or fixture import. See the [delivery inventory](../../../docs/LOCAL_RELEASE.md#delivery-inventory-and-publicprivate-boundary) for the integrated runtime.

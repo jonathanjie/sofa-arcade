@@ -2,12 +2,13 @@
 
 This package wraps the existing Sofa Arcade collection in Tauri and bundles its
 Node/SQLite LAN host. The game, room authority, UI, music, and artwork remain in
-their existing repository locations. The first packaged game is Sofa Kingdoms.
+their existing repository locations.
 
 ## Playing
 
-Open **Sofa Arcade.app**, choose **Sofa Kingdoms**, then **Host on the TV**. Both
+Open **Sofa Arcade.app**, select a game available in this build and host it on the TV. Both
 phones use ordinary browsers to scan the room QR and select different seats.
+For Gravity Orchard, enter the orchard on the TV and select **I'm ready** on both phones.
 Keep the Mac and phones on the same local network. The application supplies its
 own Node runtime and starts it automatically; playing does not require Terminal,
 an installed Node runtime, a phone app, or a cloud service.
@@ -21,23 +22,11 @@ Arcade never attaches to or stops an unrelated listener.
 
 Quit the app to stop its host. Saved rooms remain in
 `~/Library/Application Support/com.sofaarcade.desktop/rooms.sqlite`, subject to
-the shared runtime's existing 24-hour room lifetime. `config.json` keeps the
-port and public room route; credentials remain in WKWebView/browser storage.
-The app does not place credentials in QR URLs or logs.
-
-Phone browsers store their credentials under the Mac's LAN origin. If a Wi-Fi
-change gives the Mac a different address, the refreshed QR reaches that new
-origin, but it cannot recover an already-claimed phone seat: credentials and
-the original client identity remain under the previous browser origin, and
-the shared host correctly rejects a new identity with `seat_taken`. To continue
-the saved match, restore the original LAN origin; otherwise create a new room
-and join both seats there. Secure controller recovery across a changed origin
-is a shared platform/UI integration request. The Mac's loopback origin and
-saved room state remain stable.
+the shared runtime's existing 24-hour room lifetime. The app keeps its saved loopback port. The webview restores the active room from its saved session, so a stale native route cannot reverse an explicit exit. Host and phone credentials stay in their respective browser stores. See [player setup and reconnection](../docs/LOCAL_RELEASE.md#player-setup-and-reconnection) for an address or port change.
 
 ## Optional trusted local access
 
-The Gravity Orchard integration adds **Trusted phone access** inside the native
+The Gravity Orchard integration adds **Set up phone tilt** inside the native
 host. Ordinary HTTP remains available for complete touch controls. Setup creates
 this installation's certificate material in private application data and starts
 one additional HTTPS/WSS listener around the existing room database and realtime
@@ -51,20 +40,14 @@ exports a private key. A ready host listener does not establish phone trust,
 motion permission or usable sensor readings. Keep touch available until each
 phone's diagnostic succeeds without a certificate warning.
 
-**Turn trusted access off** persists across relaunch and keeps the root for
-later use. **Remove this installation's certificates** also deletes the local
+**Turn tilt off** persists across relaunch and keeps the root for
+later use. **Remove the setup from this Mac** also deletes the local
 material; remove the matching profile/root on each phone separately. A changed
 LAN address requires an explicit certificate refresh. The native host alone has
 these setup capabilities; no phone HTTP route accepts provisioning or export
 commands, paths or native operations.
 
-The integration's actual WKWebView acceptance runner is
-`node tests/gravity-orchard-integration/native/run.mjs`, with `SOFA_APP_PATH`
-pointing to the separate `native-e2e` build. It requires the root's locked test
-dependencies and `desktop` WebDriver tooling. That build exposes the planned
-game as an explicit integration candidate; production builds do not inherit
-the test flag. Physical iOS/Android trust and motion, home Wi-Fi, casting and
-WAN-disconnected cold startup remain separate checks.
+Build the instrumented app to enable the native test driver. Current source builds enable Gravity Orchard on the local host by default. Use the [collection-level acceptance guide](../docs/LOCAL_RELEASE.md#native-mac-application) for the packaged WKWebView journeys.
 
 ## Build requirements
 
@@ -164,23 +147,22 @@ CI uses local ad-hoc code signatures for test artifacts. These are **not**
 Developer ID signatures or notarization. The desktop check workflow publishes
 no release. Tagged releases come only from `release.yml` (see "Automatic
 updates"). No workflow disables Gatekeeper or alters macOS security
-settings. Downloaded-app distribution needs the owner's signing/notarization
-credentials and a separate Gatekeeper acceptance check.
+settings. Check downloaded-app behavior on the target Mac. Developer ID signing and notarization require separate distribution credentials.
 
 Native CI cannot establish behavior on Jon's physical Mac, two phones, home
 Wi-Fi, TV casting, or device speakers. Real internet-disconnected play and
 physical sleep/wake also remain hardware acceptance checks. See the
-[WS5 report](../docs/workstreams/tauri.md) and the PR for actual completed
+[WS5 report](../docs/archive/workstreams/tauri.md) and the PR for actual completed
 evidence and remaining gates.
 
 ## Automatic updates
 
-The installed app updates itself from GitHub Releases.
+The installed app checks GitHub Releases for updates. The `v0.2.0` desktop tag predates local Gravity Orchard enablement. See the [collection guide](../README.md#play) for playable build options.
 
 **How it works**
 
-1. **At each launch, before the local host starts,** the app downloads `latest.json` from the newest release of `jonathanjie/sofa-arcade`. This check has a 5-second limit.
-2. **If the release is newer than the installed version,** the status window says "Installing the latest Sofa Arcade". The app downloads the update for its architecture and checks it against the public key in `src-tauri/tauri.conf.json`. It then replaces itself and reopens.
+1. **At each launch, before the local host starts,** the app downloads `latest.json` from the newest release of `jonathanjie/sofa-arcade`. The initial availability request has a five-second timeout.
+2. **If the release is newer than the installed version,** the status window says "Installing the latest Sofa Arcade". The app uses a longer timeout for the second check and download. It downloads the update for its architecture and checks it against the public key in `src-tauri/tauri.conf.json`. It then replaces itself and reopens.
 3. **Any failure is ignored, and the app starts normally.** Failures include being offline, having no release yet, a read-only install location (for example, running from the DMG) and a bad signature. Local play never depends on the internet.
 
 The check happens only at launch, so an update never interrupts a room. Saved rooms and settings in Application Support are not touched.
@@ -189,27 +171,19 @@ The check happens only at launch, so an update never interrupts a room. Saved ro
 
 **Publish a release**
 
-1. Set the version everywhere and commit it:
+1. Set `RELEASE_VERSION` to the new, unused desktop version (without the `v` prefix). Run `node desktop/scripts/set-version.mjs "$RELEASE_VERSION"` and commit the version fields.
+2. Verify the applicable browser and native software acceptance on the exact commit to tag. Set `ACCEPTED_SHA` to that full commit SHA. For an authorized publication, tag that commit and push the tag:
 
-   ```bash
-   node desktop/scripts/set-version.mjs 0.2.0
-   ```
-
-2. Tag the commit and push the tag:
-
-   ```bash
-   git tag v0.2.0
-   ```
-
-   ```bash
-   git push origin v0.2.0
+   ```sh
+   git tag "v$RELEASE_VERSION" "$ACCEPTED_SHA"
+   git push origin "refs/tags/v$RELEASE_VERSION"
    ```
 
 3. `.github/workflows/release.yml` builds both Mac architectures and signs the update bundles. It writes `latest.json` with `scripts/updater-manifest.mjs` and creates the GitHub Release with the DMGs, update bundles, signatures and manifest. The workflow fails if the tag does not match every version field.
 
 **One-time setup: the signing key.** The release workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY`. It holds the private key whose public half is in `tauri.conf.json`. The key has no password; set `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` only if you replace it with a password-protected key. Keep an offline backup of the private key. Without it, no installed app will accept a future update, and every app would have to be reinstalled by hand with a new public key.
 
-**Code signing.** Releases are ad-hoc signed, not Developer ID signed or notarized. A downloaded DMG still needs the usual right-click → Open the first time. macOS may ask again for local-network permission after an update, because an ad-hoc signature changes with every build. A Developer ID certificate and notarization would remove both prompts.
+**Code signing.** The tag workflow uses an ad-hoc signature. Record Gatekeeper and local-network permission behavior on a downloaded app during [physical distribution sign-off](../docs/LOCAL_RELEASE.md#hardware-and-distribution-sign-off).
 
 ## Runtime integration contract
 
@@ -218,8 +192,4 @@ preserves the repository's shape so server and game imports resolve unchanged.
 No glob, traversal, symlink, checkout metadata, credential, local database,
 development dependency, or generated release bundle belongs in it.
 
-After the WS5 tested handoff, WS6 may add the final Odd Laws files to this
-manifest and rerun staging, tests, and the native workflow. Shared serving
-allowlists must also be updated by their owner/integrator. Native changes remain
-with WS5 unless a separate post-handoff fix is agreed. The exact runtime
-inventory and source hashes are generated at build time, not manually copied.
+Update the manifest when staged files change. Staging generates the inventory and hashes. Verify the resulting files across the [delivery targets](../docs/LOCAL_RELEASE.md#delivery-inventory-and-publicprivate-boundary).

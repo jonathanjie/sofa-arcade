@@ -1,6 +1,8 @@
+> Historical review of the 21 November 2026 baseline. The later merges that day superseded this snapshot.
+
 # Design brainstorm — balance, engagement and depth
 
-**Date:** 21 November 2026. **Status:** proposals only. No rules have changed. **Inputs:** [the gameplay analysis](2026-11-21-gameplay-analysis.md) (with its correction), an independent review by a second design advisor, and quick variant simulations of Sofa Kingdoms.
+**Date:** 21 November 2026. **Status:** review of the 21 November baseline. Later commits merged the opt-in Sofa v4 prototype (`84db50b`, `dd38ec6`) and Odd Laws v0.3 modules (`adf83d4`). **Inputs:** [the gameplay analysis](2026-11-21-gameplay-analysis.md) (with its correction), an independent review by a second design advisor, and quick variant simulations of Sofa Kingdoms.
 
 Each proposal gives an exact rule, the problem it fixes, the decision or interaction it adds, its risk, and a cheap test. Change one rules version at a time and keep the old version for saved matches, as the games already do.
 
@@ -28,7 +30,7 @@ This gives each game a shared feel, and it tells the designer where to add tensi
 
 **Simulation evidence so far (greedy bot, 150 games per variant).** A bigger centre (6 on the centre tile, +1 on each tile next to it) **doubled the rounds where players were within 2 squares** (1.2 to 2.2 per game). It also widened the average margin (2.5 to 4.5 points) and cut ties without the opening point from 37% to 12%. The bot scored less in this variant, because its short lookahead handles a long trip badly. A centre pile dropped in mid-game did not attract the bot. That suggests a contested area must have value from the start, not appear late.
 
-**Prototype result (`feature/sofa-kingdoms-v4`, details in [`game/simulation/README.md`](../../game/simulation/README.md)).** The bot fault is fixed: with toys off, both rule sets give the starter exactly 50%. The real cause of order bias is **toys that change the current event**. They give the second mover in each round the last word on Lala. With v4's valuable centre, that made the second player win 80–85% of decided games. Rules v4 therefore changes item 3: **a toy changes the next round's event**, so both players can react first. The starter share is then 0.43–0.46 at 9–11 rounds. Scores rise to 10–12, with 2.2–2.6 full bags per game. The engagement targets below are **not met yet**: about 1 shared-centre round per game, 0.1 pounce catches, and 10–13 crumbs left.
+**Prototype result (`feature/sofa-kingdoms-v4`, details in [`game/simulation/README.md`](../../../game/simulation/README.md)).** The bot fault is fixed: with toys off, both rule sets give the starter exactly 50%. The real cause of order bias is **toys that change the current event**. They give the second mover in each round the last word on Lala. With v4's valuable centre, that made the second player win 80–85% of decided games. Rules v4 therefore changes item 3: **a toy changes the next round's event**, so both players can react first. The starter share is then 0.43–0.46 at 9–11 rounds. Scores rise to 10–12, with 2.2–2.6 full bags per game. The engagement targets below are **not met yet**: about 1 shared-centre round per game, 0.1 pounce catches, and 10–13 crumbs left.
 
 **Test pass condition:** seat-mirrored sweeps at 9, 10 and 11 rounds:
 
@@ -56,7 +58,7 @@ This gives each game a shared feel, and it tells the designer where to add tensi
 | 2 | **Single-copy landmarks.** Term III has one copy of each landmark. In Terms I and II, the second copy of a design costs 1 more coin. | Building order matters. Taking Work now risks losing a card. Blocking has a price. |
 | 3 | **Sponsor dividend.** The player whose bill is enacted secures 1 prestige at each session end while it stays active, in addition to the Civic award. | A law now belongs to someone, so repealing it means something. Influence has a lasting return. |
 
-**Prototype result (rules v0.3, opt-in; details in [`games/odd-laws-society/simulation/README.md`](../../games/odd-laws-society/simulation/README.md)).** v0.3 combines winner-pays councils, a single-copy refilling market, Scout into a private reserve, and twelve effect designs.
+**Prototype result (rules v0.3, opt-in; details in [`games/odd-laws-society/simulation/README.md`](../../../games/odd-laws-society/simulation/README.md)).** v0.3 combines winner-pays councils, a single-copy refilling market, Scout into a private reserve, and twelve effect designs.
 
 - Mirror-policy ties fall from 100% to 7%, overall ties from 29% to 8%, the initial Chair from 55% to 47%, and the most one-sided pairing from 90% to 77%.
 - Bids per council rise to 1.3–2.0.

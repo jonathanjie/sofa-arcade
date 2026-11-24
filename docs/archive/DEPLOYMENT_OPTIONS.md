@@ -1,20 +1,20 @@
+> Historical decision record from 20 November 2026. The local release merged later that day at `a96fd47`.
+
 # Sofa Arcade: web hosting and a Mac app
 
-Status: proposed architecture, 20 November 2026. The existing Site and Node LAN host are implemented. A GitHub Pages build, a separate hosted push service, and a Tauri app are not implemented by this document. GitHub remains the canonical source for every delivery mode.
-
-**Selected direction:** Jon chose Tauri and local play after reviewing these options. The active implementation is the [six-workstream local dispatch plan](DISPATCH_LOCAL.md), with [shared contracts](LOCAL_IMPLEMENTATION_CONTRACT.md). Desktop packaging starts immediately using the existing Sofa Kingdoms while Odd Laws engine, UI, media, and private multiplayer work proceed in parallel. Pages and hosted push remain future alternatives, not active deployment tasks.
+The 20 November decision selected Tauri for local play. The [local release guide](../LOCAL_RELEASE.md) describes the merged implementation. The following options and constraints record the decision at that date.
 
 ## Decision
 
 ChatGPT Sites is convenient hosting, not a requirement of the game design. GitHub Pages can serve the collection, artwork, music, TV interface, and phone interface. It cannot execute the present room API or host its database: Pages serves static HTML/CSS/JavaScript [1, 2]. Online multiplayer therefore still needs a separate authoritative room service, or a larger change to browser-hosted authority with a pairing/signaling mechanism.
 
-A Tauri Mac app is a good future packaging option for local play. Its main benefit is a double-click application that starts the local room host and opens the board without requiring Terminal or a separate Node installation. It does not inherently make the existing web graphics faster, remove screencasting latency, or fix the public Site's polling path. On macOS, Tauri renders web content through WKWebView [3, 4].
+The selected packaging option was a Tauri Mac app for local play. Its main benefit is a double-click application that starts the local room host and opens the board without requiring Terminal or a separate Node installation. It does not inherently make the existing web graphics faster, remove screencasting latency, or fix the public Site's polling path. On macOS, Tauri renders web content through WKWebView [3, 4].
 
 Both a Sites page and a Pages page can be WebSocket clients connecting to an authorized `wss://` room service. That is distinct from the host supplying the WebSocket server and shared room coordinator. Pages supplies neither; the inspected Sites configuration exposes Worker/D1 but does not establish support for provisioning the required coordinator. See the explicit distinction below.
 
-Current priority: package the existing local host into Tauri and develop the deeper game against the shared engine/protocol in parallel, then integrate and verify the combined local collection. Keep the functioning hosted and browser/LAN paths compatible. Hosting independence and online latency work can follow separately; game rules stay independent of the delivery adapter.
+The local dispatch kept Pages migration and hosted push outside its scope.
 
-## What exists today
+## Runtime at the decision date
 
 The current application has separable layers, although deployment configuration still assumes one web origin:
 
@@ -26,7 +26,7 @@ The current application has separable layers, although deployment configuration 
 | Hosted service | `app/api/[...path]/route.ts` | Cloudflare Worker and D1 through Sites |
 | Local service | `server/lan.mjs` | Node HTTP, built-in SQLite, authenticated SSE |
 
-Hosted clients currently poll for state with a 250 ms target interval. The LAN server immediately pushes accepted state changes. Both execute the same room rules. The current local host requires Node 22.13 or newer, uses no third-party runtime dependencies, and needs no framework build. See [LAN.md](LAN.md) and [NETWORKING.md](NETWORKING.md).
+Hosted clients currently poll for state with a 250 ms target interval. The LAN server immediately pushes accepted state changes. Both execute the same room rules. The current local host requires Node 22.13 or newer, uses no third-party runtime dependencies, and needs no framework build. See [LAN.md](../LAN.md) and [NETWORKING.md](../NETWORKING.md).
 
 ## WebSockets and other ways to remove polling
 
@@ -108,12 +108,12 @@ A board game with discrete turns can become much richer without requiring native
 
 Verify a fresh Mac installation without separately installed Node, with internet disconnected after installation. Both phones must join, play, background/resume, and reconnect. Check sound after a user gesture, reduced motion, window fullscreen, casting, app quit/relaunch, occupied port, sleeping Mac, changed Wi-Fi address, and saved-room recovery. Repeat the server's authorization/idempotency/state-projection tests against the packaged host. Compare the same game and hardware in browser-LAN and Tauri-LAN modes before claiming a performance improvement.
 
-## Delivery plan
+## Original delivery plan
 
 1. **Local app now:** add the Tauri shell and bundled host, using Sofa Kingdoms for immediate packaging/native validation. The browser remains supported and phones need no app.
 2. **Deeper game in parallel:** implement Odd Laws rules, private multiplayer, interface, and media in their separate workstreams, using fixtures where dependencies are not yet integrated.
 3. **Combined acceptance:** integrate reviewed PR heads, verify TV/two-phone gameplay and native lifecycle, and produce a tested local artifact plus a final integration PR.
-4. **Later online options:** if requested separately, add the persistent hosted room service and/or Pages static export described above and in [NETWORKING.md](NETWORKING.md). Do not let those tasks block the selected local release.
+4. **Later online options:** if requested separately, add the persistent hosted room service and/or Pages static export described above and in [NETWORKING.md](../NETWORKING.md). Do not let those tasks block the selected local release.
 
 This plan keeps one repository and shared game engines. No Tauri build is created merely by documenting this decision; track implementation evidence in the workstream PRs.
 

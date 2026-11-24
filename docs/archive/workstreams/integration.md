@@ -1,6 +1,8 @@
+> Historical record. This assignment ended on 20 November 2026 at `a96fd47`.
+
 # WS6 — local collection integration and acceptance
 
-## Current checkpoint
+## Historical browser checkpoint at `4695643`
 
 Work is on `feature/local-integration` in a dedicated clone. Base `main` is
 `e34b0015399cb9791b175987adf1fab1b542565a` (20 November 2026).
@@ -13,7 +15,7 @@ collection-create rerun and combined ARM/Intel native acceptance remain pending,
 so the aggregate PR stays draft. No unfinished component branch tip is included.
 
 The machine-readable checkpoint is
-[`docs/archive/local-release-components.json`](../archive/local-release-components.json).
+[`docs/archive/local-release-components.json`](../local-release-components.json).
 Only an explicitly reviewed, tested owner handoff may fill a component's PR and
 immutable head. A later head is a new candidate requiring affected checks again.
 
@@ -28,6 +30,8 @@ immutable head. A later head is a new candidate requiring affected checks again.
 Preferred review/merge order: WS1, WS2, WS3, WS4, WS5, then WS6. An aggregate WS6
 candidate depends on all included component PRs. This session does not merge
 `main`, publish a release, or deploy Sites/Pages.
+
+The v0.2 design replaced the movement race with six sealed councils and nine-plot cities. Human balance and playtime remained open at merge. The merge at `a96fd47` records passing browser and Apple Silicon/Intel native checks at reviewed head `eb8eb79`. The original draft status above applied before those checks. See the [current release guide](../../LOCAL_RELEASE.md).
 
 ## Ownership and preparation
 
@@ -110,7 +114,7 @@ recorded here as checks complete. A browser/loopback run does not establish nati
 Mac or physical-device acceptance. Missing essential components or native gates
 keep the final PR in draft with the precise next step.
 
-### Preparation checkpoint
+### Preparation checkpoint (20 November 2026, retired commands)
 
 Draft PR: <https://github.com/jonathanjie/sofa-arcade/pull/3>. The initial checklist
 commit `79ab7468b2b241966d8076ba9c14eb3c9377d507` passed the existing remote Game

@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+
 # GO2 — Gravity Orchard realtime transport and authority adapter
 
 Copy this entire prompt into a new coding session. Implement the work, test it, push a branch and open a GitHub PR. Do not stop at a plan. Do not self-merge or deploy.
@@ -13,7 +15,7 @@ Your assignment is the continuous-input transport and authoritative runtime adap
 ## Start correctly
 
 1. Fetch current GitHub `main` and use your own clean worktree/clone. Record the exact base SHA. Create `feature/gravity-orchard-realtime` or a collision-free branch with that prefix.
-2. Start from main containing this packet. If the reviewed packet has not merged, explicitly pin the exact reviewed packet commit identified by `docs/DISPATCH_GRAVITY_ORCHARD.md` and record that dependency; do not wait unnecessarily or follow a moving branch tip. Read `AGENTS.md`, `README.md`, `docs/HANDOFF.md`, `docs/GITHUB_WORKFLOW.md`, `docs/DISPATCH_GRAVITY_ORCHARD.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md`, and the v0.2 `docs/games/gravity-orchard.md`. Reconcile a stale checkout rather than implementing the superseded turn-based draft.
+2. Start from main containing this packet. If the reviewed packet has not merged, explicitly pin the exact reviewed packet commit identified by `docs/archive/DISPATCH_GRAVITY_ORCHARD.md` and record that dependency; do not wait unnecessarily or follow a moving branch tip. Read `AGENTS.md`, `README.md`, `docs/HANDOFF.md`, `docs/GITHUB_WORKFLOW.md`, `docs/archive/DISPATCH_GRAVITY_ORCHARD.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md`, and the v0.2 `docs/games/gravity-orchard.md`. Reconcile a stale checkout rather than implementing the superseded turn-based draft.
 3. Inspect the actual current `server/rooms.mjs`, `server/lan.mjs`, `ui/transport.mjs`, relevant tests, and pinned Node/runtime versions. Older handoff prose is not proof of current behavior.
 4. This dispatch's exclusive paths supersede older broad WS ownership descriptions. Up to three subagents may work inside your session if that capacity is available. Give each a disjoint subdirectory or file set before edits; you own final integration, testing and the PR. Do not assume a universal account concurrency limit.
 
@@ -24,7 +26,7 @@ You may create or modify only:
 - `server/realtime/gravity-orchard/**`
 - `ui/realtime/gravity-orchard/**`
 - `.github/workflows/go2-realtime.yml`
-- `docs/workstreams/gravity-orchard-go2.md`
+- `docs/archive/workstreams/gravity-orchard-go2.md`
 
 Keep tests, fixtures, evidence indexes and any nested package manifests/lockfiles inside those owned directories. GO7 alone owns shared `server/rooms.mjs`, `server/lan.mjs`, root manifests/locks, catalog/registry, shell routing, runtime allowlists, generated copies, native production wiring and final acceptance. Do not edit them, even for a convenient import or test command. Do not update global handoff/design documents as a progress journal. Report requested shared changes in your workstream handoff.
 
@@ -125,7 +127,7 @@ Run relevant unchanged root regression tests as well. Run the repository product
 
 ## Handoff and tested PR
 
-Write `docs/workstreams/gravity-orchard-go2.md` with scope/base SHA, exact exported interfaces, protocol/error/state diagrams where useful, all runtime/browser files, dependency/license inventory, reproducible fixture/test commands, actual test results, evidence paths, performance observations, limitations, GO7 wiring instructions and component readiness. Distinguish simulated tests, browser tests and real hardware evidence. Do not place the report's own future commit hash inside itself; identify the tested committed head in the PR.
+Write `docs/archive/workstreams/gravity-orchard-go2.md` with scope/base SHA, exact exported interfaces, protocol/error/state diagrams where useful, all runtime/browser files, dependency/license inventory, reproducible fixture/test commands, actual test results, evidence paths, performance observations, limitations, GO7 wiring instructions and component readiness. Distinguish simulated tests, browser tests and real hardware evidence. Do not place the report's own future commit hash inside itself; identify the tested committed head in the PR.
 
 Fetch current main before the final PR, resolve conflicts only in your owned paths, review the complete diff for scope and secrets, rerun affected tests, commit and push your feature branch, then open a PR against `main`. The PR must explain why the component is needed, what it supplies, how it was tested, exact tested SHA and what GO7 must wire. No self-merge, deployment, hosted service, catalog enablement, root manifest edits or unrelated cleanup.
 

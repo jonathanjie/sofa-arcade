@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+
 # GO3 — Phone controller, tilt calibration and touch play
 
 Copy the complete prompt below into a separate implementation session.
@@ -8,7 +10,7 @@ You are implementing **GO3, the phone controller and motion input**, for Gravity
 
 Repository: https://github.com/jonathanjie/sofa-arcade
 
-Use an isolated clone/worktree. Fetch current main, record its SHA, and create feature/gravity-orchard-phone. Start from main containing the Gravity Orchard v0.2 dispatch packet. If it is still on the reviewed packet branch, explicitly pin that exact reviewed commit and record the dependency, as the dispatch permits; do not use the old PRD. Read AGENTS.md, docs/HANDOFF.md, docs/DISPATCH_GRAVITY_ORCHARD.md, docs/GRAVITY_ORCHARD_CONTRACT.md, docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md, and docs/games/gravity-orchard.md. Inspect existing source. Do not revive the archived turn-based v0.1 design.
+Use an isolated clone/worktree. Fetch current main, record its SHA, and create feature/gravity-orchard-phone. Start from main containing the Gravity Orchard v0.2 dispatch packet. If it is still on the reviewed packet branch, explicitly pin that exact reviewed commit and record the dependency, as the dispatch permits; do not use the old PRD. Read AGENTS.md, docs/HANDOFF.md, docs/archive/DISPATCH_GRAVITY_ORCHARD.md, docs/GRAVITY_ORCHARD_CONTRACT.md, docs/GRAVITY_ORCHARD_TECHNICAL_NOTES.md, and docs/games/gravity-orchard.md. Inspect existing source. Do not revive the archived turn-based v0.1 design.
 
 ## Context and objective
 
@@ -21,7 +23,7 @@ Build the real phone experience and input adapter, not a mockup. Comfortable sea
 Write only:
 - ui/games/gravity-orchard/phone/**
 - .github/workflows/go3-phone.yml
-- docs/workstreams/gravity-orchard-go3.md
+- docs/archive/workstreams/gravity-orchard-go3.md
 
 You own sensor processing, calibration, touch controls, actual phone markup/styles and an independent visual/test harness inside that subtree. Use nested test dependencies/lockfiles if needed. Do not edit TV/tutorial, final shared game index, server/transport, TLS, desktop, shared shell/audio, root dependencies, catalog/registry, generated public files, other workflows/reports, or the frozen contract. Report integration needs in your owned report.
 
@@ -53,6 +55,6 @@ Create the owned GitHub Actions workflow to run your actual new Node/browser sui
 
 ## Handoff and PR
 
-Deliver the implementation, test commands/results, exported APIs, runtime/browser file inventory, screenshots, tuning assumptions and exact physical-device checklist in docs/workstreams/gravity-orchard-go3.md. Reconcile current main without overwriting another session's work. Inspect the final diff and verify only your owned files changed.
+Deliver the implementation, test commands/results, exported APIs, runtime/browser file inventory, screenshots, tuning assumptions and exact physical-device checklist in docs/archive/workstreams/gravity-orchard-go3.md. Reconcile current main without overwriting another session's work. Inspect the final diff and verify only your owned files changed.
 
 Push feature/gravity-orchard-phone and open **“GO3: Add Gravity Orchard phone tilt and touch controls”** against main. Inspect CI, fix relevant failures and report the PR URL and exact tested commit. If an essential component test is genuinely blocked, finish everything reachable and open a draft PR with the precise missing gate. Do not self-merge, mark the game playable, deploy Sites, publish a desktop release or modify phone trust settings automatically.

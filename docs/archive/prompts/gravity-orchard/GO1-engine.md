@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+
 # GO1 — Gravity Orchard engine and authored stages
 
 You are implementing GO1, the deterministic rules/physics engine and three authored stages for **Gravity Orchard v0.2** in Sofa Arcade. This is a sustained implementation assignment: finish the owned component, create a usable graphical test harness, run meaningful tests, fix defects, and open a GitHub PR.
@@ -10,7 +12,7 @@ Jon and Lydia play one collection on a local Tauri Mac/TV, with two ordinary pho
 
 **Use v0.2.** The older turn-based 5×5 Gravity Orchard draft is archived and is not the implementation brief. The starting run has three 90-second stages, four three-fruit recipes per stage, four basket/fruit types, seeded balanced supply, at most eight active fruit, 60 Hz fixed simulation and 20 Hz input/snapshot starting rates. These are design hypotheses, not proved human balance or measured Wi-Fi performance.
 
-Read `AGENTS.md`, `README.md`, `docs/GITHUB_WORKFLOW.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/DISPATCH_GRAVITY_ORCHARD.md` and `docs/games/gravity-orchard.md`, then inspect current engine/registry/fixture conventions. The new Gravity dispatch ownership supersedes the older broader game ownership rules for this assignment. The contract owns exact APIs and schemas; do not silently invent competing ones.
+Read `AGENTS.md`, `README.md`, `docs/GITHUB_WORKFLOW.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/archive/DISPATCH_GRAVITY_ORCHARD.md` and `docs/games/gravity-orchard.md`, then inspect current engine/registry/fixture conventions. The new Gravity dispatch ownership supersedes the older broader game ownership rules for this assignment. The contract owns exact APIs and schemas; do not silently invent competing ones.
 
 Fetch current GitHub state and inspect existing branches/PRs. Use an isolated clone/worktree and `feature/gravity-orchard-engine`. Record the exact base SHA. Start from current `main` containing the dispatch packet; if it is still on a reviewed packet branch, identify that exact commit with Git history and record the deliberate baseline. Do not guess from the archived v0.1 document, overwrite another session's work or force-push a moving branch.
 
@@ -18,7 +20,7 @@ Fetch current GitHub state and inspect existing branches/PRs. Use an isolated cl
 
 - `games/gravity-orchard/**`
 - `.github/workflows/go1-engine.yml`
-- `docs/workstreams/gravity-orchard-go1.md`
+- `docs/archive/workstreams/gravity-orchard-go1.md`
 
 Own nested test-tool manifests/locks only inside the game subtree. Do not edit root package files, shared registry/catalog, room/server APIs, shared shell, media assets, other component workflows, desktop files, generated `public/` copies or global handoff documents. GO7 owns shared wiring and final delivery. Request needed interfaces in your report instead of crossing ownership boundaries.
 
@@ -51,6 +53,6 @@ Your owned CI must actually execute the new engine and fixture checks on the sup
 
 Continue through implementation, graphical inspection, tests, repairs and a tested commit; do not stop at a plan, scaffold or first stage. Work against contract fixtures so unfinished components do not block useful progress. Integrate no moving owner branch into your component.
 
-Write `docs/workstreams/gravity-orchard-go1.md` with scope/base SHA, exact exports and schema versions, public/runtime file list, tuning decisions, tests/results/evidence, dependency requests, known limits and a clear ready-or-blocked handoff status. Never invent a physical test or successful build.
+Write `docs/archive/workstreams/gravity-orchard-go1.md` with scope/base SHA, exact exports and schema versions, public/runtime file list, tuning decisions, tests/results/evidence, dependency requests, known limits and a clear ready-or-blocked handoff status. Never invent a physical test or successful build.
 
 Commit only owned files, push your branch and open a PR to GitHub `main` titled **GO1: Gravity Orchard engine and stages**. In the PR, explain the complete behavior, what was tested at the exact submitted commit, what GO7 must wire, and any remaining gate. Do not merge `main`, enable the collection card, publish a Site/Pages release or claim a completed native release. End by returning the PR URL, tested commit, results and limitations.

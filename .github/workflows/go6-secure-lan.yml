@@ -7,6 +7,7 @@ on:
       - 'desktop/secure-lan/**'
       - '.github/workflows/go6-secure-lan.yml'
       - 'docs/workstreams/gravity-orchard-go6.md'
+      - 'docs/archive/workstreams/gravity-orchard-go6.md'
   push:
     branches: [feature/gravity-orchard-secure-lan]
   workflow_dispatch:

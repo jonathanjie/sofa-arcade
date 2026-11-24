@@ -1,19 +1,17 @@
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+
 # Gravity Orchard v0.2 — parallel dispatch pack
 
-Prepared 20 November 2026 for Jon and Lydia's next Sofa Arcade game.
-
-**Start GO1–GO6 together in separate sessions. GO7 can start its acceptance harness immediately, then assemble their tested PR heads.** The goal is maximum useful parallel work, not seven people modifying the same shared server. Each prompt contains the repository, context, owned paths, exact source documents, implementation scope, meaningful graphical/test evidence and GitHub PR requirements.
-
-Gravity Orchard is now a **real-time cooperative tilt game**. Each player steers a separate garden tray, passes fruit across a bridge and fills shared picnic orders, with a large Brake control and a complete touch alternative. The old turn-based v0.1 concept is [archived](games/archive/gravity-orchard-v0.1.md). Keep the game planned until integration acceptance.
+Prepared on 20 November 2026. The dispatch assigned six parallel components and an integration session for the realtime cooperative game. Gravity Orchard stayed planned during component development. The [merge report](workstreams/gravity-orchard-go7.md) records its local enablement. The original prompts below preserve the branches, scope and acceptance criteria.
 
 ## Read the shared specification
 
-- [Game PRD v0.2](games/gravity-orchard.md): rules, authored-stage goals, player experience and balance questions.
-- [Frozen implementation contract](GRAVITY_ORCHARD_CONTRACT.md): exact public view, engine and UI exports, command/wire fields, authority, epochs, rates, media, TLS and recovery.
-- [Technical notes](GRAVITY_ORCHARD_TECHNICAL_NOTES.md): primary-source browser/security research and real-device limitations.
-- [Repository handoff](HANDOFF.md) and [GitHub workflow](GITHUB_WORKFLOW.md): current local collection and version-control/release discipline.
+- [Game PRD v0.2](../games/gravity-orchard.md): rules, authored-stage goals, player experience and balance questions.
+- [Frozen implementation contract](../GRAVITY_ORCHARD_CONTRACT.md): exact public view, engine and UI exports, command/wire fields, authority, epochs, rates, media, TLS and recovery.
+- [Technical notes](../GRAVITY_ORCHARD_TECHNICAL_NOTES.md): primary-source browser/security research and real-device limitations.
+- [Repository handoff](../HANDOFF.md) and [GitHub workflow](../GITHUB_WORKFLOW.md): current local collection and version-control/release discipline.
 
-The canonical repo is https://github.com/jonathanjie/sofa-arcade. Start from current main containing this packet and record its SHA. If starting before the packet merges, explicitly pin the reviewed packet commit on feature/odd-laws-feedback (PR #10) and record that dependency; do not accidentally work from the old PRD. Never overwrite existing work or force-push main.
+The original base was GitHub `main` with the packet from PR #10 (`6c6eb93`).
 
 ## Seven independent prompts
 
@@ -31,13 +29,13 @@ Each component also owns exactly its named workflow and report:
 
 | Stream | Workflow | Report |
 | --- | --- | --- |
-| GO1 | .github/workflows/go1-engine.yml | docs/workstreams/gravity-orchard-go1.md |
-| GO2 | .github/workflows/go2-realtime.yml | docs/workstreams/gravity-orchard-go2.md |
-| GO3 | .github/workflows/go3-phone.yml | docs/workstreams/gravity-orchard-go3.md |
-| GO4 | .github/workflows/go4-tv.yml | docs/workstreams/gravity-orchard-go4.md |
-| GO5 | .github/workflows/go5-media.yml | docs/workstreams/gravity-orchard-go5.md |
-| GO6 | .github/workflows/go6-secure-lan.yml | docs/workstreams/gravity-orchard-go6.md |
-| GO7 | .github/workflows/go7-integration.yml | docs/workstreams/gravity-orchard-go7.md |
+| GO1 | .github/workflows/go1-engine.yml | docs/archive/workstreams/gravity-orchard-go1.md |
+| GO2 | .github/workflows/go2-realtime.yml | docs/archive/workstreams/gravity-orchard-go2.md |
+| GO3 | .github/workflows/go3-phone.yml | docs/archive/workstreams/gravity-orchard-go3.md |
+| GO4 | .github/workflows/go4-tv.yml | docs/archive/workstreams/gravity-orchard-go4.md |
+| GO5 | .github/workflows/go5-media.yml | docs/archive/workstreams/gravity-orchard-go5.md |
+| GO6 | .github/workflows/go6-secure-lan.yml | docs/archive/workstreams/gravity-orchard-go6.md |
+| GO7 | .github/workflows/go7-integration.yml | docs/archive/workstreams/gravity-orchard-go7.md |
 
 This ownership supersedes overlapping older broad game/WS1–WS6 assignments for Gravity Orchard. Existing tested component histories and their verifiers remain intact.
 

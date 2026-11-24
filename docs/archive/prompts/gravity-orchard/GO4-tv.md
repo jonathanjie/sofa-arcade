@@ -1,3 +1,5 @@
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+
 # GO4 — Gravity Orchard TV and tutorial experience
 
 You are implementing GO4, the finished shared-TV presentation and optional tutorial for **Gravity Orchard v0.2** in Sofa Arcade. Complete the owned experience, create graphical fixtures, test it in a browser, inspect the actual screenshots, fix defects, and open a GitHub PR.
@@ -10,7 +12,7 @@ Jon and Lydia use a local Tauri Mac as the TV host and two ordinary phone browse
 
 The TV is the main playing surface, not a documentation page. Keep the board large, control ownership clear and text compact. Instructions belong in the optional tutorial/Help. Warm illustrated Jon/Lydia/Lala artwork, dynamic characters and composed host-only sound should match the collection. Reduced motion and colour-independent fruit/basket recognition are requirements.
 
-Read `AGENTS.md`, `README.md`, `docs/GITHUB_WORKFLOW.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/DISPATCH_GRAVITY_ORCHARD.md` and `docs/games/gravity-orchard.md`. Inspect existing shared view, tutorial, motion and audio integration conventions. The new packet supersedes the archived turn-based 5×5 Gravity Orchard design. Exact schemas/signatures come from the contract, not your own variant.
+Read `AGENTS.md`, `README.md`, `docs/GITHUB_WORKFLOW.md`, `docs/GRAVITY_ORCHARD_CONTRACT.md`, `docs/archive/DISPATCH_GRAVITY_ORCHARD.md` and `docs/games/gravity-orchard.md`. Inspect existing shared view, tutorial, motion and audio integration conventions. The new packet supersedes the archived turn-based 5×5 Gravity Orchard design. Exact schemas/signatures come from the contract, not your own variant.
 
 Fetch GitHub and inspect existing branches/PRs. Use an isolated clone/worktree on `feature/gravity-orchard-tv`; record the exact base SHA. Use current `main` with this packet, or deliberately identify and record the exact reviewed packet commit if it has not landed yet. Do not continue from v0.1, overwrite concurrent work or force-push another session's branch.
 
@@ -19,7 +21,7 @@ Fetch GitHub and inspect existing branches/PRs. Use an isolated clone/worktree o
 - `ui/games/gravity-orchard/tv/**`
 - `ui/games/gravity-orchard/tutorial/**`
 - `.github/workflows/go4-tv.yml`
-- `docs/workstreams/gravity-orchard-go4.md`
+- `docs/archive/workstreams/gravity-orchard-go4.md`
 
 Keep fixture tooling/dependencies/locks within an owned subtree. Do not edit the phone subtree, game engine, real-time client, media subtree, shared shell, root dependencies, native packaging, global styles, collection adapter or generated public copies. GO3 owns phone/motion UI; GO5 owns final assets/audio; GO7 owns `ui/games/gravity-orchard/index.mjs` and shared integration.
 
@@ -59,6 +61,6 @@ Your owned CI must run the new view/tutorial and rendered tests, retaining scree
 
 Work through implementation, browser exercise, screenshot inspection and repairs until the complete owned experience is reviewable. Do not stop after a static mockup or the happy-path running screen. Use injected contracts to keep progressing while other streams are unfinished.
 
-Write `docs/workstreams/gravity-orchard-go4.md` with base SHA, exports, selectors/lifecycle behavior, runtime/browser file list, media requests, actual checks/evidence, integration requirements and a clear handoff state. State incomplete external gates honestly.
+Write `docs/archive/workstreams/gravity-orchard-go4.md` with base SHA, exports, selectors/lifecycle behavior, runtime/browser file list, media requests, actual checks/evidence, integration requirements and a clear handoff state. State incomplete external gates honestly.
 
 Commit only owned files, push and open a GitHub PR to `main` titled **GO4: Gravity Orchard TV and tutorial**. Describe the player experience, tested submitted commit, screenshot evidence and GO7 wiring needs. Do not self-merge, enable the game, edit the phone component, deploy Sites/Pages or claim a complete native release. Return the PR URL, tested commit, results and limitations.
