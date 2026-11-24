@@ -365,6 +365,7 @@ export function projectState(state, viewerId = null) {
   for (const id of PLAYER_IDS) {
     if (id === viewerId || !view.sealedToys[id]) continue;
     view.players[id].lures += 1;
+    view.actionNumber -= 1;
     view.sealedToys[id] = null;
   }
   return view;

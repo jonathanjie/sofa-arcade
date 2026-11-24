@@ -587,7 +587,15 @@ test('rules v4 sealed toys cancel when both players slip one in the same round',
   const jonToy = applyAction(state, 'jon', { type: 'lure', axis: 'column', index: 1, direction: 1 });
   const lydiaTurn = endTurnOf(jonToy);
   const bothToys = applyAction(lydiaTurn, 'lydia', { type: 'lure', axis: 'row', index: 3, direction: -1 });
+  for (const [before, after, owner, other] of [
+    [state, jonToy, 'jon', 'lydia'],
+    [lydiaTurn, bothToys, 'lydia', 'jon'],
+  ]) {
+    for (const viewer of [other, null]) assert.deepEqual(projectState(after, viewer), projectState(before, viewer));
+    assert.deepEqual(projectState(after, owner).sealedToys[owner], after.sealedToys[owner]);
+  }
   const next = endTurnOf(bothToys);
+  assert.equal(projectState(next).actionNumber, next.actionNumber);
   assert.deepEqual([next.forecast.axis, next.forecast.index, next.forecast.direction], ['row', 0, 1]);
   assert.equal(next.players.jon.lures, 1);
   assert.equal(next.players.lydia.lures, 1);
