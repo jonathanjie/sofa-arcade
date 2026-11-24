@@ -299,3 +299,21 @@ test('local SQLite rooms survive a host restart with the same credentials and re
   assert.deepEqual(restored.body.state, live.game.state);
   assert.equal((await request(host, `/api/rooms/${live.code}`, { token: live.tokens.jon })).status, 200);
 });
+
+test('LAN room creation budgets remote peers and stops concurrent creates at the hard limit', async t => {
+  t.mock.timers.enable({ apis: ['Date'] });
+  const host = await startLanServer({ port: 0, databasePath: ':memory:', activeRoomLimit: 4,
+    roomCreateBudget: 1, roomCreateWindowMs: 100 });
+  t.after(() => host.close());
+  const remote = { origin: new URL(host.urls[0]).origin };
+  assert.equal((await request(remote, '/api/rooms', { body: {} })).status, 201);
+  assert.equal((await request(remote, '/api/rooms/', {
+    body: {}, headers: { 'X-Forwarded-For': '127.0.0.1' },
+  })).status, 429);
+  t.mock.timers.tick(100);
+  assert.equal((await request(remote, '/api/rooms', { body: {} })).status, 201);
+  const creates = await Promise.all(Array.from({ length: 4 }, () => request(host, '/api/rooms', { body: {} })));
+  assert.deepEqual(creates.map(result => result.status).sort(), [201, 201, 503, 503]);
+  t.mock.timers.tick(24 * 60 * 60 * 1000);
+  assert.equal((await request(host, '/api/rooms', { body: {} })).status, 201);
+});

@@ -301,3 +301,40 @@ test('two concurrent orchard rooms isolate steering, snapshots and durable lifec
     }
   }
 });
+
+test('expired orchards free coordinator capacity and restart restores only the newest live checkpoint within its budget', async t => {
+  t.mock.timers.enable({ apis: ['Date'] });
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-room-limit-'));
+  const databasePath = path.join(directory, 'rooms.sqlite');
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const options = { port: 0, host: '127.0.0.1', databasePath,
+    enableGravityOrchard: true, realtimeClock: manualClock() };
+  let host = await startLanServer({ ...options, orchardRoomLimit: 1 });
+  t.after(() => host.close());
+  const expired = await createRoom(host);
+  t.mock.timers.tick(24 * 60 * 60 * 1000 - 1);
+  const replacement = await api(host, '/api/rooms', { body: { gameId: 'gravity-orchard' } });
+  for (const playerId of ['jon', 'lydia']) {
+    assert.equal((await api(host, `/api/rooms/${replacement.value.code}/join`, {
+      body: { playerId, clientId: crypto.randomUUID() },
+    })).status, 200);
+  }
+  const startReplacement = () => api(host, `/api/rooms/${replacement.value.code}/start`, {
+    body: {}, token: replacement.value.hostToken,
+  });
+  assert.equal((await startReplacement()).status, 503);
+  t.mock.timers.tick(2);
+  assert.equal((await startReplacement()).status, 200);
+  assert.equal(host.realtimeDiagnostics(expired.code).coordinator, null);
+  await host.close();
+
+  host = await startLanServer(options);
+  t.mock.timers.tick(1);
+  const newest = await createRoom(host);
+  await host.close();
+  host = await startLanServer({ ...options, orchardRoomLimit: 1 });
+  assert.equal(host.realtimeDiagnostics(newest.code).coordinator.matchId, newest.started.state.matchId);
+  assert.equal(host.realtimeDiagnostics(replacement.value.code).coordinator, null);
+  assert.equal(host.realtimeDiagnostics(expired.code).coordinator, null);
+  assert.equal(host.realtimeDiagnostics(newest.code).checkpointWrites, 1);
+});

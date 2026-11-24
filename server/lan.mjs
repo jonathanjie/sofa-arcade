@@ -13,6 +13,22 @@ import { GRAVITY_BROWSER_FILES, GRAVITY_ASSET_FILES } from './gravity-orchard-de
 import { createRequestPolicy } from './runtime/gravity-orchard-dependencies.mjs';
 
 const PROJECT_ROOT = fileURLToPath(new URL('../', import.meta.url));
+// A shared home host only needs a few simultaneous rooms and occasional retries.
+const ACTIVE_ROOM_LIMIT = 64;
+const ROOM_CREATE_BUDGET = 6;
+// Allow six attempts per peer per minute before another budget is available.
+const ROOM_CREATE_WINDOW_MS = 60_000;
+// Bound memory even if many distinct addresses reach the host within a window.
+const ROOM_CREATE_PEER_LIMIT = 1024;
+
+function peerAddress(socket) {
+  return socket.remoteAddress?.replace(/^::ffff:/, '');
+}
+
+function isLoopback(address) {
+  return address === '::1' || address?.startsWith('127.');
+}
+
 const ROOM_CODE = '[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}';
 const SOURCES = new Map([
   ...GRAVITY_BROWSER_FILES.map(({ url, source }) => [url, source]),
@@ -284,6 +300,10 @@ export async function startLanServer({
   host = '0.0.0.0',
   port = 4177,
   heartbeatMs = 10_000,
+  activeRoomLimit = ACTIVE_ROOM_LIMIT,
+  roomCreateBudget = ROOM_CREATE_BUDGET,
+  roomCreateWindowMs = ROOM_CREATE_WINDOW_MS,
+  orchardRoomLimit,
   roomApi,
   browserModules = [],
   enableGravityOrchard = getGame('gravity-orchard')?.status === 'playable',
@@ -302,6 +322,34 @@ export async function startLanServer({
   const addresses = localAddresses();
   const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]', ...addresses]);
   const streams = new Map();
+  let activeRoomCount;
+  const peerBudgets = new Map();
+  let budgetWindowEnds = 0;
+  let pendingCreates = 0;
+
+  function admitCreate(socket) {
+    const now = Date.now();
+    const address = peerAddress(socket);
+    if (!isLoopback(address)) {
+      if (now >= budgetWindowEnds) {
+        peerBudgets.clear();
+        budgetWindowEnds = now + roomCreateWindowMs;
+      }
+      const used = peerBudgets.get(address) || 0;
+      if (used >= roomCreateBudget || (!used && peerBudgets.size >= ROOM_CREATE_PEER_LIMIT)) {
+        return { status: 429, code: 'room_create_rate', error: 'Too many new rooms. Try again in a minute.' };
+      }
+      peerBudgets.set(address, used + 1);
+    }
+    // Reserve before yielding to the async room authority and release on every result.
+    activeRoomCount ??= sqlite.prepare('SELECT count(*) AS count FROM sofa_rooms WHERE expires_at > ?');
+    if (pendingCreates + activeRoomCount.get(now).count >= activeRoomLimit) {
+      return { status: 503, code: 'room_capacity', error: 'The local host has too many active rooms.' };
+    }
+    pendingCreates++;
+    return null;
+  }
+
   let actualPort = port;
   let closed = false;
   let closing = null;
@@ -375,7 +423,7 @@ export async function startLanServer({
     return structuredClone(secureStatus);
   }
   const orchard = createGravityOrchardHost({ sqlite, DB, enabled: enableGravityOrchard,
-    clock: observeRealtimeClock(realtimeClock, onRuntimeTiming), seed: realtimeSeed, onRuntimeTiming,
+    clock: observeRealtimeClock(realtimeClock, onRuntimeTiming), seed: realtimeSeed, onRuntimeTiming, roomLimit: orchardRoomLimit,
     validateUpgrade: request => !closed && requestPolicy?.validateUpgrade(request) === true,
     onLifecycle: ({ roomCode }) => {
       if (!closed) for (const client of streams.get(roomCode) || []) void push(client);
@@ -517,7 +565,14 @@ export async function startLanServer({
       if (url.pathname.startsWith('/api/')) {
         const body = ['GET', 'HEAD'].includes(request.method) ? undefined : await bodyBytes(request);
         const webRequest = new Request(url, { method: request.method, headers: request.headers, ...(body ? { body } : {}) });
-        const result = await callApi(webRequest);
+        const creating = request.method === 'POST' && /^\/api\/rooms\/?$/.test(url.pathname);
+        if (creating) {
+          const denied = admitCreate(request.socket);
+          if (denied) return respondJson(response, denied.status, { error: denied.error, code: denied.code });
+        }
+        let result;
+        try { result = await callApi(webRequest); }
+        finally { if (creating) pendingCreates--; }
         const changedRoom = request.method === 'POST' && result.ok
           ? new RegExp(`^/api/rooms/(${ROOM_CODE})/(join|start|rematch|action)$`, 'i').exec(url.pathname)?.[1]?.toUpperCase() : null;
         try { await respondWeb(response, result); }
@@ -538,13 +593,13 @@ export async function startLanServer({
   server.requestTimeout = 15_000;
   server.headersTimeout = 15_000;
   try {
+    await orchard.restoreExisting();
     await new Promise((resolve, reject) => {
       server.once('error', reject);
       server.listen(port, host, () => { server.off('error', reject); resolve(); });
     });
     actualPort = server.address().port;
     refreshPolicy();
-    await orchard.restoreExisting();
   } catch (error) {
     await orchard.close();
     if (server.listening) await new Promise(resolve => server.close(resolve));
