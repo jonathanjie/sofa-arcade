@@ -9,6 +9,7 @@ on:
       - 'ui/games/gravity-orchard/tutorial/**'
       - '.github/workflows/go4-tv.yml'
       - 'docs/workstreams/gravity-orchard-go4.md'
+      - 'docs/archive/workstreams/gravity-orchard-go4.md'
 
 permissions:
   contents: read

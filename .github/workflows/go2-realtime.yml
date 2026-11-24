@@ -7,6 +7,7 @@ on:
       - 'ui/realtime/gravity-orchard/**'
       - '.github/workflows/go2-realtime.yml'
       - 'docs/workstreams/gravity-orchard-go2.md'
+      - 'docs/archive/workstreams/gravity-orchard-go2.md'
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
   push:
     branches: [feature/gravity-orchard-realtime]

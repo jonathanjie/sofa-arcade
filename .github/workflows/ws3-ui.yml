@@ -6,12 +6,14 @@ on:
       - 'ui/games/odd-laws-society/**'
       - '.github/workflows/ws3-ui.yml'
       - 'docs/workstreams/odd-laws-ui.md'
+      - 'docs/archive/workstreams/odd-laws-ui.md'
   push:
     branches: [feature/odd-laws-ui]
     paths:
       - 'ui/games/odd-laws-society/**'
       - '.github/workflows/ws3-ui.yml'
       - 'docs/workstreams/odd-laws-ui.md'
+      - 'docs/archive/workstreams/odd-laws-ui.md'
 
 permissions:
   contents: read

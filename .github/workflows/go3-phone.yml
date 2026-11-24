@@ -6,12 +6,14 @@ on:
       - 'ui/games/gravity-orchard/phone/**'
       - '.github/workflows/go3-phone.yml'
       - 'docs/workstreams/gravity-orchard-go3.md'
+      - 'docs/archive/workstreams/gravity-orchard-go3.md'
   push:
     branches: [feature/gravity-orchard-phone]
     paths:
       - 'ui/games/gravity-orchard/phone/**'
       - '.github/workflows/go3-phone.yml'
       - 'docs/workstreams/gravity-orchard-go3.md'
+      - 'docs/archive/workstreams/gravity-orchard-go3.md'
   workflow_dispatch:
 
 permissions:
