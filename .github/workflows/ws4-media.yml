@@ -50,7 +50,7 @@ jobs:
         run: node ui/media/odd-laws-society/browser-check.mjs
       - name: Upload media validation and screenshot evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: odd-laws-media-evidence-${{ github.sha }}
           path: |
