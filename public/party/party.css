@@ -327,3 +327,34 @@ html:has(.party-phone[data-playing]), body:has(.party-phone[data-playing]) {
 .party-tv[data-stage] .party-settings summary { padding: 5px 10px; }
 .party-tv[data-stage] .party-stage { grid-row: 2; }
 .party-tv[data-stage] .party-stage:not([data-adaptive]) canvas { padding: 0 3vw 3svh; }
+
+.party .party-play-hint {
+  margin-bottom: 16px;
+  color: var(--muted-party);
+  font-size: clamp(18px, 1.45vw, 28px);
+  font-weight: 750;
+}
+.party .party-match-result {
+  margin-top: 8px;
+  font-size: clamp(23px, 2vw, 38px);
+  font-weight: 850;
+}
+.party .party-stage-waiting {
+  position: absolute;
+  inset: auto auto 3svh 50%;
+  translate: -50%;
+  max-width: 90%;
+  padding: .3em .85em;
+  border: 1px solid #a47067;
+  border-radius: 6px;
+  background: #291e29;
+  color: var(--cream);
+  font-size: clamp(14px, 1.5vw, 27px);
+  font-weight: 800;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.party-tv[data-game="tug-of-yarn"] .party-countdown {
+  box-shadow: 0 0 0 100vmax #162b2a48;
+}

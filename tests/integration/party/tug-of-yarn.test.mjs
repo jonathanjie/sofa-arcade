@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { tugOfYarn } from '../../../games/party/tug-of-yarn/game.mjs';
 import { launchPartyHarness, runPartyRounds } from '../../party/harness.mjs';
-import { BEATS, closestBeat } from '../../../ui/party/games/tug-of-yarn/rhythm.mjs';
+import { beatsFor, closestBeat } from '../../../ui/party/games/tug-of-yarn/rhythm.mjs';
 
 function perfectMint(phone, submitted) {
-  const { b, t, s } = phone.view.state ?? {};
+  const { b, r, s } = phone.view.state ?? {};
   if (phone.view.phase !== 'playing' || b !== 0) return;
-  const beat = s + BEATS[closestBeat(t - s)];
+  const elapsed = tugOfYarn.durationMs - phone.view.ms;
+  const beats = beatsFor(r);
+  const beat = s + beats[closestBeat(elapsed - s, beats)];
   const key = `${phone.view.round}/${beat}`;
-  if (Math.abs(beat - t) > 100 || submitted.get(phone.playerId) === key) return;
+  if (Math.abs(beat - elapsed) > 100 || submitted.get(phone.playerId) === key) return;
   submitted.set(phone.playerId, key);
   phone.input({ kind: 'tap', at: beat });
 }
@@ -31,7 +34,7 @@ test('sixteen phones finish two Tug of Yarn matches with reconnect, kick and lat
   });
   let peak = 0;
   for (const { packets, view } of phones) {
-    assert.deepEqual(Object.keys(view.state).sort(), ['b', 's', 't']);
+    assert.deepEqual(Object.keys(view.state).sort(), ['a', 'b', 'r', 's']);
     assert.ok(!Object.hasOwn(view, 'scene') && !Object.hasOwn(view, 'players'));
     const playing = packets.filter(packet => packet.phase === 'playing' && packet.type === 'snapshot');
     for (const packet of playing) {
@@ -59,7 +62,6 @@ for (const count of [2, 8]) {
     tv.send({ type: 'start', round: 0 });
     const submitted = new Map();
     await fixture.until(() => tv.view.phase === 'results', {
-      ticks: 500,
       drive() { for (const phone of phones) perfectMint(phone, submitted); },
     });
     assert.equal(tv.view.scene.teams.length, count);
@@ -68,7 +70,7 @@ for (const count of [2, 8]) {
     for (const phone of phones) {
       const snapshot = JSON.stringify({ type: 'snapshot', view: phone.view });
       assert.ok(Buffer.byteLength(snapshot) <= 320);
-      assert.equal(Object.keys(phone.view.state).length, 3);
+      assert.equal(Object.keys(phone.view.state).length, 4);
     }
   });
 }
@@ -86,7 +88,7 @@ test('expired seats leave an empty podium at the exact match deadline', { timeou
   tv.send({ type: 'start', round: 0 });
   await fixture.until(() => tv.view.phase === 'playing', { ticks: 80 });
   await Promise.all(phones.map(phone => phone.disconnect()));
-  await fixture.until(() => tv.view.phase === 'results', { ticks: 2370 });
+  await fixture.until(() => tv.view.phase === 'results');
   assert.equal(tv.view.scene.t, 118_000);
   assert.deepEqual(tv.view.results, []);
   assert.deepEqual(tv.view.scene.wins, [0, 0]);

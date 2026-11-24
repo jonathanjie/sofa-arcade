@@ -1,35 +1,39 @@
 # Tug of Yarn
 
-## Rules
+Tap on the beat. Pull the knot past your team’s flag to win the heat. Mint is on the left and Honey is on the right. The first team to win two heats wins the match. After three heats, the team with more heat wins takes the match. Equal scores give both teams a draw.
 
-Tap on the beat to help your team pull the red yarn toward its line.
-On each beat your team's pull is its unity multiplied by the timing accuracy of the taps that made that pull.
-The stronger pull moves the knot toward that team, and the first team to reach its line wins the heat.
-If neither team reaches its line in 38 seconds, the team that has pulled the knot onto its side wins, and a centered knot gives neither team a point.
-The first team to win two heats takes the match, or the team with more heat wins takes it after three heats, with equal scores giving both teams a draw.
+## Play
 
-## Controls
+- **Phone** · Tap anywhere on your team’s pad when the rings meet. With reduced motion, tap when the target lights. The pad gives immediate Perfect, Good or Miss feedback. Space and Enter also work when the pad has focus.
+- **TV** · Follow the ring and the beat cue. The mice whose taps counted lean back together when the pull lands. The unity bars show the share of each team that pulled together. Keep your eyes on the red knot and the flags. Lala watches from behind the rope.
+- **Host** · Select Start in the lobby. The countdown gives players three seconds to find their name, scarf and badge. On the podium, select Next match to lock a new roster.
 
-- **Phone** · Tap anywhere on the Mint or Honey pad as the moving ring meets the center target. The pad shows **Perfect**, **Good**, or **Miss** immediately. Space and Enter also work when the pad has focus. The center target lights up in reduced motion.
-- **TV** · Watch for the shared beat pulse and listen for the beat cue if effects are on. Look for your scarf, badge, and name on your team's bench. Each team has a unity meter and two heat indicators. The timer for the current heat is at the center.
-- **Host** · Start from the party lobby. The three-second countdown precedes a match, and **Next round** starts a new best-of-three match.
+The roster locks for the entire best-of-three match. The TV lists ready guests waiting for the next match. Their phones show when they join and offer an immediate practice beat. Practice stays on the phone and does not affect scores. A phone that disconnects keeps its seat for the platform’s hold period. A permanent departure removes the mouse and its queued taps on the next simulation tick. A short dust effect marks the exit. No player is knocked out by play.
 
-## Scaling
+The knot moves toward the stronger team. If time expires before a line cross, the team whose side holds the knot wins the heat. A centered knot gives neither team a point. Scored pulls light the mice and the bars. At a line cross, the knot jumps past the flag and the line bursts. Reduced motion uses static highlights, the new knot position, the heat score and the podium result.
 
-The host sorts the locked roster by a seed-based order and assigns players to alternating teams. A team of three can pull as hard as a team of four with the same share of teammates tapping in time. The TV uses a second bench row when a team has more than four players. A held or removed seat still counts toward the team's original size for that match, and a guest who joins late can play in the next match. There are no mid-heat knockouts. Every connected player can keep pulling until the heat ends.
+## Rules and tuning
 
-The authority accepts one in-window tap per player and beat. It picks the strongest group of taps that fit within one unity window. Unity is that group’s share of the locked team, and accuracy is the group’s mean tap quality. Integer pull arithmetic uses a common denominator for both teams, so equal pulls cancel even when their sizes differ. Each eligible player’s podium score is their team’s total heat wins.
+The host orders the roster by seed, then assigns alternating players to teams. A pull uses the strongest group of taps inside one unity window. Unity is that group’s share of its locked team. Accuracy is the mean quality of those taps. The host multiplies unity and accuracy with integer arithmetic, so equal team fractions cancel even for odd rosters. A departed seat keeps its place in the team’s denominator. Each eligible player’s podium score is their team’s heat wins.
 
-## Tuning
-
-| Setting | Value | Reason |
+| Players | Unanswered perfect team pulls to the line | Layout and reason |
 | --- | --- | --- |
-| Heat and reset | 38 s per heat, 2 s between heats, 118 s simulation limit, 120 s host limit | The extra two seconds absorb normal scheduler drift so the final heat can score. An early line cross keeps a one-sided heat short. |
-| Beat | 800 ms apart, dropping toward 550 ms in the final 10 s | A steady starting tempo is easy to follow. The shorter interval gives the trailer more chances to catch up. |
-| First beat | 1,100 ms into each heat | Gives the TV and phones time to show the incoming beat after the start or reset. |
-| Timing | Perfect within ±45 ms, Good through ±150 ms | Leaves room for a new player while rewarding taps near the cue. A Good tap tapers to 25% strength at the edge. |
-| Unity | 110 ms between the first and last tap in the selected group | Gives the strongest pull when teammates hit together and limits the pull from scattered taps. |
-| Line | Nine unanswered full-strength pulls from center | A sustained timing advantage can end the heat early. Each opposing pull buys time. |
-| Delivery | Host waits 250 ms beyond the tap window and allows up to 100 ms of reported clock lead | Lets delayed taps count at their local timestamp while limiting how far in advance a tap can be submitted. |
+| 2 | 7 | One mouse per side. The smaller threshold makes a missed beat matter in a duel and prevents a one-sided heat from dragging. |
+| 8 | 8 | Four mice per side in one row. An extra pull gives the group time to settle into a shared rhythm. |
+| 16 | 9 | Two rows per side. The widest comeback margin gives a team time to regroup after its first scattered beats. |
 
-The public beat schedule is shared by the host rules, TV, and phones. The phone probes the room lookup after it connects to estimate round-trip time, then aligns its monotonic clock to the least delayed of the five latest match snapshots. Taps carry elapsed match time. Wi-Fi delay within the delivery window does not reduce tap quality once the clocks are aligned. The current contract has no host send timestamp or clock probe, so an asymmetric connection or a host stall can still shift the initial estimate. A platform-provided timestamp exchange would improve that case. The party roster stays locked for the whole match under the current contract.
+The first heat of a new party takes about 6.4, 7.2 or 8.0 seconds at those three counts when only one team lands every beat. Contested heats can run to 38 seconds. The line thresholds also apply to 3–8 players and 9–16 players respectively. Visible mouse height at 1920×1080 is 180 CSS px in a duel, 120 CSS px with eight players and 100 CSS px with sixteen.
+
+| Setting | Value and reason |
+| --- | --- |
+| Heat and reset | 38 seconds per heat and 2 seconds between heats. A full match takes 118 seconds, with a 120-second host cap for scheduler delays. |
+| Tempo | The first heat starts at 800 ms between beats. Each later heat and each of the first two rematches takes 50 ms off the starting interval. The last ten seconds speed up toward 550 ms in the first heat and 450 ms at the top difficulty. The first beat arrives 1,100 ms into each heat. |
+| Unity | 150 ms from first to last tap in the first heat. Each difficulty step cuts 5 ms, down to 130 ms. At that limit, a group can still include players whose clocks are 110 ms apart. |
+| Accuracy | Perfect is within ±60 ms. Good extends through ±165 ms and tap strength tapers to 25% at that edge. The wider Perfect band covers a split-path clock error of about 55 ms. |
+| Authority | The game accepts one in-window tap per locked player and beat. It permits up to 100 ms of reported clock lead, and accepts delivery through 250 ms after the hit window. The party transport also limits messages, inputs and queued records. |
+
+The phone uses the kit’s `serverNow()` and the host’s match start to judge taps. It shows **Syncing** until it has a usable sample. The host uses elapsed monotonic time to keep the same beat schedule even when the platform drops short-stall catch-up ticks. Replays use the seed, roster, round context, tick elapsed times, ordered taps with their receipt times and departures.
+
+## Review checks
+
+The LAN socket harness exercised 2, 8 and 16 players, including reconnect, removal, late join, round two and a full-duration draw. Chromium exercised touch and reduced motion at 390×844, both TV layouts at 1920×1080, waiting practice and the line-cross finish. The browser check delayed one phone’s clock replies by 110 ms. The added offset was −55.3 ms and its tap counted. Unit checks cover both signs of that error, delayed delivery and discarded ticks together. At 16 players, the median draw callback took 0.3 ms and p95 took 0.6 ms over 180 frames. The p95 frame interval was 17.5 ms. See `work/tug-of-yarn/review/` for the screenshots, timing samples and check logs. Human group play, physical phones, home Wi-Fi and TV casting remain open.

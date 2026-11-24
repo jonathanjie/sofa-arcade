@@ -246,7 +246,9 @@ export function mountPartyPhone(root, { credential, actions }) {
     }
     const view = previous;
     const lobby = view.phase === 'lobby' || view.phase === 'results';
-    const status = view.waiting ? 'You’re in the next round'
+    const gameView = partyGameView(view.gameId);
+    const practice = view.waiting && gameView.practiceWaiting;
+    const status = view.waiting ? `You’re in the next ${gameView.roundName ?? 'round'}`
       : view.phase === 'countdown' ? `Get ready · ${Math.ceil(view.ms / 1000)}`
       : active ? 'Go!'
       : view.phase === 'results' ? (view.place ? `Place #${view.place}` : 'Round complete')
@@ -254,8 +256,8 @@ export function mountPartyPhone(root, { credential, actions }) {
     setText(statusLabel, status);
     readyButton.hidden = !lobby || Boolean(autoReady);
     setText(readyButton, view.self.ready ? 'Not ready' : 'Ready');
-    controls.hidden = view.waiting || (!active && view.phase !== 'countdown');
-    renderer?.update(view.state, active);
+    controls.hidden = !practice && (view.waiting || (!active && view.phase !== 'countdown'));
+    renderer?.update(view.state, active, { round: view.round, waiting: practice });
   }
 
   readyButton.addEventListener('click', () => {

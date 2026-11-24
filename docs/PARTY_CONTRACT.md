@@ -90,7 +90,7 @@ Register one object in [the server registry](../games/party/registry.mjs). Use a
 | `id`, `minPlayers`, `maxPlayers`, `durationMs` | Registry key, player range and wall-clock play budget. If more eligible guests are ready than the game supports, take the first `maxPlayers` in seating order. |
 | `createRound(players, seed, gameRound, match)` | Create private state from the locked `[{id,name,look}]` roster and server seed. The two optional arguments are the 1-based game round and the match context below. |
 | `normalizeInput(input)` | Return a new bounded, canonical input or null. Validate exact keys, types and finite ranges. The runtime checks the envelope, active roster and socket identity. |
-| `step(state, inputs, dt, context)` | Return next state. `inputs` contains ordered `{playerId,input}` records. `dt` is 50 ms. Optional `context.departures` lists permanent seat removals for this tick. |
+| `step(state, inputs, dt, context)` | Return next state. `inputs` contains ordered `{playerId,input,receivedMs}` records. `receivedMs` is the host’s time since the start of play when it accepted the input. `dt` is 50 ms. Optional `context.departures` lists permanent seat removals for this tick. `context.elapsedMs` is the host’s time since the start of play at this tick, rounded to the 50 ms grid. It can advance by more than one tick after a short stall. |
 | `projectForPhone(state, playerId)` | Return only that player's safe JSON state. Fit it inside the 320-byte packet limit, including the envelope and a maximum-length name. |
 | `projectForTv(state)` | Return the complete scene the TV may show. Exclude hidden information even if it would be convenient for rendering. |
 | `isRoundOver(state)` | Return true when the game ends by its own rules. The platform can also end at the wall-clock deadline. |
@@ -98,7 +98,7 @@ Register one object in [the server registry](../games/party/registry.mjs). Use a
 
 - `gameRound` counts accepted starts since room creation or the last explicit game selection. A host stall consumes its start number. `match` contains `{roomRound, gameId, startsAt, previousResults}`. `roomRound` is the room-wide sequence in socket snapshots. `startsAt` is the scheduled end of countdown in host-monotonic milliseconds. `previousResults` is a copy of the last completed round's ranked `[{playerId,score,place}]`, or an empty array after room creation or game selection. A completed round may have gaps in its roster compared with a new round.
 - `context.departures` is an array of `{playerId, reason}` in removal order. `reason` is `'kicked'` or `'expired'`. Apply departures before simulating the tick, for example by removing bodies and collision shapes. The host drops pending inputs from those seats and delivers each departure once on the next simulation tick. A countdown removal arrives on the first play tick. An ordinary disconnect or replacement sends no departure. The original TV roster stays available for identity and layout.
-- Record the seed, round context, ordered input records and departure records for deterministic replays. Games that use elapsed simulation time must account for the platform discarding ticks after a short stall. `match.startsAt` stays on the host clock.
+- Record the seed, round context, tick context and ordered input records for deterministic replays. Games with a host-clock schedule should use `context.elapsedMs` and `receivedMs` so discarded ticks do not shift that schedule. `match.startsAt` stays on the host clock.
 
 ## UI kit
 

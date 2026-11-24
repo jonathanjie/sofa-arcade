@@ -1,212 +1,257 @@
 import { createArcadeLoop, createJuice, createSoundHooks, createTimeline } from '../../kit/animation.mjs';
+import { fitSpriteScale } from '../../kit/sprites.mjs';
 import { LOOKS } from '../../looks.mjs';
-import { createYarnArt, PIXEL } from './art.mjs';
-import { BEATS, HEAT_MS, PERFECT_MS, RUSH_MS, TEAMS, closestBeat, createBeatClock } from './rhythm.mjs';
+import { createYarnArt, MOUSE_PAW_ROW, MOUSE_SIZE } from './art.mjs';
+import { HEAT_MS, MATCH_MS, RUSH_MS, TEAMS, WALL_CLOCK_ALLOWANCE_MS, beatsFor, closestBeat } from './rhythm.mjs';
 
 const WIDTH = 1760;
-const HEIGHT = 816;
+const HEIGHT = 900;
 const CENTRE = WIDTH / 2;
-const TRAVEL = 256;
-const BACK_Y = 320;
-const FRONT_Y = 512;
-const PAW_Y = 16 * PIXEL + 2;
-const FRONT_ROPE_Y = FRONT_Y + PAW_Y;
-const INK = '#261f2b';
-const CREAM = '#fff0d3';
-const BEAT_GLOW_MS = 150;
-const STRONG_PULL = 0.72;
-const PULL_CALL_MS = 410;
+const TRAVEL = 260;
+const BACK_ROPE_Y = 415;
+const FRONT_ROPE_Y = 654;
+const INK = '#291e29';
+const CREAM = '#fff2da';
+const BEAT_FLASH_MS = 135;
+const PULL_MS = 390;
+const FINISH_MS = 570;
+const COLUMNS = 4;
 
-function block(context, colour, x, y, width, height) {
-  context.fillStyle = colour;
-  context.fillRect(x, y, width, height);
+function block(ctx, colour, x, y, width, height) {
+  ctx.fillStyle = colour;
+  ctx.fillRect(x, y, width, height);
 }
 
-function text(context, label, x, y, { size = 30, colour = CREAM, align = 'center', width } = {}) {
-  context.fillStyle = colour;
-  context.textAlign = align;
-  context.font = `850 ${size}px system-ui, sans-serif`;
-  context.fillText(label, x, y, width ?? WIDTH);
+function text(ctx, label, x, y, { size = 30, colour = CREAM, align = 'center', width = WIDTH } = {}) {
+  ctx.fillStyle = colour;
+  ctx.textAlign = align;
+  ctx.font = `850 ${size}px system-ui, sans-serif`;
+  ctx.fillText(label, x, y, width);
 }
 
 function makeLanes(view) {
   const players = new Map(view.roster.map(player => [player.id, player]));
-  return TEAMS.map((_, team) => {
-    const mice = view.scene.teams.filter(entry => entry.team === team);
-    return mice.map(({ playerId }, index) => {
-      const back = index >= 4;
-      const rowSize = back ? mice.length - 4 : Math.min(4, mice.length);
-      const column = index % 4;
-      const x = 326 + (column - (rowSize - 1) / 2) * 136;
-      return { ...players.get(playerId), team, x: team === 0 ? x : WIDTH - x, y: back ? BACK_Y : FRONT_Y };
+  return TEAMS.map((_, team) => view.scene.teams.filter(entry => entry.team === team)
+    .map(({ playerId }) => ({ ...players.get(playerId), team })));
+}
+
+function placeMice(lanes, scale) {
+  const total = lanes[0].length + lanes[1].length;
+  const duel = total <= 2;
+  const pitch = total > 8 ? 137 : 149;
+  const gap = total > 8 ? 22 : 10;
+  return lanes.map((mice, team) => {
+    if (!mice.length) return [];
+    const columns = Math.min(COLUMNS, mice.length);
+    const rowHeight = total > 8 ? 133 : duel ? 192 : 151;
+    const spriteScale = Math.max(1, fitSpriteScale(MOUSE_SIZE, mice.length, {
+      width: columns * (duel ? 228 : pitch) * scale, height: Math.ceil(mice.length / columns) * rowHeight * scale,
+    }, { columns, gap: gap * scale }));
+    return mice.map((mouse, index) => {
+      const back = index >= COLUMNS;
+      const rowSize = back ? mice.length - columns : columns;
+      const centre = duel ? 387 : rowSize === 1 ? 369 : 307;
+      const x = centre + (index % COLUMNS - (rowSize - 1) / 2) * pitch;
+      return {
+        ...mouse, scale: spriteScale, tagWidth: duel ? 184 : pitch - 6,
+        x: team ? WIDTH - x : x, ropeY: back ? BACK_ROPE_Y : FRONT_ROPE_Y,
+      };
     });
   });
 }
 
-function paintName(context, mouse, art) {
-  const { name, look, x, y } = mouse;
-  const nameWidth = 96;
-  block(context, INK, x - 66, y + 91, 132, 46);
-  block(context, LOOKS[look].colour, x - 62, y + 102, 23, 23);
-  art.badge(context, look, x - 61, y + 103, 3);
+function paintName(ctx, mouse, art) {
+  const { name, look, x, ropeY, tagWidth, scale, team } = mouse;
+  const left = x - tagWidth / 2;
+  const top = ropeY + (MOUSE_SIZE.height - MOUSE_PAW_ROW) * scale + 8;
+  const nameWidth = tagWidth - 36;
+  block(ctx, INK, left, top, tagWidth, 42);
+  block(ctx, TEAMS[team].dark, left + 2, top + 2, tagWidth - 4, 38);
+  block(ctx, LOOKS[look].colour, left + 6, top + 10, 23, 23);
+  art.badge(ctx, look, left + 7, top + 11, 3);
 
-  context.font = '850 23px system-ui, sans-serif';
-  const width = context.measureText(name).width;
-  const fittedSize = Math.min(23, Math.floor(23 * nameWidth / width));
+  ctx.font = '850 23px system-ui, sans-serif';
+  const fittedSize = Math.min(23, Math.floor(23 * nameWidth / ctx.measureText(name).width));
   const style = { align: 'left', width: nameWidth };
-  if (fittedSize >= 20) {
-    text(context, name, x - 33, y + 122, { ...style, size: fittedSize });
+  if (fittedSize >= 19) {
+    text(ctx, name, left + 33, top + 29, { ...style, size: fittedSize });
     return;
   }
   const characters = [...name];
   const middle = Math.ceil(characters.length / 2);
-  text(context, characters.slice(0, middle).join(''), x - 33, y + 110, { ...style, size: 22 });
-  text(context, characters.slice(middle).join(''), x - 33, y + 131, { ...style, size: 22 });
+  text(ctx, characters.slice(0, middle).join(''), left + 33, top + 18, { ...style, size: 19 });
+  text(ctx, characters.slice(middle).join(''), left + 33, top + 36, { ...style, size: 19 });
 }
 
-function paintRoom(context, groups, art) {
-  block(context, '#433343', 0, 0, WIDTH, HEIGHT);
-  block(context, '#514052', 0, 230, WIDTH, 371);
-  block(context, '#5d4450', 0, 238, WIDTH, 358);
-  block(context, '#443247', 0, 260, WIDTH, 8);
+function paintRoom(ctx, groups, active, art, bounds) {
+  const { left, top, width, height } = bounds;
+  const wall = ctx.createLinearGradient(0, 180, 0, 713);
+  wall.addColorStop(0, '#3f2b39');
+  wall.addColorStop(1, '#64444b');
+  block(ctx, wall, left, top, width, height);
+  for (let x = Math.floor(left / 110) * 110; x < left + width; x += 110) {
+    block(ctx, '#301f2d55', x, 222, 5, 480);
+    block(ctx, '#a16a6228', x + 5, 222, 3, 480);
+  }
+  // A pixel-edged patch of light frames the beat and Lala.
+  for (let row = 0; row < 13; row++) {
+    const half = 118 + (6 - Math.abs(row - 6)) * 23;
+    block(ctx, '#d086571c', CENTRE - half, 214 + row * 34, half * 2, 34);
+  }
+  block(ctx, '#4b3037', left, 702, width, height + top - 702);
+  block(ctx, '#aa725e', left, 702, width, 8);
+  for (let y = 720; y < top + height; y += 22) {
+    for (let x = left - (y % 44 ? 0 : 22); x < left + width; x += 44) block(ctx, '#b27e6640', x, y, 29, 3);
+  }
+  block(ctx, '#38252f', left, 755, width, 82);
+  block(ctx, '#a47067', left, 755, width, 4);
+  block(ctx, '#a47067', left, 833, width, 4);
 
-  // The wall, sun patch and woven floor use the same 4 px grid as the sprites.
-  for (let stripe = 0; stripe < 17; stripe++) {
-    const x = 14 + 112 * stripe;
-    block(context, '#644a56', x, 268, 4, 304);
-    block(context, '#583e4e', x + 4, 268, 4, 304);
-  }
-  for (let band = 0; band < 9; band++) {
-    const half = 116 + (band < 5 ? band : 8 - band) * 20;
-    block(context, '#765159', CENTRE - half, 272 + band * 32, half * 2, 32);
-  }
-  block(context, '#362836', 0, 588, WIDTH, 228);
-  block(context, '#59404e', 0, 596, WIDTH, 188);
-  for (let y = 600; y < 792; y += 16) {
-    for (let x = (y % 32 ? 8 : 0); x < WIDTH; x += 32) block(context, '#674956', x, y, 20, 4);
-  }
-  block(context, '#342735', 0, 688, WIDTH, 8);
-  block(context, '#8b5d5c', 0, 696, WIDTH, 4);
-  block(context, '#342735', 0, 776, WIDTH, 8);
-  for (let x = 16; x < WIDTH - 16; x += 32) {
-    block(context, '#87616b', x, 793, 16, 7);
-    block(context, '#372836', x + 4, 800, 8, 8);
-  }
-
+  const duel = groups[0].length + groups[1].length <= 2;
   for (const [team, mice] of groups.entries()) {
-    const x = team ? WIDTH - 616 : 44;
     const { colour, dark } = TEAMS[team];
-    for (const y of [BACK_Y, FRONT_Y]) {
-      if (!mice.some(mouse => mouse.y === y)) continue;
-      block(context, INK, x, y + 64, 572, 89);
-      block(context, dark, x + 4, y + 68, 564, 75);
-      block(context, colour, x + 4, y + 139, 564, 4);
-      for (let plank = x + 16; plank < x + 555; plank += 24) {
-        block(context, INK, plank, y + 127, 8, 8);
-      }
+    const benchWidth = duel ? 284 : 544;
+    const benchX = duel ? 245 : 30;
+    const x = team ? WIDTH - benchX - benchWidth : benchX;
+    for (const y of [BACK_ROPE_Y, FRONT_ROPE_Y]) {
+      if (!mice.some(mouse => mouse.ropeY === y)) continue;
+      block(ctx, INK, x, y + 8, benchWidth, 103);
+      block(ctx, dark, x + 4, y + 12, benchWidth - 8, 92);
+      block(ctx, colour, x + 4, y + 100, benchWidth - 8, 4);
     }
-    for (const mouse of mice) paintName(context, mouse, art);
+    for (const mouse of mice) if (active.has(mouse.id)) paintName(ctx, mouse, art);
   }
 
-  block(context, INK, 0, 0, WIDTH, 228);
-  block(context, '#87616b', 0, 228, WIDTH, 4);
-  text(context, 'Tap on the beat to pull the knot past your line.', CENTRE, 55, { size: 42 });
-  block(context, '#533d4f', 42, 77, WIDTH - 84, 2);
-
-  // Stakes stand behind the rope. The little rail below mirrors the actual knot.
+  block(ctx, INK, left, top, width, 214 - top);
+  block(ctx, '#8b5e5b', left, 214, width, 4);
+  block(ctx, '#735053', 30, 64, WIDTH - 60, 2);
+  text(ctx, 'Tap on the beat. Pull the knot past your line.', CENTRE, 45, { size: 40 });
   for (const [team, data] of TEAMS.entries()) {
     const x = CENTRE + (team ? TRAVEL : -TRAVEL);
-    block(context, INK, x - 9, FRONT_ROPE_Y - 28, 18, 96);
-    block(context, data.colour, x - 5, FRONT_ROPE_Y - 24, 10, 57);
-    block(context, CREAM, x - 5, FRONT_ROPE_Y - 14, 10, 8);
-    text(context, `${data.name.toUpperCase()} LINE`, x, 737, { size: 26, colour: data.colour, align: team ? 'left' : 'right' });
+    text(ctx, `${data.name.toUpperCase()} LINE`, x + (team ? 28 : -28), 809,
+      { size: 29, colour: data.colour, align: team ? 'left' : 'right' });
   }
-  block(context, '#211d29', CENTRE - TRAVEL, 719, 2 * TRAVEL, 20);
+  block(ctx, '#211822', CENTRE - TRAVEL, 789, TRAVEL * 2, 22);
   for (let tick = -4; tick <= 4; tick++) {
     const x = CENTRE + tick * TRAVEL / 4;
-    block(context, tick === 0 ? '#b08e91' : '#785c6b', x - 1, 722, 3, 14);
+    block(ctx, tick === 0 ? '#d3a398' : '#8c686e', x - 2, 793, 4, 14);
   }
 }
 
 function makeRope(groups) {
   const path = new Path2D();
-  const leftBack = groups[0].some(mouse => mouse.y === BACK_Y);
-  const rightBack = groups[1].some(mouse => mouse.y === BACK_Y);
-  const back = BACK_Y + PAW_Y;
-  const edge = 26;
-  const bend = 12;
+  const leftBack = groups[0].some(mouse => mouse.ropeY === BACK_ROPE_Y);
+  const rightBack = groups[1].some(mouse => mouse.ropeY === BACK_ROPE_Y);
+  const edge = groups[0].length + groups[1].length <= 2 ? 224 : 33;
+  const bend = 14;
   if (leftBack) {
-    path.moveTo(590, back);
-    path.lineTo(edge + bend, back);
-    path.lineTo(edge, back + bend);
+    path.moveTo(565, BACK_ROPE_Y);
+    path.lineTo(edge + bend, BACK_ROPE_Y);
+    path.lineTo(edge, BACK_ROPE_Y + bend);
     path.lineTo(edge, FRONT_ROPE_Y - bend);
     path.lineTo(edge + bend, FRONT_ROPE_Y);
   } else path.moveTo(edge, FRONT_ROPE_Y);
   path.lineTo(WIDTH - edge - bend, FRONT_ROPE_Y);
   if (rightBack) {
     path.lineTo(WIDTH - edge, FRONT_ROPE_Y - bend);
-    path.lineTo(WIDTH - edge, back + bend);
-    path.lineTo(WIDTH - edge - bend, back);
-    path.lineTo(WIDTH - 590, back);
+    path.lineTo(WIDTH - edge, BACK_ROPE_Y + bend);
+    path.lineTo(WIDTH - edge - bend, BACK_ROPE_Y);
+    path.lineTo(WIDTH - 565, BACK_ROPE_Y);
   } else path.lineTo(WIDTH - edge, FRONT_ROPE_Y);
   return path;
 }
 
-function drawRope(context, path, flashing) {
-  for (const [width, colour] of [[22, '#442533'], [14, '#a92f4b'], [6, flashing ? '#ffa293' : '#f76370']]) {
-    context.strokeStyle = colour;
-    context.lineWidth = width;
-    context.stroke(path);
+function drawRope(ctx, path, flashing) {
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (const [width, colour] of [[24, '#442533'], [16, '#a92f4b'], [7, flashing ? '#ffc1a1' : '#f76370']]) {
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = width;
+    ctx.stroke(path);
   }
 }
 
-function drawTeam(context, scene, data, team, strong) {
-  const x = team ? WIDTH - 646 : 46;
-  const { colour, dark, name } = data;
-  block(context, dark, x, 96, 600, 118);
-  block(context, colour, x, 96, 5, 118);
-  text(context, name.toUpperCase(), x + 24, 149, { size: 54, colour, align: 'left' });
-  text(context, 'HEATS', x + 393, 140, { size: 23, align: 'left' });
+function drawTeam(ctx, scene, team, pulling) {
+  const x = team ? WIDTH - 618 : 30;
+  const { colour, dark, name } = TEAMS[team];
+  block(ctx, dark, x, 81, 588, 117);
+  block(ctx, pulling ? CREAM : colour, x, 81, pulling ? 9 : 5, 117);
+  text(ctx, name.toUpperCase(), x + 24, 135, { size: 55, colour, align: 'left' });
+  text(ctx, 'HEATS', x + 392, 126, { size: 23, align: 'left' });
   for (let win = 0; win < 2; win++) {
-    const start = x + 482 + win * 47;
-    block(context, INK, start, 111, 37, 37);
-    if (scene.wins[team] > win) block(context, colour, start + 5, 116, 27, 27);
+    const start = x + 479 + win * 45;
+    block(ctx, INK, start, 101, 36, 36);
+    if (scene.wins[team] > win) block(ctx, colour, start + 5, 106, 26, 26);
   }
-  text(context, 'UNITY', x + 24, 193, { size: 24, align: 'left' });
-  block(context, INK, x + 126, 173, 427, 27);
+  text(ctx, 'UNITY', x + 24, 179, { size: 24, align: 'left' });
   for (let segment = 0; segment < 10; segment++) {
     const start = x + 132 + segment * 42;
     const fraction = Math.max(0, Math.min(1, scene.unity[team] * 10 - segment));
-    block(context, '#fff1cb33', start, 178, 37, 17);
-    if (fraction > 0) block(context, strong ? CREAM : colour, start, 178, Math.round(37 * fraction), 17);
+    block(ctx, INK, start, 159, 37, 24);
+    if (fraction > 0) block(ctx, pulling ? CREAM : colour, start, 159, Math.round(37 * fraction), 24);
   }
 }
 
-function drawPulse(context, delta, progress, reduced) {
-  const lit = Math.abs(delta) <= PERFECT_MS || (delta > 0 && delta < BEAT_GLOW_MS);
-  const x = CENTRE;
-  const y = 320;
-  context.lineWidth = 4;
-  context.strokeStyle = '#dbb591';
-  context.beginPath();
-  context.arc(x, y, 23, 0, Math.PI * 2);
-  context.stroke();
-  context.beginPath();
-  context.arc(x, y, lit ? 23 : 23 + (reduced ? 22 : 36 * progress), 0, Math.PI * 2);
-  if (lit) {
-    context.fillStyle = '#ffcf85';
-    context.fill();
-  } else {
-    context.strokeStyle = CREAM;
-    context.stroke();
+function drawBeat(ctx, onBeat, progress, reduced, running) {
+  const y = 330;
+  if (!running) return;
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#d8a792';
+  ctx.beginPath();
+  ctx.arc(CENTRE, y, 38, 0, Math.PI * 2);
+  ctx.stroke();
+  if (onBeat) {
+    ctx.fillStyle = '#ffda9b';
+    ctx.fill();
+  } else if (!reduced) {
+    ctx.beginPath();
+    ctx.strokeStyle = CREAM;
+    ctx.arc(CENTRE, y, 38 + 38 * progress, 0, Math.PI * 2);
+    ctx.stroke();
   }
-  block(context, lit ? INK : '#e7bd92', x - 3, y - 3, 6, 6);
+  if (onBeat) text(ctx, 'TAP', CENTRE, y + 10, { size: 22, colour: INK });
+  else block(ctx, '#e7bd92', CENTRE - 4, y - 4, 8, 8);
 }
 
-function drawCall(context, label, colour, y) {
-  block(context, INK, CENTRE - 247, y - 58, 494, 78);
-  block(context, colour, CENTRE - 247, y + 14, 494, 6);
-  text(context, label, CENTRE, y, { size: 50, colour, width: 465 });
+function drawFinishLine(ctx, team, lit) {
+  const x = CENTRE + (team ? TRAVEL : -TRAVEL);
+  const { colour } = TEAMS[team];
+  block(ctx, INK, x - 12, FRONT_ROPE_Y - 66, 24, 124);
+  block(ctx, lit ? CREAM : colour, x - 6, FRONT_ROPE_Y - 60, 12, 110);
+  for (let offset = -55; offset < 48; offset += 22) block(ctx, INK, x - 6, FRONT_ROPE_Y + offset, 12, 8);
+  block(ctx, lit ? CREAM : colour, x - (team ? 0 : 42), FRONT_ROPE_Y - 58, 42, 22);
+}
+
+function drawFinish(ctx, label, colour) {
+  block(ctx, INK, CENTRE - 310, 242, 620, 103);
+  block(ctx, colour, CENTRE - 310, 339, 620, 6);
+  text(ctx, label, CENTRE, 309, { size: 44, colour, width: 584 });
+}
+
+function drawCrossing(ctx, team, progress) {
+  const x = CENTRE + (team ? TRAVEL : -TRAVEL);
+  const { colour } = TEAMS[team];
+  ctx.globalAlpha = 1 - progress;
+  ctx.lineWidth = 7;
+  for (let ray = 0; ray < 12; ray++) {
+    const angle = ray * Math.PI / 6;
+    const radius = 42 + progress * 90;
+    const dx = Math.cos(angle);
+    const dy = Math.sin(angle);
+    ctx.strokeStyle = ray % 2 ? colour : CREAM;
+    ctx.beginPath();
+    ctx.moveTo(x + dx * radius, FRONT_ROPE_Y + dy * radius);
+    ctx.lineTo(x + dx * (radius + 24), FRONT_ROPE_Y + dy * (radius + 24));
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+export function tugResultSummary(view) {
+  const [mint, honey] = view.scene.wins;
+  if (mint === honey) return { label: `Match draw · ${mint}–${honey}`, colour: CREAM };
+  const team = TEAMS[Number(honey > mint)];
+  return { label: `${team.name} wins · ${Math.max(mint, honey)}–${Math.min(mint, honey)}`, colour: team.colour };
 }
 
 function interpolate(previous, current, amount, lerp) {
@@ -215,94 +260,143 @@ function interpolate(previous, current, amount, lerp) {
 
 export function mountTugOfYarnTv(canvas, { art, sound }) {
   const document = canvas.ownerDocument;
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
-  canvas.setAttribute('aria-label', 'Tug of Yarn. Tap on the beat to pull the knot past your line.');
-  const context = canvas.getContext('2d', { alpha: false });
+  canvas.setAttribute('aria-label', 'Tug of Yarn. Tap on the beat. Pull the knot past your line.');
+  const ctx = canvas.getContext('2d', { alpha: false });
   const room = document.createElement('canvas');
-  room.width = WIDTH;
-  room.height = HEIGHT;
   const roomContext = room.getContext('2d', { alpha: false });
   const sprites = createYarnArt(document);
-  const cue = createSoundHooks(sound, { beat: 'move', score: 'bank', win: 'win', draw: 'collect' });
-  const timeline = createTimeline();
+  const cue = createSoundHooks(sound, { beat: 'move', pull: 'collect', score: 'bank', win: 'win', draw: 'collect' });
+  const timeline = createTimeline({ intervalMs: 150 });
   const juice = createJuice();
-  const clock = createBeatClock();
+  let area;
+  let scale = 1;
+  let x = 0;
+  let y = 0;
+  let lanes;
   let groups;
   let rope;
   let previous;
-  let played;
-  let position = 0;
-  let strongUntil = 0;
-  let hitUntil = 0;
+  let playedBeat;
+  let latestAt = 0;
+  let pullAt = -Infinity;
+  let finish;
+  let active = new Set();
   let hits = new Set();
   let connected = new Set();
 
+  function resizeRoom() {
+    roomContext.setTransform(scale, 0, 0, scale, x, y);
+    paintRoom(roomContext, groups, active, art, {
+      left: -x / scale, top: -y / scale, width: room.width / scale, height: room.height / scale,
+    });
+  }
+
+  function place() {
+    groups = placeMice(lanes, scale);
+    rope = makeRope(groups);
+    resizeRoom();
+  }
+
+  function resize(playArea) {
+    area = playArea;
+    const { width, height, safe } = area;
+    scale = Math.min(safe.width / WIDTH, safe.height / HEIGHT);
+    if (scale <= 0) return;
+    x = safe.x + (safe.width - WIDTH * scale) / 2;
+    y = safe.y + (safe.height - HEIGHT * scale) / 2;
+    canvas.width = room.width = width;
+    canvas.height = room.height = height;
+    if (lanes) place();
+  }
+
   const loop = createArcadeLoop((at, reduced) => {
-    if (!previous) return;
+    if (!previous || !area || scale <= 0) return;
     const scene = timeline.sample(at, interpolate, reduced);
     const playing = previous.phase === 'playing';
-    const elapsed = playing ? clock.elapsed(at) - scene.heatStart : scene.t - scene.heatStart;
-    const nearest = closestBeat(elapsed);
-    const distance = elapsed - BEATS[nearest];
-    const next = distance > BEAT_GLOW_MS ? nearest + 1 : nearest;
-    const interval = BEATS[next] - (BEATS[next - 1] ?? 0);
-    const progress = Math.max(0, Math.min(1, (BEATS[next] - elapsed) / interval)) || 0;
-    const onBeat = playing && scene.breakUntil === null && distance >= 0 && distance < BEAT_GLOW_MS;
-    const beatKey = `${scene.heat}/${nearest}`;
-    if (onBeat && played !== beatKey) {
-      played = beatKey;
+    const breaking = scene.breakUntil !== null;
+    const running = playing && !breaking;
+    const elapsed = playing ? Math.max(0, MATCH_MS + WALL_CLOCK_ALLOWANCE_MS - previous.ms + at - latestAt) : scene.t;
+    const heatElapsed = elapsed - scene.heatStart;
+    const beats = beatsFor(scene.level);
+    const nearest = closestBeat(heatElapsed, beats);
+    const distance = heatElapsed - beats[nearest];
+    const next = distance >= BEAT_FLASH_MS ? nearest + 1 : nearest;
+    const interval = beats[next] - (beats[next - 1] ?? 0);
+    const progress = Math.max(0, Math.min(1, (beats[next] - heatElapsed) / interval)) || 0;
+    const onBeat = running && distance >= 0 && distance < BEAT_FLASH_MS;
+    if (onBeat && playedBeat !== nearest) {
+      playedBeat = nearest;
       cue('beat');
     }
-    if (reduced || !juice.frozen(at)) position = scene.position;
-    const marker = Math.round(CENTRE + TRAVEL * position);
-    const [shakeX, shakeY] = juice.offset(at);
-    const strong = strongUntil > at;
+    const pullAge = at - pullAt;
+    const pulling = pullAge < PULL_MS;
+    const pullMotion = pulling && !reduced ? Math.sin(Math.PI * pullAge / PULL_MS) : 0;
+    const crossing = finish?.crossingTeam != null;
+    const finishAge = finish ? Math.max(0, at - finish.at) : 0;
+    const landing = crossing && !reduced && finishAge < FINISH_MS;
+    let position = scene.position;
+    let knotLift = 0;
+    if (landing) {
+      const direction = finish.crossingTeam === 0 ? -1 : 1;
+      const progress = finishAge / FINISH_MS;
+      const strike = Math.min(1, progress * 2.6);
+      position = finish.from + (direction - finish.from) * (1 - (1 - strike) ** 3);
+      position += direction * 0.12 * Math.sin(Math.PI * progress);
+      knotLift = 32 * Math.sin(Math.PI * progress);
+    }
 
-    context.drawImage(room, 0, 0);
-    for (const [team, data] of TEAMS.entries()) drawTeam(context, scene, data, team, strong && scene.pull[team] >= STRONG_PULL);
-    const breaking = scene.breakUntil !== null;
-    const remaining = breaking ? scene.breakUntil - scene.heatStart - elapsed : HEAT_MS - elapsed;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(room, 0, 0);
+    ctx.setTransform(scale, 0, 0, scale, x, y);
+    for (const team of [0, 1]) drawTeam(ctx, scene, team, pulling && scene.unity[team] > 0);
+    const remaining = breaking ? scene.breakUntil - elapsed : HEAT_MS - heatElapsed;
     const seconds = Math.ceil(Math.max(0, remaining) / 1000);
-    const clockLabel = breaking ? 'NEXT HEAT' : `HEAT ${scene.heat} / 3`;
-    text(context, clockLabel, CENTRE, 126, { size: 28, colour: '#e9b9a1' });
-    text(context, previous.phase === 'results' ? 'FINAL' : `0:${String(seconds).padStart(2, '0')}`,
-      CENTRE, 190, { size: 64 });
-    const rush = elapsed >= HEAT_MS - RUSH_MS;
-    if (rush && playing && scene.breakUntil === null) text(context, 'FASTER BEATS', CENTRE, 274, { size: 24, colour: '#ffca84' });
+    const final = previous.phase === 'results';
+    text(ctx, breaking ? 'NEXT HEAT' : `HEAT ${scene.heat} OF 3`, CENTRE, 121, { size: 28, colour: '#efd1b7' });
+    text(ctx, final ? 'FINAL' : `0:${String(seconds).padStart(2, '0')}`, CENTRE, 182, { size: 62 });
+    if (running && heatElapsed >= HEAT_MS - RUSH_MS) text(ctx, 'FASTER BEATS', CENTRE, 453, { size: 26, colour: '#ffcc85' });
 
-    block(context, '#46313d', CENTRE - 76, 548, 152, 16);
-    const reacts = onBeat && !reduced;
-    sprites.lala(context, CENTRE - 18 * PIXEL, 436 - (reacts ? PIXEL : 0), position,
+    block(ctx, '#362530', CENTRE - 88, 622, 176, 16);
+    const catLift = knotLift / 2 + (onBeat && !reduced ? 5 : 0);
+    sprites.lala(ctx, CENTRE - 90, Math.round(467 - catLift), position,
       !reduced && Math.floor(at / 160) % 29 === 0);
-    drawRope(context, rope, onBeat);
+    for (const team of [0, 1]) drawFinishLine(ctx, team, crossing && finish.crossingTeam === team);
+    drawRope(ctx, rope, onBeat || pulling || landing);
     for (const mice of groups) {
       for (const mouse of mice) {
+        if (!active.has(mouse.id)) continue;
         const present = connected.has(mouse.id);
-        const lit = hitUntil > at && hits.has(mouse.id);
-        if (lit) block(context, TEAMS[mouse.team].colour, mouse.x - 45, mouse.y + 85, 90, 5);
-        if (!present) context.globalAlpha = 0.45;
-        const lean = reacts && present;
+        const lit = pulling && hits.has(mouse.id);
+        const spriteScale = mouse.scale / scale;
+        const travel = lit ? (8 + 30 * scene.unity[mouse.team]) * pullMotion : 0;
+        const direction = mouse.team ? 1 : -1;
+        if (lit) block(ctx, TEAMS[mouse.team].colour, mouse.x - 37, mouse.ropeY + 15, 74, 6);
+        if (!present) ctx.globalAlpha = 0.45;
         const blink = !reduced && Math.floor(at / 140 + mouse.look * 3) % 23 === 0;
-        sprites.mouse(context, mouse.look, mouse.team, lean ? 2 : Number(blink), mouse.x + (lean ? (mouse.team ? PIXEL : -PIXEL) : 0), mouse.y);
-        if (!present) context.globalAlpha = 1;
+        // Draw at a whole CSS-pixel scale even when the full stage changes size.
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        sprites.mouse(ctx, mouse.look, mouse.team, lit && !reduced ? 2 : Number(blink),
+          x + scale * (mouse.x + direction * travel), y + scale * (mouse.ropeY - (MOUSE_PAW_ROW + 0.5) * spriteScale),
+          mouse.scale);
+        ctx.setTransform(scale, 0, 0, scale, x, y);
+        ctx.globalAlpha = 1;
       }
     }
-    drawPulse(context, playing && scene.breakUntil === null ? distance : Infinity, progress, reduced);
-    sprites.knot(context, marker + shakeX, FRONT_ROPE_Y + shakeY);
-    block(context, '#ff8387', marker - 5, 714, 10, 30);
-    juice.draw(context, at);
+    drawBeat(ctx, onBeat, progress, reduced, !finish && (running || previous.phase === 'countdown'));
+    const marker = Math.round(CENTRE + TRAVEL * position);
+    const [shakeX, shakeY] = juice.offset(at);
+    if (landing) drawCrossing(ctx, finish.crossingTeam, finishAge / FINISH_MS);
+    sprites.knot(ctx, marker + shakeX, FRONT_ROPE_Y - knotLift + shakeY);
+    block(ctx, '#ff9791', CENTRE + TRAVEL * Math.max(-1, Math.min(1, position)) - 6, 783, 12, 34);
+    juice.draw(ctx, at);
 
-    if (previous.phase === 'results') {
-      const winner = scene.wins[0] === scene.wins[1] ? null : Number(scene.wins[1] > scene.wins[0]);
-      const label = winner === null ? 'MATCH DRAW' : `${TEAMS[winner].name.toUpperCase()} WINS!`;
-      drawCall(context, label, winner === null ? CREAM : TEAMS[winner].colour, 418);
-    } else if (scene.breakUntil !== null) {
-      const winner = scene.heatWinner;
-      const label = winner === null ? 'HEAT DRAW' : `${TEAMS[winner].name.toUpperCase()} TAKES THE HEAT`;
-      drawCall(context, label, winner === null ? CREAM : TEAMS[winner].colour, 418);
-    } else if (strong) {
-      drawCall(context, 'PULL!', CREAM, 418);
+    if (finish) {
+      const { winner } = finish;
+      const team = TEAMS[winner];
+      const label = winner === null ? (final ? 'MATCH DRAW' : 'HEAT DRAW')
+        : final ? `${team.name.toUpperCase()} WINS THE MATCH`
+          : crossing ? `${team.name.toUpperCase()} CROSSES THE LINE` : `${team.name.toUpperCase()} WINS THE HEAT`;
+      drawFinish(ctx, label, winner === null ? CREAM : team.colour);
     }
   }, juice.setReducedMotion);
 
@@ -312,39 +406,52 @@ export function mountTugOfYarnTv(canvas, { art, sound }) {
     const at = performance.now();
     const sameRound = previous?.round === view.round;
     const sameHeat = sameRound && previous.scene.heat === scene.heat;
-    if (!sameRound) {
-      groups = makeLanes(view);
-      for (const mice of groups) for (const mouse of mice) sprites.prepare(mouse.look, mouse.team);
-      paintRoom(roomContext, groups, art);
-      rope = makeRope(groups);
-      clock.reset();
-      played = undefined;
-    }
+    const nextActive = new Set(scene.teams.map(({ playerId }) => playerId));
     if (!sameHeat) {
       juice.clear();
-      position = scene.position;
-      strongUntil = hitUntil = 0;
+      playedBeat = undefined;
+      pullAt = -Infinity;
+      finish = undefined;
     }
-    if (view.phase === 'playing') clock.sync(scene.t, at);
-    if (sameHeat && scene.beat > previous.scene.beat && scene.hits.length) {
+    if (!sameRound) {
+      lanes = makeLanes(view);
+      for (const mice of lanes) for (const mouse of mice) sprites.prepare(mouse.look, mouse.team);
+      active = nextActive;
+      if (area && scale > 0) place();
+    } else if (nextActive.size < active.size) {
+      for (const mouse of groups.flat()) {
+        if (!active.has(mouse.id) || nextActive.has(mouse.id)) continue;
+        juice.impact({ x: mouse.x, y: mouse.ropeY - 24, colour: TEAMS[mouse.team].colour, time: at });
+      }
+      active = nextActive;
+      resizeRoom();
+    }
+    connected = new Set(view.players.filter(player => player.connected).map(player => player.id));
+    if (sameHeat && scene.beat > previous.scene.beat) {
       hits = new Set(scene.hits);
-      hitUntil = at + PULL_CALL_MS;
-      const team = Number(scene.pull[1] > scene.pull[0]);
-      const strong = scene.pull[team] >= STRONG_PULL;
-      if (strong) strongUntil = hitUntil;
-      juice.impact({ x: CENTRE + TRAVEL * scene.position, y: FRONT_ROPE_Y, colour: TEAMS[team].colour, time: at });
+      if (hits.size) {
+        pullAt = at;
+        cue('pull');
+        for (const team of [0, 1]) {
+          if (!scene.unity[team]) continue;
+          const direction = team ? 1 : -1;
+          juice.impact({ x: CENTRE + direction * 182, y: FRONT_ROPE_Y, colour: TEAMS[team].colour, time: at });
+        }
+      } else pullAt = -Infinity;
     }
     const matchEnd = view.phase === 'results' && previous?.phase !== 'results';
     if (matchEnd || (sameHeat && scene.breakUntil !== null && previous.scene.breakUntil === null)) {
-      const winner = matchEnd ? scene.winner : scene.heatWinner;
-      const colour = winner === null ? CREAM : TEAMS[winner].colour;
+      const winner = matchEnd ? (scene.wins[0] === scene.wins[1] ? null : Number(scene.wins[1] > scene.wins[0])) : scene.heatWinner;
+      const crossingTeam = Math.abs(scene.position) === 1 ? Number(scene.position > 0) : null;
+      const colour = TEAMS[crossingTeam ?? winner]?.colour ?? CREAM;
+      finish = { at, winner, crossingTeam, from: sameHeat ? previous.scene.position : scene.position };
       cue(winner === null ? 'draw' : matchEnd ? 'win' : 'score');
       juice.impact({ x: CENTRE + TRAVEL * scene.position, y: FRONT_ROPE_Y, colour, time: at, strong: true });
     }
-    connected = new Set(view.players.filter(player => player.connected).map(player => player.id));
     timeline.push(scene, `${view.round}/${scene.heat}`, at);
+    latestAt = at;
     previous = view;
   }
 
-  return { push, setReducedMotion: loop.setReducedMotion, dispose: loop.dispose };
+  return { resize, push, setReducedMotion: loop.setReducedMotion, dispose: loop.dispose };
 }

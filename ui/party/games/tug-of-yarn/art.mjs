@@ -1,7 +1,8 @@
 import { compileSprite, drawSprite } from '../../kit/sprites.mjs';
 import { LOOKS } from '../../looks.mjs';
 
-export const PIXEL = 4;
+const PIXEL = 5;
+export const MOUSE_PAW_ROW = 16;
 
 // The paw sits on row 16 in every pose so it stays on the yarn.
 const MOUSE_HEAD = [
@@ -41,6 +42,8 @@ const MOUSE_PULL = [
   '.offfoo.offfoo........',
   '.oooo....ooooo........',
 ];
+
+export const MOUSE_SIZE = { width: MOUSE_HEAD[0].length, height: MOUSE_HEAD.length + MOUSE_REST.length };
 
 const CAT = [
   '....................................',
@@ -121,8 +124,8 @@ export function createYarnArt(document) {
 
   return {
     prepare,
-    mouse(context, look, team, pose, x, y) {
-      drawSprite(context, sprites.get(2 * look + team)[pose], x - 11 * PIXEL, y, PIXEL);
+    mouse(context, look, team, pose, x, y, scale) {
+      drawSprite(context, sprites.get(2 * look + team)[pose], x - MOUSE_SIZE.width * scale / 2, y, scale);
     },
     lala(context, x, y, position, blink) {
       drawSprite(context, cat, x, y, PIXEL);

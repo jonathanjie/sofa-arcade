@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { tugOfYarn } from './game.mjs';
-import { BEATS, HEAT_MS, MATCH_MS, closestBeat, createBeatClock, timingGrade } from '../../../ui/party/games/tug-of-yarn/rhythm.mjs';
+import { BEATS, HEAT_MS, MATCH_MS, beatsFor, closestBeat, difficulty, timingGrade } from '../../../ui/party/games/tug-of-yarn/rhythm.mjs';
 
 const roster = count => Array.from({ length: count }, (_, look) => ({ id: `p${look + 1}`, name: 'Mouse', look }));
 const start = (count = 2) => tugOfYarn.createRound(roster(count), 'test-seed');
@@ -14,8 +14,9 @@ function advance(state, until, inputsAt = () => []) {
 }
 
 function beatInputs(state, select = () => true) {
-  const beat = closestBeat(state.elapsedMs - state.heatStart);
-  if (state.elapsedMs !== state.heatStart + BEATS[beat]) return [];
+  const beats = beatsFor(difficulty(state.gameRound, state.heat));
+  const beat = closestBeat(state.elapsedMs - state.heatStart, beats);
+  if (state.elapsedMs !== state.heatStart + beats[beat]) return [];
   return Object.entries(state.teams).filter(([, team]) => select(team))
     .map(([playerId]) => tap(playerId, state.elapsedMs));
 }
@@ -25,7 +26,7 @@ test('accepts only canonical, bounded integer timestamps', () => {
   assert.deepEqual(tugOfYarn.normalizeInput({ kind: 'tap', at: -0 }), { kind: 'tap', at: 0 });
   for (const raw of [null, [], {}, { kind: 'tap' }, { kind: 'tap', at: -1 },
     { kind: 'tap', at: 12.3 }, { kind: 'tap', at: '12' }, { kind: 'tap', at: Infinity },
-    { kind: 'tap', at: MATCH_MS + 1 }, { kind: 'tap', at: 12, beat: 1 }]) {
+    { kind: 'tap', at: tugOfYarn.durationMs + 1 }, { kind: 'tap', at: 12, beat: 1 }]) {
     assert.equal(tugOfYarn.normalizeInput(raw), null);
   }
 });
@@ -35,7 +36,7 @@ test('starts at an even tempo and speeds up only in the final ten seconds', () =
   const base = BEATS[1] - BEATS[0];
   assert.ok(BEATS.every((beat, index) => !index || BEATS[index - 1] >= HEAT_MS - 10_000 || beat - BEATS[index - 1] === base));
   assert.ok(BEATS.at(-1) - BEATS.at(-2) < base);
-  assert.deepEqual([0, 45, 46, 150, 151].map(timingGrade), ['Perfect', 'Perfect', 'Good', 'Good', 'Miss']);
+  assert.deepEqual([0, 60, 61, 165, 166].map(timingGrade), ['Perfect', 'Perfect', 'Good', 'Good', 'Miss']);
 });
 
 test('teams stay balanced and full-strength taps tie with 2, 8, odd and 16 players', () => {
@@ -133,24 +134,59 @@ test('teams split two heats before a decisive third', () => {
 });
 
 
-test('phone clocks with different origins agree through delayed snapshots', () => {
-  const mint = createBeatClock();
-  const honey = createBeatClock();
-  mint.sync(0, 5060, 40);
-  honey.sync(0, 20085, 20);
-  mint.sync(200, 5240, 40);
-  honey.sync(200, 20220, 20);
-  mint.sync(400, 5560, 40);
-  honey.sync(400, 20470, 20);
-  assert.equal(mint.elapsed(5000 + BEATS[0]), BEATS[0]);
-  assert.equal(honey.elapsed(20_000 + BEATS[0]), BEATS[0]);
-  const initial = start();
+test('a permanent departure removes the body and its queued tap before scoring', () => {
+  const beat = BEATS[0];
+  let state = advance(start(4), beat);
+  const playerId = Object.keys(state.teams).find(id => state.teams[id] === 0);
+  state = step(state, [tap(playerId, beat)]);
+  state = tugOfYarn.step(state, [tap(playerId, beat)], 50, { departures: [{ playerId, reason: 'kicked' }] });
+  assert.ok(!tugOfYarn.projectForTv(state).teams.some(player => player.playerId === playerId));
+  assert.equal(tugOfYarn.projectForPhone(state, playerId), null);
+  assert.ok(!tugOfYarn.scores(state).some(player => player.playerId === playerId));
+  state = advance(state, 2000);
+  assert.deepEqual(tugOfYarn.projectForTv(state).pull, [0, 0]);
+  assert.ok(!JSON.stringify(state.pending).includes(playerId));
+  assert.deepEqual(state.sizes, [2, 2]);
+});
+
+test('taps use the host-clock anchor through discarded ticks and ±55 ms clock error', () => {
+  const startsAt = 8765.5;
+  const initial = tugOfYarn.createRound(roster(4), 'test-seed', 1, { startsAt });
   const ids = Object.keys(initial.teams);
-  const state = advance(initial, 2000, now => {
-    if (now.elapsedMs === BEATS[0] + 100) return [tap(ids[0], mint.elapsed(5000 + BEATS[0]))];
-    if (now.elapsedMs === BEATS[0] + 300) return [tap(ids[1], honey.elapsed(20_000 + BEATS[0]))];
-    return [];
-  });
+  const anchor = tugOfYarn.projectForPhone(initial, ids[0]).a;
+  assert.equal(anchor, Math.round(startsAt));
+  const beat = BEATS[0];
+  // The scheduler discarded a half-second of work. Each pair estimates the
+  // same TV beat with opposite clock errors, and the input arrives 200 ms later.
+  const inputs = ids.map((id, index) => ({
+    ...tap(id, Math.round(startsAt + beat + (index < 2 ? -55 : 55) - anchor)),
+    receivedMs: beat + 200,
+  }));
+  const withTaps = tugOfYarn.step(advance(initial, 800), inputs, 50, { elapsedMs: 1300 });
+  const state = tugOfYarn.step(withTaps, [], 50, { elapsedMs: 1550 });
+  assert.equal(state.elapsedMs, 1550);
   assert.deepEqual(tugOfYarn.projectForTv(state).pull, [1, 1]);
   assert.equal(state.marker, 0);
+});
+
+test('a rematch starts faster and successive heats increase difficulty', () => {
+  const first = start(8);
+  const rematch = tugOfYarn.createRound(roster(8), 'test-seed', 2);
+  assert.equal(tugOfYarn.projectForPhone(first, first.order[0]).r, 0);
+  assert.equal(tugOfYarn.projectForPhone(rematch, rematch.order[0]).r, 1);
+  const nextHeat = advance(first, HEAT_MS + 2000);
+  assert.equal(tugOfYarn.projectForPhone(nextHeat, first.order[0]).r, 1);
+  const firstTempo = beatsFor(0);
+  const rematchTempo = beatsFor(1);
+  assert.equal(firstTempo[1] - firstTempo[0], 800);
+  assert.equal(rematchTempo[1] - rematchTempo[0], 750);
+});
+
+test('a forged future tap and a tap delivered after the deadline both score zero', () => {
+  const initial = start();
+  const [mint, honey] = initial.order;
+  const beat = BEATS[0];
+  let state = step(advance(initial, beat - 250), [tap(mint, beat)]);
+  state = tugOfYarn.step(state, [{ ...tap(honey, beat), receivedMs: beat + 416 }], 50, { elapsedMs: beat + 450 });
+  assert.deepEqual(tugOfYarn.projectForTv(state).pull, [0, 0]);
 });
