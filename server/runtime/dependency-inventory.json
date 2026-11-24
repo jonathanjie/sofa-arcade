@@ -3,8 +3,8 @@
   "builder": "esbuild@0.28.0",
   "output": {
     "path": "server/runtime/gravity-orchard-dependencies.mjs",
-    "bytes": 703658,
-    "sha256": "23626c81a6ca850fbf8fe287aa85612d6f61602435f072954a6ac883001e701d"
+    "bytes": 703690,
+    "sha256": "89d281ce7c34a2c83f87fc929ebb8497b15ce51a088da4588432058f50869b57"
   },
   "optionalUnbundledAccelerators": [
     "bufferutil",
@@ -1287,8 +1287,8 @@
     },
     {
       "path": "server/realtime/gravity-orchard/index.mjs",
-      "bytes": 38161,
-      "sha256": "37896beb219be461da6fe6da79a398166af5bcc801a5f7adc662a3574034cbba"
+      "bytes": 38372,
+      "sha256": "9cfaf8da249d81e3ae7073320337a9c0635902e1fa7672307b772efbb561bc10"
     },
     {
       "path": "server/realtime/gravity-orchard/lib/checkpoint.mjs",

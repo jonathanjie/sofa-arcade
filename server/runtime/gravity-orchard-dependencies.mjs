@@ -5520,8 +5520,9 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
           seat.conn = null;
           seat.latest = null;
           seat.ack = null;
-          if (!room.closed && !room.fault && room.view.ready[conn.viewer.playerId]) {
+          if (!room.closed && !room.fault && conn.authenticated) {
             enqueue(room, async () => {
+              if (!room.view.ready[conn.viewer.playerId]) return;
               const result = simulation.applyCommand(room.state, conn.viewer, { kind: "ready", payload: { value: false } });
               if (result.accepted && result.state !== room.state) await commit(room, result.state, room.dedup, "presence");
             }).catch(() => {
@@ -5677,7 +5678,6 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
   }
   function enqueue(room, fn) {
     if (room.closed || room.fault) return Promise.reject(errorWithCode("room_unavailable"));
-    if (room.pendingCommands >= LIMITS.maxPendingCommands) return Promise.reject(errorWithCode("command_overload"));
     room.pendingCommands++;
     const promise = room.commandTail.catch(() => {
     }).then(() => {
@@ -5903,6 +5903,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       return;
     }
     try {
+      if (room.pendingCommands >= LIMITS.maxPendingCommands) throw errorWithCode("command_overload");
       const result = await enqueue(room, async () => {
         if (!await reauthorize(conn, true) || !conn.active) return null;
         if (conn.viewer.role === "player" && room.seats[conn.viewer.playerId].conn !== conn) return null;

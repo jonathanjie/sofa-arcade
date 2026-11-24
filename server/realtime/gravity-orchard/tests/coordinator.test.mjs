@@ -283,3 +283,33 @@ test('an active seat replacement receives Welcome before the network pause snaps
   const result = await replacement.sendCommand({ id: 'fresh-ready', kind: 'ready', payload: { value: true } });
   assert.equal(result.accepted, true);
 });
+
+test('disconnect clears Ready even when the Ready checkpoint is still pending', async (t) => {
+  const writing = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  let hold = true;
+  const h = await harness({ simulation: orchard, saveCheckpoint: async (_code, checkpoint) => {
+    if (hold && checkpoint.commands.some(entry => entry.command.id === 'departing-ready')) {
+      hold = false;
+      writing.resolve();
+      await release.promise;
+    }
+  } });
+  t.after(async () => { release.resolve(); await h.close(); });
+  const jon = await h.connect('jon'), lydia = await h.connect('lydia');
+  jon.input();
+  await jon.command('ready', { value: true }, 'departing-ready');
+  await writing.promise;
+  jon.ws.close();
+  await once(jon.ws, 'close');
+  await flush();
+  release.resolve();
+  await flush();
+  const replacement = await h.connect('jon');
+  replacement.input(); lydia.input(); await flush();
+  assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'waiting');
+  assert.deepEqual(h.coordinator.getPublicView('UNIT').ready, { jon: false, lydia: true });
+  assert.equal((await replacement.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'countdown');
+});

@@ -144,8 +144,10 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
         if (seat.conn === conn) {
           seat.conn = null; seat.latest = null; seat.ack = null;
           // Preserve last receipt time so repeated reconnects cannot reset the deadman.
-          if (!room.closed && !room.fault && room.view.ready[conn.viewer.playerId]) {
+          if (!room.closed && !room.fault && conn.authenticated) {
             enqueue(room, async () => {
+              // This cleanup follows the departing socket's writes and precedes the next Welcome.
+              if (!room.view.ready[conn.viewer.playerId]) return;
               const result = simulation.applyCommand(room.state, conn.viewer, { kind: 'ready', payload: { value: false } });
               if (result.accepted && result.state !== room.state) await commit(room, result.state, room.dedup, 'presence');
             }).catch(() => {});
@@ -258,7 +260,6 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
   }
   function enqueue(room, fn) {
     if (room.closed || room.fault) return Promise.reject(errorWithCode('room_unavailable'));
-    if (room.pendingCommands >= LIMITS.maxPendingCommands) return Promise.reject(errorWithCode('command_overload'));
     room.pendingCommands++;
     const promise = room.commandTail.catch(() => {}).then(() => {
       if (room.closed || room.fault) throw errorWithCode('room_unavailable');
@@ -407,6 +408,8 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
       return;
     }
     try {
+      // Keep client work bounded while always allowing ordered system cleanup.
+      if (room.pendingCommands >= LIMITS.maxPendingCommands) throw errorWithCode('command_overload');
       const result = await enqueue(room, async () => {
         if (!await reauthorize(conn, true) || !conn.active) return null;
         if (conn.viewer.role === 'player' && room.seats[conn.viewer.playerId].conn !== conn) return null;
