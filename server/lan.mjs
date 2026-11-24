@@ -46,6 +46,8 @@ const ASSETS = new Set([
   '/assets/characters.png',
   '/assets/qrcode.js',
   '/assets/qrcode-LICENSE.txt',
+  '/assets/characters-1536.webp',
+  '/assets/characters.webp',
   '/favicon.svg',
   '/manifest.webmanifest',
   '/assets/odd-laws-society/buildings/button-workshop.webp',

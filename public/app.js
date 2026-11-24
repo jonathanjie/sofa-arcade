@@ -29,6 +29,7 @@ let streamConnected = false;
 let streamTerminalStatus = null;
 let lastPollAt = 0;
 let actionQueue = null;
+let sofaCharacterAtlasStarted = false;
 let createCollectionGame = null;
 let collectionGame = null;
 let collectionIdentity = null;
@@ -104,6 +105,30 @@ function fallbackCat() {
 }
 function character(id, extra = '') {
   return `<span class="character ${id} ${extra}" data-character="${id}" role="img" aria-label="${id === 'lala' ? 'Lala the orange cat' : NAMES[id] + ' the tiny adventurer'}"><span class="character-sprite"></span><span class="character-fallback">${id === 'lala' ? fallbackCat() : fallbackMouse(id)}</span></span>`;
+}
+function loadSofaCharacterAtlas() {
+  if (sofaCharacterAtlasStarted || !app.querySelector('.character-sprite')) return;
+  sofaCharacterAtlasStarted = true;
+  // The largest mobile portrait is 170 CSS pixels. The 512px cell also
+  // covers the 240px TV lobby pose at standard TV density.
+  const compact = matchMedia('(max-width: 760px) and (max-resolution: 3dppx), (max-resolution: 1dppx)').matches;
+  const source = compact ? '/assets/characters-1536.webp' : '/assets/characters.webp';
+  void fetch(source).then(async response => {
+    if (!response.ok) return;
+    // The sprite and motion layers share the same decoded source, even if the
+    // browser would otherwise revalidate the image when CSS starts using it.
+    const url = URL.createObjectURL(await response.blob());
+    const atlas = new Image();
+    atlas.src = url;
+    try {
+      await atlas.decode();
+    } catch {
+      URL.revokeObjectURL(url);
+      return;
+    }
+    document.documentElement.style.setProperty('--sofa-character-atlas', 'url("' + url + '")');
+    document.documentElement.classList.add('generated-art');
+  }).catch(() => { /* Keep the inline SVG if the atlas cannot load. */ });
 }
 function header() {
   const inMatch=state.view==='game'||state.view==='tutorial';
@@ -587,6 +612,7 @@ function render() {
   const old = new Map([...app.querySelectorAll('[data-piece]')].map(n=>[n.dataset.piece,n.getBoundingClientRect()]));
   const content=renderScreen();
   app.innerHTML=`<div class="app-shell ${state.role==='player'?'is-controller':''} ${state.view==='game'?'is-match':''} ${state.view==='tutorial'?'is-tutorial':''} view-${state.view}">${header()}${notices()}${content}${footer()}</div>${modal()}`;
+  loadSofaCharacterAtlas();
   if(old.size && !motionPreference.matches) {
     app.querySelectorAll('[data-piece]').forEach(n=>{
       const before=old.get(n.dataset.piece), after=n.getBoundingClientRect();
@@ -963,7 +989,6 @@ motionPreference.addEventListener('change',()=>{
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.code){poll(true);}});
 window.addEventListener('online',()=>{setNetworkConnection('reconnecting');poll(true);});
 window.addEventListener('offline',()=>{setNetworkConnection('offline');render();});
-const atlas=new Image();atlas.onload=()=>document.documentElement.classList.add('generated-art');atlas.src='/assets/characters.png';
 async function restoreHostRoom(code) {
   const creds=readCredentials(code);
   if(!creds.hostToken){state.view='join';state.role='player';await findRoom(code);return;}

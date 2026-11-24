@@ -56,6 +56,8 @@ export const ASSET_FILES = Object.freeze([
   'public/assets/characters.png',
   'public/assets/qrcode.js',
   'public/assets/qrcode-LICENSE.txt',
+  'public/assets/characters-1536.webp',
+  'public/assets/characters.webp',
   'public/favicon.svg',
   'public/manifest.webmanifest',
   // Exact WS4 runtime image closure, plus its retained distribution notice.
