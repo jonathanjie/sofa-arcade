@@ -364,15 +364,20 @@ Yes: these are arcade games, so they need real animation. The present games are 
 4. **Sound per event.** Each hit, pickup and countdown has a sound, mixed by the existing audio engine on the TV.
 5. **Phones stay simple.** A controller screen is a colour, a name, one or two touch zones and a few state words. Almost no animation and no drawing loop, so old phones stay cool and responsive.
 
-### Three ways to make the moving art
+### Four ways to make the moving art
 
 | Route | How | Good for | Risk |
 | --- | --- | --- | --- |
+| **Pixel art written in code** | Each sprite frame is a small grid of letters in a source file, and each letter names a colour role (outline, fur, scarf). The model writes and edits the grids directly. The TV draws them on the canvas at a whole-number scale with smoothing off. | Any Part A or Part B game that can wear a retro look: Dust Bunny Sumo, Crumb Rush, Musical Cushions, Neon Swarm, Floor Is Falling | Low. Frames cannot drift because a run cycle changes only the rows that move. One sprite serves 16 players by changing one palette entry. Sprites are a few hundred bytes, need no image tool, and show as readable diffs in review. Large or detailed characters take more effort than at 16 or 32 pixels. |
 | **Shapes and code** | Draw characters from circles, capsules and lines in code, and animate them with code (wobble, lean, squash). Glow and particles do the rest. | Neon Swarm, Wall of Paddles, Dust Bunny Sumo, Yarn Tangle | Low. No art pipeline. Looks deliberate if the palette and motion are consistent. |
 | **Low-poly 3D** | Build cars, sleds, boats and rooms from simple 3D shapes in Three.js, with the Rapier library for physics. | Rug Rally, Bumper Ball, Downhill Jam, Floor Is Falling, Paper Planes | Medium. This is what the X examples do well. Needs care with performance on a TV-connected Mac, which is easy, and none on phones. |
 | **Illustrated cut-out puppets** | Generate each character once as separate parts (head, body, arms, tail) with the image tool, then animate the parts with code as a puppet. | Part A games that must look like Sofa Kingdoms | Medium. Keeps the storybook style and lets one drawing make many poses. Generated frame-by-frame sprite sheets are the alternative, but the frames drift between poses and need manual repair. |
 
-Recommended: shapes-and-code or low-poly 3D for the arcade games themselves, and illustrated art for covers, lobbies, podiums and characters at rest. That puts animation effort where code is strong and keeps the warm style where players look longest.
+Recommended: pixel art written in code for character games, and shapes-and-code or low-poly 3D where the subject is a vehicle or an abstract shape. Keep illustrated art for covers, lobbies and podiums. That puts animation effort where code is strong and keeps the warm style where players look longest.
+
+**Proof.** [coded-sprite-proof.mjs](party-arcade-art/coded-sprite-proof.mjs) defines one 16 × 16 mouse as letter grids, with five frames (stand, three run frames, jump) and 16 scarf colours. It writes the sheet below with no packages and no image tool. It is a first sketch, not final art: it shows that the method works and that all 16 players stay distinct.
+
+![Sprite sheet drawn from code: one mouse, five frames, sixteen scarf colours](party-arcade-art/coded-sprite-proof.png)
 
 ### Proof before commitment
 
@@ -410,5 +415,5 @@ If the other-world route appeals more, start with **Wall of Paddles** (smallest 
 2. Do party games stay local-only like Gravity Orchard, or must they also run on the hosted Site?
 3. Do guests get their own illustrated mice (new art for 16 scarves and patterns), or tinted versions of the present characters?
 4. One world or many? Should the shelf mix the mouse games (Part A) with other worlds (Part B), or should party games become their own section with their own look?
-5. 2D or 3D? Low-poly 3D gives the strongest first impression and matches what these models build well, but it adds two libraries (Three.js and Rapier) to a project that has none today.
+5. Which look? Coded pixel art needs no new library and no image tool. Low-poly 3D gives the strongest first impression and matches what these models build well, but it adds two libraries (Three.js and Rapier) to a project that has none today.
 6. Is there a "party night" mode that chains games with a running score, or does the host pick each game?
