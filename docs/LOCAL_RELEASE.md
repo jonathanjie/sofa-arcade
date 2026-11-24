@@ -88,7 +88,7 @@ gate; do not remove quarantine or disable Gatekeeper to record a pass.
 ## Reproduce the automated checks
 
 Use a clean checkout of the exact SHA named in the PR or evidence report.
-Install root dependencies with `npm run install:ci` for full coverage. The unit runner discovers eligible `*.test.mjs` source files and reports skips for unavailable static imports. Browser tests and the nested secure-LAN inventory have separate commands.
+Install root dependencies with `npm run install:ci` for full coverage. The unit runner discovers eligible `*.test.mjs` source files. Only `npm run test:standalone` excludes tests that need an unavailable package. Browser tests and the nested secure-LAN inventory have separate commands.
 
 ```sh
 npm test
