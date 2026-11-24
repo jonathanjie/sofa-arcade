@@ -31,10 +31,14 @@ test('a rejected room leaves the attempted code selected and offers no seats', {
     ['ABC234', /This room has expired/],
     ['ABC235', /Check your connection/],
   ];
-  await phone.route('**/api/rooms/ABC234', route => route.fulfill({
+  await phone.route(url => url.pathname === '/api/rooms/ABC234', route => route.fulfill({
     status: 410, json: { error: 'This room has expired. Start a new game on the TV.', code: 'room_expired' },
   }));
-  await phone.route('**/api/rooms/ABC235', route => route.abort('internetdisconnected'));
+  await phone.route(url => url.pathname === '/api/rooms/ABC235', route => route.abort('internetdisconnected'));
+  const missingStatuses = [];
+  phone.on('response', response => {
+    if (new URL(response.url()).pathname === '/api/rooms/ZZZZZZ') missingStatuses.push(response.status());
+  });
   for (const [code, message] of cases) {
     await input.fill(code.toLowerCase());
     await input.press('Tab');
@@ -48,6 +52,7 @@ test('a rejected room leaves the attempted code selected and offers no seats', {
     assert.deepEqual(await input.evaluate(el => [document.activeElement === el, el.selectionStart, el.selectionEnd]),
       [true, 0, 6]);
   }
+  assert.deepEqual(missingStatuses, [200]);
 });
 
 test('collection shows both hero actions on phones and a planned title on TV', async t => {

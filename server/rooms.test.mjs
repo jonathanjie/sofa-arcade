@@ -416,6 +416,22 @@ test('cross-origin writes, oversized bodies, malformed inputs, and unknown token
   f.sqlite.close();
 });
 
+test('join lookup returns an empty result for a missing room and preserves the normal room projection', async t => {
+  const f = fixture();
+  t.after(() => f.sqlite.close());
+  const live = await openedRoom(f);
+  const absent = await api(f, '/api/rooms/ZZZZZZ?lookup=1');
+  assert.equal(absent.status, 200);
+  assert.equal(absent.body, null);
+  const path = '/api/rooms/' + live.code;
+  const ordinary = await api(f, path);
+  const lookup = await api(f, path + '?lookup=1');
+  assert.equal(lookup.status, 200);
+  assert.deepEqual(lookup.body, ordinary.body);
+  const denied = await api(f, path + '?lookup=1', { token: 'invalid-token' });
+  assert.equal(denied.status, (await api(f, path, { token: 'invalid-token' })).status);
+});
+
 test('database faults and missing bindings produce safe errors without stack traces or secrets', async () => {
   const missing = await handleApi(new Request(`${ORIGIN}/api/rooms/ZZZZZZ`), {});
   assert.equal(missing.status, 503);

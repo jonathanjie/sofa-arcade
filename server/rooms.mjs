@@ -111,10 +111,11 @@ function checkOrigin(request) {
   }
 }
 
-async function loadRoom(db, code) {
+async function loadRoom(db, code, { optional = false } = {}) {
   const row = await db.prepare(
     'SELECT code, revision, data, created_at, updated_at, expires_at, jon_seen, lydia_seen FROM sofa_rooms WHERE code = ?',
   ).bind(code).first();
+  if (!row && optional) return null;
   if (!row) throw new ApiError(404, 'That room could not be found. Check the six-character code.', 'room_not_found');
   if (row.expires_at <= Date.now()) throw new ApiError(410, 'This room has expired. Start a new game on the TV.', 'room_expired');
   return { ...row, data: JSON.parse(row.data) };
@@ -552,7 +553,8 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       }
       if (!code) return await createRoom(db, body);
       if (request.method === 'GET') {
-        let room = await loadRoom(db, code);
+        let room = await loadRoom(db, code, { optional: url.searchParams.get('lookup') === '1' });
+        if (room === null) return json(null);
         const auth = await authenticate(request, room);
         if (room.data.gameId === 'gravity-orchard' && room.data.state !== null) {
           adapter('gravity-orchard');

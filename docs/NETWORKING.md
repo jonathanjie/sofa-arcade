@@ -12,6 +12,8 @@ The browser and hosting research below dates from 19 November 2026. Hosted push 
 
 See the [Gravity wire contract](GRAVITY_ORCHARD_CONTRACT.md) and the [desktop decision record](archive/DEPLOYMENT_OPTIONS.md). Physical Wi-Fi and casting latency still need measurement.
 
+The join form uses an exact room code with `GET /api/rooms/{code}?lookup=1`. A valid code with no matching room returns HTTP 200 and JSON `null`. Direct room reads keep their 404 response. A matching lookup uses the same authentication and projection as a direct read.
+
 ## What AirConsole actually documents
 
 - **Browser-based does not mean internet-free.** AirConsole's current system requirements include an internet connection, and its current disconnect guidance says that losing internet connectivity is a common reason sessions disconnect [1, 2]. Its recommendation to put devices on the same Wi-Fi is a performance/reliability recommendation, not documentation of an offline mode [3].
