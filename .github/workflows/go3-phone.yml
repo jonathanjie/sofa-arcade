@@ -4,15 +4,23 @@ on:
   pull_request:
     paths:
       - 'ui/games/gravity-orchard/phone/**'
+      - 'ui/games/gravity-orchard/tutorial/**'
+      - 'ui/realtime/gravity-orchard/**'
+      - 'ui/audio.js'
+      - 'ui/score.mjs'
       - '.github/workflows/go3-phone.yml'
       - 'docs/workstreams/gravity-orchard-go3.md'
       - 'games/gravity-orchard/**'
       - 'ui/media/gravity-orchard/**'
       - 'public/assets/gravity-orchard/**'
   push:
-    branches: [feature/gravity-orchard-phone]
+    branches: [main, feature/gravity-orchard-phone]
     paths:
       - 'ui/games/gravity-orchard/phone/**'
+      - 'ui/games/gravity-orchard/tutorial/**'
+      - 'ui/realtime/gravity-orchard/**'
+      - 'ui/audio.js'
+      - 'ui/score.mjs'
       - '.github/workflows/go3-phone.yml'
       - 'docs/workstreams/gravity-orchard-go3.md'
       - 'games/gravity-orchard/**'
@@ -24,8 +32,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: go3-phone-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: go3-phone-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
 
@@ -38,6 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:

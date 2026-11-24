@@ -3,18 +3,32 @@ name: GO2 Gravity Orchard realtime
 on:
   pull_request:
     paths:
-      - 'package.json'
-      - 'server/realtime/gravity-orchard/**'
-      - 'ui/realtime/gravity-orchard/**'
+      - 'package*.json'
+      - 'game/**'
+      - 'games/**'
+      - 'server/**'
+      - 'ui/realtime/**'
+      - 'ui/room-client.mjs'
+      - 'ui/transport.mjs'
+      - 'ui/room-client.test.mjs'
+      - 'drizzle/**'
+      - 'scripts/runtime-files.mjs'
       - '.github/workflows/go2-realtime.yml'
       - 'docs/workstreams/gravity-orchard-go2.md'
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
   push:
     branches: [main, feature/gravity-orchard-realtime]
     paths:
-      - 'package.json'
-      - 'server/realtime/gravity-orchard/**'
-      - 'ui/realtime/gravity-orchard/**'
+      - 'package*.json'
+      - 'game/**'
+      - 'games/**'
+      - 'server/**'
+      - 'ui/realtime/**'
+      - 'ui/room-client.mjs'
+      - 'ui/transport.mjs'
+      - 'ui/room-client.test.mjs'
+      - 'drizzle/**'
+      - 'scripts/runtime-files.mjs'
       - '.github/workflows/go2-realtime.yml'
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
   workflow_dispatch:
@@ -23,14 +37,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: go2-realtime-${{ github.ref }}
-  cancel-in-progress: true
+  group: go2-realtime-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   protocol:
     name: Realtime protocol (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -44,6 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -68,6 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:

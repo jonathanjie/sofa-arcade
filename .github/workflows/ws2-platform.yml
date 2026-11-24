@@ -29,8 +29,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ws2-platform-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ws2-platform-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   private-platform:
@@ -49,6 +49,8 @@ jobs:
             node: '24'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node }}
