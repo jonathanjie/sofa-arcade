@@ -248,8 +248,9 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
 
   function project(room, seat) {
     const round = room.activeRound;
+    const time = now();
     const common = {
-      phase: room.phase, round: room.round, ms: Math.ceil(remainingMs(room, now())), notice: room.notice, gameId: room.game.id,
+      phase: room.phase, round: room.round, ms: Math.ceil(remainingMs(room, time)), notice: room.notice, gameId: room.game.id,
     };
     if (seat === room.host) {
       const players = [...room.seats.values()].map(player => ({ ...publicSeat(player), connected: Boolean(player.connection) }));
@@ -264,7 +265,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     const inRound = round?.players.has(seat.id);
     return {
       ...common, self: publicSeat(seat), waiting,
-      state: inRound ? room.game.projectForPhone(round.state, seat.id) : null,
+      state: inRound ? room.game.projectForPhone(round.state, seat.id, time) : null,
       place: round?.results.find(entry => entry.playerId === seat.id)?.place ?? null,
     };
   }

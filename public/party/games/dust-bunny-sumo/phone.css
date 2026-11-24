@@ -12,6 +12,10 @@
   gap: clamp(9px, 1.6svh, 14px);
 }
 
+.sumo-controls [data-practice] :is(.sumo-mode, .sumo-dash, .sumo-charge) {
+  display: none;
+}
+
 .sumo-controls .sumo-mode {
   min-height: 44px;
   justify-self: end;

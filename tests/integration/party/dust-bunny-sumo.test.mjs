@@ -31,11 +31,11 @@ test('sixteen phones complete two sumo rounds with reconnects, a kick, and a lat
           active.push({ id: removedId });
         }
         active.sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
-        directions = new Map(game.createRound(active, DIRECTION_SEED).bodies.map(body => [body.id, outward(body)]));
+        directions = new Map(game.createRound(active, DIRECTION_SEED, round).bodies.map(body => [body.id, outward(body)]));
       }
       if (tick % 2 || tick < 100) return;
       for (const [index, phone] of phones.entries()) {
-        if (index === 0 && (round === 2 || tick < 185)) continue;
+        if (index === 0) continue;
         if (!phone.view.state.out) phone.input(directions.get(phone.playerId));
       }
     },
@@ -48,7 +48,7 @@ test('sixteen phones complete two sumo rounds with reconnects, a kick, and a lat
       assert.equal(view.scene.bodies.filter(body => body.outAt === null).length, 1);
       assert.equal(view.results.some(result => result.playerId === removedId), false);
       if (round === 2) assert.ok(view.results.some(result => result.playerId === phones[15].playerId));
-      else assert.ok(view.results.every(result => view.scene.bodies.find(body => body.id === result.playerId).outAt !== null));
+      else assert.ok(view.scene.bodies.every(body => body.id !== removedId));
     },
   });
   const peak = Math.max(...phones.map(phone => peakBandwidth(phone.packets)));
@@ -77,6 +77,11 @@ for (const count of [2, 8]) {
       assert.equal('roster' in view, false);
       assert.ok(Buffer.byteLength(JSON.stringify({ type: 'snapshot', view })) < 320);
     }
+    phones[0].input({ kind: 'dash' });
+    await fixture.until(() => phones[0].view.state.cd > 0, { ticks: 10 });
+    const charge = phones[0].view.state;
+    assert.ok(charge.at > fixture.clock.now());
+    assert.ok(Buffer.byteLength(JSON.stringify({ type: 'snapshot', view: phones[0].view })) < 320);
     const directions = new Map(tv.view.scene.bodies.map(body => [body.id, outward(body)]));
     await fixture.until(() => tv.view.phase === 'results', {
       drive(tick) {

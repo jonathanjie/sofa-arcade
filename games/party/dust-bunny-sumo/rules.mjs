@@ -34,21 +34,28 @@ function startAngle(seed) {
   return (hash >>> 0) / 2 ** 32 * 2 * Math.PI;
 }
 
-function createRound(players, seed) {
+function createRound(players, seed, gameRound = 1) {
   const radius = Math.sqrt(6500 + 1150 * players.length);
+  const spawnFraction = .42 + .013 * players.length;
+  const headStartMs = (players.length === 2 ? 2000 : 0) + 2000 * Math.min(3, gameRound - 1);
+  const pulls = SHRINKS.map(([at, fraction]) => {
+    // Advance early pulls most, and keep the last pull close to the time limit.
+    const lead = headStartMs * (ROUND_MS - at) / (ROUND_MS - SHRINKS[0][0]);
+    return [at - Math.round(lead / 50) * 50, fraction];
+  });
   const angle = startAngle(seed);
   const bodies = players.map(({ id }, index) => {
     const bearing = angle + 2 * Math.PI * index / players.length;
     const x = Math.cos(bearing);
     const y = Math.sin(bearing);
     return {
-      id, x: x * radius * .61, y: y * radius * .61, vx: 0, vy: 0,
+      id, x: x * radius * spawnFraction, y: y * radius * spawnFraction, vx: 0, vy: 0,
       steerX: 0, steerY: 0, steerUntil: 0, aimX: -x, aimY: -y,
       dashAt: -DASH_MS, gustAt: -GUST_MS, outAt: null,
     };
   });
   return {
-    bodies, radius, initialRadius: radius, shrinkIndex: 0, elapsedMs: 0,
+    bodies, radius, initialRadius: radius, pulls, shrinkIndex: 0, elapsedMs: 0,
     events: [], nextEventId: 1, gusts: [],
   };
 }
@@ -188,23 +195,35 @@ function isRoundOver(state) {
   return state.elapsedMs >= ROUND_MS || state.bodies.filter(body => body.outAt === null).length <= 1;
 }
 
-function step(state, inputs, dt) {
+function step(state, inputs, dt, { departures = [] } = {}) {
   if (isRoundOver(state)) return state;
   const elapsedMs = Math.min(ROUND_MS, state.elapsedMs + dt);
+  const removed = new Set(departures.map(({ playerId }) => playerId));
   const next = {
     ...state, elapsedMs,
-    bodies: state.bodies.map(body => ({ ...body })),
+    bodies: state.bodies.filter(body => !removed.has(body.id)).map(body => ({ ...body })),
     events: state.events.filter(event => elapsedMs - event.at < EVENT_MEMORY_MS),
-    gusts: state.gusts.filter(gust => elapsedMs - gust.at < gust.duration),
+    gusts: state.gusts.filter(gust => !removed.has(gust.playerId) && elapsedMs - gust.at < gust.duration),
   };
-  const shrink = SHRINKS[next.shrinkIndex];
+  const live = next.bodies.filter(body => body.outAt === null);
+  if (live.length > 1) simulate(next, inputs, live, dt);
+  for (const { playerId } of departures) {
+    const body = state.bodies.find(candidate => candidate.id === playerId);
+    if (body?.outAt === null) emit(next, 'left', { playerId, x: body.x, y: body.y });
+  }
+  next.events = next.events.slice(-MAX_EVENTS);
+  return next;
+}
+
+function simulate(next, inputs, live, dt) {
+  const { elapsedMs } = next;
+  const shrink = next.pulls[next.shrinkIndex];
   if (shrink && elapsedMs >= shrink[0]) {
     next.radius = rugRadius(next.initialRadius, shrink[1]);
     next.shrinkIndex++;
     emit(next, 'shrink');
   }
   applyInputs(next, inputs);
-  const live = next.bodies.filter(body => body.outAt === null);
   for (const body of live) roll(body, next, dt);
   // A second pass separates neighbours pushed together in the first pass.
   for (let pass = 0; pass < 2; pass++) {
@@ -218,24 +237,23 @@ function step(state, inputs, dt) {
     body.outAt = elapsedMs;
     emit(next, 'out', { playerId: body.id, x: body.x, y: body.y });
   }
-  next.events = next.events.slice(-MAX_EVENTS);
-  return next;
 }
 
-function projectForPhone(state, playerId) {
+function projectForPhone(state, playerId, now) {
   const body = state.bodies.find(candidate => candidate.id === playerId);
   if (!body) return null;
   const out = body.outAt !== null;
   const readyAt = out ? body.gustAt + GUST_MS : body.dashAt + DASH_MS;
-  // Half-seconds keep the private snapshot small, including 12 four-byte name characters.
-  return { out, cd: Math.max(0, Math.ceil((readyAt - state.elapsedMs) / 500)) };
+  const cd = Math.max(0, readyAt - state.elapsedMs);
+  // Anchor each charge at projection so a discarded host tick cannot skew later charges.
+  return cd && Number.isFinite(now) ? { out, cd, at: Math.ceil(now + cd) } : { out, cd };
 }
 
 function projectForTv(state) {
-  const next = SHRINKS[state.shrinkIndex];
+  const next = state.pulls[state.shrinkIndex];
   const ms = next ? next[0] - state.elapsedMs : Infinity;
   return {
-    radius: state.radius, elapsedMs: state.elapsedMs,
+    radius: state.radius, initialRadius: state.initialRadius, elapsedMs: state.elapsedMs,
     warning: ms <= WARNING_MS ? { radius: rugRadius(state.initialRadius, next[1]), ms } : null,
     bodies: state.bodies.map(({ id, x, y, vx, vy, outAt }) => ({ id, x, y, vx, vy, outAt })),
     gusts: state.gusts,

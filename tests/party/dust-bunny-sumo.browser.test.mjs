@@ -7,7 +7,7 @@ import { chromium } from 'playwright';
 import { launchPartyHarness } from './harness.mjs';
 
 const gameId = 'dust-bunny-sumo';
-const output = fileURLToPath(new URL('../../work/dust-bunny-sumo/', import.meta.url));
+const output = fileURLToPath(new URL('../../work/dust-bunny-sumo/review/', import.meta.url));
 const mobile = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
 
 function direction({ x, y }, strength = 1) {
@@ -57,6 +57,30 @@ test('Dust Bunny Sumo plays in Chromium with a TV, two phones and fourteen socke
     await context.addInitScript(() => {
       window.sumoCsp = [];
       document.addEventListener('securitypolicyviolation', event => window.sumoCsp.push(event.violatedDirective));
+      if (innerWidth >= 1920) {
+        // Measure painted height from the sprite's opaque rows, including dash and squash.
+        const draw = CanvasRenderingContext2D.prototype.drawImage;
+        const rows = new WeakMap();
+        window.sumoSpriteMinimum = Infinity;
+        CanvasRenderingContext2D.prototype.drawImage = function (sprite, x, y, width, height) {
+          if (height && sprite.height === 18 && this.canvas.hasAttribute('data-party-canvas')) {
+            if (!rows.has(sprite)) {
+              const pixels = sprite.getContext('2d').getImageData(0, 0, sprite.width, sprite.height).data;
+              const visible = Array.from({ length: sprite.height }, (_, row) => row).filter(row => {
+                const start = row * sprite.width * 4;
+                for (let alpha = start + 3; alpha < start + sprite.width * 4; alpha += 4) {
+                  if (pixels[alpha]) return true;
+                }
+                return false;
+              });
+              rows.set(sprite, visible.at(-1) - visible[0] + 1);
+            }
+            const cssHeight = this.canvas.clientHeight / this.canvas.height;
+            window.sumoSpriteMinimum = Math.min(window.sumoSpriteMinimum, cssHeight * height * rows.get(sprite) / sprite.height);
+          }
+          return draw.apply(this, arguments);
+        };
+      }
       const raf = window.requestAnimationFrame.bind(window);
       window.requestAnimationFrame = callback => {
         if (callback.name !== 'drawFrame') return raf(callback);
@@ -135,6 +159,9 @@ test('Dust Bunny Sumo plays in Chromium with a TV, two phones and fourteen socke
   await advanceUntil(() => tvView?.phase === 'countdown', { ticks: 30 });
   await tv.locator('.party-countdown').waitFor({ state: 'visible' });
   await capture(tv, 'countdown');
+  assert.deepEqual(await tv.locator('[data-party-canvas]').evaluate(canvas =>
+    [canvas.width, canvas.height, canvas.clientWidth, canvas.clientHeight]),
+  await tv.locator('.party-stage').evaluate(stage => [stage.clientWidth, stage.clientHeight, stage.clientWidth, stage.clientHeight]));
   await delay(250);
   await tilt.getByRole('button', { name: 'Enable tilt' }).tap();
   await advanceUntil(() => tvView?.phase === 'playing', { ticks: 90 });
@@ -179,7 +206,7 @@ test('Dust Bunny Sumo plays in Chromium with a TV, two phones and fourteen socke
     return Math.hypot(now.x - was.x, now.y - was.y);
   };
   assert.ok(moved(tiltId) > 3 && moved(touchId) > 3, 'both browser controllers move their own bunny');
-  await capture(tv, 'mid-play');
+  await capture(tv, 'mid-play-16');
   await orient(33, -1);
   await capture(tilt, 'phone-tilt');
   await capture(touch, 'phone-stick');
@@ -193,6 +220,8 @@ test('Dust Bunny Sumo plays in Chromium with a TV, two phones and fourteen socke
   await tilt.getByText('Drag to roll').waitFor();
   await touch.getByRole('button', { name: 'Dash' }).tap();
   await advanceUntil(() => tvView.scene.events.some(event => event.kind === 'dash' && event.playerId === touchId));
+  const minimumSpriteCssPx = await tv.evaluate(() => window.sumoSpriteMinimum);
+  assert.ok(Number.isFinite(minimumSpriteCssPx) && minimumSpriteCssPx >= 64, `rider height: ${minimumSpriteCssPx}`);
 
   // Hold an actual drag away from the centre until the touch player's controller changes roles.
   const live = tvView.scene.bodies.find(body => body.id === touchId);
@@ -244,10 +273,69 @@ test('Dust Bunny Sumo plays in Chromium with a TV, two phones and fourteen socke
   assert.deepEqual(issues, []);
   const result = {
     renderMs: percentiles(measured.render), cadenceMs: percentiles(measured.elapsed),
-    lobbyCadenceMs: percentiles(lobbyFrames.elapsed), frames: measured.elapsed.length,
+    lobbyCadenceMs: percentiles(lobbyFrames.elapsed), frames: measured.elapsed.length, minimumSpriteCssPx,
   };
   await writeFile(output + 'frame-times.json', JSON.stringify(result, null, 2) + '\n');
   t.diagnostic(JSON.stringify(result));
   // Headless Chromium controls frame delivery. Gate the time the game spends drawing each frame.
   assert.ok(result.renderMs.p95 < 16.7, `TV draw p95 reached ${result.renderMs.p95} ms`);
+});
+
+test('the two-player TV shows a strong hit and a late guest can practise immediately', { timeout: 20_000 }, async t => {
+  const fixture = await launchPartyHarness(t, { gameId, manual: false });
+  const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
+  t.after(() => browser.close());
+  await mkdir(output, { recursive: true });
+  const tv = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  let tvView;
+  tv.on('websocket', socket => {
+    socket.on('framereceived', ({ payload }) => { tvView = JSON.parse(payload).view ?? tvView; });
+  });
+  const errors = [];
+  tv.on('pageerror', error => errors.push(error.message));
+  await tv.goto(fixture.origin);
+  await tv.getByRole('button', { name: /Dust Bunny Sumo/ }).click();
+  await tv.getByRole('link', { name: 'Host on the TV' }).click();
+  await tv.locator('[data-party-qr] svg').waitFor();
+  const code = await tv.locator('[data-party-code]').textContent();
+  const players = await Promise.all(['Miso', 'Pip'].map(async (name, look) => {
+    const phone = await fixture.connect(await fixture.join(code, look, name));
+    phone.send({ type: 'ready', value: true });
+    return phone;
+  }));
+  await tv.getByText('2 of 16 ready').waitFor();
+  await tv.getByRole('button', { name: 'Start', exact: true }).click();
+  await tv.locator('.party-stage[data-phase="playing"]').waitFor();
+  const toward = new Map(tvView.scene.bodies.map(body => [body.id, direction(body, -1)]));
+  for (let tick = 0; tick < 15 && !tvView.scene.events.some(event => event.kind === 'hit' && event.strong); tick++) {
+    for (const player of players) {
+      player.input(toward.get(player.playerId));
+      if (!tick) player.input({ kind: 'dash' });
+    }
+    await delay(65);
+  }
+  assert.ok(tvView.scene.events.some(event => event.kind === 'hit' && event.strong));
+  await tv.screenshot({ path: output + 'heavy-hit.png' });
+  for (let tick = 0; tick < 15; tick++) {
+    for (const player of players) player.input(direction(toward.get(player.playerId), -.45));
+    await delay(70);
+  }
+  await tv.screenshot({ path: output + 'mid-play-2.png' });
+  const late = await browser.newPage(mobile);
+  const inputs = [];
+  late.on('websocket', socket => socket.on('framesent', ({ payload }) => {
+    if (JSON.parse(payload).type === 'input') inputs.push(payload);
+  }));
+  await late.goto(`${fixture.origin}/?party=join&code=${code}`);
+  await late.getByLabel('Your name').fill('Clover');
+  await late.getByRole('radio').nth(2).check();
+  await late.getByRole('button', { name: 'Ready', exact: true }).tap();
+  await late.getByText('Practise steering').waitFor({ timeout: 3000 });
+  const stick = late.getByRole('button', { name: 'Direction', exact: true });
+  await stick.focus();
+  await late.keyboard.down('ArrowRight');
+  await late.waitForFunction(() => document.querySelector('.sumo-steering').style.getPropertyValue('--sumo-x') === '36%');
+  await late.keyboard.up('ArrowRight');
+  assert.deepEqual(inputs, []);
+  assert.deepEqual(errors, []);
 });

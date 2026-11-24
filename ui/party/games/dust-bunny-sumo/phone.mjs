@@ -2,6 +2,8 @@ import { mountButton, mountStick } from '../../phone/controls.mjs';
 
 const SEND_MS = 75;
 const SENSOR_TIMEOUT_MS = 850;
+const DASH_MS = 2000;
+const GUST_MS = 4000;
 const CENTRE = { x: 0, y: 0 };
 const SWIPE_MIN_PX = 24;
 
@@ -14,7 +16,7 @@ function direction(x, y) {
   };
 }
 
-export function mountDustBunnyPhone(root, { input }) {
+export function mountDustBunnyPhone(root, { input, serverNow }) {
   root.innerHTML = `<div class="sumo-controls">
     <div data-sumo-rider>
       <button class="party-secondary sumo-mode" type="button" hidden>Enable tilt</button>
@@ -24,7 +26,7 @@ export function mountDustBunnyPhone(root, { input }) {
         <span class="sumo-steer-label" aria-hidden="true">Drag to roll</span>
       </div>
       <div class="sumo-dash"></div>
-      <progress class="sumo-charge" max="4" value="4" aria-label="Dash charge"></progress>
+      <progress class="sumo-charge" max="${DASH_MS}" value="${DASH_MS}" aria-label="Dash charge"></progress>
     </div>
     <div data-sumo-draught hidden>
       <h2>You’re a draught</h2>
@@ -32,7 +34,7 @@ export function mountDustBunnyPhone(root, { input }) {
         <span aria-hidden="true">↖ ↑ ↗<br>← ✦ →<br>↙ ↓ ↘</span>
         <strong>Swipe for a gust</strong>
       </button>
-      <progress class="sumo-charge" max="8" value="8" aria-label="Gust charge"></progress>
+      <progress class="sumo-charge" max="${GUST_MS}" value="${GUST_MS}" aria-label="Gust charge"></progress>
     </div>
   </div>`;
   const document = root.ownerDocument;
@@ -54,9 +56,12 @@ export function mountDustBunnyPhone(root, { input }) {
   mode.hidden = !view.isSecureContext || !sensor;
   let rolling = false;
   let blowing = false;
+  let practicing = false;
   let cooldown = 0;
+  let readyAt;
   let pendingUntil = 0;
   let timer;
+  let chargeFrame;
   let current = CENTRE;
   let sent = CENTRE;
   let useTilt = false;
@@ -80,12 +85,24 @@ export function mountDustBunnyPhone(root, { input }) {
     }
   }
 
+  function paintCharge() {
+    chargeFrame = undefined;
+    const pending = view.performance.now() < pendingUntil;
+    const now = serverNow();
+    const remaining = readyAt && now !== null ? Math.max(0, Math.min(cooldown, readyAt - now)) : cooldown;
+    dashCharge.value = pending && rolling ? 0 : DASH_MS - Math.min(DASH_MS, remaining);
+    gustCharge.value = pending && blowing ? 0 : GUST_MS - Math.min(GUST_MS, remaining);
+    if ((rolling || blowing) && (pending || (remaining > 0 && now !== null && readyAt))) {
+      chargeFrame = view.requestAnimationFrame(paintCharge);
+    }
+  }
+
   function refresh() {
     const pending = view.performance.now() < pendingUntil;
     dash.setEnabled(rolling && !cooldown && !pending);
     swipe.disabled = !blowing || cooldown > 0 || pending;
-    dashCharge.value = pending && rolling ? 0 : 4 - Math.min(4, cooldown);
-    gustCharge.value = pending && blowing ? 0 : 8 - Math.min(8, cooldown);
+    view.cancelAnimationFrame(chargeFrame);
+    paintCharge();
   }
 
   function fire(action) {
@@ -97,7 +114,7 @@ export function mountDustBunnyPhone(root, { input }) {
   }
 
   const stick = mountStick(find('.sumo-stick'), {
-    onInput({ x, y }) { if (rolling && !neutral) setDirection(direction(x, y)); },
+    onInput({ x, y }) { if ((rolling || practicing) && !neutral) setDirection(direction(x, y)); },
   });
   const dash = mountButton(find('.sumo-dash'), {
     label: 'Dash',
@@ -110,8 +127,8 @@ export function mountDustBunnyPhone(root, { input }) {
 
   function paintMode() {
     steering.dataset.tilt = String(Boolean(neutral));
-    stick.setEnabled(rolling && !neutral);
-    stickLabel.textContent = neutral ? 'Tilt to roll' : 'Drag to roll';
+    stick.setEnabled((rolling || practicing) && !neutral);
+    stickLabel.textContent = practicing ? 'Practise steering' : neutral ? 'Tilt to roll' : 'Drag to roll';
     mode.textContent = useTilt ? 'Use stick' : 'Enable tilt';
   }
 
@@ -199,12 +216,15 @@ export function mountDustBunnyPhone(root, { input }) {
   refresh();
 
   return {
-    update(state, enabled) {
+    practiceWhileWaiting: true,
+    update(state, enabled, practice = false) {
       const wasRolling = rolling;
       const wasBlowing = blowing;
+      const wasPracticing = practicing;
       rolling = Boolean(enabled && state && !state.out);
       blowing = Boolean(enabled && state?.out);
-      if (rolling !== wasRolling) {
+      practicing = practice;
+      if (rolling !== wasRolling || practicing !== wasPracticing) {
         clearInterval(timer);
         sent = CENTRE;
         resetDirection();
@@ -212,6 +232,8 @@ export function mountDustBunnyPhone(root, { input }) {
       }
       if (rolling !== wasRolling || blowing !== wasBlowing || state?.cd) pendingUntil = 0;
       cooldown = state?.cd ?? 0;
+      readyAt = state?.at;
+      rider.toggleAttribute('data-practice', practice);
       rider.hidden = Boolean(state?.out);
       draught.hidden = !state?.out;
       if (!blowing) clearSwipe();
@@ -220,6 +242,7 @@ export function mountDustBunnyPhone(root, { input }) {
     dispose() {
       disposed = true;
       clearInterval(timer);
+      view.cancelAnimationFrame(chargeFrame);
       view.removeEventListener('deviceorientation', orient);
       document.removeEventListener('visibilitychange', clearOnHide);
       stick.dispose();

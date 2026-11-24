@@ -33,7 +33,8 @@ test('scales rug area for 2, 8 and 16 players with no overlapping starts', () =>
     const { radius, bodies } = game.projectForTv(round(count));
     assert.equal(bodies.length, count);
     for (const [index, first] of bodies.entries()) {
-      assert.ok(Math.hypot(first.x, first.y) < radius);
+      assert.ok(Math.abs(Math.hypot(first.x, first.y) - radius * (.42 + .013 * count)) < 1e-9);
+      assert.deepEqual([first.vx, first.vy], [0, 0]);
       for (const second of bodies.slice(index + 1)) assert.ok(Math.hypot(first.x - second.x, first.y - second.y) > 23);
     }
     return radius;
@@ -61,12 +62,12 @@ test('dash locks for two seconds and uses the last steering direction', () => {
   state = tick(state, command('p1', 'roll', { x: 0, y: 1 }), command('p1', 'roll', { x: 0, y: 0 }), command('p1', 'dash'));
   assert.equal(state.bodies[0].vx, 0);
   assert.ok(state.bodies[0].vy > 50);
-  assert.equal(game.projectForPhone(state, 'p1').cd, 4);
+  assert.deepEqual(game.projectForPhone(state, 'p1', 10_005.6), { out: false, cd: 2000, at: 12_006 });
   assert.deepEqual(tick(state, command('p1', 'dash')), tick(state));
   state = advance(state, 39);
-  assert.equal(game.projectForPhone(state, 'p1').cd, 1);
+  assert.equal(game.projectForPhone(state, 'p1').cd, STEP_MS);
   state = tick(state, command('p1', 'dash'));
-  assert.equal(game.projectForPhone(state, 'p1').cd, 4);
+  assert.equal(game.projectForPhone(state, 'p1').cd, 2000);
 });
 
 test('an elastic circle impact transfers speed and keeps bodies apart', () => {
@@ -80,7 +81,7 @@ test('an elastic circle impact transfers speed and keeps bodies apart', () => {
 });
 
 test('Lala shows the next rug radius two seconds before it changes', () => {
-  const start = round();
+  const start = round(8);
   const radius = start.radius;
   const early = advance(start, 279);
   assert.equal(game.projectForTv(early).warning, null);
@@ -101,7 +102,7 @@ test('a knocked-out player can send a weak gust on a four-second cooldown', () =
   assert.deepEqual(game.projectForPhone(out, 'p1'), { out: true, cd: 0 });
   const gust = command('p1', 'gust', { x: 1, y: 0 });
   const sent = tick(out, gust);
-  assert.equal(game.projectForPhone(sent, 'p1').cd, 8);
+  assert.equal(game.projectForPhone(sent, 'p1').cd, 4000);
   assert.deepEqual(tick(sent, gust), tick(sent));
   const crossed = advance(sent, 14);
   assert.ok(crossed.bodies[1].x > -36 && crossed.bodies[1].x < -25);
@@ -162,14 +163,56 @@ test('the 90-second cap breaks survivor ties by distance from centre', () => {
 
 test('fixed seed and tick log replay exactly to the same final scores', () => {
   const roster = players(16);
-  const initial = game.createRound(roster, SEED);
+  const match = { startsAt: 1234, previousResults: [], roomRound: 4, gameId: game.id };
+  const initial = game.createRound(roster, SEED, 3, match);
   const log = Array.from({ length: 420 }, (_, index) => index >= 115 && index < 175
     ? initial.bodies.slice(1).map(({ id, x, y }) => command(id, 'roll', { x: x / Math.hypot(x, y), y: y / Math.hypot(x, y) }))
     : []);
-  const replay = seed => log.reduce((state, inputs) => tick(state, ...inputs), game.createRound(roster, seed));
+  const replay = seed => log.reduce((state, inputs, index) => game.step(state, inputs, STEP_MS, {
+    departures: index === 70 ? [{ playerId: 'p16', reason: 'expired' }] : [],
+  }), game.createRound(roster, seed, 3, match));
   const result = replay(SEED);
   assert.ok(game.isRoundOver(result));
   assert.equal(game.scores(result)[0].playerId, 'p1');
   assert.deepEqual(replay(SEED), result);
-  assert.notDeepEqual(game.createRound(roster, 'different'), initial);
+  assert.notDeepEqual(game.createRound(roster, 'different', 3, match), initial);
+});
+
+test('a departed rider cannot collide or score on the removal tick', () => {
+  const start = round(3);
+  Object.assign(start.bodies[0], { x: 0, y: 0 });
+  Object.assign(start.bodies[1], { x: -22, y: 0, vx: 80 });
+  Object.assign(start.bodies[2], { x: -60, y: 0 });
+  const removed = game.step(start, [command('p2', 'dash')], STEP_MS, {
+    departures: [{ playerId: 'p2', reason: 'kicked' }],
+  });
+  assert.equal(removed.bodies[0].vx, 0);
+  assert.deepEqual(game.projectForTv(removed).bodies.map(body => body.id), ['p1', 'p3']);
+  assert.deepEqual(game.projectForTv(removed).events.map(({ kind, playerId, x, y }) =>
+    ({ kind, playerId, x, y })), [{ kind: 'left', playerId: 'p2', x: -22, y: 0 }]);
+  assert.equal(game.projectForPhone(removed, 'p2'), null);
+  assert.ok(game.scores(removed).every(score => score.playerId !== 'p2'));
+  assert.equal(start.bodies.length, 3);
+});
+
+test('the remaining rider wins immediately when the other rider leaves', () => {
+  const start = round();
+  Object.assign(start.bodies[0], { x: start.radius - 1, y: 0, vx: 100 });
+  const result = game.step(start, [], STEP_MS, { departures: [{ playerId: 'p2', reason: 'expired' }] });
+  assert.ok(game.isRoundOver(result));
+  assert.equal(result.bodies[0].outAt, null);
+  assert.deepEqual(game.scores(result), [{ playerId: 'p1', score: 1 }]);
+});
+
+test('later game rounds and duels get a sooner first pull with the same two-second warning', () => {
+  const warningAt = (count, gameRound, ms) => {
+    const start = game.createRound(players(count), SEED, gameRound);
+    const early = advance(start, ms / STEP_MS - 1);
+    assert.equal(game.projectForTv(early).warning, null);
+    assert.equal(game.projectForTv(tick(early)).warning?.ms, 2000);
+  };
+  warningAt(2, 1, 12_000);
+  warningAt(16, 2, 12_000);
+  warningAt(16, 4, 8_000);
+  warningAt(16, 99, 8_000);
 });
