@@ -475,7 +475,7 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
     if (room.connections.size >= LIMITS.maxRoomSockets && !old) { disconnect(conn, 4429, 'room_capacity'); return; }
     if (old) disconnect(old, 4409, 'controller_replaced', false);
     conn.room = room; conn.viewer = actor; conn.bearer = message.token;
-    conn.authenticated = true; pendingAuth--; conn.verifiedAt = now();
+    conn.verifiedAt = now();
     conn.controllerEpoch = actor.role === 'player' ? randomUUID() : null;
     room.connections.add(conn);
     if (actor.role === 'player') {
@@ -487,8 +487,10 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
     await room.commandTail.catch(() => {});
     if (!conn.active || room.closed || room.fault) return;
     cancel(conn.authTimer); conn.authTimer = null;
-    send(conn, { type: 'welcome', protocol: 1, viewer: actor, controllerEpoch: conn.controllerEpoch,
-      snapshot: snapshot(room, conn, actor) });
+    // Enable gameplay only once this socket can queue its Welcome as the first frame.
+    conn.authenticated = true; pendingAuth--;
+    if (!send(conn, { type: 'welcome', protocol: 1, viewer: actor, controllerEpoch: conn.controllerEpoch,
+      snapshot: snapshot(room, conn, actor) })) return;
     globalStats.authenticated++; room.stats.connections++;
     scheduleReauthorization(conn); lifecycle(room, 'presence');
   }

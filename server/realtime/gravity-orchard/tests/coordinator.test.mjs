@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import WebSocket from 'ws';
+import * as orchard from '../../../../games/gravity-orchard/engine.mjs';
+import { createRealtimeClient } from '../../../../ui/realtime/gravity-orchard/index.mjs';
 import { createRealtimeCoordinator, readCoordinatorDiagnostics } from '../index.mjs';
 import { migrateCheckpoint } from '../lib/checkpoint.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
@@ -252,4 +255,31 @@ test('explicit room closure remains terminal rather than repeatedly reconnecting
   const [code] = await closed;
   assert.equal(code, 4410);
   assert.equal(h.coordinator.getPublicView('UNIT'), null);
+});
+
+test('an active seat replacement receives Welcome before the network pause snapshot', async (t) => {
+  const h = await harness({ simulation: orchard });
+  const { jon } = await h.players();
+  const closed = once(jon.ws, 'close');
+  const firstMessages = [];
+  class ReplacementSocket extends WebSocket {
+    constructor(url) {
+      super(url, { origin: h.origin });
+      this.on('message', data => firstMessages.push(JSON.parse(data).type));
+    }
+  }
+  const snapshots = [];
+  const replacement = createRealtimeClient({
+    url: h.origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
+    roomCode: 'UNIT', token: 'unit-jon', WebSocketImpl: ReplacementSocket,
+    now: h.clock.now, onSnapshot: packet => snapshots.push(packet),
+  });
+  t.after(async () => { replacement.dispose(); await h.close(); });
+  replacement.connect();
+  assert.equal((await closed)[0], 4409);
+  await flush();
+  assert.equal(firstMessages[0], 'welcome');
+  assert.equal(snapshots[0].view.pauseReason, 'network');
+  const result = await replacement.sendCommand({ id: 'fresh-ready', kind: 'ready', payload: { value: true } });
+  assert.equal(result.accepted, true);
 });

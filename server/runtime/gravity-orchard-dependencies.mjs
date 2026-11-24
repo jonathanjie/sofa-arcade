@@ -6008,8 +6008,6 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     conn.room = room;
     conn.viewer = actor;
     conn.bearer = message.token;
-    conn.authenticated = true;
-    pendingAuth--;
     conn.verifiedAt = now();
     conn.controllerEpoch = actor.role === "player" ? randomUUID() : null;
     room.connections.add(conn);
@@ -6027,13 +6025,15 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     if (!conn.active || room.closed || room.fault) return;
     cancel(conn.authTimer);
     conn.authTimer = null;
-    send(conn, {
+    conn.authenticated = true;
+    pendingAuth--;
+    if (!send(conn, {
       type: "welcome",
       protocol: 1,
       viewer: actor,
       controllerEpoch: conn.controllerEpoch,
       snapshot: snapshot(room, conn, actor)
-    });
+    })) return;
     globalStats.authenticated++;
     room.stats.connections++;
     scheduleReauthorization(conn);

@@ -95,7 +95,7 @@ export async function harness({ simulation = createMockSimulation({ countdownTic
     await clock.advance(1000 / 60);
     return { jon, lydia };
   }
-  return { coordinator, clock, store, writes, connect, players, actors,
+  return { coordinator, clock, origin, store, writes, connect, players, actors,
     async close() {
       await coordinator.close();
       for (const client of clients) client.ws.terminate();
