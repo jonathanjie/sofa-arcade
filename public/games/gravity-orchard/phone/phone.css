@@ -7,8 +7,6 @@
   --go3-green: #365f48;
   --go3-tint: #e5ecd7;
   --go3-accent: #b4be86;
-  --go3-phase-note-type: 12px;
-  --go3-phase-note-leading: 1.45;
   --go3-phase-note-inset: 5px;
   color: var(--go3-ink);
   background: radial-gradient(ellipse at 10% 0, #e8edda 0, transparent 48%), var(--go3-paper);
@@ -54,12 +52,13 @@
 .go3-phone .go3-time { font: 27px/1 Georgia, serif; color: #5f704e; }
 .go3-phone .go3-phase-note {
   grid-column: 1 / -1;
-  font-size: var(--go3-phase-note-type);
-  line-height: var(--go3-phase-note-leading);
+  font-size: 12px;
+  line-height: 1.45;
   min-block-size: calc(1lh + var(--go3-phase-note-inset));
   padding-block-start: var(--go3-phase-note-inset);
   color: var(--go3-muted);
 }
+.go3-phone[data-phase='playing'] .go3-phase-note:empty { display: none; }
 .go3-phone .go3-setup { border: 1px solid #c4cead; background: #f0f3e5; border-radius: 18px; padding: 16px; margin-bottom: 18px; }
 .go3-phone .go3-setup-heading { display: flex; gap: 10px; align-items: center; margin-bottom: 9px; }
 .go3-phone .go3-setup h3 { font: 20px/1.2 Georgia, serif; }
@@ -107,7 +106,7 @@
 .go3-phone[data-phase='playing'] .go3-brake > span { opacity: 0; }
 .go3-phone .go3-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 17px; }
 .go3-phone .go3-tools .go3-secondary { min-height: 50px; }
-.go3-phone .go3-ready-panel { padding-top: 20px; }
+.go3-phone .go3-ready-panel { padding-bottom: 20px; }
 .go3-phone .go3-ready-seats { display: flex; gap: 8px; justify-content: space-between; font-size: 11px; margin-bottom: 11px; }
 .go3-phone .go3-ready-seats > span[data-ready='true'] { color: #2c633f; font-weight: 700; }
 .go3-phone .go3-ready { width: 100%; }
@@ -176,7 +175,7 @@
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
-    padding-top: 8px;
+    padding-bottom: 8px;
   }
   .go3-phone .go3-ready-seats { margin-bottom: 0; }
   .go3-phone .go3-ready-note { padding-top: 0; }

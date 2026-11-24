@@ -134,6 +134,12 @@ export function mountPhone(root, {
           <button class="go3-secondary" type="button" data-go3="touch-mode">${icon('touch')}<span>Use touch controls</span></button>
         </div>
       </section>
+      <section class="go3-ready-panel" data-go3="ready-panel">
+        <div class="go3-ready-seats" data-go3="ready-seats"><span data-go3="self-ready">${playerName} · Not ready</span><span data-go3="partner-ready">${partnerName} · Not ready</span></div>
+        <button class="go3-primary go3-ready" type="button" data-go3="ready">${icon('check')}<span>Ready</span></button>
+        <p class="go3-ready-note" data-go3="ready-note">Both gardeners start together.</p>
+      </section>
+      <p class="go3-error" data-go3="error" role="alert" hidden></p>
       <div class="go3-play-controls">
         <section class="go3-controller" aria-labelledby="${id}-control-title">
           <div class="go3-control-heading"><h3 id="${id}-control-title" data-go3="control-title">Your tilt</h3><span data-go3="vector-label">Centred</span></div>
@@ -156,16 +162,10 @@ export function mountPhone(root, {
           </div>
         </div>
       </div>
-      <section class="go3-ready-panel" data-go3="ready-panel">
-        <div class="go3-ready-seats" data-go3="ready-seats"><span data-go3="self-ready">${playerName} · Not ready</span><span data-go3="partner-ready">${partnerName} · Not ready</span></div>
-        <button class="go3-primary go3-ready" type="button" data-go3="ready">${icon('check')}<span>Ready</span></button>
-        <p class="go3-ready-note" data-go3="ready-note">Both gardeners start together.</p>
-      </section>
       <section class="go3-results" data-go3="results" hidden>
         <div class="go3-result-symbol">${icon('basket')}</div><h3>Picnic complete</h3><p data-go3="results-summary"></p>
         <p class="go3-ready-note">Choose the next adventure on the TV.</p>
       </section>
-      <p class="go3-error" data-go3="error" role="alert" hidden></p>
       <p class="go3-live go3-sr-only" data-go3="announcement" role="status" aria-live="polite"></p>
     </div>
     <div class="go3-dialog-backdrop" data-go3="help-backdrop" hidden>
@@ -175,7 +175,7 @@ export function mountPhone(root, {
         <div class="go3-help-tip">${icon('brake')}<p><strong>Hold Brake</strong> to steady your fruit. You can steer and brake together.</p></div>
         <div class="go3-help-tip">${icon('center')}<p><strong>Recenter</strong> with your phone in a natural seated grip. Rotating your screen pauses play for a new centre.</p></div>
         <h3>Your controls</h3>
-        <div class="go3-help-modes"><button type="button" class="go3-secondary" data-go3="tilt-mode">${icon('phone')}<span>Set up tilt</span></button><button type="button" class="go3-secondary" data-go3="help-touch">${icon('touch')}<span>Use touch</span></button></div>
+        <div class="go3-help-modes"><button type="button" class="go3-secondary" data-go3="tilt-mode">${icon('phone')}<span>Set up tilt</span></button><button type="button" class="go3-secondary" data-go3="help-touch">${icon('touch')}<span>Use touch controls</span></button></div>
         <p class="go3-keyboard-help"><strong>Keyboard:</strong> focus the steering pad, use arrows or W A S D, and hold Space for Brake. Escape pauses.</p>
         <p class="go3-help-pause">Closing Help keeps play paused. Both gardeners must be ready to continue.</p>
         <button class="go3-secondary go3-exit" type="button" data-go3="exit">${icon('exit')}<span>Leave controller</span></button>
@@ -575,7 +575,7 @@ export function mountPhone(root, {
       paused: view?.pauseReason === 'network' ? 'Reconnect, then get ready together.' : 'Both gardeners choose Ready to continue.',
       interlude: 'Catch your breath before the next garden.', finished: '',
     };
-    refs['phase-note'].textContent = connection.state !== 'connected' ? 'Your controls are paused while we reconnect.' : notes[phase];
+    refs['phase-note'].textContent = connection.state !== 'connected' ? 'Controls paused. Reconnecting…' : notes[phase];
     refs.setup.hidden = !setupOpen;
     const setupCopy = {
       insecure: ['Touch is ready to play', 'Tilt needs the one-time setup on your Mac. You can play the whole game with touch.'],
