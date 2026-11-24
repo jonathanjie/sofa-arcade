@@ -4,7 +4,7 @@
   "output": {
     "path": "server/runtime/gravity-orchard-dependencies.mjs",
     "bytes": 705445,
-    "sha256": "73ac6618616a0df4d10810d118d991e3ebc178a5de9d7d74cf4539684b8920aa"
+    "sha256": "fcd67af646648ca5d5ef3f880fdd0a6f1e8104cfe7909134fa3b6f3c3a61c815"
   },
   "optionalUnbundledAccelerators": [
     "bufferutil",
@@ -1297,8 +1297,8 @@
     },
     {
       "path": "server/realtime/gravity-orchard/lib/protocol.mjs",
-      "bytes": 6376,
-      "sha256": "d0e44bab926c1514e6c3227e6bfb0a224fa158eef704ddd5c8402c7f4c9cd38c"
+      "bytes": 6377,
+      "sha256": "8004e5faa387b1f5ee9dd38cd3ed961bf675dbf475afffbd497a4bc1613a626f"
     },
     {
       "path": "server/reject-upgrade.mjs",

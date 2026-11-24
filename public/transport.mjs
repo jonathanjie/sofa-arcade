@@ -143,7 +143,7 @@ export function subscribeRoom({ code, token, onRoom, onConnection = () => {}, on
         status('offline', terminal
           ? { state: 'error', message: 'This room session ended. Rejoin from the game page.' }
           : { state: 'offline', message: 'Live updates disconnected. Reconnecting…' });
-        if (!terminal) {
+        if (!terminal && !stopped) {
           const delay = Math.min(5000, retryMs * 2 ** Math.min(failures++, 4));
           retryTimer = setTimeout(connect, delay);
         }

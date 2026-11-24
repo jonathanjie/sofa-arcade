@@ -6,6 +6,8 @@ export const STAGES = Object.freeze([
   { id: 'moonlight-picnic', name: "Lala’s Moonlight Picnic" },
 ]);
 const PHASES = ['waiting', 'countdown', 'playing', 'paused', 'interlude', 'finished'];
+// Index by the number of completed orders in a four-order stage.
+const STARS_BY_ORDER_COUNT = [0, 1, 1, 2, 3];
 const PAUSES = [null, 'requested', 'help', 'recenter', 'network', 'host-stall', 'recovery'];
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const finite = (value, min = -1e6, max = 1e6) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
@@ -39,7 +41,7 @@ export function readPublicView(raw) {
     if (!list(raw.gateStates, 32, gate => record(gate) && text(gate.id) && ['open', 'forecast', 'closed'].includes(gate.state) && integer(gate.ticksToChange, 0, 1e6) && flag(gate.closureDeferred))) return null;
     if (raw.gust !== null && !(record(raw.gust) && text(raw.gust.id) && ['forecast', 'active'].includes(raw.gust.phase) && finite(raw.gust.x, -1, 1) && finite(raw.gust.y, -1, 1) && integer(raw.gust.ticksRemaining, 0, 5400))) return null;
     if (!record(raw.players) || !['jon', 'lydia'].every(id => record(raw.players[id]) && record(raw.players[id].input) && finite(raw.players[id].input.x, -1, 1) && finite(raw.players[id].input.y, -1, 1) && flag(raw.players[id].input.brake))) return null;
-    if (!list(raw.results, 3, result => record(result) && integer(result.stageIndex, 0, 2) && integer(result.ordersCompleted, 0, 4) && integer(result.composted, 0, 24) && integer(result.stars, 0, 3) && integer(result.elapsedTicks))) return null;
+    if (!list(raw.results, 3, result => record(result) && integer(result.stageIndex, 0, 2) && integer(result.ordersCompleted, 0, 4) && integer(result.composted, 0, 24) && result.stars === STARS_BY_ORDER_COUNT[result.ordersCompleted] && integer(result.elapsedTicks))) return null;
     if (!unique(raw.results.map(result => result.stageIndex))) return null;
     if (!list(raw.events, 64, event => record(event) && text(event.id) && text(event.kind) && integer(event.tick, 0, raw.tick) && (event.entityId === undefined || text(event.entityId)) && (event.playerId === undefined || ['jon', 'lydia'].includes(event.playerId)) && (event.x === undefined || finite(event.x)) && (event.y === undefined || finite(event.y)))) return null;
     return {

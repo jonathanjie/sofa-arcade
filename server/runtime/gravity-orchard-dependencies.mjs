@@ -5197,7 +5197,7 @@ var LIMITS = Object.freeze({
   pauseInputMs: 2e3,
   maxObservedTickLag: 30,
   maxCatchUpTicks: 5,
-  hostStallMs: 250,
+  hostStallMs: 1e3,
   authTimeoutMs: 5e3,
   reauthorizeMs: 1e3,
   reauthorizeTimeoutMs: 1e3,
