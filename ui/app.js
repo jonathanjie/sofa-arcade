@@ -204,7 +204,7 @@ function lobby() {
   return `<main class="lobby-wrap"><section class="lobby-intro"><span class="eyebrow">Make yourselves comfortable</span><h1>${state.gameId===GRAVITY_ORCHARD_GAME_ID?'Your picnic<br>is almost ready.':state.gameId===ODD_LAWS_GAME_ID?'Your council<br>is almost ready.':'Your kingdom<br>is almost ready.'}</h1><p>Leave this screen on the TV. Scan the code with each phone, then choose Jon or Lydia. Your phones become the controllers.</p><div class="lobby-cat">${character('lala')}</div><div class="lobby-steps"><span class="lobby-step"><span class="step-dot">1</span> Scan on both phones</span><span class="lobby-step"><span class="step-dot">2</span> Pick your character</span><span class="lobby-step"><span class="step-dot">3</span> ${state.gameId===GRAVITY_ORCHARD_GAME_ID?'Enter the orchard':state.gameId===ODD_LAWS_GAME_ID?'Convene the council':'Let Lala loose'}</span></div></section><section class="lobby-card"><span class="eyebrow">Join this room</span><div class="room-code" aria-label="Room code ${esc(state.code.split('').join(' '))}">${esc(state.code)}</div><div class="qr-wrap" id="room-qr"><span class="qr-fallback">Open this page on your phone<br>and enter the room code.</span></div><button class="text-button" data-action="copy-link">${icon('copy')} Copy phone link</button>${orchardJoinOptions()}<div class="lobby-players">${lobbySeat('jon')}${lobbySeat('lydia')}</div><button class="button full" data-action="start" ${!both || state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('paw')}${both ? (state.gameId===GRAVITY_ORCHARD_GAME_ID?'Enter the orchard':state.gameId===ODD_LAWS_GAME_ID?'Convene the council':'Let the mischief begin') : 'Waiting for both players'}</button><p class="lobby-hint">${both ? 'Both adventurers have arrived. Start when you’re ready.' : 'Each phone controls one adventurer. Keep this TV page open.'}</p></section></main>`;
 }
 function joinScreen() {
-  const choosing = !!state.code;
+  const choosing = !!state.room;
   const ps = roomPlayers();
   const ownTokens=readCredentials(state.code).playerTokens||{};
   return `<main class="join-wrap"><section class="join-card"><span class="eyebrow">A seat on the sofa</span><h1>${choosing ? 'Who’s playing?' : 'Join the room.'}</h1><p>${choosing ? `You’re joining room <strong>${esc(state.code)}</strong>. Choose your adventurer.` : 'Enter the room code shown on your TV.'}</p>${choosing ? `<div class="character-choices">${['jon','lydia'].map(id => {const taken=ps[id]?.joined&&!ownTokens[id];return `<button class="character-choice ${id} ${state.preferredSeat===id?'preferred':''}" data-action="claim" data-player="${id}" ${state.busy || taken ? 'disabled' : ''}><div class="portrait">${character(id)}</div><strong>${NAMES[id]}</strong><small>${taken ? 'Already on the sofa' : ownTokens[id]?'Return to this controller':id === 'jon' ? 'The teal kingdom' : 'The rose kingdom'}</small></button>`;}).join('')}</div><button class="link-button" data-action="different-room">Use a different room code</button>` : `<form id="join-form"><label class="form-label" for="room-input">Room code</label><input class="code-input" id="room-input" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="ABCDEF" required aria-describedby="join-code-hint"><button class="button full" type="submit" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('phone')} Find my room</button></form>`}</section><p class="join-caption" id="join-code-hint">${choosing ? 'The big board stays on the TV.<br>Your moves happen here.' : 'You can also scan the QR code on the TV.'}</p></main>`;
@@ -464,7 +464,7 @@ async function openOrchardTutorial(){
     const modules=await ensureOrchardModules();
     if(epoch!==roomEpoch||serial!==orchardTutorialSerial)return;
     state.modal=null;render();
-    orchardTutorial=modules.mountTutorial(document.body,{onClose:()=>{orchardTutorial=null;},inputMode:'touch',reducedMotion:motionPreference.matches});
+    orchardTutorial=modules.mountTutorial(document.body,{onClose:()=>{orchardTutorial=null;if(state.view==='tutorial')openGame(GRAVITY_ORCHARD_GAME_ID);},inputMode:'touch',reducedMotion:motionPreference.matches});
   }catch(error){if(epoch===roomEpoch){state.error=error.message;render();}}
 }
 function renderOrchardMatch(){
@@ -554,7 +554,7 @@ async function openOddTutorial({replay=false}={}) {
     collectionTutorial=mountCollectionTutorial({
       shell:app,createTutorial:modules.createTutorial,rules:modules.rules,assets:modules.assets,sound:audio,
       preferences:{reducedMotion:motionPreference.matches},replay,
-      onClose:()=>{collectionTutorial=null;if(document.activeElement===document.body)app.querySelector('[data-action="odd-tutorial"]')?.focus({preventScroll:true});},
+      onClose:()=>{collectionTutorial=null;if(state.view==='tutorial')openGame(ODD_LAWS_GAME_ID);if(document.activeElement===document.body)app.querySelector('[data-action="odd-tutorial"]')?.focus({preventScroll:true});},
     });
   }catch(error){if(epoch===roomEpoch&&serial===collectionTutorialSerial){state.error=error.message;render();}}
   finally{if(serial===collectionTutorialSerial)collectionTutorialPending=false;}
@@ -615,11 +615,37 @@ function renderScreen() {
       if (state.room || !state.busy) return state.role === 'host' ? lobby() : waiting();
       break;
     case 'game': return engine && game() ? (state.role === 'player' ? controller(game()) : tvBoard(game())) : sofaLoadingView();
-    case 'tutorial': return engine && game() ? tutorialView() : sofaLoadingView();
+    case 'tutorial':
+      if (orchardTutorial || collectionTutorial) return gameDetail();
+      if (state.gameId !== SOFA_GAME_ID) return '<main class="collection-loading" role="status">Opening the tutorial…</main>';
+      return engine && game() ? tutorialView() : sofaLoadingView();
   }
   return '<main class="collection-loading" role="status"><span class="spinner"></span> Opening your room…</main>';
 }
 function render() {
+  const previousMain = app.querySelector('main');
+  const restoreMainFocus = document.activeElement === previousMain;
+  renderView();
+  const main = app.querySelector('main');
+  const loading = main?.classList.contains('collection-loading');
+  const gameTitle = gameById(state.gameId).title;
+  const screenTitles = {
+    collection: 'Sofa Arcade — Games for two', detail: gameTitle,
+    join: state.room ? 'Choose your seat' : 'Join a room', lobby: gameTitle + ' — Lobby',
+    game: gameTitle + (state.mode === 'practice' ? ' — Practice' : state.role === 'player' ? ' — Controller' : ' — TV'),
+    tutorial: gameTitle + ' — Tutorial',
+  };
+  const title = loading && state.view !== 'tutorial' ? 'Loading — Sofa Arcade' : screenTitles[state.view];
+  const changed = document.title !== title;
+  if (changed) document.title = title;
+  if (!state.modal && main && document.activeElement === document.body &&
+      (changed || restoreMainFocus || previousMain?.id === 'startup')) {
+    const target = main.querySelector('#room-input') || main;
+    if (target === main) main.tabIndex = -1;
+    target.focus({preventScroll: true});
+  }
+}
+function renderView() {
   const current=game();
   const odd=state.gameId===ODD_LAWS_GAME_ID, orchard=state.gameId===GRAVITY_ORCHARD_GAME_ID;
   const menu=usesMenuScore();
@@ -832,7 +858,7 @@ function stopPolling({keepOrchard=false}={}) {
   streamStop?.();streamStop=null;streamConnected=false;streamTerminalStatus=null;releaseActionQueue();
   state.busy=false;
 }
-async function createRoom(mode='campaign') {
+async function createRoom(mode='campaign', {replaceRoute=false}={}) {
   if(state.busy||!canPlayGame(gameById(state.gameId)))return;
   if(state.gameId===SOFA_GAME_ID)rememberTutorialSeen();
   const epoch=roomEpoch,gameId=state.gameId;
@@ -843,12 +869,16 @@ async function createRoom(mode='campaign') {
     if(!current())return;
     state.busy=false;
     state.role='host';state.mode='network';state.hostToken=room.hostToken;state.code=room.code;state.playerToken=null;state.playerId=null;state.resultDismissed=false;state.lastEventKey='';
-    saveCredentials();history.replaceState({},'', '/?room='+encodeURIComponent(room.code));applyRoom(room,true);startPolling();
+    saveCredentials();
+    const url='/?room='+encodeURIComponent(room.code);
+    if(replaceRoute)history.replaceState({}, '', url);
+    else pushRoute(url);
+    applyRoom(room,true);startPolling();
   }catch(err){if(current())state.error=err.message;}finally{if(current()){state.busy=false;render();}}
 }
 async function findRoom(code,preferredSeat=null,recovering=false) {
   code=code.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(code.length<4){state.error='Enter the room code shown on your TV.';render();return;}
+  if(code.length<4){state.error=code?'Enter the room code shown on your TV.':'';render();return;}
   stopPolling();state.code=code;state.role='player';state.mode='network';state.room=null;state.playerId=null;state.playerToken=null;state.hostToken=null;state.error='';state.busy=true;state.view='join';
   const epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.preferredSeat=['jon','lydia'].includes(preferredSeat)?preferredSeat:null;
@@ -864,8 +894,16 @@ async function findRoom(code,preferredSeat=null,recovering=false) {
     if(!current())return;
     const unavailable=[401,403,404,410].includes(err.status);
     if(unavailable&&stored(LAST_SESSION_KEY)?.code===code)persist(LAST_SESSION_KEY,null);
-    if(recovering&&unavailable){goHome();state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();}
-    else if(err.status===401||err.status===403){state.playerToken=null;state.playerId=null;state.room=null;}else state.error=err.message;
+    if(recovering&&unavailable){goHome({navigate:false});state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();}
+    else {
+      state.busy=false;
+      state.error=err.message;
+      state.playerToken=null;
+      state.playerId=null;
+      state.code='';
+      history.replaceState({}, '', '/?join=');
+      render();
+    }
   }
   finally {if(current()){state.busy=false;render();}}
 }
@@ -933,10 +971,18 @@ async function drawQr() {
     else if(typeof window.qrcode==='function'){const qr=window.qrcode(0,'M');qr.addData(joinUrl());qr.make();target.innerHTML=qr.createSvgTag({cellSize:3,margin:12,scalable:true});}
   }catch{}
 }
-function goHome() {
+// A history entry for the shelf must still open the shelf after a room is saved.
+function pushRoute(url) {
+  if (location.pathname + location.search === url) return;
+  if (!location.search) history.replaceState({shelf: true}, '', '/');
+  history.pushState(url === '/' ? {shelf: true} : {}, '', url);
+}
+window.addEventListener('popstate', () => location.reload());
+function goHome({navigate = true} = {}) {
+  if (navigate) pushRoute('/');
   state.quietMenu=isPhoneAudio();
   persist(LAST_SESSION_KEY,null);
-  stopPolling();clearTimeout(eventTimer);tutorialReturn=null;clearTutorialReturn();state.view='collection';state.role=null;state.mode='network';state.code='';state.room=null;state.hostToken=null;state.playerToken=null;state.playerId=null;state.error='';state.notice='';state.modal=null;state.preview=false;state.eventToast='';state.turnToast='';state.resultDismissed=false;state.tutorial=null;history.replaceState({},'', '/');render();
+  stopPolling();clearTimeout(eventTimer);tutorialReturn=null;clearTutorialReturn();state.view='collection';state.role=null;state.mode='network';state.code='';state.room=null;state.hostToken=null;state.playerToken=null;state.playerId=null;state.error='';state.notice='';state.modal=null;state.preview=false;state.eventToast='';state.turnToast='';state.resultDismissed=false;state.tutorial=null;history.replaceState({shelf:true},'', '/');render();
 }
 function openGame(id){persist(LAST_SESSION_KEY,null);stopPolling();clearTimeout(eventTimer);state.eventToast='';state.turnToast='';state.gameId=gameById(id).id;state.view='detail';state.mode='network';state.role=null;state.code='';state.room=null;state.playerToken=null;state.hostToken=null;state.playerId=null;state.modal=null;state.error='';history.replaceState({},'', '/?game='+encodeURIComponent(state.gameId));render();window.scrollTo({top:0,behavior:'instant'});}
 // A welcoming theme starts on an intentional interaction, never on page load.
@@ -950,7 +996,7 @@ app.addEventListener('click', async event=>{
   if(['open-game','create','start','practice','tutorial','tutorial-restart','tutorial-host','tutorial-practice','audio','unlock-audio','toggle-music','toggle-effects','game-action','choose-lure','claim','rematch','tutorial-continue','tutorial-preview','orchard-tutorial','orchard-practice'].includes(a))audio.unlock();
   if(a==='backdrop'){if(event.target===button)closeModal();return;}
   if(a==='home'){if(orchardGame){const result=await orchardGame.pause('requested');if(!result.accepted)return;}if(state.mode==='tutorial')exitTutorial();else if(state.room)openModal('leave');else{goHome();playMenuEffect('menu-back');}}
-  if(a==='open-game'){openGame(button.dataset.game);playMenuEffect('menu-select');}
+  if(a==='open-game'){pushRoute('/?game='+encodeURIComponent(button.dataset.game));openGame(button.dataset.game);playMenuEffect('menu-select');}
   if(a==='leave'){goHome();playMenuEffect('menu-back');}
   if(a==='rules'){if(state.gameId===GRAVITY_ORCHARD_GAME_ID)await openOrchardTutorial();else openModal(state.gameId===ODD_LAWS_GAME_ID?'odd-rules':'rules');}
   if(a==='orchard-tutorial')await openOrchardTutorial();
@@ -976,8 +1022,8 @@ app.addEventListener('click', async event=>{
   if(a==='dismiss-tutorial'){rememberTutorialSeen();render();}
   if(a==='fullscreen'){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{state.notice='Use your browser’s full-screen control to fill the TV.';render();}}
   if(a==='create')await createRoom();
-  if(a==='join-menu'){persist(LAST_SESSION_KEY,null);stopPolling();state.view='join';state.role='player';state.code='';state.room=null;state.error='';render();setTimeout(()=>$('#room-input')?.focus(),50);}
-  if(a==='different-room'){persist(LAST_SESSION_KEY,null);stopPolling();state.code='';state.playerId=null;state.playerToken=null;state.room=null;state.view='join';state.error='';history.replaceState({},'', '/');render();}
+  if(a==='join-menu'){pushRoute('/?join=');persist(LAST_SESSION_KEY,null);stopPolling();state.view='join';state.role='player';state.code='';state.room=null;state.error='';render();setTimeout(()=>$('#room-input')?.focus(),50);}
+  if(a==='different-room'){persist(LAST_SESSION_KEY,null);stopPolling();state.code='';state.playerId=null;state.playerToken=null;state.room=null;state.view='join';state.error='';history.replaceState({},'', '/?join=');render();}
   if(a==='switch-seat'){stopPolling();state.playerId=null;state.playerToken=null;state.preferredSeat=null;state.view='join';state.error='';state.modal=null;history.replaceState({},'', '/?join='+encodeURIComponent(state.code));render();}
   if(a==='claim')await claimPlayer(button.dataset.player);
   if(a==='start')await startGame();
@@ -1032,7 +1078,7 @@ async function restoreHostRoom(code) {
   }catch(error){
     if(!current())return;
     if([401,403,404,410].includes(error.status)){
-      goHome();state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();
+      goHome({navigate:false});state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();
     }else{state.error=error.message;setNetworkConnection('offline');render();}
   }finally{if(current()){state.busy=false;render();}}
 }
@@ -1058,13 +1104,26 @@ async function init() {
     await restoreHostRoom(code);return;
   }
   if(params.has('tutorial')){
-    if(params.get('game')===GRAVITY_ORCHARD_GAME_ID){openGame(GRAVITY_ORCHARD_GAME_ID);await openOrchardTutorial();}
-    else if(params.get('game')===ODD_LAWS_GAME_ID){openGame(ODD_LAWS_GAME_ID);await openOddTutorial();}
-    else {state.view='tutorial';render();await startTutorial();}
+    const tutorialGame=params.get('game');
+    state.gameId=[ODD_LAWS_GAME_ID,GRAVITY_ORCHARD_GAME_ID].includes(tutorialGame)?tutorialGame:SOFA_GAME_ID;
+    state.view='tutorial';
+    render();
+    if(state.gameId===GRAVITY_ORCHARD_GAME_ID)await openOrchardTutorial();
+    else if(state.gameId===ODD_LAWS_GAME_ID)await openOddTutorial();
+    else await startTutorial();
+    if(orchardTutorial || collectionTutorial)render();
+    if(state.view==='tutorial' && state.error && state.gameId!==SOFA_GAME_ID){
+      state.view='detail';
+      render();
+    }
     return;
   }
   if(params.has('practice')){
-    if(params.get('game')===GRAVITY_ORCHARD_GAME_ID){openGame(GRAVITY_ORCHARD_GAME_ID);await createRoom('practice');}
+    if(params.get('game')===GRAVITY_ORCHARD_GAME_ID && transport.gravityOrchard){
+      state.gameId=GRAVITY_ORCHARD_GAME_ID;state.view='game';
+      await createRoom('practice', {replaceRoute:true});
+      if(!state.room && state.view==='game'){state.view='detail';render();}
+    }else if(params.get('game')===GRAVITY_ORCHARD_GAME_ID){openGame(GRAVITY_ORCHARD_GAME_ID);}
     else {state.view='game';await startPractice();}
     return;
   }
@@ -1073,7 +1132,7 @@ async function init() {
     if(selected.id===SOFA_GAME_ID)preloadSofaCover(SOFA_DETAIL_SIZES);
     openGame(selected.id);return;
   }
-  if(!await restoreLocalSession()){
+  if(history.state?.shelf || !await restoreLocalSession()){
     preloadSofaCover(SOFA_HERO_SIZES);
     render();
   }

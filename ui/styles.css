@@ -65,3 +65,17 @@
 .orchard-detail .button.full{margin-top:12px}.orchard-access-note{font-size:13px!important;margin-top:16px!important}.orchard-join-options{display:flex;justify-content:center;gap:4px;flex-wrap:wrap}.orchard-join-options .text-button{font-size:12px}
 .orchard-match{width:100%;max-width:none;height:100svh;min-height:540px;padding:8px 12px;gap:0;overflow:hidden}.orchard-match .topbar{min-height:44px;margin:0 0 6px}.orchard-match .brand-title{font-size:21px}.orchard-match .brand-mark{width:34px;height:34px}.orchard-match .brand-mark svg{width:23px;height:23px}.orchard-match #gravity-orchard-root{flex:1;min-width:0;min-height:0;overflow:hidden;border-radius:15px}.orchard-match #orchard-notices:empty{display:none}.orchard-match.is-controller{height:auto;min-height:100svh;padding:0;overflow:visible}.orchard-match.is-controller #gravity-orchard-root{min-height:100svh;border-radius:0;overflow:visible}.orchard-match.is-controller #orchard-chrome:empty{display:none}.orchard-match.is-controller #orchard-notices:not(:empty){padding:8px 12px 0;background:#f1f3e3}.orchard-setup-layer{position:fixed;inset:0;z-index:1000;overflow:auto;background:#f6efdf}.orchard-setup-layer:focus{outline:none}
 @media(max-width:760px){.orchard-match:not(.is-controller){padding:4px;min-height:500px}.orchard-match .brand-mark{display:none}.orchard-match .brand-title{font-size:18px}.orchard-match .topbar{gap:8px}.orchard-match .top-actions{gap:4px}}
+
+/* The largest Sofa cover has 1536 source pixels. Keep its TV display within that resolution. */
+@media (min-width:761px) and (min-resolution:2dppx) {
+  .welcome-art { width:100%; max-width:768px; justify-self:center; }
+}
+@media (min-width:761px) and (min-resolution:3dppx) {
+  .welcome-art { max-width:682px; }
+  .featured-game { grid-template-columns:minmax(0,min(53.49%,682px)) minmax(0,1fr); }
+}
+@media (max-width:760px) and (min-resolution:3dppx) {
+  .featured-game { width:min(100%,684px); margin-inline:auto; }
+}
+
+@media (scripting:none) { #startup { display:none; } }

@@ -149,3 +149,41 @@ test('three isolated browser contexts use projected clients on ordinary HTTP wit
   t.diagnostic('Chromium: three isolated contexts, non-loopback insecure HTTP, projected snapshots, lock reconnect, complete fixture match, lost-response identity, rematch fencing.');
   t.diagnostic('This is a same-machine browser/protocol test; no physical Wi-Fi, TV, native Tauri, or production Odd Laws UI is exercised.');
 });
+
+test('an unavailable room returns to code entry and room history restores the correct screen', async t => {
+  const { chromium } = await import(process.env.SOFA_PLAYWRIGHT_MODULE || 'playwright');
+  const host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath: ':memory:' });
+  const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
+  t.after(async () => { await browser.close(); await host.close(); });
+  const page = await browser.newPage();
+  let releaseModule;
+  const moduleGate = new Promise(resolve => { releaseModule = resolve; });
+  await page.route('**/app.js*', async route => {
+    await moduleGate;
+    await route.continue();
+  });
+  await page.goto(host.origin + '/?room=ZZZZZZ', { waitUntil: 'commit' });
+  try {
+    await page.locator('#startup[role="status"]').waitFor();
+  } finally {
+    releaseModule();
+  }
+  await page.locator('#room-input').waitFor();
+  assert.equal(await page.locator('[data-action="claim"]').count(), 0);
+  assert.ok(await page.locator('#room-input').evaluate(input => input === document.activeElement));
+
+  await page.goto(host.origin + '/?game=sofa-kingdoms');
+  await page.locator('[data-action="create"]').click();
+  await page.locator('.room-code').waitFor();
+  const roomUrl = page.url();
+  await page.locator('.brand').click();
+  await page.locator('[data-action="leave"]').click();
+  await page.locator('.arcade-home').waitFor();
+  await page.goBack();
+  await page.locator('.room-code').waitFor();
+  assert.equal(page.url(), roomUrl);
+  assert.match(await page.title(), /Lobby/);
+  await page.goForward();
+  await page.locator('.arcade-home').waitFor();
+  assert.equal(await page.title(), 'Sofa Arcade — Games for two');
+});
