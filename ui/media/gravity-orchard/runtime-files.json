@@ -21,6 +21,7 @@
     "public/assets/gravity-orchard/characters/jon-atlas.webp",
     "public/assets/gravity-orchard/characters/lala-atlas.webp",
     "public/assets/gravity-orchard/characters/lydia-atlas.webp",
+    "public/assets/gravity-orchard/cover-560.webp",
     "public/assets/gravity-orchard/cover.webp",
     "public/assets/gravity-orchard/cues/compost.svg",
     "public/assets/gravity-orchard/cues/gate-closed.svg",
@@ -155,6 +156,11 @@
       "sha256": "55137cd290fa1b2adf0d7fdaabdc44eb09f7b9ff6ccf118d7d3e3e172c858f0d"
     },
     {
+      "path": "public/assets/gravity-orchard/cover-560.webp",
+      "bytes": 54638,
+      "sha256": "66b041471850854086d1acc21d797488a15bd4a873699406e5516803b20268ef"
+    },
+    {
       "path": "public/assets/gravity-orchard/cover.webp",
       "bytes": 309204,
       "sha256": "a90cea830f542d708baa195099028cb7b37458f42fa729e9766f95067b1eda72"
@@ -246,8 +252,8 @@
     },
     {
       "path": "public/assets/gravity-orchard/manifest.json",
-      "bytes": 29318,
-      "sha256": "9957d65cc0c373890a61592101913e021eb42dbf1dc9549aae0d3782f3a51cbb"
+      "bytes": 29689,
+      "sha256": "c0e4832715d7f5aee299a3ac029b8a19e2e584a06235c0bceda916d5ebe38a46"
     },
     {
       "path": "public/assets/gravity-orchard/terrain/moonlight-picnic-bridge.svg",
@@ -321,8 +327,8 @@
     },
     {
       "path": "ui/media/gravity-orchard/manifest-data.mjs",
-      "bytes": 29417,
-      "sha256": "455c7daf84c0e6918bff348c83c5309a45601d9e1499392e6ededcd97fafb876"
+      "bytes": 29788,
+      "sha256": "233e1a183f63cf3f9e1bbe2a83a21565a85f95fa554689afe96b7aa5de46564b"
     },
     {
       "path": "ui/media/gravity-orchard/manifest.mjs",
@@ -335,7 +341,7 @@
       "sha256": "0da5c26f5e4bbbdeccbea304d41ec81c447aaf2d330e96137ba6db750687dbe6"
     }
   ],
-  "totalBytes": 996092,
+  "totalBytes": 1051472,
   "productionDependencies": [],
   "excludedAuthoring": [
     "ui/media/gravity-orchard/sources/**",

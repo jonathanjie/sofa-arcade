@@ -39,6 +39,16 @@
       "label": "Lala\u2019s Moonlight Picnic",
       "layer": "backdrop",
       "transparent": false
+    },
+    "cover-compact": {
+      "src": "/assets/gravity-orchard/cover-560.webp",
+      "width": 560,
+      "height": 315,
+      "kind": "image",
+      "alt": "Jon and Lydia on their floating orchard trays with Lala.",
+      "label": "Gravity Orchard shelf cover",
+      "layer": "cover",
+      "transparent": false
     }
   }
 }

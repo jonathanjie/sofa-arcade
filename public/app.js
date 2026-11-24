@@ -146,24 +146,52 @@ function footer() {
 const gameById = id => GAME_CATALOG.find(g=>g.id===id)||GAME_CATALOG.find(g=>g.id===SOFA_GAME_ID);
 const canPlayGame = game => game.id === GRAVITY_ORCHARD_GAME_ID ? transport.gravityOrchard === true : game.status === 'playable';
 const gameIcon = id => ({'sofa-kingdoms':'paw','borrowed-minutes':'clock','gravity-orchard':'fruit','afterglow-market':'market','odd-laws-society':'sparkles','last-ninety-seconds':'search','footprints-at-midnight':'footprints'}[id]||'sparkles');
+const SOFA_COVER_SRC = '/assets/sofa-room-1200.webp';
+const SOFA_COVER_SRCSET = [640, 1200, 1536].map(width => `/assets/sofa-room-${width}.webp ${width}w`).join(', ');
+const SOFA_HERO_SIZES = '(max-width: 370px) calc(100vw - 28px), (max-width: 760px) calc(100vw - 38px), (max-width: 1050px) calc(53.5vw - 28px), (max-width: 1447px) 50.3vw, 726px';
+const SOFA_DETAIL_SIZES = '(max-width: 370px) calc(100vw - 26px), (max-width: 760px) min(560px, calc(100vw - 36px)), (max-width: 1050px) calc(54.05vw - 46px), (max-width: 1600px) 51.5vw, 819px';
+const SHELF_COVER_SIZES = '(max-width: 370px) calc(50vw - 42px), (max-width: 760px) calc(50vw - 52px), (max-width: 1050px) calc(33.33vw - 62px), (max-width: 1447px) calc(31.33vw - 57px), 399px';
+const CONCEPT_COVER_SIZES = '(max-width: 370px) calc(100vw - 26px), (max-width: 760px) min(600px, calc(100vw - 36px)), (max-width: 1277px) 42vw, 531px';
+const GAME_COVERS = {
+  [GRAVITY_ORCHARD_GAME_ID]: {
+    src: '/assets/gravity-orchard/cover.webp', compact: '/assets/gravity-orchard/cover-560.webp', width: 1280, height: 720,
+    alt: 'Jon and Lydia tend floating orchards while Lala awaits her picnic.',
+  },
+  [ODD_LAWS_GAME_ID]: {
+    src: '/assets/odd-laws-cover.webp', compact: '/assets/odd-laws-cover-560.webp', width: 1586, height: 992,
+    alt: 'Lala chairs a whimsical city council while Jon and Lydia propose plans for their boroughs.',
+  },
+};
+function preloadSofaCover(sizes) {
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'image';
+  link.imageSrcset = SOFA_COVER_SRCSET;
+  link.imageSizes = sizes;
+  link.fetchPriority = 'high';
+  document.head.append(link);
+}
+function sofaCover(alt, sizes) {
+  return `<img src="${SOFA_COVER_SRC}" srcset="${SOFA_COVER_SRCSET}" sizes="${sizes}" width="1536" height="1024" fetchpriority="high" alt="${alt}">`;
+}
 function gameArtwork(id, large = false) {
-  if (id === GRAVITY_ORCHARD_GAME_ID) return `<span class="game-cover${large?' is-large':''}"><img src="/assets/gravity-orchard/cover.webp" width="1280" height="720" alt="${large?'Jon and Lydia tend floating orchards while Lala awaits her picnic.':''}" decoding="async" ${large?'fetchpriority="high"':'loading="lazy"'}></span>`;
-  if (id === ODD_LAWS_GAME_ID) {
-    const alt = large ? 'Lala chairs a whimsical city council while Jon and Lydia propose plans for their boroughs.' : '';
-    return `<span class="game-cover${large ? ' is-large' : ''}"><img src="/assets/odd-laws-cover.webp" width="1586" height="992" alt="${alt}" decoding="async" ${large ? 'fetchpriority="high"' : 'loading="lazy"'}></span>`;
+  const cover = GAME_COVERS[id];
+  if (cover) {
+    const { src, compact, width, height, alt } = cover;
+    return `<span class="game-cover${large ? ' is-large' : ''}" style="aspect-ratio:${width}/${height}"><img src="${large ? src : compact}" srcset="${compact} 560w, ${src} ${width}w" sizes="${large ? CONCEPT_COVER_SIZES : SHELF_COVER_SIZES}" width="${width}" height="${height}" alt="${large ? alt : ''}" decoding="async" ${large ? 'fetchpriority="high"' : 'loading="lazy"'}></span>`;
   }
   return `<span class="concept-art${large ? ' large' : ''}" aria-hidden="true"><span class="concept-orbit"></span>${icon(gameIcon(id))}</span>`;
 }
 function collection() {
   const sofa=gameById(SOFA_GAME_ID),planned=GAME_CATALOG.filter(g=>g.id!==SOFA_GAME_ID),ready=planned.some(g=>g.status==='playable');
-  return `<main class="arcade-home"><section class="shelf-intro"><div><span class="eyebrow">Stay in. Play something wonderful.</span><h1>Your next adventure<br>starts on the sofa.</h1></div><button class="button secondary" data-action="join-menu">${icon('phone')} Join a room</button></section><section class="featured-game"><div class="featured-image"><img src="/assets/sofa-room.png" alt="Lala the orange cat towers over two tiny adventurers on a cozy sofa"><span class="playable-stamp">${icon('paw')} Ready to play</span></div><div class="featured-copy"><span class="eyebrow">Tonight’s little adventure</span><h2>${esc(sofa.title)}</h2><p>${esc(sofa.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(sofa.mode)}</span><span>${icon('clock')} ${esc(sofa.duration)}</span></div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button><button class="text-button" data-action="tutorial">${icon('help')} Learn with Lala</button></div></section><section class="drawing-board"><div class="shelf-section-title"><h2>${ready?'More games on the sofa':'On the drawing board'}</h2><span>More ways to spend an evening together.</span></div><div class="game-shelf">${planned.map(g=>`<button class="game-card" data-action="open-game" data-game="${esc(g.id)}" style="--game-accent:${esc(g.accent||'#8d826e')}">${gameArtwork(g.id)}<span class="concept-status">${canPlayGame(g)?'Ready to play':'On the drawing board'}</span><h3>${esc(g.title)}</h3><p>${esc(g.tagline)}</p><span class="concept-meta">${esc(g.mode)} <span>·</span> ${esc(g.duration)}</span></button>`).join('')}</div></section></main>`;
+  return `<main class="arcade-home"><section class="shelf-intro"><div><span class="eyebrow">Stay in. Play something wonderful.</span><h1>Your next adventure<br>starts on the sofa.</h1></div><button class="button secondary" data-action="join-menu">${icon('phone')} Join a room</button></section><section class="featured-game"><div class="featured-image">${sofaCover('Lala the orange cat towers over two tiny adventurers on a cozy sofa', SOFA_HERO_SIZES)}<span class="playable-stamp">${icon('paw')} Ready to play</span></div><div class="featured-copy"><span class="eyebrow">Tonight’s little adventure</span><h2>${esc(sofa.title)}</h2><p>${esc(sofa.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(sofa.mode)}</span><span>${icon('clock')} ${esc(sofa.duration)}</span></div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button><button class="text-button" data-action="tutorial">${icon('help')} Learn with Lala</button></div></section><section class="drawing-board"><div class="shelf-section-title"><h2>${ready?'More games on the sofa':'On the drawing board'}</h2><span>More ways to spend an evening together.</span></div><div class="game-shelf">${planned.map(g=>`<button class="game-card" data-action="open-game" data-game="${esc(g.id)}" style="--game-accent:${esc(g.accent||'#8d826e')}">${gameArtwork(g.id)}<span class="concept-status">${canPlayGame(g)?'Ready to play':'On the drawing board'}</span><h3>${esc(g.title)}</h3><p>${esc(g.tagline)}</p><span class="concept-meta">${esc(g.mode)} <span>·</span> ${esc(g.duration)}</span></button>`).join('')}</div></section></main>`;
 }
 function gameDetail() {
   const selected=gameById(state.gameId),planned=!canPlayGame(selected);
   if(planned)return `<main class="concept-detail" style="--game-accent:${esc(selected.accent||'#8d826e')}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id,true)}<section><span class="concept-status">On the drawing board</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><div class="concept-note">${selected.id===GRAVITY_ORCHARD_GAME_ID?'Gravity Orchard is being prepared for the local Mac collection.':'This game is still on the drawing board.'} Sofa Kingdoms and Odd Laws Society are ready to play.</div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button></section></div></main>`;
   if(selected.id===GRAVITY_ORCHARD_GAME_ID)return `<main class="concept-detail orchard-detail" style="--game-accent:${esc(selected.accent)}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id,true)}<section><span class="eyebrow">A picnic for two</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><button class="button full" data-action="create" ${state.busy?'disabled':''}>${state.busy?'<span class="spinner"></span>':icon('tv')} Host on the TV</button><button class="button secondary full" data-action="join-menu">${icon('phone')} Join with your phone</button><div class="detail-secondary"><button class="text-button" data-action="orchard-tutorial">${icon('help')} Learn with Lala</button><button class="text-button" data-action="orchard-practice" ${state.busy?'disabled':''}>${icon('fruit')} Untimed practice</button></div><p class="orchard-access-note">Touch controls work on any phone. Tilt needs a one-time setup on this Mac.</p>${nativeSecureAvailable()?'<button class="text-button" data-action="secure-setup">Set up phone tilt</button>':''}</section></div></main>`;
   if(selected.id===ODD_LAWS_GAME_ID)return `<main class="concept-detail odd-laws-detail" style="--game-accent:${esc(selected.accent)}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id, true)}<section><span class="eyebrow">A council for two</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><button class="button full" data-action="create" ${state.busy?'disabled':''}>${state.busy?'<span class="spinner"></span>':icon('tv')} Host on the TV</button><button class="button secondary full" data-action="join-menu">${icon('phone')} Join with your phone</button><button class="text-button" data-action="odd-tutorial">${icon('help')} Learn with Lala</button>${transport.mode==='lan'?'<p class="lan-mode-label">Home Wi-Fi play</p>':''}</section></div></main>`;
-  return `<main class="welcome game-detail"><div class="welcome-art"><div class="art-fallback">${fallbackCat()}</div><img src="/assets/sofa-room.png" alt="Lala watches Jon and Lydia's tiny kingdoms on a cozy sofa"><div class="art-caption">The living room belongs to Lala.</div></div><section class="welcome-copy"><span class="eyebrow">Sofa Kingdoms</span><h1>A crumb of glory.<br><em>A little mischief.</em></h1><p>Gather crumbs, find your way home, and outsmart a cat who keeps rearranging the kingdom.</p>${!state.tutorialSeen&&!state.tutorialDone?`<div class="first-play"><span>${icon('help')}</span><div><strong>First time on the sofa?</strong><button class="link-button" data-action="tutorial">Learn by playing a short tutorial</button></div><button class="first-play-dismiss" data-action="dismiss-tutorial" aria-label="Dismiss tutorial suggestion">${icon('close')}</button></div>`:''}<button class="button" data-action="create" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('tv')} Host on the TV</button><button class="button secondary" data-action="join-menu">${icon('phone')} Join with your phone</button><div class="detail-secondary"><button class="text-button" data-action="tutorial">${icon('help')} ${state.tutorialDone?'Replay tutorial':'Learn with Lala'}</button><button class="text-button" data-action="practice" ${state.busy?'disabled':''}>${icon('players')} Same-screen practice</button></div><div class="welcome-features"><span>${icon('players')} 2 players</span><span>${icon('clock')} 15–25 minutes</span><span>${icon('phone')} 2 phones</span></div>${transport.mode==='lan'?'<p class="lan-mode-label">Home Wi-Fi play</p>':'<button class="text-button local-play-link" data-action="local-play">Play over local Wi-Fi</button>'}</section></main>`;
+  return `<main class="welcome game-detail"><div class="welcome-art"><div class="art-fallback">${fallbackCat()}</div>${sofaCover("Lala watches Jon and Lydia's tiny kingdoms on a cozy sofa", SOFA_DETAIL_SIZES)}<div class="art-caption">The living room belongs to Lala.</div></div><section class="welcome-copy"><span class="eyebrow">Sofa Kingdoms</span><h1>A crumb of glory.<br><em>A little mischief.</em></h1><p>Gather crumbs, find your way home, and outsmart a cat who keeps rearranging the kingdom.</p>${!state.tutorialSeen&&!state.tutorialDone?`<div class="first-play"><span>${icon('help')}</span><div><strong>First time on the sofa?</strong><button class="link-button" data-action="tutorial">Learn by playing a short tutorial</button></div><button class="first-play-dismiss" data-action="dismiss-tutorial" aria-label="Dismiss tutorial suggestion">${icon('close')}</button></div>`:''}<button class="button" data-action="create" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('tv')} Host on the TV</button><button class="button secondary" data-action="join-menu">${icon('phone')} Join with your phone</button><div class="detail-secondary"><button class="text-button" data-action="tutorial">${icon('help')} ${state.tutorialDone?'Replay tutorial':'Learn with Lala'}</button><button class="text-button" data-action="practice" ${state.busy?'disabled':''}>${icon('players')} Same-screen practice</button></div><div class="welcome-features"><span>${icon('players')} 2 players</span><span>${icon('clock')} 15–25 minutes</span><span>${icon('phone')} 2 phones</span></div>${transport.mode==='lan'?'<p class="lan-mode-label">Home Wi-Fi play</p>':'<button class="text-button local-play-link" data-action="local-play">Play over local Wi-Fi</button>'}</section></main>`;
 }
 function roomPlayers() { return state.room?.players || { jon: {}, lydia: {} }; }
 function lobbySeat(id) {
@@ -1040,8 +1068,15 @@ async function init() {
     else {state.view='game';await startPractice();}
     return;
   }
-  if(params.has('game')){openGame(params.get('game'));return;}
-  if(!await restoreLocalSession())render();
+  if(params.has('game')){
+    const selected=gameById(params.get('game'));
+    if(selected.id===SOFA_GAME_ID)preloadSofaCover(SOFA_DETAIL_SIZES);
+    openGame(selected.id);return;
+  }
+  if(!await restoreLocalSession()){
+    preloadSofaCover(SOFA_HERO_SIZES);
+    render();
+  }
 }
 let audioSnapshot='';
 audio.subscribe(settings=>{const snapshot=JSON.stringify(settings);if(snapshot===audioSnapshot)return;audioSnapshot=snapshot;if(state.modal==='audio'&&document.activeElement?.id!=='volume-slider')render();});

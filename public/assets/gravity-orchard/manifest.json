@@ -624,6 +624,16 @@
       "layer": "backdrop",
       "transparent": false
     },
+    "cover-compact": {
+      "src": "/assets/gravity-orchard/cover-560.webp",
+      "width": 560,
+      "height": 315,
+      "kind": "image",
+      "alt": "Jon and Lydia on their floating orchard trays with Lala.",
+      "label": "Gravity Orchard shelf cover",
+      "layer": "cover",
+      "transparent": false
+    },
     "character-jon": {
       "src": "/assets/gravity-orchard/characters/jon-atlas.webp",
       "width": 1024,
@@ -1076,6 +1086,7 @@
     "public/assets/gravity-orchard/characters/jon-atlas.webp",
     "public/assets/gravity-orchard/characters/lala-atlas.webp",
     "public/assets/gravity-orchard/characters/lydia-atlas.webp",
+    "public/assets/gravity-orchard/cover-560.webp",
     "public/assets/gravity-orchard/cover.webp",
     "public/assets/gravity-orchard/cues/compost.svg",
     "public/assets/gravity-orchard/cues/gate-closed.svg",
