@@ -193,7 +193,7 @@ Reliable commands and replies:
     { type: 'ping', protocol: 1, id }
     { type: 'pong', protocol: 1, id }
 
-Bound IDs and error text. Persist/retain command deduplication at the appropriate lifecycle boundary. A retry with identical ID/content returns the original result; reuse with different normalized content fails. Old-match or old-epoch commands do not act on a later stage. Handle a lost command acknowledgment and reconnect without double application. Do not send score-changing or lifecycle commands as unreliable held inputs.
+Bound IDs and error text. Persist/retain command deduplication at the appropriate lifecycle boundary. A retry with identical ID/content returns the original result; reuse with different normalized content fails. Old-match or old-epoch commands do not act on a later stage. Within a match and epoch, keep admitted command receipts until the boundary. Of 256 receipt slots, reserve the final 128 for commands that change the run. At its admission limit, a new command receives the retryable command_capacity result without a receipt or mutation. Retire older match or epoch receipts as space is needed. Handle a lost command acknowledgment and reconnect without double application. Do not send score-changing or lifecycle commands as unreliable held inputs.
 
 Coordinator export:
 
