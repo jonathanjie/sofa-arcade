@@ -258,11 +258,9 @@ export function mountSnackStackPhone(root, { input, serverNow }) {
   }
 
   return {
-    setWaiting(value) {
-      waiting = value;
-      practice.hidden = !waiting;
-    },
-    update(state, enabled) {
+    practiceWhileWaiting: true,
+    update(state, enabled, { practice: practicing = false } = {}) {
+      waiting = practicing;
       root.dataset.active = String(enabled);
       allowed = enabled;
       if (!state || waiting) {

@@ -142,8 +142,9 @@ export function mountTugOfYarnPhone(root, { input, serverNow }) {
   motion.addEventListener('change', motionChanged);
 
   return {
-    update(next, active, info) {
-      const nextMode = info?.waiting ? 'practice' : active && next ? 'play' : 'idle';
+    practiceWhileWaiting: true,
+    update(next, active, { practice = false } = {}) {
+      const nextMode = practice ? 'practice' : active && next ? 'play' : 'idle';
       if (nextMode !== mode || next?.s !== state?.s || info?.round !== round) {
         stopRing();
         clearFeedback();

@@ -106,8 +106,8 @@ export function mountWallOfPaddlesPhone(root, { input }) {
 
   let team;
   return {
-    supportsPractice: true,
-    update(state, enabled, practice = false) {
+    practiceWhileWaiting: true,
+    update(state, enabled, { practice = false } = {}) {
       const canSlide = enabled || practice;
       if ((!canSlide || practicing !== practice) && pointer !== null) {
         if (zone.hasPointerCapture(pointer)) zone.releasePointerCapture(pointer);

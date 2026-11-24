@@ -217,7 +217,7 @@ export function mountDustBunnyPhone(root, { input, serverNow }) {
 
   return {
     practiceWhileWaiting: true,
-    update(state, enabled, practice = false) {
+    update(state, enabled, { practice = false } = {}) {
       const wasRolling = rolling;
       const wasBlowing = blowing;
       const wasPracticing = practicing;
