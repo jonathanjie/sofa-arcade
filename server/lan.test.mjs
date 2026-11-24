@@ -144,7 +144,7 @@ test('local assets expose the game and LAN metadata without exposing source docu
   const oversized = await request(host, '/api/rooms', { body: 'x'.repeat(13 * 1024) });
   assert.equal(oversized.status, 413);
   const chunkedStatus = await new Promise((resolve, reject) => {
-    const message = httpRequest({ hostname: '127.0.0.1', port: host.port, path: '/api/rooms', method: 'POST', headers: { Origin: host.origin, 'Transfer-Encoding': 'chunked' } }, response => {
+    const message = httpRequest({ hostname: '127.0.0.1', port: host.port, path: '/api/rooms', method: 'POST', headers: { Origin: host.origin, 'Content-Type': 'application/json', 'Transfer-Encoding': 'chunked' } }, response => {
       response.resume(); response.once('end', () => resolve(response.statusCode));
     });
     message.once('error', reject); message.write('x'.repeat(7 * 1024)); message.end('y'.repeat(7 * 1024));
@@ -373,4 +373,26 @@ test('SSE caps simultaneous subscriptions per seat and host-wide, and releases t
   await expectStream(live.hostToken);
   await host.close();
   for (const response of [streams[0], streams[2]]) assert.match(await response.text(), /event: room/);
+});
+
+test('HTTP room mutations require exactly one same-origin Origin and JSON media type', async t => {
+  const host = await startLanServer({ port: 0, host: '127.0.0.1', databasePath: ':memory:' });
+  t.after(() => host.close());
+  const post = headers => new Promise((resolve, reject) => {
+    const message = httpRequest(host.origin + '/api/rooms', { method: 'POST', headers }, response => {
+      response.resume();
+      response.once('end', () => resolve(response.statusCode));
+    });
+    message.once('error', reject);
+    message.end('{}');
+  });
+  for (const origin of [undefined, 'null', 'http://127.0.0.1:1', [host.origin, host.origin]]) {
+    const headers = { 'Content-Type': 'application/json', ...(origin === undefined ? {} : { Origin: origin }) };
+    assert.equal(await post(headers), 403, String(origin));
+  }
+  for (const type of [undefined, 'text/plain', 'application/jsonp', ['application/json', 'application/json']]) {
+    const headers = { Origin: host.origin, ...(type === undefined ? {} : { 'Content-Type': type }) };
+    assert.equal(await post(headers), 415, String(type));
+  }
+  assert.equal(await post({ Origin: host.origin, 'Content-Type': 'application/json; charset=UTF-8' }), 201);
 });

@@ -10,11 +10,11 @@ import { createCertificateStore, createSecureLanServer } from '../../../server/r
 import { startLanServer } from '../../../server/lan.mjs';
 import { harness, api, connectPeer, flush, manualClock, until } from './helpers.mjs';
 
-function httpsCall(origin, route, { ca, body, token, servername = 'localhost', headers = {} } = {}) {
+function httpsCall(origin, route, { ca, body, token, servername = 'localhost', requestOrigin = origin, headers = {} } = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(route, origin);
     const request = httpsRequest(url, { ca, servername, method: body === undefined ? 'GET' : 'POST',
-      headers: { Origin: origin, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      headers: { ...(requestOrigin === null ? {} : { Origin: requestOrigin }), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}), ...headers } }, response => {
       let text = ''; response.setEncoding('utf8'); response.on('data', chunk => { text += chunk; });
       response.on('end', () => resolve({ status: response.statusCode, text, headers: response.headers }));
@@ -42,6 +42,13 @@ test('verified HTTPS/WSS and HTTP/WS share the original request, credential auth
   assert.equal(html.status, 200);
   assert.match(html.text, new RegExp(`name="sofa-join-origin" content="https://127.0.0.1:${secure.port}"`));
   assert.deepEqual(originalRequests[0], { encrypted: true, host: `127.0.0.1:${secure.port}`, origin });
+  assert.match(html.headers['content-security-policy'], /frame-ancestors 'none'/);
+  assert.match(html.headers['content-security-policy'], new RegExp(`connect-src 'self' wss://127\\.0\\.0\\.1:${secure.port}`));
+  for (const requestOrigin of [null, 'null', h.host.origin, [origin, origin]]) {
+    const write = await httpsCall(origin, '/api/rooms', { ca: material.ca, body: {}, requestOrigin });
+    assert.equal(write.status, 403, JSON.stringify(requestOrigin));
+  }
+  assert.equal((await httpsCall(origin, '/api/rooms', { ca: material.ca, body: {} })).status, 201);
   const publicRead = await httpsCall(origin, `/api/rooms/${h.room.code}`, { ca: material.ca });
   assert.equal(publicRead.status, 200);
   assert.equal(JSON.parse(publicRead.text).state.matchId, h.room.started.state.matchId);

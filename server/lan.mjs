@@ -398,6 +398,13 @@ export async function startLanServer({
       let url;
       try { url = new URL(request.url, authority.origin); } catch { return { ok: false, status: 400, code: 'address_rejected' }; }
       if (url.origin !== authority.origin) return { ok: false, status: 400, code: 'address_rejected' };
+      if (url.pathname.startsWith('/api/') && !['GET', 'HEAD'].includes(request.method)) {
+        if (origins.length !== 1) return { ok: false, status: 403, code: 'origin_rejected' };
+        const mediaTypes = header('content-type');
+        if (mediaTypes.length !== 1 || mediaTypes[0].split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+          return { ok: false, status: 415, code: 'json_required' };
+        }
+      }
       return { ok: true, origin: authority.origin, scheme: 'http', url };
     }
     return {
@@ -549,7 +556,18 @@ export async function startLanServer({
       const meta = `<meta name="sofa-transport" content="lan"><meta name="sofa-join-origin" content="${escapeAttribute(joinOrigin)}">`
         + (enableGravityOrchard ? '<meta name="sofa-gravity-orchard" content="candidate">' : '');
       const html = (await readFile(path.join(root, 'ui/index.html'), 'utf8')).replace('</head>', meta + '</head>');
-      response.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+      const webSocketOrigin = `${url.protocol === 'https:' ? 'wss' : 'ws'}://${url.host}`;
+      const csp = [
+        "default-src 'self'", "frame-ancestors 'none'", "base-uri 'none'", "object-src 'none'", "form-action 'none'",
+        // The game sets inline styles for board positions and animation.
+        "style-src 'self' 'unsafe-inline'", "img-src 'self' data:", "media-src 'self'",
+        // Some browsers do not include WebSocket origins in 'self'.
+        `connect-src 'self' ${webSocketOrigin}`,
+      ].join('; ');
+      response.writeHead(200, {
+        'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': csp,
+      });
       response.end(request.method === 'HEAD' ? undefined : html);
       return;
     }

@@ -1,7 +1,8 @@
 /** Actual browser clients over insecure HTTP. Test-only; never serve this file. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { request as httpRequest } from 'node:http';
+import { once } from 'node:events';
+import { createServer, request as httpRequest } from 'node:http';
 import { startLanServer } from './lan.mjs';
 import { createPrivateApi, createPrivateEngine, openRoom, assertNoAuthoritySecrets } from './room-platform-fixture.mjs';
 
@@ -148,4 +149,34 @@ test('three isolated browser contexts use projected clients on ordinary HTTP wit
   for (const token of [live.hostToken, ...Object.values(live.tokens)]) assert.ok(!requestUrls.some(url => url.includes(token)));
   t.diagnostic('Chromium: three isolated contexts, non-loopback insecure HTTP, projected snapshots, lock reconnect, complete fixture match, lost-response identity, rematch fencing.');
   t.diagnostic('This is a same-machine browser/protocol test; no physical Wi-Fi, TV, native Tauri, or production Odd Laws UI is exercised.');
+});
+
+test('a distinct loopback origin cannot frame the LAN game, and direct navigation permits browser writes', async t => {
+  const { chromium } = await import(process.env.SOFA_PLAYWRIGHT_MODULE || 'playwright');
+  const host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath: ':memory:' });
+  t.after(() => host.close());
+  const frameOrigin = createServer((_request, response) => {
+    response.setHeader('Content-Type', 'text/html');
+    response.end(`<!doctype html><iframe title="Game" src="${host.origin}/"></iframe>`);
+  });
+  frameOrigin.listen(0, '127.0.0.1');
+  await once(frameOrigin, 'listening');
+  t.after(() => new Promise(resolve => frameOrigin.close(resolve)));
+  const browser = await chromium.launch({ headless: true,
+    ...(process.env.SOFA_CHROMIUM_EXECUTABLE ? { executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE } : {}) });
+  t.after(() => browser.close());
+  const page = await browser.newPage();
+  const messages = [];
+  page.on('console', message => messages.push(message.text()));
+  await page.goto(`http://127.0.0.1:${frameOrigin.address().port}`);
+  assert.ok(page.frames().every(frame => frame.url() !== host.origin + '/'));
+  assert.ok(messages.some(message => message.includes('frame-ancestors')));
+  await page.goto(host.origin);
+  const status = await page.evaluate(async () => {
+    const response = await fetch('/api/rooms', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+    });
+    return response.status;
+  });
+  assert.equal(status, 201);
 });

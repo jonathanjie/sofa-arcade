@@ -213,7 +213,7 @@ test('isolated ZIP runs its host and serves the complete local browser graph wit
       assert.equal(response.status, 404, `Private path must be denied: ${pathname}`);
       await response.arrayBuffer();
     }
-    const created = await fetch(server.origin + '/api/rooms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gameId: 'sofa-kingdoms' }) });
+    const created = await fetch(server.origin + '/api/rooms', { method: 'POST', headers: { Origin: server.origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ gameId: 'sofa-kingdoms' }) });
     assert.equal(created.status, 201, 'Extracted host can create real persisted rooms');
     const room = await created.json();
     assert.equal(room.gameId, 'sofa-kingdoms');
