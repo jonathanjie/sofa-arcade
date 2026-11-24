@@ -35,6 +35,7 @@ let collectionGame = null;
 let collectionIdentity = null;
 let collectionModules = null;
 let collectionLoading = null;
+let collectionStyles = null;
 let collectionLoadError = '';
 let collectionModalHTML = null;
 let collectionTutorial = null;
@@ -130,10 +131,14 @@ function loadSofaCharacterAtlas() {
     document.documentElement.classList.add('generated-art');
   }).catch(() => { /* Keep the inline SVG if the atlas cannot load. */ });
 }
-function header() {
+const hasCurrentRoom = () => !!state.code && state.room?.code === state.code;
+function header({titleOnly=false}={}) {
+  const brandTag=titleOnly?'h1':'button';
   const inMatch=state.view==='game'||state.view==='tutorial';
+  const brandTitle=inMatch?esc(gameById(state.gameId).title):'Sofa Arcade';
+  const homeName=inMatch?`${brandTitle}, back to Sofa Arcade`:'Back to Sofa Arcade';
   const settings=audio.getSettings();
-  return `<header class="topbar"><button class="brand" data-action="home" aria-label="Back to Sofa Arcade"><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${inMatch?esc(gameById(state.gameId).title):'Sofa Arcade'}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></button><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!state.code?'hidden':''}>${connectionLabel()}</span>${state.code ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'&&!([ODD_LAWS_GAME_ID,GRAVITY_ORCHARD_GAME_ID].includes(state.gameId)&&state.view==='game')?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
+  return `<header class="topbar"><${brandTag} class="brand" ${titleOnly?'':`data-action="home" aria-label="${homeName}"`}><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${brandTitle}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></${brandTag}><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!hasCurrentRoom()?'hidden':''}>${connectionLabel()}</span>${hasCurrentRoom() ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'&&!([ODD_LAWS_GAME_ID,GRAVITY_ORCHARD_GAME_ID].includes(state.gameId)&&state.view==='game')?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
 }
 function notices() {
   const text = state.error || state.notice;
@@ -141,7 +146,7 @@ function notices() {
 }
 function footer() {
   if(state.view==='game'||state.view==='tutorial')return '';
-  return `<footer class="footer"><span>${icon('shelf')} One shelf. Many little adventures.</span>${state.code && state.mode === 'network' ? `<span class="network ${state.network === 'connected' ? '' : 'offline'}">${connectionLabel()}</span>` : `<span>Made for Jon & Lydia</span>`}</footer>`;
+  return `<footer class="footer"><span>${icon('shelf')} One shelf. Many little adventures.</span>${hasCurrentRoom() && state.mode === 'network' ? `<span class="network ${state.network === 'connected' ? '' : 'offline'}">${connectionLabel()}</span>` : `<span>Made for Jon & Lydia</span>`}</footer>`;
 }
 const gameById = id => GAME_CATALOG.find(g=>g.id===id)||GAME_CATALOG.find(g=>g.id===SOFA_GAME_ID);
 const canPlayGame = game => game.id === GRAVITY_ORCHARD_GAME_ID ? transport.gravityOrchard === true : game.status === 'playable';
@@ -178,25 +183,37 @@ function gameArtwork(id, large = false) {
   const cover = GAME_COVERS[id];
   if (cover) {
     const { src, compact, width, height, alt } = cover;
-    return `<span class="game-cover${large ? ' is-large' : ''}" style="aspect-ratio:${width}/${height}"><img src="${large ? src : compact}" srcset="${compact} 560w, ${src} ${width}w" sizes="${large ? CONCEPT_COVER_SIZES : SHELF_COVER_SIZES}" width="${width}" height="${height}" alt="${large ? alt : ''}" decoding="async" ${large ? 'fetchpriority="high"' : 'loading="lazy"'}></span>`;
+    return `<span class="game-cover${large ? ' is-large' : ''}" style="--cover-ratio:${width}/${height}"><img src="${large ? src : compact}" srcset="${compact} 560w, ${src} ${width}w" sizes="${large ? CONCEPT_COVER_SIZES : SHELF_COVER_SIZES}" width="${width}" height="${height}" alt="${large ? alt : ''}" decoding="async" ${large ? 'fetchpriority="high"' : 'loading="lazy"'}></span>`;
   }
   return `<span class="concept-art${large ? ' large' : ''}" aria-hidden="true"><span class="concept-orbit"></span>${icon(gameIcon(id))}</span>`;
 }
 function collection() {
-  const sofa=gameById(SOFA_GAME_ID),planned=GAME_CATALOG.filter(g=>g.id!==SOFA_GAME_ID),ready=planned.some(g=>g.status==='playable');
-  return `<main class="arcade-home"><section class="shelf-intro"><div><span class="eyebrow">Stay in. Play something wonderful.</span><h1>Your next adventure<br>starts on the sofa.</h1></div><button class="button secondary" data-action="join-menu">${icon('phone')} Join a room</button></section><section class="featured-game"><div class="featured-image">${sofaCover('Lala the orange cat towers over two tiny adventurers on a cozy sofa', SOFA_HERO_SIZES)}<span class="playable-stamp">${icon('paw')} Ready to play</span></div><div class="featured-copy"><span class="eyebrow">Tonight’s little adventure</span><h2>${esc(sofa.title)}</h2><p>${esc(sofa.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(sofa.mode)}</span><span>${icon('clock')} ${esc(sofa.duration)}</span></div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button><button class="text-button" data-action="tutorial">${icon('help')} Learn with Lala</button></div></section><section class="drawing-board"><div class="shelf-section-title"><h2>${ready?'More games on the sofa':'On the drawing board'}</h2><span>More ways to spend an evening together.</span></div><div class="game-shelf">${planned.map(g=>`<button class="game-card" data-action="open-game" data-game="${esc(g.id)}" style="--game-accent:${esc(g.accent||'#8d826e')}">${gameArtwork(g.id)}<span class="concept-status">${canPlayGame(g)?'Ready to play':'On the drawing board'}</span><h3>${esc(g.title)}</h3><p>${esc(g.tagline)}</p><span class="concept-meta">${esc(g.mode)} <span>·</span> ${esc(g.duration)}</span></button>`).join('')}</div></section></main>`;
+  const sofa=gameById(SOFA_GAME_ID);
+  const otherGames=GAME_CATALOG.filter(g=>g.id!==SOFA_GAME_ID);
+  const ready=otherGames.filter(canPlayGame),planned=otherGames.filter(g=>!canPlayGame(g));
+  function shelf(title, games, availability) {
+    if (!games.length) return '';
+    const cards = games.map(game => `<button class="game-card" data-action="open-game" data-game="${esc(game.id)}" style="--game-accent:${esc(game.accent)}">
+      ${gameArtwork(game.id)}
+      <span class="concept-status">${availability}</span><h3>${esc(game.title)}</h3>
+      <p>${esc(game.tagline)}</p><span class="concept-meta"><span>${esc(game.mode)}</span><span class="meta-divider" aria-hidden="true">·</span><span>${esc(game.duration)}</span></span>
+    </button>`).join('');
+    return `<section class="drawing-board"><div class="shelf-section-title"><h2>${title}</h2></div><div class="game-shelf">${cards}</div></section>`;
+  }
+  return `<main class="arcade-home"><section class="shelf-intro"><div><span class="eyebrow">Stay in. Play something wonderful.</span><h1>Your next adventure<br> starts on the sofa.</h1></div><button class="button secondary" data-action="join-menu">${icon('phone')} Join a room</button></section><section class="featured-game"><div class="featured-image">${sofaCover('Lala the orange cat towers over two tiny adventurers on a cozy sofa', SOFA_HERO_SIZES)}<span class="playable-stamp">${icon('paw')} Ready to play</span></div><div class="featured-copy"><span class="eyebrow">Tonight’s little adventure</span><h2>${esc(sofa.title)}</h2><p>${esc(sofa.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(sofa.mode)}</span><span>${icon('clock')} ${esc(sofa.duration)}</span></div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button><button class="text-button" data-action="tutorial">${icon('help')} Learn with Lala</button></div></section><div class="collection-shelves">${shelf('More games on the sofa',ready,'Ready to play')}${shelf('On the drawing board',planned,'On the drawing board')}</div></main>`;
 }
 function gameDetail() {
   const selected=gameById(state.gameId),planned=!canPlayGame(selected);
   if(planned)return `<main class="concept-detail" style="--game-accent:${esc(selected.accent||'#8d826e')}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id,true)}<section><span class="concept-status">On the drawing board</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><div class="concept-note">${selected.id===GRAVITY_ORCHARD_GAME_ID?'Gravity Orchard is being prepared for the local Mac collection.':'This game is still on the drawing board.'} Sofa Kingdoms and Odd Laws Society are ready to play.</div><button class="button" data-action="open-game" data-game="${SOFA_GAME_ID}">Play Sofa Kingdoms</button></section></div></main>`;
-  if(selected.id===GRAVITY_ORCHARD_GAME_ID)return `<main class="concept-detail orchard-detail" style="--game-accent:${esc(selected.accent)}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id,true)}<section><span class="eyebrow">A picnic for two</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><button class="button full" data-action="create" ${state.busy?'disabled':''}>${state.busy?'<span class="spinner"></span>':icon('tv')} Host on the TV</button><button class="button secondary full" data-action="join-menu">${icon('phone')} Join with your phone</button><div class="detail-secondary"><button class="text-button" data-action="orchard-tutorial">${icon('help')} Learn with Lala</button><button class="text-button" data-action="orchard-practice" ${state.busy?'disabled':''}>${icon('fruit')} Untimed practice</button></div><p class="orchard-access-note">Touch controls work on any phone. Tilt needs a one-time setup on this Mac.</p>${nativeSecureAvailable()?'<button class="text-button" data-action="secure-setup">Set up phone tilt</button>':''}</section></div></main>`;
-  if(selected.id===ODD_LAWS_GAME_ID)return `<main class="concept-detail odd-laws-detail" style="--game-accent:${esc(selected.accent)}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id, true)}<section><span class="eyebrow">A council for two</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><button class="button full" data-action="create" ${state.busy?'disabled':''}>${state.busy?'<span class="spinner"></span>':icon('tv')} Host on the TV</button><button class="button secondary full" data-action="join-menu">${icon('phone')} Join with your phone</button><button class="text-button" data-action="odd-tutorial">${icon('help')} Learn with Lala</button>${transport.mode==='lan'?'<p class="lan-mode-label">Home Wi-Fi play</p>':''}</section></div></main>`;
-  return `<main class="welcome game-detail"><div class="welcome-art"><div class="art-fallback">${fallbackCat()}</div>${sofaCover("Lala watches Jon and Lydia's tiny kingdoms on a cozy sofa", SOFA_DETAIL_SIZES)}<div class="art-caption">The living room belongs to Lala.</div></div><section class="welcome-copy"><span class="eyebrow">Sofa Kingdoms</span><h1>A crumb of glory.<br><em>A little mischief.</em></h1><p>Gather crumbs, find your way home, and outsmart a cat who keeps rearranging the kingdom.</p>${!state.tutorialSeen&&!state.tutorialDone?`<div class="first-play"><span>${icon('help')}</span><div><strong>First time on the sofa?</strong><button class="link-button" data-action="tutorial">Learn by playing a short tutorial</button></div><button class="first-play-dismiss" data-action="dismiss-tutorial" aria-label="Dismiss tutorial suggestion">${icon('close')}</button></div>`:''}<button class="button" data-action="create" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('tv')} Host on the TV</button><button class="button secondary" data-action="join-menu">${icon('phone')} Join with your phone</button><div class="detail-secondary"><button class="text-button" data-action="tutorial">${icon('help')} ${state.tutorialDone?'Replay tutorial':'Learn with Lala'}</button><button class="text-button" data-action="practice" ${state.busy?'disabled':''}>${icon('players')} Same-screen practice</button></div><div class="welcome-features"><span>${icon('players')} 2 players</span><span>${icon('clock')} 15–25 minutes</span><span>${icon('phone')} 2 phones</span></div>${transport.mode==='lan'?'<p class="lan-mode-label">Home Wi-Fi play</p>':'<button class="text-button local-play-link" data-action="local-play">Play over local Wi-Fi</button>'}</section></main>`;
+  if(selected.id===GRAVITY_ORCHARD_GAME_ID)return `<main class="concept-detail orchard-detail" style="--game-accent:${esc(selected.accent)}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id,true)}<section><span class="eyebrow">A picnic for two</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><button class="button full" data-action="create" ${state.busy?'disabled':''}>${state.busy?'<span class="spinner"></span>':icon('tv')} Host on the TV</button><button class="button secondary full" data-action="join-menu">${icon('phone')} Join a room</button><div class="detail-secondary"><button class="text-button" data-action="orchard-tutorial">${icon('help')} Learn with Lala</button><button class="text-button" data-action="orchard-practice" ${state.busy?'disabled':''}>${icon('fruit')} Untimed practice</button></div><p class="orchard-access-note">Touch controls work on any phone. Tilt needs a one-time setup on this Mac.</p>${nativeSecureAvailable()?'<button class="text-button" data-action="secure-setup">Set up phone tilt</button>':''}</section></div></main>`;
+  if(selected.id===ODD_LAWS_GAME_ID)return `<main class="concept-detail odd-laws-detail" style="--game-accent:${esc(selected.accent)}"><button class="text-button" data-action="home">${icon('shelf')} All games</button><div class="concept-detail-grid">${gameArtwork(selected.id, true)}<section><span class="eyebrow">A council for two</span><h1>${esc(selected.title)}</h1><h2>${esc(selected.tagline)}</h2><p>${esc(selected.description)}</p><div class="game-meta"><span>${icon('players')} ${esc(selected.mode)}</span><span>${icon('clock')} ${esc(selected.duration)}</span></div><button class="button full" data-action="create" ${state.busy?'disabled':''}>${state.busy?'<span class="spinner"></span>':icon('tv')} Host on the TV</button><button class="button secondary full" data-action="join-menu">${icon('phone')} Join a room</button><button class="text-button" data-action="odd-tutorial">${icon('help')} Learn with Lala</button>${transport.mode==='lan'?'<p class="lan-mode-label">Home Wi-Fi play</p>':''}</section></div></main>`;
+  return `<main class="welcome game-detail"><div class="welcome-art"><div class="art-fallback">${fallbackCat()}</div>${sofaCover("Lala watches Jon and Lydia's tiny kingdoms on a cozy sofa", SOFA_DETAIL_SIZES)}<div class="art-caption">The living room belongs to Lala.</div></div><section class="welcome-copy"><span class="eyebrow">Sofa Kingdoms</span><h1>A crumb of glory.<br><em>A little mischief.</em></h1><p>Gather crumbs, find your way home, and outsmart a cat who keeps rearranging the kingdom.</p>${!state.tutorialSeen&&!state.tutorialDone?`<div class="first-play"><span>${icon('help')}</span><div><strong>First time on the sofa?</strong><button class="link-button" data-action="tutorial">Learn with Lala</button></div><button class="first-play-dismiss" data-action="dismiss-tutorial" aria-label="Dismiss tutorial suggestion">${icon('close')}</button></div>`:''}<button class="button" data-action="create" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('tv')} Host on the TV</button><button class="button secondary" data-action="join-menu">${icon('phone')} Join a room</button><div class="detail-secondary"><button class="text-button" data-action="tutorial">${icon('help')} ${state.tutorialDone?'Replay tutorial':'Learn with Lala'}</button><button class="text-button" data-action="practice" ${state.busy?'disabled':''}>${icon('players')} Same-screen practice</button></div><div class="welcome-features"><span>${icon('players')} 2 players</span><span>${icon('clock')} 15–25 minutes</span><span>${icon('phone')} 2 phones</span></div>${transport.mode==='lan'?'<p class="lan-mode-label">Home Wi-Fi play</p>':'<button class="text-button local-play-link" data-action="local-play">Play over local Wi-Fi</button>'}</section></main>`;
 }
 function roomPlayers() { return state.room?.players || { jon: {}, lydia: {} }; }
 function lobbySeat(id) {
   const p = roomPlayers()[id] || {};
-  return `<div class="lobby-seat ${p.joined ? 'joined' : ''} ${id}"><div class="seat-portrait">${character(id)}</div>${state.role==='host'?`<a class="seat-name seat-link" href="${esc(joinUrl(id))}" target="_blank" rel="noopener" aria-label="Open ${NAMES[id]}’s phone controller">${NAMES[id]}</a>`:`<span class="seat-name">${NAMES[id]}</span>`}<span class="seat-status">${p.joined ? (p.connected === false ? 'Reconnecting' : 'Ready to play') : 'Waiting for a phone'}</span></div>`;
+  const connected = state.gameId===GRAVITY_ORCHARD_GAME_ID?'Phone connected':'Ready to play';
+  return `<div class="lobby-seat ${p.joined ? 'joined' : ''} ${id}"><div class="seat-portrait">${character(id)}</div>${state.role==='host'?`<a class="seat-name seat-link" href="${esc(joinUrl(id))}" target="_blank" rel="noopener" aria-label="Open ${NAMES[id]}’s phone controller">${NAMES[id]}</a>`:`<span class="seat-name">${NAMES[id]}</span>`}<span class="seat-status">${p.joined ? (p.connected === false ? 'Reconnecting' : connected) : 'Waiting for a phone'}</span></div>`;
 }
 function joinUrl(seat=null) { return (secureJoin&&state.gameId===GRAVITY_ORCHARD_GAME_ID?trustedPhoneOrigin(secureStatus,transport.joinOrigin)||transport.joinOrigin:transport.joinOrigin) + '/?join=' + encodeURIComponent(state.code)+(seat?'&seat='+seat:''); }
 function lobby() {
@@ -204,14 +221,14 @@ function lobby() {
   return `<main class="lobby-wrap"><section class="lobby-intro"><span class="eyebrow">Make yourselves comfortable</span><h1>${state.gameId===GRAVITY_ORCHARD_GAME_ID?'Your picnic<br>is almost ready.':state.gameId===ODD_LAWS_GAME_ID?'Your council<br>is almost ready.':'Your kingdom<br>is almost ready.'}</h1><p>Leave this screen on the TV. Scan the code with each phone, then choose Jon or Lydia. Your phones become the controllers.</p><div class="lobby-cat">${character('lala')}</div><div class="lobby-steps"><span class="lobby-step"><span class="step-dot">1</span> Scan on both phones</span><span class="lobby-step"><span class="step-dot">2</span> Pick your character</span><span class="lobby-step"><span class="step-dot">3</span> ${state.gameId===GRAVITY_ORCHARD_GAME_ID?'Enter the orchard':state.gameId===ODD_LAWS_GAME_ID?'Convene the council':'Let Lala loose'}</span></div></section><section class="lobby-card"><span class="eyebrow">Join this room</span><div class="room-code" aria-label="Room code ${esc(state.code.split('').join(' '))}">${esc(state.code)}</div><div class="qr-wrap" id="room-qr"><span class="qr-fallback">Open this page on your phone<br>and enter the room code.</span></div><button class="text-button" data-action="copy-link">${icon('copy')} Copy phone link</button>${orchardJoinOptions()}<div class="lobby-players">${lobbySeat('jon')}${lobbySeat('lydia')}</div><button class="button full" data-action="start" ${!both || state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('paw')}${both ? (state.gameId===GRAVITY_ORCHARD_GAME_ID?'Enter the orchard':state.gameId===ODD_LAWS_GAME_ID?'Convene the council':'Let the mischief begin') : 'Waiting for both players'}</button><p class="lobby-hint">${both ? 'Both adventurers have arrived. Start when you’re ready.' : 'Each phone controls one adventurer. Keep this TV page open.'}</p></section></main>`;
 }
 function joinScreen() {
-  const choosing = !!state.room;
+  const choosing = hasCurrentRoom();
   const ps = roomPlayers();
   const ownTokens=readCredentials(state.code).playerTokens||{};
-  return `<main class="join-wrap"><section class="join-card"><span class="eyebrow">A seat on the sofa</span><h1>${choosing ? 'Who’s playing?' : 'Join the room.'}</h1><p>${choosing ? `You’re joining room <strong>${esc(state.code)}</strong>. Choose your adventurer.` : 'Enter the room code shown on your TV.'}</p>${choosing ? `<div class="character-choices">${['jon','lydia'].map(id => {const taken=ps[id]?.joined&&!ownTokens[id];return `<button class="character-choice ${id} ${state.preferredSeat===id?'preferred':''}" data-action="claim" data-player="${id}" ${state.busy || taken ? 'disabled' : ''}><div class="portrait">${character(id)}</div><strong>${NAMES[id]}</strong><small>${taken ? 'Already on the sofa' : ownTokens[id]?'Return to this controller':id === 'jon' ? 'The teal kingdom' : 'The rose kingdom'}</small></button>`;}).join('')}</div><button class="link-button" data-action="different-room">Use a different room code</button>` : `<form id="join-form"><label class="form-label" for="room-input">Room code</label><input class="code-input" id="room-input" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="ABCDEF" required aria-describedby="join-code-hint"><button class="button full" type="submit" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('phone')} Find my room</button></form>`}</section><p class="join-caption" id="join-code-hint">${choosing ? 'The big board stays on the TV.<br>Your moves happen here.' : 'You can also scan the QR code on the TV.'}</p></main>`;
+  return `<main class="join-wrap"><section class="join-card"><span class="eyebrow">A seat on the sofa</span><h1>${choosing ? 'Who’s playing?' : 'Join a room'}</h1><p>${choosing ? `You’re joining room <strong>${esc(state.code)}</strong>. Choose a seat.` : 'Enter the room code shown on your TV.'}</p>${choosing ? `<div class="character-choices">${['jon','lydia'].map(id => {const taken=ps[id]?.joined&&!ownTokens[id];return `<button class="character-choice ${id} ${state.preferredSeat===id?'preferred':''}" data-action="claim" data-player="${id}" aria-label="${NAMES[id]}" aria-describedby="seat-${id}-status" ${state.busy || taken ? 'disabled' : ''}><div class="portrait">${character(id)}</div><strong>${NAMES[id]}</strong><small id="seat-${id}-status">${taken ? 'Seat taken' : ownTokens[id]?'Return to your seat':'Seat open'}</small></button>`;}).join('')}</div><button class="link-button" data-action="different-room">Use a different room code</button>` : `<form id="join-form"><label class="form-label" for="room-input">Room code</label><input class="code-input" id="room-input" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="ABCDEF" value="${esc(state.code)}" ${state.busy ? 'readonly' : ''} required aria-describedby="join-code-hint"><button class="button full" type="submit" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('phone')} Find room</button></form>`}</section><p class="join-caption" id="join-code-hint">${choosing ? 'The big board stays on the TV.<br>Your moves happen here.' : 'You can also scan the QR code on the TV.'}</p></main>`;
 }
 function waiting() {
   const id = state.playerId;
-  return `<main class="controller-shell waiting-scene"><div class="portrait">${character(id)}</div><span class="eyebrow">You’re on the sofa</span><h1>Welcome, ${NAMES[id]}.</h1><p>Your controller is ready. Start the game from the TV once you’ve both joined.</p><div class="room-label">Room <strong>${esc(state.code)}</strong></div><div class="lobby-players">${lobbySeat('jon')}${lobbySeat('lydia')}</div><button class="text-button" data-action="rules">${icon('help')} Learn the rules while you wait</button><div><button class="link-button" data-action="switch-seat">Choose another character</button></div></main>`;
+  return `<main class="controller-shell waiting-scene"><div class="portrait">${character(id)}</div><span class="eyebrow">You’re on the sofa</span><h1>Welcome, ${NAMES[id]}.</h1><p>${state.gameId===GRAVITY_ORCHARD_GAME_ID?'Your phone is connected.':'Your controller is ready.'} Start the game from the TV once you’ve both joined.</p><div class="room-label">Room <strong>${esc(state.code)}</strong></div><div class="lobby-players">${lobbySeat('jon')}${lobbySeat('lydia')}</div><button class="text-button" data-action="rules">${icon('help')} Learn the rules while you wait</button><div><button class="link-button" data-action="switch-seat">Choose another seat</button></div></main>`;
 }
 function game() { return state.room?.state || null; }
 function forecastInfo(g) {
@@ -278,7 +295,7 @@ function controller(g) {
   const active = g.activePlayer === id && g.phase==='playing';
   const f = forecastInfo(g);
   const p = g.players[id];
-  return `<main class="controller-shell clean-controller">${state.turnToast?`<div class="controller-turn-toast" role="status">${esc(state.turnToast)}</div>`:''}${playerCard(g,id)}<div class="controller-status ${active ? 'active '+id : ''}">${state.network!=='connected'?'Reconnecting…':g.phase==='finished' ? 'Final score' : active ? `Your turn · ${g.actionsLeft} ${g.actionsLeft===1?'action':'actions'}` : `${NAMES[g.activePlayer]}’s turn`}<span class="controller-round">${state.pendingActions?'<span class="input-confirming" aria-label="Confirming move"></span>':''}${g.round}/${g.maxRounds}</span></div><div class="controller-location"><span>At <strong>${String.fromCharCode(65+p.col)}${p.row+1}</strong> · Home <strong>${String.fromCharCode(65+p.home.col)}${p.home.row+1}</strong></span><button class="text-button" data-action="toggle-map" aria-expanded="${state.mapOpen}">${icon('eye')} ${state.mapOpen?'Hide map':'Pocket map'}</button></div>${state.mapOpen?`<div class="controller-board">${board(g,true)}</div>`:''}${g.phase==='finished' ? '<button class="button full" data-action="results">View results</button>' : controllerControls(g,id)}<div class="mini-forecast"><div class="mini-cat">${character('lala')}</div><div><h3>Next: Lala</h3><p>${f.detail}</p></div></div></main>`;
+  return `<main class="controller-shell clean-controller">${playerCard(g,id)}<div class="controller-status ${active ? 'active '+id : ''}">${state.network!=='connected'?'Reconnecting…':g.phase==='finished' ? 'Final score' : active ? `Your turn · ${g.actionsLeft} ${g.actionsLeft===1?'action':'actions'}` : `${NAMES[g.activePlayer]}’s turn`}<span class="controller-round">${state.pendingActions?'<span class="input-confirming" aria-label="Confirming move"></span>':''}${g.round}/${g.maxRounds}</span><p class="controller-turn-toast" role="status">${esc(state.turnToast)}</p></div><div class="controller-location"><span>At <strong>${String.fromCharCode(65+p.col)}${p.row+1}</strong> · Home <strong>${String.fromCharCode(65+p.home.col)}${p.home.row+1}</strong></span><button class="text-button" data-action="toggle-map" aria-expanded="${state.mapOpen}">${icon('eye')} ${state.mapOpen?'Hide map':'Pocket map'}</button></div>${state.mapOpen?`<div class="controller-board">${board(g,true)}</div>`:''}${g.phase==='finished' ? '<button class="button full" data-action="results">View results</button>' : controllerControls(g,id)}<div class="mini-forecast"><div class="mini-cat">${character('lala')}</div><div><h3>Next: Lala</h3><p>${f.detail}</p></div></div></main>`;
 }
 const TUTORIAL_STEPS=[
   {title:'One small step.',text:'You’re Jon, starting at A5. Move right onto the three crumbs at B5. Every move costs one action.',action:{type:'move',direction:'right'},hint:'Press the right direction.'},
@@ -464,7 +481,7 @@ async function openOrchardTutorial(){
     const modules=await ensureOrchardModules();
     if(epoch!==roomEpoch||serial!==orchardTutorialSerial)return;
     state.modal=null;render();
-    orchardTutorial=modules.mountTutorial(document.body,{onClose:()=>{orchardTutorial=null;if(state.view==='tutorial')openGame(GRAVITY_ORCHARD_GAME_ID);},inputMode:'touch',reducedMotion:motionPreference.matches});
+    orchardTutorial=modules.mountTutorial(document.body,{onClose:()=>{orchardTutorial=null;if(state.view==='tutorial')openGame(GRAVITY_ORCHARD_GAME_ID);},inputMode:'touch',reducedMotion:motionPreference});
   }catch(error){if(epoch===roomEpoch){state.error=error.message;render();}}
 }
 function renderOrchardMatch(){
@@ -494,6 +511,8 @@ function renderOrchardMatch(){
 }
 function releaseCollectionGame() {
   collectionGame?.dispose();
+  collectionStyles?.release();
+  collectionStyles=null;
   collectionGame=null;
   collectionIdentity=null;
   collectionModalHTML=null;
@@ -507,7 +526,7 @@ function connectionLabel() {
 }
 function updateConnectionChrome() {
   const status=app.querySelector('[data-shell-connection]');
-  if(status){status.hidden=state.network==='connected'||!state.code;status.textContent=connectionLabel();}
+  if(status){status.hidden=state.network==='connected'||!hasCurrentRoom();status.textContent=connectionLabel();}
 }
 function setNetworkConnection(value,{terminal=false}={}) {
   const next=connectionStatus(value);
@@ -565,7 +584,7 @@ function renderCollectionMatch() {
     releaseCollectionGame();collectionIdentity=identity;
     app.innerHTML=`<div class="app-shell collection-match ${state.role==='player'?'is-controller':''}"><div id="collection-chrome"></div><div id="collection-notices"></div><main id="collection-game-root"></main><div id="collection-room-actions"></div></div><div id="collection-overlays"></div>`;
   }
-  $('#collection-chrome').innerHTML=header();
+  $('#collection-chrome').innerHTML=header({titleOnly:state.role==='host'&&collectionStyles?.loaded});
   $('#collection-notices').innerHTML=notices();
   $('#collection-room-actions').innerHTML=state.room?.phase==='finished'&&state.role==='host'?`<button class="button" data-action="rematch" ${state.busy?'disabled':''}>${icon('reset')} Start a new council</button>`:'';
   app.querySelector('.collection-match').classList.toggle('has-room-actions',!!$('#collection-room-actions').firstElementChild);
@@ -579,7 +598,16 @@ function renderCollectionMatch() {
     else if(focusSelector){const control=overlays.querySelector(focusSelector);if(control&&!control.disabled){control.focus({preventScroll:true});if(selection)try{control.setSelectionRange(selection.start,selection.end);}catch{}}}
   }
   const root=$('#collection-game-root');
-  if(!collectionModules){
+  if(collectionModules&&!collectionLoadError&&!collectionStyles){
+    const styles=collectionModules.prepareStyles(document,state.role);
+    collectionStyles=styles;
+    styles.ready.then(()=>{
+      if(collectionStyles===styles){styles.loaded=true;render();}
+    },error=>{
+      if(collectionStyles===styles){styles.release();collectionStyles=null;collectionLoadError=error.message;render();}
+    });
+  }
+  if(!collectionStyles?.loaded){
     root.innerHTML=collectionLoadError?`<section class="collection-loading" role="alert"><h1>The council could not open.</h1><p>${esc(collectionLoadError)}</p><button class="button" data-action="retry-collection">Try again</button><button class="text-button" data-action="home">Back to the collection</button></section>`:'<div class="collection-loading" role="status"><span class="spinner"></span> Preparing the council…</div>';
     prepareCollectionModules();return;
   }
@@ -661,7 +689,7 @@ function renderView() {
   if(collectionGame||collectionIdentity)releaseCollectionGame();
   const focused = document.activeElement;
   const hadModal = !!app.querySelector('.modal');
-  const focusSelector = focused?.id ? '#'+CSS.escape(focused.id) : focused?.dataset?.action ? '[data-action="'+CSS.escape(focused.dataset.action)+'"]'+['command','direction','player','index','axis','value'].filter(k=>focused.dataset[k]!==undefined).map(k=>'[data-'+k+'="'+CSS.escape(focused.dataset[k])+'"]') .join('') : null;
+  const focusSelector = focused?.id ? '#'+CSS.escape(focused.id) : focused?.dataset?.action ? '[data-action="'+CSS.escape(focused.dataset.action)+'"]'+['game','command','direction','player','index','axis','value'].filter(k=>focused.dataset[k]!==undefined).map(k=>'[data-'+k+'="'+CSS.escape(focused.dataset[k])+'"]') .join('') : null;
   const inputState = focused?.tagName === 'INPUT' ? {value:focused.value,start:focused.selectionStart,end:focused.selectionEnd} : null;
   const old = new Map([...app.querySelectorAll('[data-piece]')].map(n=>[n.dataset.piece,n.getBoundingClientRect()]));
   const content=renderScreen();
@@ -703,6 +731,7 @@ async function api(path, options={}) {
     return body;
   } catch(err) {
     if(err.name==='AbortError')throw new Error('The room is taking a little longer to respond. Please try again.');
+    if(err instanceof TypeError)throw new Error('The room could not be reached. Check your connection and try again.');
     throw err;
   } finally {clearTimeout(timeout);options.signal?.removeEventListener('abort',abort);}
 }
@@ -802,7 +831,7 @@ function controllerQueue() {
   return actionQueue;
 }
 async function poll(force=false) {
-  if(isLocal()||!state.code||pollInFlight)return;
+  if(isLocal()||!state.code||pollInFlight||(state.view==='join'&&!hasCurrentRoom()))return;
   const now=Date.now();
   const interval=document.hidden?5000:orchardGame?10000:streamConnected?10000:state.room?.phase==='playing'?250:900;
   if(!force&&now-lastPollAt<interval)return;
@@ -878,8 +907,14 @@ async function createRoom(mode='campaign', {replaceRoute=false}={}) {
 }
 async function findRoom(code,preferredSeat=null,recovering=false) {
   code=code.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(code.length<4){state.error=code?'Enter the room code shown on your TV.':'';render();return;}
   stopPolling();state.code=code;state.role='player';state.mode='network';state.room=null;state.playerId=null;state.playerToken=null;state.hostToken=null;state.error='';state.busy=true;state.view='join';
+  if(code.length !== 6) {
+    state.busy=false;
+    state.error=code?'Enter the six-character room code shown on your TV.':'';
+    render();
+    $('#room-input')?.focus();
+    return;
+  }
   const epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.preferredSeat=['jon','lydia'].includes(preferredSeat)?preferredSeat:null;
   const creds=readCredentials(code),seat=state.preferredSeat||creds.lastSeat||creds.playerId;
@@ -896,19 +931,20 @@ async function findRoom(code,preferredSeat=null,recovering=false) {
     if(unavailable&&stored(LAST_SESSION_KEY)?.code===code)persist(LAST_SESSION_KEY,null);
     if(recovering&&unavailable){goHome({navigate:false});state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();}
     else {
-      state.busy=false;
+      if(err.status===401||err.status===403){state.playerToken=null;state.playerId=null;}
       state.error=err.message;
-      state.playerToken=null;
-      state.playerId=null;
-      state.code='';
-      history.replaceState({}, '', '/?join=');
-      render();
     }
   }
-  finally {if(current()){state.busy=false;render();}}
+  finally {
+    if(current()){
+      state.busy=false;render();
+      const input=!hasCurrentRoom()&&$('#room-input');
+      if(input){input.value=code;input.focus({preventScroll:true});input.select();}
+    }
+  }
 }
 async function claimPlayer(id) {
-  if(state.busy)return;
+  if(state.busy||!hasCurrentRoom())return;
   const code=state.code,epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.busy=true;state.error='';render();
   try {
@@ -1023,7 +1059,7 @@ app.addEventListener('click', async event=>{
   if(a==='fullscreen'){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{state.notice='Use your browser’s full-screen control to fill the TV.';render();}}
   if(a==='create')await createRoom();
   if(a==='join-menu'){pushRoute('/?join=');persist(LAST_SESSION_KEY,null);stopPolling();state.view='join';state.role='player';state.code='';state.room=null;state.error='';render();setTimeout(()=>$('#room-input')?.focus(),50);}
-  if(a==='different-room'){persist(LAST_SESSION_KEY,null);stopPolling();state.code='';state.playerId=null;state.playerToken=null;state.room=null;state.view='join';state.error='';history.replaceState({},'', '/?join=');render();}
+  if(a==='different-room'){persist(LAST_SESSION_KEY,null);stopPolling();state.code='';state.playerId=null;state.playerToken=null;state.room=null;state.view='join';state.error='';history.replaceState({},'', '/?join=');render();$('#room-input')?.focus();}
   if(a==='switch-seat'){stopPolling();state.playerId=null;state.playerToken=null;state.preferredSeat=null;state.view='join';state.error='';state.modal=null;history.replaceState({},'', '/?join='+encodeURIComponent(state.code));render();}
   if(a==='claim')await claimPlayer(button.dataset.player);
   if(a==='start')await startGame();

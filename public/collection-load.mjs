@@ -24,6 +24,7 @@ export async function loadOddLaws({
   if (!mediaAvailable) manifest = { schemaVersion: 1, gameId: 'odd-laws-society', buildings: {}, laws: {}, guilds: {}, characters: {}, props: {} };
   return Object.freeze({
     mount: view.mount,
+    prepareStyles: view.prepareStyles,
     createTutorial: tutorial.createTutorial,
     createRoomClient: client.createRoomClient,
     rules: Object.freeze({

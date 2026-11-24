@@ -141,13 +141,19 @@ export function mountPhone(root, {
         <div class="go3-calibration" data-go3="calibration" hidden><span></span></div>
         <div class="go3-setup-actions">
           <button class="go3-primary" type="button" data-go3="enable-tilt">${icon('phone')}<span>Enable tilt</span></button>
-          <button class="go3-primary" type="button" data-go3="calibrate" hidden>${icon('center')}<span>Center my phone</span></button>
+          <button class="go3-primary" type="button" data-go3="calibrate" hidden>${icon('center')}<span>Recenter</span></button>
           <button class="go3-secondary" type="button" data-go3="touch-mode">${icon('touch')}<span>Use touch controls</span></button>
         </div>
       </section>
+      <section class="go3-ready-panel" data-go3="ready-panel">
+        <div class="go3-ready-seats" data-go3="ready-seats"><span data-go3="self-ready">${playerName} · Not ready</span><span data-go3="partner-ready">${partnerName} · Not ready</span></div>
+        <button class="go3-primary go3-ready" type="button" data-go3="ready">${icon('check')}<span>Ready</span></button>
+        <p class="go3-ready-note" data-go3="ready-note">Both gardeners start together.</p>
+      </section>
+      <p class="go3-error" data-go3="error" role="alert" hidden></p>
       <div class="go3-play-controls">
         <section class="go3-controller" aria-labelledby="${id}-control-title">
-          <div class="go3-control-heading"><h3 id="${id}-control-title" data-go3="control-title">Your tilt</h3><span data-go3="vector-label">Centered</span></div>
+          <div class="go3-control-heading"><h3 id="${id}-control-title" data-go3="control-title">Your tilt</h3><span data-go3="vector-label">Centred</span></div>
           <div class="go3-steering" data-go3="joystick" role="group" aria-roledescription="two-dimensional joystick" aria-label="Steer ${playerName}'s garden" aria-describedby="${id}-keyboard" tabindex="0">
             <div class="go3-steering-rings" aria-hidden="true"><i></i><i></i><i></i></div>
             <span class="go3-direction go3-up" aria-hidden="true">↑</span><span class="go3-direction go3-right" aria-hidden="true">→</span>
@@ -167,16 +173,10 @@ export function mountPhone(root, {
           </div>
         </div>
       </div>
-      <section class="go3-ready-panel" data-go3="ready-panel">
-        <div class="go3-ready-seats" data-go3="ready-seats"><span data-go3="self-ready">${playerName} · Not ready</span><span data-go3="partner-ready">${partnerName} · Not ready</span></div>
-        <button class="go3-primary go3-ready" type="button" data-go3="ready">${icon('check')}<span>I'm ready</span></button>
-        <p class="go3-ready-note" data-go3="ready-note">Both gardeners start together.</p>
-      </section>
       <section class="go3-results" data-go3="results" hidden>
         <div class="go3-result-symbol">${icon('basket')}</div><h3>Picnic complete</h3><p data-go3="results-summary"></p>
         <p class="go3-ready-note">Choose the next adventure on the TV.</p>
       </section>
-      <p class="go3-error" data-go3="error" role="alert" hidden></p>
       <p class="go3-live go3-sr-only" data-go3="announcement" role="status" aria-live="polite"></p>
     </div>
     <div class="go3-dialog-backdrop" data-go3="help-backdrop" hidden>
@@ -184,9 +184,9 @@ export function mountPhone(root, {
         <header><div><span class="go3-kicker">A little help</span><h2 id="${id}-help-title">Make yourself at home</h2></div><button class="go3-icon-button" type="button" data-go3="close-help" aria-label="Close Help">${icon('close')}</button></header>
         <p>Steer your garden while watching the TV. Pass fruit over the bridge and guide it into its matching basket.</p>
         <div class="go3-help-tip">${icon('brake')}<p><strong>Hold Brake</strong> to steady your fruit. You can steer and brake together.</p></div>
-        <div class="go3-help-tip">${icon('center')}<p><strong>Recenter</strong> with your phone in a natural seated grip. Rotating your screen pauses play for a new center.</p></div>
+        <div class="go3-help-tip">${icon('center')}<p><strong>Recenter</strong> with your phone in a natural seated grip. Rotating your screen pauses play for a new centre.</p></div>
         <h3>Your controls</h3>
-        <div class="go3-help-modes"><button type="button" class="go3-secondary" data-go3="tilt-mode">${icon('phone')}<span>Set up tilt</span></button><button type="button" class="go3-secondary" data-go3="help-touch">${icon('touch')}<span>Use touch</span></button></div>
+        <div class="go3-help-modes"><button type="button" class="go3-secondary" data-go3="tilt-mode">${icon('phone')}<span>Set up tilt</span></button><button type="button" class="go3-secondary" data-go3="help-touch">${icon('touch')}<span>Use touch controls</span></button></div>
         <p class="go3-keyboard-help"><strong>Keyboard:</strong> focus the steering pad, use arrows or W A S D, and hold Space for Brake. Escape pauses.</p>
         <p class="go3-help-pause">Closing Help keeps play paused. Both gardeners must be ready to continue.</p>
         <button class="go3-secondary go3-exit" type="button" data-go3="exit">${icon('exit')}<span>Leave controller</span></button>
@@ -249,7 +249,7 @@ export function mountPhone(root, {
     setProperty(refs.joystick.dataset, 'braking', String(brake));
     const vertical = Math.abs(y) > 0.1 ? (y < 0 ? 'Up' : 'Down') : '';
     const horizontal = Math.abs(x) > 0.1 ? (x < 0 ? 'left' : 'right') : '';
-    const label = vertical && horizontal ? `${vertical} ${horizontal}` : vertical || (horizontal ? horizontal[0].toUpperCase() + horizontal.slice(1) : 'Centered');
+    const label = vertical && horizontal ? `${vertical} ${horizontal}` : vertical || (horizontal ? horizontal[0].toUpperCase() + horizontal.slice(1) : 'Centred');
     setText(refs['vector-label'], label);
     const held = brakePointers.size > 0 || keys.has(' ');
     setAttribute(refs.brake, 'aria-pressed', String(held));
@@ -418,7 +418,7 @@ export function mountPhone(root, {
       motion.calibrate();
     } else {
       motion.setTouchVector(0, 0);
-      refs.announcement.textContent = 'Touch controls centered. Both gardeners must be ready to continue.';
+      refs.announcement.textContent = 'Touch controls centred. Both gardeners must be ready to continue.';
     }
     render();
   }
@@ -598,22 +598,21 @@ export function mountPhone(root, {
     const notes = {
       waiting: '', countdown: 'Get comfortable. Watch the TV.',
       playing: localHold ? 'Waiting for the shared pause.' : '',
-      paused: view?.pauseReason === 'network' ? 'Reconnect, then get ready together.' : 'Both gardeners choose ready to continue.',
+      paused: view?.pauseReason === 'network' ? 'Reconnect, then get ready together.' : 'Both gardeners choose Ready to continue.',
       interlude: 'Catch your breath before the next garden.', finished: '',
     };
-    const phaseNote = connection.state !== 'connected' ? 'Your controls are paused while we reconnect.' : notes[phase];
+    const phaseNote = connection.state !== 'connected' ? 'Controls paused. Reconnecting…' : notes[phase];
     setText(refs['phase-note'], phaseNote);
-    setProperty(refs['phase-note'], 'hidden', !phaseNote);
     setProperty(refs.setup, 'hidden', !setupOpen);
     const setupCopy = {
       insecure: ['Touch is ready to play', 'Tilt needs the one-time setup on your Mac. You can play the whole game with touch.'],
       unsupported: ['Touch is ready to play', 'This browser does not provide phone tilt. Touch has all the same controls.'],
-      'needs-permission': ['Play with a gentle tilt', 'Hold your phone naturally while seated. Enable tilt, then keep still briefly to find your center.'],
+      'needs-permission': ['Play with a gentle tilt', 'Hold your phone naturally while seated. Enable tilt, then keep still briefly to find your centre.'],
       denied: ['Your choice — touch works too', 'Tilt was not allowed. Use touch, or allow motion in your browser settings.'],
-      'no-samples': ['No tilt readings yet', 'Tilt isn’t responding. Try centering again, or play with touch.'],
-      calibrating: ['Find your comfortable center', 'Hold your phone naturally and still for a moment. No flat table or shaking needed.'],
-      ready: ['Your controls are ready', 'Choose ready when you and your partner are comfortable.'],
-      paused: ['Center your phone again', sensor.reason === 'rotation' ? 'The screen rotated. Hold your new comfortable grip and recenter before continuing.' : 'Keep your phone in a comfortable grip, then center it.'],
+      'no-samples': ['No tilt readings yet', 'Tilt isn’t responding. Try Recenter, or play with touch.'],
+      calibrating: ['Find your comfortable centre', 'Hold your phone naturally and still for a moment. No flat table or shaking needed.'],
+      ready: ['Your controls are ready', 'Choose Ready when you and your partner are comfortable.'],
+      paused: ['Find your centre again', sensor.reason === 'rotation' ? 'The screen rotated. Hold your new comfortable grip and recenter before continuing.' : 'Keep your phone in a comfortable grip, then tap Recenter.'],
     };
     const [title, copy] = setupCopy[sensor.state] || setupCopy['needs-permission'];
     setText(refs['setup-title'], title);
@@ -636,7 +635,7 @@ export function mountPhone(root, {
     setProperty(refs['self-ready'].dataset, 'ready', String(ready));
     setProperty(refs['partner-ready'].dataset, 'ready', String(!!view?.ready?.[partnerId]));
     setProperty(refs.ready, 'disabled', !view || !configured || connection.state !== 'connected' || pendingReady || setupOpen || dialogOpen || (selectedMode === 'tilt' && !sensor.calibrated));
-    setText(readyLabel, pendingReady ? 'Sending…' : ready ? 'Ready — tap to cancel' : phase === 'interlude' ? 'Ready for the next garden' : "I'm ready");
+    setText(readyLabel, pendingReady ? 'Sending…' : ready ? 'Cancel ready' : 'Ready');
     setText(refs['ready-note'], ready ? `Waiting for ${partnerName}.` : 'Both gardeners start together.');
     setProperty(refs.results, 'hidden', phase !== 'finished');
     if (phase === 'finished') {

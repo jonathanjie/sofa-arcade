@@ -6,7 +6,7 @@ const mounted = new WeakMap();
 let sequence = 0;
 
 function controlsFor(step) {
-  if (step === 0) return '<button type="button" data-tutorial-action="recenter">Try a comfortable centre</button>';
+  if (step === 0) return '<button type="button" data-tutorial-action="recenter">Recenter</button>';
   if (step === 1) return `<div class="go-tutorial__steering"><div class="go-tutorial__seats"><button type="button" data-tutorial-action="select-jon" aria-pressed="true">Steer Jon’s tray</button><button type="button" data-tutorial-action="select-lydia" aria-pressed="false">Steer Lydia’s tray</button></div><div class="go-tutorial__dpad" role="group" aria-label="Practice steering arrows"><button type="button" data-tutorial-action="steer" data-direction="up" aria-label="Steer up">↑</button><button type="button" data-tutorial-action="steer" data-direction="left" aria-label="Steer left">←</button><span aria-hidden="true">✥</span><button type="button" data-tutorial-action="steer" data-direction="right" aria-label="Steer right">→</button><button type="button" data-tutorial-action="steer" data-direction="down" aria-label="Steer down">↓</button></div></div>`;
   if (step === 2) return '<button type="button" data-tutorial-action="brake" aria-pressed="false" aria-label="Hold Brake">Ⅱ BRAKE</button>';
   if (step === 3) return '<button type="button" data-tutorial-action="pass">Pass the pear to Lydia →</button>';

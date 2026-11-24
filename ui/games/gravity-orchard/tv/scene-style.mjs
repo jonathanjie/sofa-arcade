@@ -5,7 +5,7 @@ export const sceneStyles = `
 .go-scene-root svg text{font-family:inherit;paint-order:stroke;stroke-linejoin:round}
 .go-scene-root .go-scene-label{font-weight:760;fill:#293d34;font-size:21px;letter-spacing:.2px}
 .go-scene-root .go-scene-small{font-weight:680;fill:#435648;font-size:17px}
-.go-scene-root .go-scene-micro{font-weight:750;fill:#435648;font-size:14px;letter-spacing:1.2px}
+.go-scene-root .go-scene-bridge-label{font-weight:750;fill:var(--go-dim,#52665a);font-size:var(--tv-type-label,18px);letter-spacing:1.2px}
 .go-scene-root .go-scene-fruit{filter:drop-shadow(0 3px 1px #304c3830)}
 .go-scene-root .go-scene-fruit[data-motion="still"]{filter:drop-shadow(0 2px 1px #304c3820)}
 .go-scene-root .go-scene-basket{filter:drop-shadow(0 3px 1px #304c381c)}

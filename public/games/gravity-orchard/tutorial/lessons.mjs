@@ -4,7 +4,7 @@ export const LESSONS = Object.freeze([
     id: 'centre', short: 'Comfort', title: 'Find your comfortable centre.',
     text: 'Sit back and hold your phone naturally. Recenter remembers that resting angle; small tilts then steer the fruit.',
     touchText: 'A thumb on the steering pad does the same job as tilt. Lift your thumb to stop steering. For tilt, Recenter remembers your comfortable resting angle.',
-    prompt: 'Try the centre marker below. Your phone handles its own setup when you return.',
+    prompt: 'Try Recenter below. Your phone handles its own setup when you return.',
     success: 'That is your neutral position. Recenter on your phone whenever your grip changes; a live run pauses while you adjust.',
   },
   {
@@ -45,7 +45,7 @@ export const LESSONS = Object.freeze([
   },
   {
     id: 'pause', short: 'Ready', title: 'Pause together. Return together.',
-    text: 'Help, recentering or a lost phone pauses the shared run. Closing Help alone never restarts the fruit.',
+    text: 'Help, Recenter or a lost phone pauses the shared run. Closing Help alone never restarts the fruit.',
     prompt: 'Pause this practice garden. Then make both gardeners ready and watch the three-second countdown.',
     success: 'Both gardeners are ready. In your run, confirm Ready on each phone to continue. Your live garden has stayed separate from this practice.',
   },

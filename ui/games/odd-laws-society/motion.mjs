@@ -22,10 +22,13 @@ export function publicChanges(previous,next) {
  if(previous.stage!=='finished'&&next.stage==='finished')event(next.result?.winner==='tie'?'tie':'win','result');
  return events;
 }
+const motionEasing = 'cubic-bezier(.2,.7,.25,1)';
+const reducedFadeDuration = 120;
+
 export function createMotion(root,{sound={},reducedMotion=false}={}) {
  const seen=new Set(),animations=new Set(),timers=new Set();let stopped=false;
  const play=name=>{try{sound.effect?.(name);}catch{}};
- const animate=(nodes,frames,options={})=>{for(const node of nodes){if(!node?.animate)continue;const a=node.animate(reducedMotion?[{opacity:.65},{opacity:1}]:frames,{duration:480,easing:'cubic-bezier(.2,.7,.2,1)',...options,...(reducedMotion?{duration:120}:{})});animations.add(a);a.finished.then(()=>animations.delete(a),()=>animations.delete(a));}};
+ const animate=(nodes,frames,options={})=>{for(const node of nodes){if(!node?.animate)continue;const a=node.animate(reducedMotion?[{opacity:.65},{opacity:1}]:frames,{duration:480,easing:motionEasing,...options,...(reducedMotion?{duration:reducedFadeDuration}:{})});animations.add(a);a.finished.then(()=>animations.delete(a),()=>animations.delete(a));}};
  const clear=()=>{for(const a of animations)a.cancel();animations.clear();for(const timer of timers)clearTimeout(timer);timers.clear();root.querySelectorAll('[data-ols-floating]').forEach(n=>n.remove());};
  function consume(previous,next,{animate:shouldAnimate=true}={}) {
   if(stopped)return [];
@@ -40,17 +43,26 @@ export function createMotion(root,{sound={},reducedMotion=false}={}) {
     if(e.type==='coin'||e.type==='influence') {
       const selector=`[data-resource="${e.type==='coin'?'coins':'influence'}"]`;
       const nodes=playerNodes.flatMap(n=>[...n.querySelectorAll(selector)]);
-      animate([...new Set(nodes)],[{transform:'translateY(-4px)',backgroundColor:'#ebd69a'},{transform:'translateY(0)',backgroundColor:'transparent'}]);
+      animate([...new Set(nodes)],[{transform:'translateY(-4px)'},{transform:'translateY(0)'}]);
       if(e.amount>0)play(e.type);
       const node=nodes[0];if(node&&e.amount){const label=document.createElement('span');label.className='ols-resource-float';label.dataset.olsFloating='';label.textContent=`${e.amount>0?'+':''}${e.amount}`;node.append(label);animate([label],[{transform:'translateY(6px)',opacity:1},{transform:'translateY(-18px)',opacity:0}],{duration:650});const t=setTimeout(()=>{label.remove();timers.delete(t);},700);timers.add(t);}
     }
     if(e.type==='seal') {animate(root.querySelectorAll(`[data-envelope="${e.playerId}"]`),[{transform:'translateY(-8px) rotate(-3deg)'},{transform:'translateY(0) rotate(0)'}]);play('seal');}
     if(e.type==='reveal') {animate(root.querySelectorAll('[data-envelope], [data-revealed-envelope]'),[{transform:'rotateX(-55deg)',opacity:.3},{transform:'rotateX(0)',opacity:1}]);animate(root.querySelectorAll('[data-character="lala"], [data-active-law]'),[{transform:'translateY(-6px)'},{transform:'translateY(3px)',offset:.7},{transform:'translateY(0)'}]);play('reveal');play('stamp');}
-    if(e.type==='street') {animate(playerNodes.flatMap(n=>[...n.querySelectorAll('.ols-street')].filter(row=>e.rows.includes(Number(row.dataset.street)))),[{boxShadow:'0 0 0 3px #c69d4e',backgroundColor:'#efdda8'},{boxShadow:'0 0 0 0 transparent',backgroundColor:'transparent'}],{duration:800});play('street');}
+    if(e.type==='street') {animate(playerNodes.flatMap(n=>[...n.querySelectorAll('.ols-street')].filter(row=>e.rows.includes(Number(row.dataset.street)))),[{opacity:.65},{opacity:1}],{duration:800});play('street');}
     if(['festival','win','tie'].includes(e.type)){animate(root.querySelectorAll('[data-character]'),[{transform:'rotate(-4deg) translateY(0)'},{transform:'rotate(4deg) translateY(-6px)',offset:.5},{transform:'rotate(0) translateY(0)'}]);play(e.type);}
     if(e.type==='turn')animate(root.querySelectorAll(`[data-character="${e.playerId}"]`),[{transform:'translateY(0)'},{transform:'translateY(-5px)',offset:.5},{transform:'translateY(0)'}]);
   }
   return fresh;
  }
- return {consume,clear,dispose(){stopped=true;clear();seen.clear();}};
+ return {
+  consume,
+  clear,
+  setReducedMotion(value) {
+   if (reducedMotion === value) return;
+   clear();
+   reducedMotion = value;
+  },
+  dispose(){stopped=true;clear();seen.clear();},
+ };
 }
