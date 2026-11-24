@@ -97,6 +97,8 @@ npm test
 npm run dev
 ```
 
+The default suite runs representative simulations. Use `npm run test:exhaustive` for all proof seeds and replays. Use `npm run test:standalone` when dependencies are unavailable. After `npm run build`, run `npm run test:cloud` for the local Worker/D1 council test.
+
 `npm run db:generate` is needed only for schema changes. The database migration is checked in under `drizzle/`. Apply it to the local D1 database before testing multiplayer in a local preview; production migrations are applied by Sites publication. See the installed Sites workflow for local migration and hosting commands.
 
 `ui/` contains the authored collection shell, game interface, tutorial, board forecast helpers, action prediction queue, transport, audio, and motion modules. `scripts/prepare-game.mjs` copies browser modules and the public game engine to served assets before development and builds. Delivered artwork lives in `public/assets/`. Authoring sources and review sheets remain in the repository but are excluded from the runtime; the framework stages an explicit public directory before serving/building. When adding a browser module, update `BROWSER_FILES` in `scripts/runtime-files.mjs`, the local static allowlist in `server/lan.mjs`, and, after its handoff, `desktop/runtime-manifest.json`. Preparation and the portable packager share the explicit runtime inventory. Odd Laws authority/projection are host-only; its browser closure is catalog, preview and safe errors.

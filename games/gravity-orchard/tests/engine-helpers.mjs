@@ -40,13 +40,30 @@ export function deepFreeze(value) {
   return value;
 }
 
+// Timeout tests need the last transition and its eight-fruit accounting. Once the
+// trays fill, jump the fixture clock to that boundary. The exhaustive lane walks
+// every physics tick, including all intermediate gate and gust changes.
+export function finishAtDeadline(state) {
+  if (process.env.SOFA_EXHAUSTIVE === '1') return advance(state, RULES.stageDurationTicks - state.elapsedTicks);
+  const slots = RULES.maxActiveFruit - state.fruits.length;
+  for (let slot = 0; slot < slots; slot += 1) {
+    const next = state.supply.nextSpawnTick;
+    const jump = Math.max(0, next - state.elapsedTicks - 1);
+    state = step({ ...state, tick: state.tick + jump, elapsedTicks: state.elapsedTicks + jump }, SAFE);
+    assert.equal(state.phase, 'playing');
+  }
+  assert.equal(state.fruits.length, RULES.maxActiveFruit, 'Neutral trays fill before the deadline fixture');
+  const jump = RULES.stageDurationTicks - state.elapsedTicks - 1;
+  return step({ ...state, tick: state.tick + jump, elapsedTicks: state.elapsedTicks + jump }, SAFE);
+}
+
 const stageCache = new Map();
 export function stageFixture(index) {
-  // Real neutral input advances earlier stages via timeout; cached immutable base.
+  // Each fixture starts a fresh stage through the engine readiness commands.
   if (!stageCache.has(index)) {
-    let state = playing();
-    for (let i = 0; i < index; i += 1) state = advance(ready(advance(state, RULES.stageDurationTicks)), RULES.countdownTicks);
-    stageCache.set(index, state);
+    const state = index === 0 ? playing()
+      : advance(ready(finishAtDeadline(stageFixture(index - 1))), RULES.countdownTicks);
+    stageCache.set(index, deepFreeze(state));
   }
   return clone(stageCache.get(index));
 }

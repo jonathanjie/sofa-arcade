@@ -247,7 +247,9 @@ test('eight fruits on all authored levels stay finite under a reproducible bound
       id: `sweep-${i}`, x: i % 2 ? 850 : 430, y: 310 + Math.floor(i / 2) * 30,
     }));
     let controls;
-    for (let tick = 0; tick < 1800; tick += 1) {
+    // One 540-tick gate period exercises open and closed gates and both gust states.
+    const ticks = process.env.SOFA_EXHAUSTIVE === '1' ? 1800 : 540;
+    for (let tick = 0; tick < ticks; tick += 1) {
       if (tick % 75 === 0) controls = { jon: directions[random() % directions.length], lydia: directions[random() % directions.length] };
       const gateClosed = tick % 540 >= 360 ? level.gates.filter(g => !fruits.some(f => overlapCircleRect(f, g))).map(g => g.id) : [];
       fruits = fruits.map(fruit => {
