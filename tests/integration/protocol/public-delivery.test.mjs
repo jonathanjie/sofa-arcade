@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +25,7 @@ async function write(root, relative, contents) {
 }
 
 async function fixture(t) {
-  const root = await mkdtemp(path.join(tmpdir(), 'sofa-public-boundary-'));
+  const root = await mkdtemp(path.join(await realpath(tmpdir()), 'sofa-public-boundary-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const relative of declared) await write(root, relative, `Declared bytes: ${relative}\n`);
   return root;
