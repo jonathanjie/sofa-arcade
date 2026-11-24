@@ -1,23 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { performance } from 'node:perf_hooks';
+import { ManualClock } from './protocol-support.mjs';
 import WebSocket from 'ws';
 import { createFixtureServer } from '../fixture/server.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
 import { createRealtimeClient } from '../../../../ui/realtime/gravity-orchard/index.mjs';
 
-async function until(check, message) {
-  const deadline = performance.now() + 5000;
-  while (!check()) {
-    if (performance.now() > deadline) assert.fail(message);
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  }
-}
-
 test('real browser-client seam interoperates with fixture authority for two simultaneous seats, ACKs, pause and rematch', { timeout: 15_000 }, async (t) => {
-  const fixture = await createFixtureServer({ simulation: createMockSimulation({ countdownTicks: 2 }) });
+  const clock = new ManualClock();
+  const fixture = await createFixtureServer({ clock, simulation: createMockSimulation({ countdownTicks: 2 }) });
   const clients = [];
   t.after(async () => { clients.forEach((peer) => peer.client.dispose()); await fixture.close(); });
+  // Use real sockets, but advance the scheduler and client input pumps together.
+  // OS descheduling must not simulate a host stall or make a player's input stale.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  async function until(check, message) {
+    for (let step = 0; step < 100; step++) {
+      if (check()) return;
+      t.mock.timers.tick(10);
+      await clock.advance(10);
+    }
+    const states = clients.map(({ snapshot, status }) => ({
+      phase: snapshot?.view.phase, tick: snapshot?.view.tick,
+      pause: snapshot?.view.pauseReason, status: status?.state,
+    }));
+    assert.fail(message + ' ' + JSON.stringify(states));
+  }
   class OriginSocket extends WebSocket {
     constructor(url) { super(url, { origin: fixture.origin }); }
   }
@@ -27,14 +35,18 @@ test('real browser-client seam interoperates with fixture authority for two simu
     });
     const credential = await response.json();
     const peer = { client: null, snapshot: null, status: null };
+    const connected = Promise.withResolvers();
     peer.client = createRealtimeClient({
       url: fixture.origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
-      roomCode: fixture.roomCode, token: credential.token, now: () => performance.now(), WebSocketImpl: OriginSocket,
-      onSnapshot: (snapshot) => { peer.snapshot = snapshot; }, onStatus: (status) => { peer.status = status; },
+      roomCode: fixture.roomCode, token: credential.token, now: clock.now, WebSocketImpl: OriginSocket,
+      onSnapshot: (snapshot) => { peer.snapshot = snapshot; }, onStatus: (status) => {
+        peer.status = status;
+        if (status.state === 'connected') connected.resolve();
+      },
     });
     clients.push(peer);
     peer.client.connect();
-    await until(() => peer.status?.state === 'connected', `${viewer} must authenticate`);
+    await connected.promise;
     assert.equal(JSON.stringify(peer.client.getStats()).includes(credential.token), false);
     return peer;
   }
