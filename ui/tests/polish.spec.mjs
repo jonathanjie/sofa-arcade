@@ -232,4 +232,13 @@ test('the Orchard Ready button holds its position through reconnect', { timeout:
     return writes;
   });
   assert.equal(redundantWrites, 0, 'An unchanged snapshot leaves the ready controls untouched');
+
+  await page.evaluate(() => window.go3Fixture.setPhase('playing'));
+  const pad = page.locator('[data-go3="joystick"]');
+  await pad.focus();
+  assert.ok(await pad.evaluate(el => {
+    const style = getComputedStyle(el);
+    const outlineTop = el.getBoundingClientRect().top - parseFloat(style.outlineOffset) - parseFloat(style.outlineWidth);
+    return el.matches(':focus-visible') && outlineTop >= el.previousElementSibling.getBoundingClientRect().bottom;
+  }), 'The keyboard focus ring clears the steering heading');
 });
