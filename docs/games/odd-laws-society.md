@@ -14,7 +14,7 @@ The engine supports rules v0.3 as an opt-in prototype (`options.rulesVersion: '0
 
 - **Only the winner pays.** Only the winning bid is spent. If both players bid 0, the current law stays.
 - **Rebuild.** You may Build onto your own occupied plot. Pay the new cost minus the old building's printed cost, at least 1 coin. The old building leaves the game, and its street is not scored again.
-- **The player who is behind chairs.** From session 2, the player with fewer prestige points is the Chair: they win council ties and take the second city action. On equal scores, the printed schedule stands.
+- **The player who is behind chairs.** From session 2, compare prestige after income. The player with fewer prestige points is the Chair: they win council ties and take the second city action. On equal scores, the printed schedule stands. Earlier v0.3 saves keep their original pre-income Chair calculation for replay.
 
 **Grand Market module:**
 

@@ -346,7 +346,11 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
         throw new Error('The engine did not establish match and phase boundaries.');
       }
       nextData.phase = 'playing';
-      nextData.recentActions = [];
+      // Keep the bounded history across rematches. Older receipts without a
+      // request revision cannot prove an exact retry across a match boundary.
+      nextData.recentActions = (nextData.recentActions || [])
+        .filter(receipt => Number.isSafeInteger(receipt.revision))
+        .map(receipt => ({ ...receipt, previousMatch: true }));
       envelope({ ...room, data: nextData }, auth);
       const committed = await commit(db, room, nextData);
       if (committed) return json(envelope(committed, auth));
@@ -448,6 +452,12 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     const previous = (room.data.recentActions || []).find(item => item.playerId === playerId && item.actionId === body.actionId);
     if (!previous) return false;
     if (previous.actionKey !== actionKey) throw new ApiError(409, 'That request was already used for a different move. Choose the move again.', 'action_id_reused');
+    if (previous.previousMatch && previous.revision !== body.revision) {
+      if (body.action.matchId && body.action.matchId !== room.data.state?.matchId) {
+        throw new ApiError(409, RULE_ERRORS.stale_match, 'stale_match');
+      }
+      throw staleRevision();
+    }
     return true;
   }
 
@@ -505,7 +515,7 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       nextData.state = nextState;
       nextData.phase = nextState.phase;
       nextData.recentActions = retainRecentActions([
-        ...(nextData.recentActions || []), { playerId: auth.playerId, actionId: body.actionId, actionKey },
+        ...(nextData.recentActions || []), { playerId: auth.playerId, actionId: body.actionId, revision: body.revision, actionKey },
       ]);
       // A deterministic projector failure must not commit an otherwise invisible
       // move. Transport loss after a successful commit is recovered by its ID.

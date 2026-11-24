@@ -69,15 +69,18 @@ export function decodeCheckpoint(raw, roomCode, simulation) {
 
 export function insertDedup(room, actor, command, result = { type: 'command-result', protocol: 1, id: command.id, accepted: true }) {
   const dedup = new Map(room.dedup);
-  if (dedup.size >= LIMITS.maxDedupRecords) {
+  // Keep half the current epoch's budget available for changes to the run.
+  const changesRun = result.accepted && (command.kind !== 'ready' || command.payload.value !== room.view.ready[actor.playerId]);
+  const limit = changesRun ? LIMITS.maxDedupRecords : Math.floor(LIMITS.maxDedupRecords / 2);
+  if (dedup.size >= limit) {
     for (const [key, value] of dedup) {
       if (value.command.matchId !== room.view.matchId || value.command.runEpoch !== room.view.runEpoch) {
         dedup.delete(key);
-        if (dedup.size < LIMITS.maxDedupRecords) break;
+        if (dedup.size < limit) break;
       }
     }
   }
-  if (dedup.size >= LIMITS.maxDedupRecords) throw errorWithCode('command_capacity');
+  if (dedup.size >= limit) throw errorWithCode('command_capacity');
   const entry = { actor: actorKey(actor), command, fingerprint: commandFingerprint(command), result };
   dedup.set(`${entry.actor}:${command.id}`, entry);
   return { dedup, entry };

@@ -30,9 +30,7 @@ test('planned game requires explicit local candidate capability and valid practi
 });
 
 test('two real authenticated sockets drive GO1 with bounded SQLite writes and recipient-only applied ACKs', async t => {
-  // Credential checks use the wall clock for persisted presence. Keep that
-  // heartbeat outside the measurement of gameplay and checkpoint writes.
-  t.mock.timers.enable({ apis: ['Date'], now: Date.now() });
+  const startedAt = Date.now();
   const h = await harness(t);
   assert.deepEqual(h.jon.welcome.viewer, { role: 'player', playerId: 'jon' });
   assert.deepEqual(h.lydia.welcome.viewer, { role: 'player', playerId: 'lydia' });
@@ -40,7 +38,14 @@ test('two real authenticated sockets drive GO1 with bounded SQLite writes and re
   await h.ready(); await h.pump(3100);
   assert.equal(h.tv.snapshot.view.phase, 'playing');
   const before = h.host.realtimeDiagnostics(h.room.code);
-  await h.pump(6000, { x: 0.5, y: -0.25, brake: false });
+  // The pump advances simulation time. Keep wall-clock presence heartbeats
+  // out of the SQLite measurement even if this test takes longer on CI.
+  const wallClock = t.mock.method(Date, 'now', () => startedAt);
+  try {
+    await h.pump(6000, { x: 0.5, y: -0.25, brake: false });
+  } finally {
+    wallClock.mock.restore();
+  }
   const after = h.host.realtimeDiagnostics(h.room.code);
   assert.ok(after.coordinator.inputsAccepted - before.coordinator.inputsAccepted >= 230);
   assert.ok(after.checkpointWrites - before.checkpointWrites <= 2);

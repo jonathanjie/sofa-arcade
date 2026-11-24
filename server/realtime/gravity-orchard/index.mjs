@@ -116,7 +116,7 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
       && now() - conn.verifiedAt < LIMITS.maxAuthAgeMs;
   }
   function fresh(seat) {
-    return usable(seat.conn) && seat.lastValidAt !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
+    return usable(seat.conn) && seat.latest !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
   }
   function presence(room) {
     return Object.fromEntries(PLAYERS.map((id) => [id, { connected: usable(room.seats[id].conn), inputFresh: fresh(room.seats[id]) }]));
@@ -145,11 +145,13 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
         if (seat.conn === conn) {
           seat.conn = null; seat.latest = null; seat.ack = null;
           // Preserve last receipt time so repeated reconnects cannot reset the deadman.
-          if (!room.closed && !room.fault && room.view.ready[conn.viewer.playerId]) {
+          if (!room.closed && !room.fault && conn.authenticated) {
             enqueue(room, async () => {
+              // This cleanup follows the departing socket's writes and precedes the next Welcome.
+              if (!room.view.ready[conn.viewer.playerId]) return;
               const result = simulation.applyCommand(room.state, conn.viewer, { kind: 'ready', payload: { value: false } });
               if (result.accepted && result.state !== room.state) await commit(room, result.state, room.dedup, 'presence');
-            }).catch(() => {});
+            }, { system: true }).catch(() => {});
           }
         }
       }
@@ -237,9 +239,9 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
     room.storeTail = write;
     return withDeadline(write, LIMITS.checkpointTimeoutMs, 'storage_unavailable');
   }
-  async function commit(room, state, dedup, kind, metadata = room) {
+  async function commit(room, state, dedup, kind, metadata = room, countdownControllers = null) {
     if (room.closed || room.fault) throw errorWithCode('room_unavailable');
-    const view = checkedView(simulation, state);
+    let view = checkedView(simulation, state);
     const changedEpoch = view.matchId !== room.view.matchId || view.runEpoch !== room.view.runEpoch;
     room.blocked = true;
     if (changedEpoch) clearInputs(room);
@@ -247,6 +249,19 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
       await persist(room, encodeCheckpoint(room, state, view, dedup, simulation, metadata));
       if (room.closed || closed) return false;
       if (room.fault) throw errorWithCode('storage_unavailable');
+      if (countdownControllers && PLAYERS.some((id) => {
+        const conn = room.seats[id].conn;
+        return conn !== countdownControllers[id] || !usable(conn);
+      })) {
+        // The save yielded after both Ready checks. Fence the durable countdown
+        // before any viewer can see it if either original controller went away.
+        state = simulation.pauseForSystem(state, 'network');
+        view = checkedView(simulation, state);
+        kind = 'network';
+        await persist(room, encodeCheckpoint(room, state, view, dedup, simulation, metadata));
+        if (room.closed || closed) return false;
+        if (room.fault) throw errorWithCode('storage_unavailable');
+      }
       room.state = state; room.view = view; room.dedup = dedup;
       room.seed = metadata.seed; room.options = metadata.options;
       room.blocked = false; room.initializing = false; room.lastSchedulerAt = now(); room.accumulator = 0;
@@ -257,9 +272,9 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
       return true;
     } catch { storageFault(room); throw errorWithCode('storage_unavailable'); }
   }
-  function enqueue(room, fn) {
+  function enqueue(room, fn, { system = false } = {}) {
     if (room.closed || room.fault) return Promise.reject(errorWithCode('room_unavailable'));
-    if (room.pendingCommands >= LIMITS.maxPendingCommands) return Promise.reject(errorWithCode('command_overload'));
+    if (!system && room.pendingCommands >= LIMITS.maxPendingCommands) return Promise.reject(errorWithCode('command_overload'));
     room.pendingCommands++;
     const promise = room.commandTail.catch(() => {}).then(() => {
       if (room.closed || room.fault) throw errorWithCode('room_unavailable');
@@ -280,7 +295,7 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
       if (view.phase !== 'paused' || view.runEpoch <= room.view.runEpoch) throw errorWithCode('invalid_simulation');
       await commit(room, state, room.dedup, reason);
       return snapshot(room);
-    }).catch((error) => { storageFault(room); throw error; }).finally(() => { room.pausePending = null; });
+    }, { system: true }).catch((error) => { storageFault(room); throw error; }).finally(() => { room.pausePending = null; });
     return room.pausePending;
   }
   function periodicCheckpoint(room) {
@@ -328,10 +343,11 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
           room.stats.ticks++;
           if (boundary(room.view, view)) {
             room.blocked = true;
-            enqueue(room, () => commit(room, state, room.dedup, view.phase)).catch(() => storageFault(room));
+            enqueue(room, () => commit(room, state, room.dedup, view.phase), { system: true }).catch(() => storageFault(room));
             break;
           }
           room.state = state; room.view = view;
+          if (view.phase !== 'playing') continue;
           for (const id of PLAYERS) {
             const seat = room.seats[id];
             if (fresh(seat) && seat.latest && seat.ack?.seq !== seat.latest.seq) {
@@ -425,7 +441,7 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
         };
         if (value.matchId !== room.view.matchId) return reject('stale_match');
         if (value.runEpoch !== room.view.runEpoch) return reject('stale_epoch');
-        let state, metadata = room;
+        let state, metadata = room, countdownControllers = null;
         if (value.kind === 'rematch') {
           if (conn.viewer.role !== 'host') return reject('forbidden');
           if (!['paused', 'finished'].includes(room.view.phase)) return reject('invalid_phase');
@@ -436,15 +452,30 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
             return reject('unavailable_controllers');
           }
           const applied = simulation.applyCommand(room.state, conn.viewer, { kind: value.kind, payload: value.payload });
-          if (!applied?.accepted) return reject(SAFE_SIMULATION_CODES.has(applied?.code) ? applied.code : 'invalid_command');
+          if (!applied?.accepted) {
+            const code = typeof applied?.code === 'string' ? applied.code.toLowerCase() : '';
+            return reject(SAFE_SIMULATION_CODES.has(code) ? code : 'invalid_command');
+          }
           state = applied.state;
           const view = checkedView(simulation, state);
-          if (view.phase === 'countdown' && room.view.phase !== 'countdown' && !PLAYERS.every((id) => fresh(room.seats[id]))) {
-            return reject('unavailable_controllers');
+          if (view.phase === 'countdown' && room.view.phase !== 'countdown') {
+            if (!PLAYERS.every((id) => fresh(room.seats[id]))) return reject('unavailable_controllers');
+            countdownControllers = Object.fromEntries(PLAYERS.map((id) => [id, room.seats[id].conn]));
           }
         }
-        const { dedup, entry } = insertDedup(room, conn.viewer, value);
-        await commit(room, state, dedup, value.kind, metadata);
+        let receipt;
+        try {
+          receipt = insertDedup(room, conn.viewer, value);
+        } catch (error) {
+          if (error.code !== 'command_capacity' || state === room.state) throw error;
+          // Ready can be toggled repeatedly in a single epoch. Close a full
+          // epoch so its receipts can expire without reapplying old retries.
+          const reset = simulation.pauseForSystem(room.state, 'receipt-capacity');
+          await commit(room, reset, room.dedup, 'receipt-capacity');
+          throw error;
+        }
+        const { dedup, entry } = receipt;
+        await commit(room, state, dedup, value.kind, metadata, countdownControllers);
         room.stats.commandsAccepted++;
         return entry.result;
       });
@@ -476,20 +507,22 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
     if (room.connections.size >= LIMITS.maxRoomSockets && !old) { disconnect(conn, 4429, 'room_capacity'); return; }
     if (old) disconnect(old, 4409, 'controller_replaced', false);
     conn.room = room; conn.viewer = actor; conn.bearer = message.token;
-    conn.authenticated = true; pendingAuth--; conn.verifiedAt = now();
+    conn.verifiedAt = now();
     conn.controllerEpoch = actor.role === 'player' ? randomUUID() : null;
     room.connections.add(conn);
     if (actor.role === 'player') {
       const seat = room.seats[actor.playerId];
-      seat.conn = conn; seat.latest = null; seat.lastSeq = -1; seat.lastValidAt = null; seat.ack = null;
+      seat.conn = conn; seat.latest = null; seat.lastSeq = -1; seat.ack = null;
       // A replacement does not inherit an old controller's held input/readiness.
       if (old && activePhase(room.view)) await queuePause(room, 'network');
     }
     await room.commandTail.catch(() => {});
     if (!conn.active || room.closed || room.fault) return;
     cancel(conn.authTimer); conn.authTimer = null;
-    send(conn, { type: 'welcome', protocol: 1, viewer: actor, controllerEpoch: conn.controllerEpoch,
-      snapshot: snapshot(room, conn, actor) });
+    // Enable gameplay only once this socket can queue its Welcome as the first frame.
+    conn.authenticated = true; pendingAuth--;
+    if (!send(conn, { type: 'welcome', protocol: 1, viewer: actor, controllerEpoch: conn.controllerEpoch,
+      snapshot: snapshot(room, conn, actor) })) return;
     globalStats.authenticated++; room.stats.connections++;
     scheduleReauthorization(conn); lifecycle(room, 'presence');
   }

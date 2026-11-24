@@ -311,7 +311,15 @@ test('a complete game, retried final action, and host rematch preserve controlle
   assert.ok(rematch.body.players.jon.joined && rematch.body.players.lydia.joined);
   assert.equal((await api(f, `/api/rooms/${live.code}`, { token: live.tokens.jon })).status, 200);
   assert.equal((await api(f, `/api/rooms/${live.code}`, { token: live.tokens.lydia })).status, 200);
-  assert.deepEqual(JSON.parse(rawRoom(f, live.code).data).recentActions, []);
+  const replay = body => api(f, `/api/rooms/${live.code}/action`, { method: 'POST', token: live.tokens[lastPlayer], body });
+  const writes = f.stats.writes;
+  const late = await replay(lastBody);
+  assert.equal(late.status, 200);
+  assert.equal(late.body.revision, rematch.body.revision);
+  assert.deepEqual(late.body.state, rematch.body.state);
+  assert.equal((await replay({ ...lastBody, action: { type: 'collect' } })).body.code, 'action_id_reused');
+  assert.equal((await replay({ ...lastBody, revision: rematch.body.revision })).body.code, 'stale_revision');
+  assert.equal(f.stats.writes, writes);
   f.sqlite.close();
 });
 
@@ -603,4 +611,58 @@ test('foreign Origins are rejected on reads as well as writes', async () => {
   assert.equal(read.body.code, 'origin_rejected');
   assert.equal(read.body.state, undefined);
   f.sqlite.close();
+});
+
+test('move accepts only a direction string and leaves rejected requests unwritten', async () => {
+  const f = fixture();
+  try {
+    const live = await openedRoom(f);
+    const route = `/api/rooms/${live.code}/action`;
+    const direction = live.openingMove.direction;
+    const move = value => api(f, route, { method: 'POST', token: live.tokens[live.firstPlayer],
+      body: actionBody(live.game.revision, { type: 'move', direction: value }) });
+    const before = rawRoom(f, live.code);
+    for (const invalid of [[direction], { direction }]) {
+      const result = await move(invalid);
+      assert.equal(result.status, 400);
+      assert.equal(result.body.code, 'invalid_action');
+      assert.deepEqual(rawRoom(f, live.code), before);
+    }
+    const accepted = await move(direction);
+    assert.equal(accepted.status, 200);
+    assert.equal(accepted.body.revision, before.revision + 1);
+  } finally {
+    f.sqlite.close();
+  }
+});
+
+test('the winning request is still acknowledged after two rematches', async () => {
+  const f = fixture();
+  try {
+    const live = await openedRoom(f);
+    const route = `/api/rooms/${live.code}`;
+    let room = live.game;
+    let winnerRequest;
+    for (let match = 0; match < 2; match++) {
+      while (room.phase === 'playing') {
+        const token = live.tokens[room.state.activePlayer];
+        const body = actionBody(room.revision, { type: 'end' });
+        const result = await api(f, route + '/action', { method: 'POST', token, body });
+        assert.equal(result.status, 200);
+        room = result.body;
+        if (match === 0 && room.phase === 'finished') winnerRequest = { method: 'POST', token, body };
+      }
+      const result = await api(f, route + '/rematch', { method: 'POST', token: live.hostToken });
+      assert.equal(result.status, 200);
+      room = result.body;
+    }
+    const writes = f.stats.writes;
+    const retry = await api(f, route + '/action', winnerRequest);
+    assert.equal(retry.status, 200);
+    assert.deepEqual(retry.body.state, room.state);
+    assert.equal(retry.body.revision, room.revision);
+    assert.equal(f.stats.writes, writes);
+  } finally {
+    f.sqlite.close();
+  }
 });

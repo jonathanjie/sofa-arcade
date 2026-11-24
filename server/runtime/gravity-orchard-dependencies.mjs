@@ -5358,15 +5358,17 @@ function decodeCheckpoint(raw, roomCode, simulation) {
 }
 function insertDedup(room, actor, command, result = { type: "command-result", protocol: 1, id: command.id, accepted: true }) {
   const dedup = new Map(room.dedup);
-  if (dedup.size >= LIMITS.maxDedupRecords) {
+  const changesRun = result.accepted && (command.kind !== "ready" || command.payload.value !== room.view.ready[actor.playerId]);
+  const limit = changesRun ? LIMITS.maxDedupRecords : Math.floor(LIMITS.maxDedupRecords / 2);
+  if (dedup.size >= limit) {
     for (const [key, value] of dedup) {
       if (value.command.matchId !== room.view.matchId || value.command.runEpoch !== room.view.runEpoch) {
         dedup.delete(key);
-        if (dedup.size < LIMITS.maxDedupRecords) break;
+        if (dedup.size < limit) break;
       }
     }
   }
-  if (dedup.size >= LIMITS.maxDedupRecords) throw errorWithCode("command_capacity");
+  if (dedup.size >= limit) throw errorWithCode("command_capacity");
   const entry = { actor: actorKey(actor), command, fingerprint: commandFingerprint(command), result };
   dedup.set(`${entry.actor}:${command.id}`, entry);
   return { dedup, entry };
@@ -5497,7 +5499,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     return !!conn && conn.active && conn.authenticated && conn.ws.readyState === import_websocket.default.OPEN && now() - conn.verifiedAt < LIMITS.maxAuthAgeMs;
   }
   function fresh(seat) {
-    return usable(seat.conn) && seat.lastValidAt !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
+    return usable(seat.conn) && seat.latest !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
   }
   function presence(room) {
     return Object.fromEntries(PLAYERS.map((id) => [id, { connected: usable(room.seats[id].conn), inputFresh: fresh(room.seats[id]) }]));
@@ -5539,11 +5541,12 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
           seat.conn = null;
           seat.latest = null;
           seat.ack = null;
-          if (!room.closed && !room.fault && room.view.ready[conn.viewer.playerId]) {
+          if (!room.closed && !room.fault && conn.authenticated) {
             enqueue(room, async () => {
+              if (!room.view.ready[conn.viewer.playerId]) return;
               const result = simulation.applyCommand(room.state, conn.viewer, { kind: "ready", payload: { value: false } });
               if (result.accepted && result.state !== room.state) await commit(room, result.state, room.dedup, "presence");
-            }).catch(() => {
+            }, { system: true }).catch(() => {
             });
           }
         }
@@ -5665,9 +5668,9 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     room.storeTail = write;
     return withDeadline(write, LIMITS.checkpointTimeoutMs, "storage_unavailable");
   }
-  async function commit(room, state, dedup, kind, metadata = room) {
+  async function commit(room, state, dedup, kind, metadata = room, countdownControllers = null) {
     if (room.closed || room.fault) throw errorWithCode("room_unavailable");
-    const view = checkedView(simulation, state);
+    let view = checkedView(simulation, state);
     const changedEpoch = view.matchId !== room.view.matchId || view.runEpoch !== room.view.runEpoch;
     room.blocked = true;
     if (changedEpoch) clearInputs(room);
@@ -5675,6 +5678,17 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       await persist(room, encodeCheckpoint(room, state, view, dedup, simulation, metadata));
       if (room.closed || closed) return false;
       if (room.fault) throw errorWithCode("storage_unavailable");
+      if (countdownControllers && PLAYERS.some((id) => {
+        const conn = room.seats[id].conn;
+        return conn !== countdownControllers[id] || !usable(conn);
+      })) {
+        state = simulation.pauseForSystem(state, "network");
+        view = checkedView(simulation, state);
+        kind = "network";
+        await persist(room, encodeCheckpoint(room, state, view, dedup, simulation, metadata));
+        if (room.closed || closed) return false;
+        if (room.fault) throw errorWithCode("storage_unavailable");
+      }
       room.state = state;
       room.view = view;
       room.dedup = dedup;
@@ -5694,9 +5708,9 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       throw errorWithCode("storage_unavailable");
     }
   }
-  function enqueue(room, fn) {
+  function enqueue(room, fn, { system = false } = {}) {
     if (room.closed || room.fault) return Promise.reject(errorWithCode("room_unavailable"));
-    if (room.pendingCommands >= LIMITS.maxPendingCommands) return Promise.reject(errorWithCode("command_overload"));
+    if (!system && room.pendingCommands >= LIMITS.maxPendingCommands) return Promise.reject(errorWithCode("command_overload"));
     room.pendingCommands++;
     const promise = room.commandTail.catch(() => {
     }).then(() => {
@@ -5725,7 +5739,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       if (view.phase !== "paused" || view.runEpoch <= room.view.runEpoch) throw errorWithCode("invalid_simulation");
       await commit(room, state, room.dedup, reason);
       return snapshot(room);
-    }).catch((error) => {
+    }, { system: true }).catch((error) => {
       storageFault(room);
       throw error;
     }).finally(() => {
@@ -5791,11 +5805,12 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
           room.stats.ticks++;
           if (boundary(room.view, view)) {
             room.blocked = true;
-            enqueue(room, () => commit(room, state, room.dedup, view.phase)).catch(() => storageFault(room));
+            enqueue(room, () => commit(room, state, room.dedup, view.phase), { system: true }).catch(() => storageFault(room));
             break;
           }
           room.state = state;
           room.view = view;
+          if (view.phase !== "playing") continue;
           for (const id of PLAYERS) {
             const seat = room.seats[id];
             if (fresh(seat) && seat.latest && seat.ack?.seq !== seat.latest.seq) {
@@ -5936,7 +5951,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
         };
         if (value.matchId !== room.view.matchId) return reject("stale_match");
         if (value.runEpoch !== room.view.runEpoch) return reject("stale_epoch");
-        let state, metadata = room;
+        let state, metadata = room, countdownControllers = null;
         if (value.kind === "rematch") {
           if (conn.viewer.role !== "host") return reject("forbidden");
           if (!["paused", "finished"].includes(room.view.phase)) return reject("invalid_phase");
@@ -5947,15 +5962,28 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
             return reject("unavailable_controllers");
           }
           const applied = simulation.applyCommand(room.state, conn.viewer, { kind: value.kind, payload: value.payload });
-          if (!applied?.accepted) return reject(SAFE_SIMULATION_CODES.has(applied?.code) ? applied.code : "invalid_command");
+          if (!applied?.accepted) {
+            const code = typeof applied?.code === "string" ? applied.code.toLowerCase() : "";
+            return reject(SAFE_SIMULATION_CODES.has(code) ? code : "invalid_command");
+          }
           state = applied.state;
           const view = checkedView(simulation, state);
-          if (view.phase === "countdown" && room.view.phase !== "countdown" && !PLAYERS.every((id) => fresh(room.seats[id]))) {
-            return reject("unavailable_controllers");
+          if (view.phase === "countdown" && room.view.phase !== "countdown") {
+            if (!PLAYERS.every((id) => fresh(room.seats[id]))) return reject("unavailable_controllers");
+            countdownControllers = Object.fromEntries(PLAYERS.map((id) => [id, room.seats[id].conn]));
           }
         }
-        const { dedup, entry } = insertDedup(room, conn.viewer, value);
-        await commit(room, state, dedup, value.kind, metadata);
+        let receipt;
+        try {
+          receipt = insertDedup(room, conn.viewer, value);
+        } catch (error) {
+          if (error.code !== "command_capacity" || state === room.state) throw error;
+          const reset = simulation.pauseForSystem(room.state, "receipt-capacity");
+          await commit(room, reset, room.dedup, "receipt-capacity");
+          throw error;
+        }
+        const { dedup, entry } = receipt;
+        await commit(room, state, dedup, value.kind, metadata, countdownControllers);
         room.stats.commandsAccepted++;
         return entry.result;
       });
@@ -6027,8 +6055,6 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     conn.room = room;
     conn.viewer = actor;
     conn.bearer = message.token;
-    conn.authenticated = true;
-    pendingAuth--;
     conn.verifiedAt = now();
     conn.controllerEpoch = actor.role === "player" ? randomUUID() : null;
     room.connections.add(conn);
@@ -6037,7 +6063,6 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       seat.conn = conn;
       seat.latest = null;
       seat.lastSeq = -1;
-      seat.lastValidAt = null;
       seat.ack = null;
       if (old && activePhase(room.view)) await queuePause(room, "network");
     }
@@ -6046,13 +6071,15 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     if (!conn.active || room.closed || room.fault) return;
     cancel(conn.authTimer);
     conn.authTimer = null;
-    send(conn, {
+    conn.authenticated = true;
+    pendingAuth--;
+    if (!send(conn, {
       type: "welcome",
       protocol: 1,
       viewer: actor,
       controllerEpoch: conn.controllerEpoch,
       snapshot: snapshot(room, conn, actor)
-    });
+    })) return;
     globalStats.authenticated++;
     room.stats.connections++;
     scheduleReauthorization(conn);

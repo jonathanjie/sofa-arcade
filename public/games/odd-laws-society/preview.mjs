@@ -85,8 +85,9 @@ export function festivalPoints(view, playerId) {
 export function buildQuote(view, playerId, designId, plotIndex = null) {
   const player = playerFor(view, playerId);
   const building = buildingFor(designId);
-  const replaced = on(view, 'rebuild') && Number.isInteger(plotIndex) && player.city[plotIndex]
-    ? buildingFor(player.city[plotIndex].designId) : null;
+  const validPlot = Number.isInteger(plotIndex) && plotIndex >= 0 && plotIndex < player.city.length;
+  const occupant = validPlot ? player.city[plotIndex] : null;
+  const replaced = occupant && on(view, 'rebuild') ? buildingFor(occupant.designId) : null;
   const law = lawFor(view.activeLaws?.economy, 'economy');
   const firstBuild = player.buildsThisSession === 0;
   const workshop = firstBuild && abilityTotal(player, 'firstBuildDiscount') > 0 ? 1 : 0;
@@ -113,7 +114,9 @@ export function buildQuote(view, playerId, designId, plotIndex = null) {
     reason = 'This building is not available.';
   } else if (on(view, 'grandMarket') && player.city.some(instance => instance?.designId === designId)) {
     reason = 'You already have this building.';
-  } else if (!replaced && !player.city.includes(null)) reason = 'Your city is full.';
+  } else if (plotIndex !== null && !validPlot) reason = 'Choose a valid plot.';
+  else if (occupant && !replaced) reason = 'That plot is occupied.';
+  else if (!replaced && !player.city.includes(null)) reason = 'Your city is full.';
   else if (player.coins < cost) reason = 'Not enough coins.';
 
   return {

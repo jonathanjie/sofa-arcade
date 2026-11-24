@@ -60,7 +60,7 @@ normalizeInput accepts only finite numeric x/y in [-1,1] and a boolean brake. It
 
 State is JSON-serializable. All exports are pure/non-mutating except no-op transitions may return the same object. step advances exactly one fixed tick in countdown/playing; waiting, paused, interlude and finished do not advance time. tick is monotonic across stages within a match and never reset on resume. Only playing advances elapsed stage time. No wall clock, network, DOM, Math.random, file IO, audio, or unseeded IDs in engine code.
 
-Every boundary that pauses, resumes/starts a countdown, changes stage, retries a stage or restores a checkpoint increments runEpoch and clears both control latches/readiness. A readiness command may set its own seat ready; when both are ready the engine starts the countdown and clears readiness again. Coordinator safety checks additionally require usable, current authenticated controllers before allowing that transition. pauseForSystem is a server-only pure export accepting network, host-stall or recovery; it applies the same boundary rules without the coordinator mutating private state. It is never a wire command or browser-served module.
+Every boundary that pauses, resumes/starts a countdown, changes stage, retries a stage or restores a checkpoint increments runEpoch and clears both control latches/readiness. A readiness command may set its own seat ready; when both are ready the engine starts the countdown and clears readiness again. Coordinator safety checks additionally require usable, current authenticated controllers before allowing that transition. pauseForSystem is a server-only pure export accepting network, host-stall or recovery; it applies the same boundary rules without the coordinator mutating private state. The internal receipt-capacity reason resets the epoch while preserving the phase and published pause reason. It is never a wire command or browser-served module.
 
 Physics uses a bounded circle/AABB/segment model, stable sorted collider/entity order, fixed iteration limits and seeded supply. Fruit-to-fruit rigid-body pile physics is outside v1. Brake removes the tray's ordinary tilt force and applies strong damping; it is not teleportation or immunity to collisions. Blend both tray fields across the bridge. Define whether gust force also receives Brake damping and test that choice; the PRD requires Brake to be a useful response to forecast gusts. Never consume or duplicate a rejected fruit.
 
@@ -154,7 +154,7 @@ Server welcome:
       snapshot: SnapshotMessage
     }
 
-A new player connection receives a fresh opaque controllerEpoch. A successfully authenticated replacement fences/closes its old player socket and clears its input before accepting the new one. Authenticated hosts can observe but cannot steer. Host credentials do not silently become a player token. Anonymous/public WebSocket observation is outside v1: authorize returns only host/player or null. The public viewer role remains available to trusted projection/HTTP paths under the existing room policy.
+Welcome is the first application message. A new player connection receives a fresh opaque controllerEpoch. A successfully authenticated replacement fences/closes its old player socket and clears its input before accepting the new one. An ordinary reconnect preserves the input deadline in the same run epoch and requires a fresh sample before steering. If a controller leaves during a countdown checkpoint write, the host saves and publishes a network pause before play can resume. Authenticated hosts can observe but cannot steer. Host credentials do not silently become a player token. Anonymous/public WebSocket observation is outside v1: authorize returns only host/player or null. The public viewer role remains available to trusted projection/HTTP paths under the existing room policy.
 
 Input:
 
@@ -190,7 +190,7 @@ Reliable commands and replies:
     { type: 'ping', protocol: 1, id }
     { type: 'pong', protocol: 1, id }
 
-Bound IDs and error text. Persist/retain command deduplication at the appropriate lifecycle boundary. A retry with identical ID/content returns the original result; reuse with different normalized content fails. Old-match or old-epoch commands do not act on a later stage. Handle a lost command acknowledgment and reconnect without double application. Do not send score-changing or lifecycle commands as unreliable held inputs.
+Bound IDs and error text. Persist/retain command deduplication at the appropriate lifecycle boundary. A retry with identical ID/content returns the original result; reuse with different normalized content fails. Old-match or old-epoch commands do not act on a later stage. Within a match and epoch, keep admitted command receipts until the boundary. Of 256 receipt slots, reserve the final 128 for commands that change the run. At its admission limit a new command receives command_capacity without a receipt. If a state-changing command reaches the full limit, the host first saves a fresh epoch in the same phase and clears readiness and input. Controllers can then submit a fresh command in the new epoch. Retire older match or epoch receipts as space is needed. Handle a lost command acknowledgment and reconnect without double application. Do not send score-changing or lifecycle commands as unreliable held inputs.
 
 Coordinator export:
 
