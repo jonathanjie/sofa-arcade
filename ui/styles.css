@@ -190,3 +190,8 @@
   #join-form { grid-column: 2; grid-row: 1 / span 3; }
   #join-form .code-input { margin-bottom: 8px; padding-block: 8px; }
 }
+
+.party-detail-actions { display: grid; gap: 12px; }
+.party-detail-actions a { text-decoration: none; }
+.shelf-section-title:has(a) { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.shelf-section-title a { text-decoration: none; }

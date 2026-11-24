@@ -14,7 +14,7 @@ const runtime = await runtimeFiles(root);
 
 const readme = `SOFA ARCADE — LOCAL PLAY
 
-One Mac, one TV, two phones. Keep the devices on the same home Wi-Fi.
+One Mac and one TV. Party games support two to sixteen phones. Keep the devices on the same home Wi-Fi.
 
 1. Install Node.js 22.13 or newer if needed: https://nodejs.org/
 2. Open start-sofa.command, or open Terminal in this folder and run:
@@ -23,7 +23,7 @@ One Mac, one TV, two phones. Keep the devices on the same home Wi-Fi.
 
 3. Open the local address printed in Terminal on your Mac.
 4. Choose an available game, then Host on the TV.
-5. Scan the room QR with both phones. Cast the Mac browser to your TV.
+5. Scan the room QR with each phone. Cast the Mac browser to your TV.
 
 Keep Terminal open while playing. Press Control+C to stop.
 No npm install, build, account, or internet connection is needed during play.
@@ -31,8 +31,9 @@ No npm install, build, account, or internet connection is needed during play.
 If you prefer to start it directly:
    node scripts/lan-server.mjs
 
-Room state is saved beside these files in .sofa-lan/rooms.sqlite.
-Local rooms are separate from the public website's rooms and last 24 hours.
+Two-seat rooms are saved in .sofa-lan/rooms.sqlite and last 24 hours.
+Party rooms and seats live in memory. Use End party on the TV to close the room.
+Local rooms are separate from the public website's rooms.
 See docs/LAN.md for connection help and technical details.
 
 Artwork and music were created for Jon, Lydia, and Lala.

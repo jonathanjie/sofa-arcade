@@ -15,7 +15,7 @@
     "predev": "node scripts/prepare-game.mjs",
     "prebuild": "node scripts/prepare-game.mjs",
     "test": "node scripts/run-unit-tests.mjs",
-    "test:browser": "node --test server/room-browser.test.mjs server/realtime/gravity-orchard/tests/fixture-browser.test.mjs",
+    "test:browser": "node --test server/room-browser.test.mjs server/realtime/gravity-orchard/tests/fixture-browser.test.mjs tests/party/tap-race.browser.test.mjs",
     "lan": "node scripts/lan-server.mjs",
     "package:lan": "node scripts/package-lan.mjs",
     "test:integration": "node tests/integration/run.mjs",

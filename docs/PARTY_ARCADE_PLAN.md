@@ -44,8 +44,8 @@ First five games: **Don't Wake Lala**, **Dust Bunny Sumo**, **Wall of Paddles**,
 
 | Phase | State | Branch | Notes |
 | --- | --- | --- | --- |
-| 1 | Started | `party/platform` | |
-| 2 | Not started | | |
+| 1 | Done | `party/platform` | Tap Race and the shared party kit. Real sockets verified 16 phones, reconnects, late join, and two rounds. Chromium verified 3 phone pages plus 13 simulated phones, with 16.6 ms median and 17.6 ms p95 frame time. Peak phone downstream was 1,165 B/s. See the [party contract](PARTY_CONTRACT.md). |
+| 2 | Done | `party/platform` | Hardened room authority, peer admission, reconnects, fixed ticks and slow-phone handling. Verified 2, 8 and 16 phones, caught ten deliberate regressions, and reviewed the TV and phone captures. In Chromium at 1920×1080, the 16-runner draw callback took 0.3 ms at p95 and the display interval was 16.7 ms at p95. Browser join took 2.1 s. See the [additive contract changes](PARTY_CONTRACT.md#contract-changes-after-review). |
 | 3 | Not started | | |
 | 4 | Not started | | |
 | 5 | Not started | | |
