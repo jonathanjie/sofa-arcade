@@ -9,6 +9,9 @@ export const PARTY_BROWSER_FILES = Object.freeze([
   'games/registry.mjs',
   'games/tap-race/phone.mjs',
   'games/tap-race/tv.mjs',
+  'games/wall-of-paddles/art.mjs',
+  'games/wall-of-paddles/phone.mjs',
+  'games/wall-of-paddles/tv.mjs',
   'kit/animation.mjs',
   'kit/sprites.mjs',
   'phone/controls.mjs',
@@ -17,6 +20,7 @@ export const PARTY_BROWSER_FILES = Object.freeze([
 export const PARTY_HOST_FILES = Object.freeze([
   'games/party/registry.mjs',
   'games/party/tap-race.mjs',
+  'games/party/wall-of-paddles/round.mjs',
   'server/party-delivery.mjs',
   'server/party/http.mjs',
   'server/party/rooms.mjs',
