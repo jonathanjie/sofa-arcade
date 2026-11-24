@@ -18565,14 +18565,8 @@ async function createSecureLanServer({ tlsMaterial, host = "0.0.0.0", port = 417
       socket.destroy();
     }
   });
-  server.on("tlsClientError", (_error, socket) => {
-    notify("tls_client_rejected");
-    socket.destroy();
-  });
-  server.on("clientError", (_error, socket) => {
-    notify("request_rejected");
-    socket.destroy();
-  });
+  server.on("tlsClientError", (_error, socket) => socket.destroy());
+  server.on("clientError", (_error, socket) => socket.destroy());
   server.requestTimeout = 15e3;
   server.headersTimeout = 15e3;
   server.keepAliveTimeout = 5e3;
@@ -18652,16 +18646,15 @@ async function createSecureLanServer({ tlsMaterial, host = "0.0.0.0", port = 417
     throw new SecureLanListenerError(error?.code === "EADDRINUSE" ? "port_in_use" : "bind_failed");
   }
   server.on("error", () => {
-    notify("listener_failed");
     void close().catch(() => {
     });
     currentStatus = Object.freeze({ enabled: true, status: "failed", controllerOrigins: Object.freeze([]), requiresPhoneTrust: true });
+    notify("listener_failed");
   });
   function checkExpiry() {
     if (closed) return;
     const remaining = Date.parse(material.validUntil) - Date.now();
     if (remaining <= 0) {
-      notify("certificate_expired");
       void close().catch(() => {
       });
       currentStatus = Object.freeze({
@@ -18672,6 +18665,7 @@ async function createSecureLanServer({ tlsMaterial, host = "0.0.0.0", port = 417
         validUntil: material.validUntil,
         requiresPhoneTrust: true
       });
+      notify("certificate_expired");
       return;
     }
     expiryTimer = setTimeout(checkExpiry, Math.min(remaining, 6e4));
@@ -18917,11 +18911,16 @@ function createSecureLanHost({
         await stopListener();
         return snapshot(result.state === "missing" ? "needs-setup" : STATES.has(result.state) ? result.state : "failed");
       }
+      const listenerStatus = listener?.status?.status;
+      if (listenerStatus === "failed" || listenerStatus === "certificate-expired") {
+        await stopListener();
+        return snapshot(listenerStatus);
+      }
       if (listener && materialSignature(result) !== activeMaterial) {
         await stopListener();
         return snapshot("needs-setup");
       }
-      if (listener?.status?.status === "ready") return snapshot("ready");
+      if (listenerStatus === "ready") return snapshot("ready");
       return snapshot(STATES.has(last.status) ? last.status : "needs-setup");
     } catch {
       await stopListener();

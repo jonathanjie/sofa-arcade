@@ -58,6 +58,7 @@ export async function attachNativeSecureLan(lan, { appDataDir, host = '0.0.0.0',
   const context = Object.freeze({});
   let closed = false;
   let settings;
+  let pendingRefresh;
   let safeStatus = { enabled: false, status: 'needs-setup', controllerOrigins: [], requiresPhoneTrust: false };
   const getIdentities = () => [...new Set(['127.0.0.1', 'localhost', ...lan.urls.map(raw => new URL(raw).hostname)])];
   const publish = value => {
@@ -65,6 +66,14 @@ export async function attachNativeSecureLan(lan, { appDataDir, host = '0.0.0.0',
     lan.setSecureControllerStatus(safeStatus);
     return safeStatus;
   };
+  function refreshStatus() {
+    if (!pendingRefresh) {
+      pendingRefresh = secure.getStatus()
+        .then(value => closed ? safeStatus : publish(value))
+        .finally(() => { pendingRefresh = undefined; });
+    }
+    return pendingRefresh;
+  }
   const secure = createHost({
     certificateStore: createStore({ appDataDir }), getIdentities,
     authorizeHost: caller => caller === context && !closed,
@@ -72,9 +81,9 @@ export async function attachNativeSecureLan(lan, { appDataDir, host = '0.0.0.0',
     // Listener expiry/error is reflected in HTTP metadata without emitting an
     // unsolicited native readiness record or silently renewing the root.
     onError: ({ code } = {}) => {
-      if (closed) return;
+      if (closed || code === 'tls_client_rejected' || code === 'request_rejected') return;
       void recordDiagnostic(appDataDir, code);
-      void secure.getStatus().then(publish).catch(() => {});
+      if (code === 'listener_failed' || code === 'certificate_expired') void refreshStatus().catch(() => {});
     },
   });
   try {
@@ -89,7 +98,7 @@ export async function attachNativeSecureLan(lan, { appDataDir, host = '0.0.0.0',
     get secureControllerStatus() { return safeStatus; },
     async secureCommand(operation, options = {}) {
       if (closed) throw safeFailure();
-      if (operation === 'getStatus') return { status: publish(await secure.getStatus()) };
+      if (operation === 'getStatus') return { status: await refreshStatus() };
       if (operation === 'exportPublicTrust') return { publicTrust: await secure.exportPublicTrust(context, options) };
       if (operation === 'provision') {
         const status = await secure.provision(context, options);

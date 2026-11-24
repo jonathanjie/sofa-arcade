@@ -167,13 +167,18 @@ export function createSecureLanHost({
         await stopListener();
         return snapshot(result.state === 'missing' ? 'needs-setup' : STATES.has(result.state) ? result.state : 'failed');
       }
+      const listenerStatus = listener?.status?.status;
+      if (listenerStatus === 'failed' || listenerStatus === 'certificate-expired') {
+        await stopListener();
+        return snapshot(listenerStatus);
+      }
       // A network change or external material change invalidates our advertisement.
       // No privileged renewal happens during a status read.
       if (listener && materialSignature(result) !== activeMaterial) {
         await stopListener();
         return snapshot('needs-setup');
       }
-      if (listener?.status?.status === 'ready') return snapshot('ready');
+      if (listenerStatus === 'ready') return snapshot('ready');
       return snapshot(STATES.has(last.status) ? last.status : 'needs-setup');
     } catch {
       await stopListener();

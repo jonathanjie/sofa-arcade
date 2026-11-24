@@ -158,8 +158,9 @@ export async function createSecureLanServer({ tlsMaterial, host = '0.0.0.0', por
       Promise.resolve(onUpgrade(request, socket, head)).catch(() => { notify('upgrade_failed'); socket.destroy(); });
     } catch { notify('upgrade_failed'); socket.destroy(); }
   });
-  server.on('tlsClientError', (_error, socket) => { notify('tls_client_rejected'); socket.destroy(); });
-  server.on('clientError', (_error, socket) => { notify('request_rejected'); socket.destroy(); });
+  // A failed peer handshake or HTTP parse does not change listener readiness.
+  server.on('tlsClientError', (_error, socket) => socket.destroy());
+  server.on('clientError', (_error, socket) => socket.destroy());
   server.requestTimeout = 15_000;
   server.headersTimeout = 15_000;
   server.keepAliveTimeout = 5000;
@@ -224,9 +225,9 @@ export async function createSecureLanServer({ tlsMaterial, host = '0.0.0.0', por
     throw new SecureLanListenerError(error?.code === 'EADDRINUSE' ? 'port_in_use' : 'bind_failed');
   }
   server.on('error', () => {
-    notify('listener_failed');
     void close().catch(() => {});
     currentStatus = Object.freeze({ enabled: true, status: 'failed', controllerOrigins: Object.freeze([]), requiresPhoneTrust: true });
+    notify('listener_failed');
   });
   // TLS clients enforce dates themselves; the host must also stop advertising
   // ready after expiry. Recheck long deadlines in short chunks (Node timers
@@ -235,12 +236,12 @@ export async function createSecureLanServer({ tlsMaterial, host = '0.0.0.0', por
     if (closed) return;
     const remaining = Date.parse(material.validUntil) - Date.now();
     if (remaining <= 0) {
-      notify('certificate_expired');
       void close().catch(() => {});
       currentStatus = Object.freeze({
         enabled: true, status: 'certificate-expired', controllerOrigins: Object.freeze([]),
         certificateFingerprint: material.certificateFingerprint, validUntil: material.validUntil, requiresPhoneTrust: true,
       });
+      notify('certificate_expired');
       return;
     }
     expiryTimer = setTimeout(checkExpiry, Math.min(remaining, 60_000));
