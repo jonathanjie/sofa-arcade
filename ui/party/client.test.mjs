@@ -1,0 +1,42 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as client from './client.mjs';
+
+test('the phone clock uses the lowest round-trip sample and refreshes periodically', t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let time = 0;
+  const advance = ms => {
+    time += ms;
+    t.mock.timers.tick(ms);
+  };
+  const sent = [];
+  assert.equal(typeof client.createPartyClockSync, 'function');
+  const sync = client.createPartyClockSync(packet => sent.push(packet), () => time);
+  assert.equal(sync.serverNow(), null);
+  sync.start();
+  assert.deepEqual(sent, [{ type: 'clock-ping', id: 0 }]);
+  advance(80);
+  sync.receive({ id: 999, serverAt: 9000 });
+  sync.receive({ id: 0, serverAt: 1045 });
+  assert.equal(sync.serverNow(), 1085);
+  advance(100);
+  advance(10);
+  sync.receive({ id: 1, serverAt: 1185 });
+  assert.equal(sync.serverNow(), 1190);
+  advance(100);
+  advance(60);
+  sync.receive({ id: 2, serverAt: 1330 });
+  assert.equal(sync.serverNow(), 1350);
+  advance(30_000);
+  assert.equal(sent.length, 4);
+  advance(350);
+  sync.receive({ id: 3, serverAt: 900_000 });
+  assert.equal(sync.serverNow(), 31_700);
+  advance(100);
+  advance(20);
+  sync.receive({ id: 4, serverAt: 30_930 });
+  assert.equal(sync.serverNow(), 30_940);
+  sync.stop();
+  advance(30_000);
+  assert.equal(sent.length, 5);
+});
