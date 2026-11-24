@@ -396,3 +396,32 @@ test('HTTP room mutations require exactly one same-origin Origin and JSON media 
   }
   assert.equal(await post({ Origin: host.origin, 'Content-Type': 'application/json; charset=UTF-8' }), 201);
 });
+
+test('an interrupted create releases its reservation after the authority fails', async t => {
+  const entered = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  let attempts = 0;
+  const host = await startLanServer({ port: 0, host: '127.0.0.1', databasePath: ':memory:', activeRoomLimit: 1,
+    async roomApi(message, env) {
+      if (++attempts === 1) {
+        entered.resolve();
+        await release.promise;
+        throw new Error('Interrupted room creation');
+      }
+      return handleApi(message, env);
+    },
+  });
+  t.after(() => host.close());
+  const abort = new AbortController();
+  const first = fetch(host.origin + '/api/rooms', { signal: abort.signal, method: 'POST',
+    headers: { Origin: host.origin, 'Content-Type': 'application/json' }, body: '{}' });
+  try {
+    await entered.promise;
+    assert.equal((await request(host, '/api/rooms', { body: {} })).status, 503);
+  } finally {
+    abort.abort();
+    release.resolve();
+    await assert.rejects(first, { name: 'AbortError' });
+  }
+  assert.equal((await request(host, '/api/rooms', { body: {} })).status, 201);
+});
