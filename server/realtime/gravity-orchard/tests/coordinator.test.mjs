@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createRealtimeCoordinator, readCoordinatorDiagnostics } from '../index.mjs';
-import { migrateCheckpoint } from '../lib/checkpoint.mjs';
+import { decodeCheckpoint, migrateCheckpoint } from '../lib/checkpoint.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
 import { fakeClock, flush, harness } from './unit-support/harness.mjs';
 
@@ -166,6 +166,44 @@ test('recovery validates checkpoint, increments the engine epoch once, and durab
   assert.deepEqual(migrateCheckpoint(legacy).commands, []);
   assert.throws(() => migrateCheckpoint({ ...legacy, coordinatorSchema: 999 }), { code: 'unsupported_checkpoint' });
   assert.throws(() => migrateCheckpoint({ ...legacy, commands: [] }), { code: 'invalid_checkpoint' });
+});
+
+test('recovery rejects a corrupt dedup ledger before restoring the simulation', async (t) => {
+  const simulation = createMockSimulation();
+  const h = await harness({ simulation });
+  t.after(() => h.close());
+  const jon = await h.connect('jon');
+  jon.input();
+  await flush();
+  const { command, result } = await jon.command('ready', { value: true }, 'one-ready');
+  assert.equal(result.accepted, true);
+  const checkpoint = h.store.get('UNIT');
+  const restore = t.mock.fn(simulation.restoreCheckpoint);
+  const recovery = { ...simulation, restoreCheckpoint: restore };
+
+  const differentCommand = { ...command, payload: { value: false } };
+  for (const corrupt of [
+    commands => commands.push(structuredClone(commands[0])),
+    commands => { commands[0].fingerprint = JSON.stringify(differentCommand); },
+    commands => { commands[0].result.id = 'different-id'; },
+  ]) {
+    const damaged = structuredClone(checkpoint);
+    corrupt(damaged.commands);
+    const before = structuredClone(damaged);
+    assert.throws(() => decodeCheckpoint(damaged, 'UNIT', recovery), { code: 'invalid_checkpoint' });
+    assert.deepEqual(damaged, before);
+    assert.equal(restore.mock.callCount(), 0);
+  }
+
+  const before = structuredClone(checkpoint);
+  const { dedup } = decodeCheckpoint(checkpoint, 'UNIT', recovery);
+  assert.equal(restore.mock.callCount(), 1);
+  assert.deepEqual([...dedup.keys()], ['player:jon:one-ready']);
+  const entry = dedup.get('player:jon:one-ready');
+  assert.equal(entry.actor, 'player:jon');
+  assert.deepEqual(entry.command, command);
+  assert.deepEqual(entry.result, result);
+  assert.deepEqual(checkpoint, before);
 });
 
 test('rejected command identities remain rejected after conditions improve', async (t) => {

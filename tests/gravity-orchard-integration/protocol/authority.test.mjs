@@ -301,3 +301,46 @@ test('two concurrent orchard rooms isolate steering, snapshots and durable lifec
     }
   }
 });
+
+test('failed room-row update rolls back the new Orchard checkpoint and closes the faulted room', { timeout: 30_000 }, async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-rollback-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const databasePath = path.join(directory, 'rooms.sqlite');
+  const h = await harness(t, { databasePath });
+  await h.ready();
+  await h.pump(3100);
+  const view = h.tv.snapshot.view;
+  assert.equal(view.phase, 'playing');
+  const db = new DatabaseSync(databasePath);
+  t.after(() => db.close());
+  const rows = () => ({
+    room: db.prepare('SELECT * FROM sofa_rooms WHERE code = ?').get(h.room.code),
+    checkpoint: db.prepare('SELECT * FROM sofa_gravity_checkpoints WHERE code = ?').get(h.room.code),
+  });
+  const before = rows();
+  // The update follows the checkpoint upsert in the same host transaction.
+  db.exec(`CREATE TRIGGER fail_pause BEFORE UPDATE OF data ON sofa_rooms
+    WHEN json_extract(NEW.data, '$.state.pauseReason') = 'help'
+    BEGIN SELECT RAISE(ABORT, 'injected pause failure'); END`);
+  const closed = Promise.all(h.peers.map(peer => once(peer.ws, 'close')));
+  const id = crypto.randomUUID();
+  h.tv.send({ type: 'command', protocol: 1, matchId: view.matchId, runEpoch: view.runEpoch,
+    id, kind: 'pause', payload: { reason: 'help' } });
+  for (const [code] of await closed) assert.equal(code, 1011);
+  for (const peer of h.peers) {
+    assert.equal(peer.messages.some(m => m.type === 'snapshot' && m.view.pauseReason === 'help'), false);
+    assert.equal(peer.messages.some(m => m.type === 'command-result' && m.id === id && m.accepted), false);
+  }
+  assert.deepEqual(rows(), before);
+  db.exec('DROP TRIGGER fail_pause');
+  await h.host.close();
+  const restarted = await startLanServer({ host: '127.0.0.1', port: 0, databasePath,
+    enableGravityOrchard: true, realtimeClock: manualClock() });
+  t.after(() => restarted.close());
+  const read = await api(restarted, `/api/rooms/${h.room.code}`, { token: h.room.tokens.host });
+  assert.equal(read.status, 200);
+  assert.equal(read.value.state.matchId, view.matchId);
+  assert.equal(read.value.state.phase, 'paused');
+  assert.equal(read.value.state.pauseReason, 'recovery');
+  assert.equal(JSON.parse(rows().checkpoint.checkpoint).commands.some(entry => entry.command.id === id), false);
+});
