@@ -229,8 +229,5 @@ test('stop from offline callback leaves no retry timer or second request', async
   assert.equal(calls, 1);
   assert.deepEqual(rooms, []);
   assert.deepEqual(states, ['connecting', 'offline']);
-  if (pending.length === 1 && pending[0] === 200) {
-    t.todo('subscribeRoom schedules its retry after the offline callback stops the subscription');
-  }
   assert.deepEqual(pending, [], 'stop must clear the idle watchdog and prevent a retry');
 });
