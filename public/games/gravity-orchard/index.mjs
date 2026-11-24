@@ -146,12 +146,12 @@ export function mountGravityOrchard(root, {
     presentation = mount(root, {...common, geometry, sound: cues, now: clock});
   } else {
     sound.setContext?.({role: 'player', view: 'game'});
-    presentation = mount(root, {...common, playerId: viewer.playerId, input: {setInput: value => !disposed && client.setInput(value)}});
-    // GO3 accepts an image source; crop the final atlas to its authored idle frame.
-    const state = MANIFEST.characterStates[viewer.playerId].idle;
-    const atlas = MANIFEST.assets[state.asset], frame = atlas.frames[state.reducedMotionFrame];
-    const portrait = root.querySelector?.('[data-go3="portrait"] img');
-    if (portrait) Object.assign(portrait.style, {width: `${atlas.width / frame.width * 100}%`, height: `${atlas.height / frame.height * 100}%`, maxWidth: 'none', objectFit: 'fill', transform: `translate(${-frame.x / atlas.width * 100}%, ${-frame.y / atlas.height * 100}%)`});
+    presentation = mount(root, {
+      ...common,
+      playerId: viewer.playerId,
+      portrait: assets.resolve(`character-${viewer.playerId}-phone`),
+      input: {setInput: value => !disposed && client.setInput(value)},
+    });
   }
   if (initialRoom?.state) accept(initialRoom.state);
   client.connect();

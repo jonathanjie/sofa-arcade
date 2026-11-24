@@ -54,7 +54,7 @@ function vector(x, y) {
  * onCommand receives a unique id, kind and payload, and may return a Promise.
  */
 export function mountPhone(root, {
-  playerId, input, onCommand, onExit = () => {}, assets = {}, reducedMotion,
+  playerId, input, onCommand, onExit = () => {}, assets = {}, portrait, reducedMotion,
 } = {}) {
   if (!root?.ownerDocument || !['jon', 'lydia'].includes(playerId)) {
     throw new TypeError('mountPhone requires a DOM root and a jon or lydia playerId.');
@@ -184,15 +184,20 @@ export function mountPhone(root, {
   root.replaceChildren(shell);
   const element = (name) => shell.querySelector(`[data-go3="${name}"]`);
   const refs = Object.fromEntries([...shell.querySelectorAll('[data-go3]')].map((node) => [node.dataset.go3, node]));
-  const source = assetSource(assets, playerId);
+  const source = portrait?.src ?? assetSource(assets, playerId);
   if (source) {
-    const portrait = document.createElement('img');
-    portrait.alt = '';
-    portrait.src = source;
-    listen(portrait, 'load', () => {
+    const image = document.createElement('img');
+    image.alt = '';
+    if (portrait) {
+      image.width = portrait.width;
+      image.height = portrait.height;
+      image.style.objectFit = 'fill';
+    }
+    listen(image, 'load', () => {
       if (!disposed) refs.portrait.classList.add('go3-portrait-loaded');
     }, { once: true });
-    refs.portrait.append(portrait);
+    image.src = source;
+    refs.portrait.append(image);
   }
   const motionQuery = window?.matchMedia?.('(prefers-reduced-motion: reduce)');
   function updateReducedMotion() {

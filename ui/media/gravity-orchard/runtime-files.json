@@ -19,8 +19,10 @@
     "public/assets/gravity-orchard/baskets/starfruit-ordinary.svg",
     "public/assets/gravity-orchard/baskets/starfruit-rejecting.svg",
     "public/assets/gravity-orchard/characters/jon-atlas.webp",
+    "public/assets/gravity-orchard/characters/jon-phone.webp",
     "public/assets/gravity-orchard/characters/lala-atlas.webp",
     "public/assets/gravity-orchard/characters/lydia-atlas.webp",
+    "public/assets/gravity-orchard/characters/lydia-phone.webp",
     "public/assets/gravity-orchard/cover-560.webp",
     "public/assets/gravity-orchard/cover.webp",
     "public/assets/gravity-orchard/cues/compost.svg",
@@ -146,6 +148,11 @@
       "sha256": "69df4bd6186318e42d27bec365499f19a01fcbe38231c40c7f789611b9a51113"
     },
     {
+      "path": "public/assets/gravity-orchard/characters/jon-phone.webp",
+      "bytes": 13750,
+      "sha256": "33951ccc6b8dbcd5db66dff37a1a5b85d12925d5cd53639f3eadb1595a50df76"
+    },
+    {
       "path": "public/assets/gravity-orchard/characters/lala-atlas.webp",
       "bytes": 113602,
       "sha256": "cb117f9da6552356e77eda63fbf3a26bd61697a90a084b78afda514af9bdadf3"
@@ -154,6 +161,11 @@
       "path": "public/assets/gravity-orchard/characters/lydia-atlas.webp",
       "bytes": 160890,
       "sha256": "55137cd290fa1b2adf0d7fdaabdc44eb09f7b9ff6ccf118d7d3e3e172c858f0d"
+    },
+    {
+      "path": "public/assets/gravity-orchard/characters/lydia-phone.webp",
+      "bytes": 14800,
+      "sha256": "1279198ec82b207d940f1d6a176493553a90bdb60e34cf95e169d7e70e82f28b"
     },
     {
       "path": "public/assets/gravity-orchard/cover-560.webp",
@@ -252,8 +264,8 @@
     },
     {
       "path": "public/assets/gravity-orchard/manifest.json",
-      "bytes": 29689,
-      "sha256": "c0e4832715d7f5aee299a3ac029b8a19e2e584a06235c0bceda916d5ebe38a46"
+      "bytes": 30431,
+      "sha256": "aa2a017ea2491e3b47e35edbc2d4e1d11ae7f381f38aba8ee1776fb66cb9346b"
     },
     {
       "path": "public/assets/gravity-orchard/terrain/moonlight-picnic-bridge.svg",
@@ -327,8 +339,8 @@
     },
     {
       "path": "ui/media/gravity-orchard/manifest-data.mjs",
-      "bytes": 29788,
-      "sha256": "233e1a183f63cf3f9e1bbe2a83a21565a85f95fa554689afe96b7aa5de46564b"
+      "bytes": 30530,
+      "sha256": "28a8df40d98e0cd5a2fe71a1dde5820f052a4ee24fccbd263a9d1c263d13f234"
     },
     {
       "path": "ui/media/gravity-orchard/manifest.mjs",
@@ -341,7 +353,7 @@
       "sha256": "0da5c26f5e4bbbdeccbea304d41ec81c447aaf2d330e96137ba6db750687dbe6"
     }
   ],
-  "totalBytes": 1051472,
+  "totalBytes": 1081506,
   "productionDependencies": [],
   "excludedAuthoring": [
     "ui/media/gravity-orchard/sources/**",

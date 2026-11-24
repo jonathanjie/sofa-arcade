@@ -949,6 +949,26 @@ export default {
       "frameWidth": 256,
       "frameHeight": 256,
       "alt": "Lala: idle, forecast, gust, pleased orchard poses"
+    },
+    "character-jon-phone": {
+      "src": "/assets/gravity-orchard/characters/jon-phone.webp",
+      "width": 192,
+      "height": 192,
+      "kind": "image",
+      "alt": "Jon ready to tend the garden.",
+      "label": "Jon phone portrait",
+      "layer": "character",
+      "transparent": true
+    },
+    "character-lydia-phone": {
+      "src": "/assets/gravity-orchard/characters/lydia-phone.webp",
+      "width": 192,
+      "height": 192,
+      "kind": "image",
+      "alt": "Lydia ready to tend the garden.",
+      "label": "Lydia phone portrait",
+      "layer": "character",
+      "transparent": true
     }
   },
   "characterStates": {
@@ -1085,8 +1105,10 @@ export default {
     "public/assets/gravity-orchard/baskets/starfruit-ordinary.svg",
     "public/assets/gravity-orchard/baskets/starfruit-rejecting.svg",
     "public/assets/gravity-orchard/characters/jon-atlas.webp",
+    "public/assets/gravity-orchard/characters/jon-phone.webp",
     "public/assets/gravity-orchard/characters/lala-atlas.webp",
     "public/assets/gravity-orchard/characters/lydia-atlas.webp",
+    "public/assets/gravity-orchard/characters/lydia-phone.webp",
     "public/assets/gravity-orchard/cover-560.webp",
     "public/assets/gravity-orchard/cover.webp",
     "public/assets/gravity-orchard/cues/compost.svg",

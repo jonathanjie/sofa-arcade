@@ -27,7 +27,7 @@ function borough(ctx, playerId) {
   const total = finished ? view.result?.scores[playerId] ?? player.score.total : scoreCurrent(player);
   return `<section class="ols-tv-borough ols-tv-borough-${playerId}${active ? ' is-active' : ''}" data-player-id="${playerId}" aria-label="${NAMES[playerId]}'s borough${active ? ', active player' : ''}">
     <header class="ols-tv-borough-head">
-      <div class="ols-tv-portrait">${character(playerId, playerState(view, playerId), ctx)}</div>
+      <div class="ols-tv-portrait">${character(playerId, playerState(view, playerId), ctx, '(max-width: 1440px) 56px, 100px')}</div>
       <div class="ols-tv-borough-title"><span class="ols-tv-kicker">${active ? 'Your move' : full ? 'City complete' : finished ? 'Final borough' : 'Borough of'}</span><h2>${NAMES[playerId]}</h2></div>
       <button type="button" class="ols-tv-score" data-action="open-score" data-player-id="${playerId}" aria-label="${NAMES[playerId]}: ${total} ${finished ? 'final' : 'current'} prestige. View score breakdown">${icon('prestige')}<strong>${total}</strong><span>${finished ? 'final prestige' : 'prestige'}</span></button>
     </header>
@@ -55,7 +55,7 @@ function abilitySummary(building) {
   return esc(building.abilityDescription);
 }
 
-function marketCard(ctx, stack) {
+function marketCard(ctx, stack, index) {
   const { view, rules } = ctx;
   const building = buildingById(rules, stack.designId);
   if (!building) return '';
@@ -68,7 +68,7 @@ function marketCard(ctx, stack) {
     : `<span class="ols-tv-split-price" aria-label="Jon pays ${jon.cost} coins; Lydia pays ${lydia.cost} coins">${icon('coin')}<span>J <strong>${jon.cost}</strong></span><span>L <strong>${lydia.cost}</strong></span></span>`;
   return `<button type="button" class="ols-tv-market-card guild-${esc(building.guild)}${stack.remaining === 0 ? ' is-exhausted' : ''}" data-guild="${esc(building.guild)}" data-action="inspect-building" data-design-id="${esc(building.id)}" aria-label="${esc(building.name)}, ${stack.remaining} remaining. ${esc(building.guild)}. Jon pays ${jon.cost} coins; Lydia pays ${lydia.cost} coins. ${building.prestige} prestige. ${esc(building.abilityDescription || 'No ability')}"${stack.remaining === 0 ? ' data-exhausted="true"' : ''}>
     <span class="ols-tv-card-top">${guildLabel(building.guild, rules)}<span class="ols-tv-stock">${stack.remaining === 0 ? 'Sold out' : `${stack.remaining} left`}</span></span>
-    <span class="ols-tv-building-art">${buildingArt(building, ctx)}</span>
+    <span class="ols-tv-building-art">${buildingArt(building, ctx, {lazy: index >= 3})}</span>
     <strong class="ols-tv-building-name">${esc(building.name)}</strong>
     <span class="ols-tv-card-values">${price}${discounted ? `<del aria-label="Printed cost ${building.cost}">${building.cost}</del>` : ''}<span class="ols-tv-card-prestige">${icon('prestige')} ${building.prestige}</span></span>
     <span class="ols-tv-ability">${abilitySummary(building)}</span>
@@ -79,7 +79,7 @@ function market(ctx) {
   const { view } = ctx;
   return `<section class="ols-tv-market" aria-labelledby="ols-market-title">
     <div class="ols-tv-section-heading"><div><span class="ols-tv-kicker">Term ${ROMAN[view.term - 1]}</span><h2 id="ols-market-title">${TERMS[view.term - 1]}</h2></div><span class="ols-tv-market-note">Shared market</span></div>
-    <div class="ols-tv-market-grid">${view.market.map(stack => marketCard(ctx, stack)).join('')}</div>
+    <div class="ols-tv-market-grid">${view.market.map((stack, index) => marketCard(ctx, stack, index)).join('')}</div>
     ${view.market.every(stack => stack.remaining === 0) ? '<p class="ols-tv-stock-note">This market is sold out. Work, Lobby, or Festival.</p>' : ''}
   </section>`;
 }
@@ -97,7 +97,7 @@ function council(ctx) {
   if (!council) return '';
   const category = council.category;
   return `<section class="ols-tv-council" aria-labelledby="ols-council-title">
-    <div class="ols-tv-section-heading"><div><span class="ols-tv-kicker">The council is in session</span><h2 id="ols-council-title">${category === 'economy' ? 'An economic question' : 'A civic occasion'}</h2></div><span class="ols-tv-lala">${character('lala', 'thinking', ctx)}</span></div>
+    <div class="ols-tv-section-heading"><div><span class="ols-tv-kicker">The council is in session</span><h2 id="ols-council-title">${category === 'economy' ? 'An economic question' : 'A civic occasion'}</h2></div><span class="ols-tv-lala">${character('lala', 'thinking', ctx, '(max-width: 760px) 60px, 110px')}</span></div>
     <div class="ols-tv-proposals">${council.optionIds.map((choiceId, index) => {
       const id = choiceId === 'keep' ? view.activeLaws[category] : choiceId;
       return `<article class="ols-tv-proposal${choiceId === 'keep' ? ' ols-tv-proposal-keep' : ''}" data-law-id="${esc(id)}"><span class="ols-tv-proposal-number" aria-hidden="true">${choiceId === 'keep' ? '↺' : String(index + 1).padStart(2, '0')}</span><div><h3>${choiceId === 'keep' ? 'Keep current law' : esc(lawName(id, rules))}</h3><p>${choiceId === 'keep' ? `${esc(lawName(id, rules))} · ` : ''}${esc(lawDescription(id, rules))}</p>${publicEffect(ctx, id)}</div></article>`;
@@ -112,7 +112,7 @@ function revealedCouncil(ctx) {
   const last = view.lastCouncil;
   if (!last || last.session !== view.session || view.stage !== 'actions' || (view.actionIndex !== 0 && !ui?.showCouncilReveal)) return '';
   return `<aside class="ols-tv-reveal" data-reveal-phase="${esc(last.phaseId)}" aria-label="Both council votes revealed">
-    <div class="ols-tv-reveal-lala">${character('lala', 'stamp', ctx)}</div>
+    <div class="ols-tv-reveal-lala">${character('lala', 'stamp', ctx, '64px')}</div>
     <div class="ols-tv-reveal-heading">${icon('stamp')} <strong>${esc(lawName(last.adoptedLawId, rules))}</strong><span>adopted</span></div>
     <div class="ols-tv-revealed-votes">${['jon', 'lydia'].map(playerId => `<span data-envelope="${playerId}">${icon('envelope')}<strong>${NAMES[playerId]}</strong><span>${last.choices[playerId].choiceId === 'keep' ? 'Keep current' : esc(lawName(last.choices[playerId].choiceId, rules))}</span><b>${last.choices[playerId].bid} paid</b></span>`).join('')}</div>
   </aside>`;
@@ -131,7 +131,7 @@ function results(ctx) {
   const winner = view.result?.winner;
   const title = winner === 'tie' ? 'A shared victory' : `${NAMES[winner] || 'The city'} wins`;
   const labels = { buildings: 'Buildings', streets: 'Streets', festivals: 'Festivals', civic: 'Civic laws', treasury: 'Treasury' };
-  return `<section class="ols-tv-results" aria-labelledby="ols-results-title"><div class="ols-tv-result-lala">${character('lala', 'celebrate', ctx)}</div><span class="ols-tv-kicker">Six sessions. Two remarkable cities.</span><h2 id="ols-results-title">${title}</h2><p class="ols-tv-result-subtitle">${winner === 'tie' ? 'The Society awards two splendid seals.' : 'Certified by Lala, Council President.'}</p><table class="ols-tv-score-table"><caption class="ols-sr-only">Final prestige breakdown</caption><thead><tr><th scope="col">Prestige</th><th scope="col">Jon</th><th scope="col">Lydia</th></tr></thead><tbody>${Object.entries(labels).map(([key, label]) => `<tr><th scope="row">${label}</th><td>${view.players.jon.score[key]}</td><td>${view.players.lydia.score[key]}</td></tr>`).join('')}</tbody><tfoot><tr><th scope="row">Final total</th><td>${view.result?.scores.jon ?? view.players.jon.score.total}</td><td>${view.result?.scores.lydia ?? view.players.lydia.score.total}</td></tr></tfoot></table><button type="button" class="ols-tv-return" data-action="exit">${icon('back')} Return to Sofa Arcade</button></section>`;
+  return `<section class="ols-tv-results" aria-labelledby="ols-results-title"><div class="ols-tv-result-lala">${character('lala', 'celebrate', ctx, '(max-width: 760px) 78px, 150px')}</div><span class="ols-tv-kicker">Six sessions. Two remarkable cities.</span><h2 id="ols-results-title">${title}</h2><p class="ols-tv-result-subtitle">${winner === 'tie' ? 'The Society awards two splendid seals.' : 'Certified by Lala, Council President.'}</p><table class="ols-tv-score-table"><caption class="ols-sr-only">Final prestige breakdown</caption><thead><tr><th scope="col">Prestige</th><th scope="col">Jon</th><th scope="col">Lydia</th></tr></thead><tbody>${Object.entries(labels).map(([key, label]) => `<tr><th scope="row">${label}</th><td>${view.players.jon.score[key]}</td><td>${view.players.lydia.score[key]}</td></tr>`).join('')}</tbody><tfoot><tr><th scope="row">Final total</th><td>${view.result?.scores.jon ?? view.players.jon.score.total}</td><td>${view.result?.scores.lydia ?? view.players.lydia.score.total}</td></tr></tfoot></table><button type="button" class="ols-tv-return" data-action="exit">${icon('back')} Return to Sofa Arcade</button></section>`;
 }
 
 /** Renders only committed projected state; UI drafts are intentionally ignored. */

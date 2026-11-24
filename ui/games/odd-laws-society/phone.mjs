@@ -23,7 +23,7 @@ function header(ctx) {
   const displayedScore = finished ? player.score.total : scoreCurrent(player);
   const state = view.stage === 'council' ? 'thinking' : view.stage === 'finished' ? (view.result?.winner === id || view.result?.winner === 'tie' ? 'celebrate' : 'disappointed') : view.activePlayer === id ? 'acting' : 'idle';
   return `<header class="ols-phone-header" data-player-id="${id}">
-    <div class="ols-phone-portrait">${character(id, state, ctx)}</div>
+    <div class="ols-phone-portrait">${character(id, state, ctx, '54px')}</div>
     <div class="ols-phone-identity"><span class="ols-phone-kicker">YOUR BOROUGH</span><h1>${name(id)}<span class="ols-phone-session">${view.session} / 6</span></h1>${resourceStrip(player)}</div>
     <button type="button" class="ols-phone-score" data-action="open-score" data-player-id="${id}" aria-label="${name(id)}: ${displayedScore} ${finished ? 'final' : 'current'} prestige${finished ? '' : `; ${player.score.treasury} potential treasury`}. Show score breakdown"><strong>${displayedScore}</strong><span>prestige</span><small>${finished ? 'final score' : `+${player.score.treasury} potential`}</small></button>
   </header>`;
@@ -127,11 +127,11 @@ function market(ctx) {
   return `<section class="ols-phone-market"><div class="ols-phone-panel-heading"><button type="button" class="ols-phone-back" data-action="phone-back">${icon('arrow')} <span>Actions</span></button><span>TERM ${view.term} MARKET</span></div>
     <h2>One district. Yours forever.</h2>
     ${gain.buildReason ? `<p class="ols-phone-notice" role="status">${esc(gain.buildReason)}</p>` : ''}
-    <div class="ols-phone-market-grid">${view.market.map((stack) => {
+    <div class="ols-phone-market-grid">${view.market.map((stack, index) => {
       const design = buildingById(rules, stack.designId);
       const quote = rules.buildQuote(view, viewer.playerId, stack.designId);
       return `<article class="ols-phone-market-card ${quote.allowed ? '' : 'unavailable'}" data-guild="${esc(design.guild)}"><button type="button" class="ols-phone-market-select" data-action="phone-design" data-design-id="${esc(design.id)}" aria-label="${esc(design.name)}. ${esc(rules.guilds.find(g=>g.id===design.guild)?.name||design.guild)} guild. Pay ${quote.cost} coins, ${quote.prestige} prestige. ${stack.remaining} remaining.${quote.allowed ? '' : ` ${esc(quote.reason)}`}"${attrDisabled(ui.busy)}>
-        <div class="ols-phone-market-art">${buildingArt(design, ctx)}<span class="ols-phone-stock">${stack.remaining} left</span></div>
+        <div class="ols-phone-market-art">${buildingArt(design, ctx, {lazy: index >= 2})}<span class="ols-phone-stock">${stack.remaining} left</span></div>
         <span class="ols-phone-market-copy">${guildLabel(design.guild, rules)}<strong>${esc(design.name)}</strong><span class="ols-phone-market-values"><span>${icon('coin')} <b>${quote.cost}</b>${quote.discount.amount ? `<s>${quote.printedCost}</s>` : ''}</span><span>${icon('prestige')} <b>${quote.prestige}</b></span></span><small>${esc(design.abilityDescription || 'Printed prestige')}</small></span>
       </button><button type="button" class="ols-phone-card-info" data-action="inspect-building" data-design-id="${esc(design.id)}" aria-label="Inspect ${esc(design.name)}">Details ${icon('inspect')}</button></article>`;
     }).join('')}</div>
