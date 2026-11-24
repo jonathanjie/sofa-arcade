@@ -33,6 +33,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
       - run: npm run install:ci
       - run: npm ci --prefix desktop --ignore-scripts --no-audit --no-fund
       - name: Private bundle exactly reproduces pinned sources and packages
@@ -70,6 +73,10 @@ jobs:
         with:
           node-version: '24.22.3'
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            ui/media/gravity-orchard/package-lock.json
+            server/secure-lan/package-lock.json
       - run: npm run install:ci
       - run: npm ci --prefix ui/media/gravity-orchard --no-audit --no-fund
       - run: npm ci --prefix server/secure-lan --no-audit --no-fund
@@ -143,6 +150,9 @@ jobs:
           node-version: '24.22.3'
           architecture: ${{ matrix.node_arch }}
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
       - name: Verify actual architecture and locked native toolchain
         run: |
           test "$(uname -m)" = '${{ matrix.arch }}'

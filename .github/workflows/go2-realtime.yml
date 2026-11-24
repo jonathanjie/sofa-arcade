@@ -52,9 +52,7 @@ jobs:
       - name: Run all GO2 coordinator, client, fixture and adversarial suites
         run: node server/realtime/gravity-orchard/tests/run.mjs
       - name: Preserve existing rooms, games and secret projection
-        run: |
-          npm test
-          node --test server/room-platform.test.mjs server/room-lan-integration.test.mjs ui/room-client.test.mjs
+        run: node --test server/room-platform.test.mjs server/room-lan-integration.test.mjs ui/room-client.test.mjs
 
   browser:
     name: Realtime host and two rendered controllers

@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'desktop/**'
+      - 'scripts/**'
+      - 'package*.json'
+      - 'tests/integration/**'
+      - 'vendor/**'
       - '.github/workflows/desktop.yml'
       - 'server/**'
       - 'game/**'
@@ -15,6 +19,10 @@ on:
   pull_request:
     paths:
       - 'desktop/**'
+      - 'scripts/**'
+      - 'package*.json'
+      - 'tests/integration/**'
+      - 'vendor/**'
       - '.github/workflows/desktop.yml'
       - 'server/**'
       - 'game/**'
@@ -60,9 +68,6 @@ jobs:
         run: |
           rustup toolchain install 1.100.0 --profile minimal
           cargo +1.100.0 test --locked --manifest-path src-tauri/Cargo.toml --no-default-features
-      - name: Existing game and room regressions
-        working-directory: .
-        run: npm test
 
   mac-native:
     name: Native ${{ matrix.arch }} build and launch

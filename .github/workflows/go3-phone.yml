@@ -6,12 +6,18 @@ on:
       - 'ui/games/gravity-orchard/phone/**'
       - '.github/workflows/go3-phone.yml'
       - 'docs/workstreams/gravity-orchard-go3.md'
+      - 'games/gravity-orchard/**'
+      - 'ui/media/gravity-orchard/**'
+      - 'public/assets/gravity-orchard/**'
   push:
     branches: [feature/gravity-orchard-phone]
     paths:
       - 'ui/games/gravity-orchard/phone/**'
       - '.github/workflows/go3-phone.yml'
       - 'docs/workstreams/gravity-orchard-go3.md'
+      - 'games/gravity-orchard/**'
+      - 'ui/media/gravity-orchard/**'
+      - 'public/assets/gravity-orchard/**'
   workflow_dispatch:
 
 permissions:
@@ -22,21 +28,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  production-build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '22'
-          cache: npm
-      - name: Install the existing locked framework dependencies
-        run: npm run install:ci
-      - name: Verify the existing collection production build
-        run: npm run build
 
   controller-and-browser:
     runs-on: ubuntu-24.04

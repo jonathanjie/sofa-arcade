@@ -10,16 +10,26 @@ on:
       - 'docs/games/odd-laws-society.md'
       - 'docs/LOCAL_IMPLEMENTATION_CONTRACT.md'
       - '.github/workflows/ws4-media.yml'
+      - 'ui/media/sofa-menu/**'
   push:
     branches: [main, feature/odd-laws-media]
     paths:
       - 'public/assets/odd-laws-society/**'
       - 'ui/media/odd-laws-society/**'
       - '.github/workflows/ws4-media.yml'
+      - 'ui/audio.js'
+      - 'ui/score.mjs'
+      - 'ui/media/sofa-menu/**'
+      - 'docs/LOCAL_IMPLEMENTATION_CONTRACT.md'
+      - 'docs/games/odd-laws-society.md'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ws4-media-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   artwork-and-score:
@@ -42,15 +52,13 @@ jobs:
         run: npm test --prefix ui/media/odd-laws-society
       - name: Check all arrangements and effect render levels
         run: node ui/media/odd-laws-society/audio-preview.mjs --verify
-      - name: Preserve existing game and audio contracts
-        run: npm test
       - name: Install Chromium for offline media review
         run: node ui/media/odd-laws-society/node_modules/playwright/cli.js install --with-deps chromium
       - name: Render TV and phone-size contact sheets and decode audio
         run: node ui/media/odd-laws-society/browser-check.mjs
       - name: Upload media validation and screenshot evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: odd-laws-media-evidence-${{ github.sha }}
           path: |

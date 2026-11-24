@@ -9,6 +9,9 @@ on:
       - 'ui/games/gravity-orchard/tutorial/**'
       - '.github/workflows/go4-tv.yml'
       - 'docs/workstreams/gravity-orchard-go4.md'
+      - 'games/gravity-orchard/**'
+      - 'ui/media/gravity-orchard/**'
+      - 'public/assets/gravity-orchard/**'
 
 permissions:
   contents: read
@@ -36,9 +39,6 @@ jobs:
       - name: Install locked isolated test dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Public fixtures, timeline, event identity and module isolation
-        run: npm test
-      - name: Existing collection rules and rooms
-        working-directory: .
         run: npm test
       - name: Install pinned Chromium for rendered checks
         run: npx playwright install --with-deps chromium

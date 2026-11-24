@@ -8,15 +8,26 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   rules-and-rooms:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      # These suites use Node built-ins only, including node:sqlite.
+          cache: npm
+      - run: npm run install:ci
+      - run: npm run lint
+      - run: npm exec --offline -- tsc --noEmit --incremental false
       - name: Test rules, room API, controllers, local transport, and music
         run: npm test
+      - run: npm run build
+      - run: node tests/integration/package/production.mjs
+      - run: node scripts/check-derived.mjs
+      - run: npm run test:cloud
