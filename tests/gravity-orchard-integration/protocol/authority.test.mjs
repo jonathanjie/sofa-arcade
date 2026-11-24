@@ -359,3 +359,55 @@ test('failed room-row update rolls back the new Orchard checkpoint and closes th
   assert.equal(read.value.state.pauseReason, 'recovery');
   assert.equal(JSON.parse(rows().checkpoint.checkpoint).commands.some(entry => entry.command.id === id), false);
 });
+
+test('expired orchards free coordinator capacity and restart restores only the newest live checkpoint within its budget', async t => {
+  t.mock.timers.enable({ apis: ['Date'] });
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-room-limit-'));
+  const databasePath = path.join(directory, 'rooms.sqlite');
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const options = { port: 0, host: '127.0.0.1', databasePath,
+    enableGravityOrchard: true, realtimeClock: manualClock() };
+  let host = await startLanServer({ ...options, orchardRoomLimit: 1 });
+  t.after(() => host.close());
+  const expired = await createRoom(host);
+  t.mock.timers.tick(24 * 60 * 60 * 1000 - 1);
+  const replacement = await api(host, '/api/rooms', { body: { gameId: 'gravity-orchard' } });
+  for (const playerId of ['jon', 'lydia']) {
+    assert.equal((await api(host, `/api/rooms/${replacement.value.code}/join`, {
+      body: { playerId, clientId: crypto.randomUUID() },
+    })).status, 200);
+  }
+  const startReplacement = () => api(host, `/api/rooms/${replacement.value.code}/start`, {
+    body: {}, token: replacement.value.hostToken,
+  });
+  assert.equal((await startReplacement()).status, 503);
+  t.mock.timers.tick(2);
+  assert.equal((await startReplacement()).status, 200);
+  assert.equal(host.realtimeDiagnostics(expired.code).coordinator, null);
+  await host.close();
+
+  host = await startLanServer(options);
+  t.mock.timers.tick(1);
+  const newest = await createRoom(host);
+  await host.close();
+  host = await startLanServer({ ...options, orchardRoomLimit: 1 });
+  assert.equal(host.realtimeDiagnostics(newest.code).coordinator.matchId, newest.started.state.matchId);
+  assert.equal(host.realtimeDiagnostics(replacement.value.code).coordinator, null);
+  assert.equal(host.realtimeDiagnostics(expired.code).coordinator, null);
+  assert.equal(host.realtimeDiagnostics(newest.code).checkpointWrites, 1);
+});
+
+test('a second host that cannot bind leaves the running orchard checkpoint intact', async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-occupied-port-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const options = { host: '127.0.0.1', port: 0, databasePath: path.join(directory, 'rooms.sqlite'),
+    realtimeClock: manualClock() };
+  const host = await startLanServer(options);
+  t.after(() => host.close());
+  const room = await createRoom(host);
+  const read = () => api(host, '/api/rooms/' + room.code, { token: room.tokens.host });
+  const before = await read();
+  assert.equal(before.status, 200);
+  await assert.rejects(startLanServer({ ...options, port: host.port }), { code: 'EADDRINUSE' });
+  assert.equal((await read()).value.revision, before.value.revision);
+});

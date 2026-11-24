@@ -4,8 +4,10 @@ import path from 'node:path';
 import https from 'node:https';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { mkdtemp, realpath, readFile, rm, stat } from 'node:fs/promises';
+import { mkdtemp, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { setImmediate as turn } from 'node:timers/promises';
+import { createSecureLanHost } from '../../../server/runtime/gravity-orchard-dependencies.mjs';
 import { startLanServer } from '../../../server/lan.mjs';
 import { attachNativeSecureLan, validateSecureCommand } from '../../../desktop/host/secure-lan.mjs';
 import { hostRecord, validateSecureControllerStatus, createHostLifecycle } from '../../../desktop/host/lifecycle.mjs';
@@ -142,4 +144,50 @@ test('real owned Node child exposes setup only on its inherited private pipe and
   assert.equal(text.includes(directory), false); assert.equal(text.includes('INSERT INTO'), false);
   assert.equal((await stat(filename)).mode & 0o777, 0o600);
   assert.ok(records.every(record => ['ready', 'secure-result'].includes(record.type)), 'Timing evidence must never enter the native stdout protocol');
+});
+
+test('peer TLS errors do not queue inspections and readiness events share one pending refresh', async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-refresh-gate-'));
+  await writeFile(path.join(directory, 'secure-controller.json'), '{"schemaVersion":1,"enabled":true}', { mode: 0o600 });
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const { promise: heldInspection, resolve: release } = Promise.withResolvers();
+  t.after(() => release());
+  const { promise: inspecting, resolve: started } = Promise.withResolvers();
+  let inspections = 0;
+  const origins = ['https://127.0.0.1:4178'];
+  const material = { state: 'valid', port: 4178, identities: ['127.0.0.1', 'localhost'],
+    certificateFingerprint: Array(32).fill('AA').join(':'), validUntil: '2027-02-19T00:00:00.000Z' };
+  const listener = { port: 4178, origins, status: { status: 'ready' }, async close() {} };
+  let listenerError;
+  const store = {
+    async inspect() {
+      if (++inspections === 2) { started(); await heldInspection; }
+      return material;
+    },
+    async loadTlsMaterial() { return {}; },
+    async provision() { assert.fail('Unexpected provision'); },
+    async exportPublicTrust() { assert.fail('Unexpected export'); },
+    async remove() { assert.fail('Unexpected remove'); },
+  };
+  const lan = { urls: [], requestHandler() {}, setSecureControllerStatus() {}, async close() {} };
+  const host = await attachNativeSecureLan(lan, { appDataDir: directory, createStore: () => store,
+    createHost: options => createSecureLanHost({ ...options, createServer: async ({ onError }) => {
+      listenerError = onError;
+      return listener;
+    } }),
+  });
+  t.after(() => host.close());
+  assert.equal(host.secureControllerStatus.status, 'ready');
+  const status = host.secureCommand('getStatus');
+  await inspecting;
+  for (const code of ['tls_client_rejected', 'request_rejected', 'certificate_expired']) {
+    for (let i = 0; i < 12; i++) listenerError({ code });
+  }
+  listener.status = { status: 'certificate-expired' };
+  release();
+  await status;
+  await turn();
+  assert.equal(inspections, 2);
+  assert.equal(host.secureControllerStatus.status, 'certificate-expired');
+  assert.deepEqual(host.secureControllerStatus.controllerOrigins, []);
 });
