@@ -144,6 +144,9 @@
   text-align: center;
   box-shadow: 0 0 0 100vmax #162b2a80;
 }
+.party-stage canvas[data-sumo] + .party-countdown {
+  box-shadow: 0 0 0 100vmax #162b2a31, 0 6px 0 #251e28;
+}
 .party-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 20px 0; }
 .party-podium article {
   display: grid;

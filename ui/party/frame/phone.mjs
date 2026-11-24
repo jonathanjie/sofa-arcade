@@ -246,6 +246,7 @@ export function mountPartyPhone(root, { credential, actions }) {
     }
     const view = previous;
     const lobby = view.phase === 'lobby' || view.phase === 'results';
+    const practice = view.waiting && renderer?.practiceWhileWaiting === true;
     const status = view.waiting ? 'You’re in the next round'
       : view.phase === 'countdown' ? `Get ready · ${Math.ceil(view.ms / 1000)}`
       : active ? 'Go!'
@@ -254,7 +255,6 @@ export function mountPartyPhone(root, { credential, actions }) {
     setText(statusLabel, status);
     readyButton.hidden = !lobby || Boolean(autoReady);
     setText(readyButton, view.self.ready ? 'Not ready' : 'Ready');
-    const practice = Boolean(view.waiting && renderer?.practiceWhileWaiting);
     controls.hidden = !practice && (view.waiting || (!active && view.phase !== 'countdown'));
     renderer?.update(view.state, active, { practice });
   }

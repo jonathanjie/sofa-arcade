@@ -11,6 +11,10 @@ export const PARTY_BROWSER_FILES = Object.freeze([
   'games/dont-wake-lala/phone.css',
   'games/dont-wake-lala/phone.mjs',
   'games/dont-wake-lala/tv.mjs',
+  'games/dust-bunny-sumo/art.mjs',
+  'games/dust-bunny-sumo/phone.css',
+  'games/dust-bunny-sumo/phone.mjs',
+  'games/dust-bunny-sumo/tv.mjs',
   'games/tap-race/phone.mjs',
   'games/tap-race/tv.mjs',
   'kit/animation.mjs',
@@ -20,6 +24,7 @@ export const PARTY_BROWSER_FILES = Object.freeze([
 
 export const PARTY_HOST_FILES = Object.freeze([
   'games/party/registry.mjs',
+  'games/party/dust-bunny-sumo/rules.mjs',
   'games/party/tap-race.mjs',
   'games/party/dont-wake-lala/rules.mjs',
   'server/party-delivery.mjs',
