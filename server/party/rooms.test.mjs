@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { createPartyRooms } from './rooms.mjs';
 import { advancePartyClock } from '../realtime/party/round.mjs';
 
-function fixture() {
+function fixture(gameId = 'tap-race') {
   let time = 0;
   const rooms = createPartyRooms({ now: () => time, seed: () => 'test-seed' });
-  const host = rooms.create({ gameId: 'tap-race', requestId: 'host'.repeat(8) });
+  const host = rooms.create({ gameId, requestId: 'host'.repeat(8) });
   const room = rooms.find(host.code);
   function join(look, name = 'Runner') {
     return rooms.join(room, { look, name, requestId: String(look).repeat(32) });
@@ -89,6 +89,37 @@ test('short stalls run at most five ticks and discard the excess whole ticks', (
   assert.deepEqual(advancePartyClock(630, 20), { ticks: 5, remainder: 0, interrupted: false });
   assert.deepEqual(advancePartyClock(40, 25), { ticks: 1, remainder: 15, interrupted: false });
   assert.deepEqual(advancePartyClock(1001, 0), { ticks: 0, remainder: 0, interrupted: true });
+});
+
+test('a short host stall preserves Tug of Yarn beat deadlines and input receipt times', () => {
+  const { rooms, room, join, at } = fixture('tug-of-yarn');
+  const seats = [0, 1].map(look => {
+    const seat = rooms.authorize(room, join(look).token);
+    rooms.attach(seat, { lastSeq: -1 });
+    rooms.command(room, seat, { type: 'ready', value: true });
+    return seat;
+  });
+  rooms.command(room, room.host, { type: 'start', round: 0 });
+  for (let time = 50; time <= 3850; time += 50) {
+    at(time);
+    rooms.tick(time);
+  }
+
+  const [mint, honey] = seats.sort((left, right) => room.activeRound.state.teams[left.id] - room.activeRound.state.teams[right.id]);
+  const submit = (seat, arrival) => {
+    at(arrival);
+    return rooms.acceptInput(room, seat, {
+      type: 'input', round: 1, seq: 0, input: { kind: 'tap', at: 1100 },
+    }, seat.connection);
+  };
+  assert.ok(submit(mint, 4300));
+  assert.ok(submit(honey, 4520));
+  at(4550);
+  rooms.tick(4550);
+  const { scene } = rooms.project(room, room.host);
+  assert.equal(scene.t, 1550);
+  assert.equal(scene.beat, 0);
+  assert.deepEqual(scene.pull, [1, 0]);
 });
 
 test('input validation rejects spoofed, duplicate, stale and over-budget messages', () => {

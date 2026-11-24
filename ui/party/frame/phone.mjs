@@ -247,7 +247,8 @@ export function mountPartyPhone(root, { credential, actions }) {
     const view = previous;
     const lobby = view.phase === 'lobby' || view.phase === 'results';
     const practice = view.waiting && renderer?.practiceWhileWaiting === true;
-    const status = view.waiting ? 'You’re in the next round'
+    const roundName = partyGameView(view.gameId)?.roundName ?? 'round';
+    const status = view.waiting ? `You’re in the next ${roundName}`
       : view.phase === 'countdown' ? `Get ready · ${Math.ceil(view.ms / 1000)}`
       : active ? 'Go!'
       : view.phase === 'results' ? (view.place ? `Place #${view.place}` : 'Round complete')

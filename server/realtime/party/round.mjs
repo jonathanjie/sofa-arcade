@@ -80,10 +80,13 @@ export function tickRound(room, now) {
   }
   const { ticks, remainder } = advancePartyClock(elapsedPlaying, round.remainder);
   round.remainder = remainder;
+  const lastElapsedMs = Math.round((now - round.startsAt - remainder) / PARTY_TICK_MS) * PARTY_TICK_MS;
   for (let tick = 0; tick < ticks; tick++) {
     const inputs = round.inputs.splice(0);
     const departures = round.departures.splice(0);
-    round.state = room.game.step(round.state, inputs, PARTY_TICK_MS, { departures });
+    // Keep rhythm schedules on the host clock even when catch-up drops ticks.
+    const elapsedMs = lastElapsedMs - (ticks - tick - 1) * PARTY_TICK_MS;
+    round.state = room.game.step(round.state, inputs, PARTY_TICK_MS, { departures, elapsedMs });
     if (room.game.isRoundOver(round.state)) {
       finishRound(room, null);
       return;

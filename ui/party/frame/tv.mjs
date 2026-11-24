@@ -78,6 +78,13 @@ function showPodium(container, view, art) {
   const document = container.ownerDocument;
   const title = document.createElement('h2');
   title.textContent = 'Podium';
+  const summary = partyGameView(view.gameId)?.resultSummary?.(view);
+  const outcome = document.createElement('p');
+  outcome.className = 'party-match-result';
+  if (summary) {
+    outcome.textContent = summary.label;
+    outcome.style.color = summary.colour;
+  }
   const podium = document.createElement('div');
   podium.className = 'party-podium';
   const rest = document.createElement('ol');
@@ -109,7 +116,7 @@ function showPodium(container, view, art) {
       rest.append(node);
     }
   }
-  container.replaceChildren(title, podium, rest);
+  container.replaceChildren(title, ...(summary ? [outcome] : []), podium, rest);
 }
 
 export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPreference }) {
@@ -136,6 +143,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
       <section class="party-lounge">
         <div class="party-lobby">
           <div class="party-lobby-top"><h2>Players</h2><span data-party-ready></span></div>
+          <p class="party-play-hint" hidden></p>
           <div class="party-wall" data-party-wall></div>
           <p class="party-empty" hidden>Scan the code to fill the couch.</p>
         </div>
@@ -159,6 +167,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     <section class="party-stage" hidden aria-label="Game board">
       <canvas data-party-canvas role="img" aria-label="Live game scene"></canvas>
       <div class="party-countdown" hidden></div>
+      <p class="party-stage-waiting" role="status" hidden></p>
     </section>
   </main>`;
   const find = selector => root.querySelector(selector);
@@ -184,6 +193,8 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
   const togglePlayers = find('[data-toggle-players]');
   const timer = find('.party-round-label');
   const countdown = find('.party-countdown');
+  const playHint = find('.party-play-hint');
+  const waitingLabel = find('.party-stage-waiting');
   const lobby = find('.party-lobby');
   const results = find('[data-party-results]');
   const gameMenu = find('.party-next-game');
@@ -307,7 +318,8 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     const canStart = ready >= view.minPlayers && connection === 'connected';
     start.disabled = !canStart;
     nextGame.disabled = connection !== 'connected';
-    setText(start, view.phase === 'results' ? 'Next round' : 'Start');
+    const roundName = partyGameView(view.gameId)?.roundName ?? 'round';
+    setText(start, view.phase === 'results' ? `Next ${roundName}` : 'Start');
     setText(find('[data-start-hint]'), ready < view.minPlayers ? `Start with ${view.minPlayers} ready players.` : '');
     find('.party-empty').hidden = view.players.length > 0;
   }
@@ -337,11 +349,18 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     const game = getGame(view.gameId);
     setText(title, game?.title ?? 'Party lobby');
     if (nextGame.value !== view.gameId) nextGame.value = view.gameId;
+    const gameView = partyGameView(view.gameId);
+    if (main.dataset.game !== view.gameId) main.dataset.game = view.gameId;
+    const roundName = gameView?.roundName ?? 'round';
+    const roundTitle = roundName[0].toUpperCase() + roundName.slice(1);
+    setText(playHint, gameView?.playHint ?? '');
+    playHint.hidden = !gameView?.playHint;
     const active = view.phase === 'countdown' || view.phase === 'playing';
     if (stage.dataset.phase !== view.phase) stage.dataset.phase = view.phase;
     const count = Math.max(0, Math.ceil(view.ms / 1000));
-    setText(timer, active ? `Round ${view.round} · ${clockLabel(count)}`
-      : view.round ? `Round ${view.round}` : 'Party lobby');
+    const showRoundTimer = active && gameView?.showRoundTimer !== false;
+    setText(timer, showRoundTimer ? `${roundTitle} ${view.round} · ${clockLabel(count)}`
+      : view.round ? `${roundTitle} ${view.round}` : 'Party lobby');
     updateActions(view);
     updateWall(view.players);
     if (view.players.length > (prior?.players.length ?? 0)) playCue('join');
@@ -362,6 +381,12 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
         resize();
       }
       renderer.push(view);
+      const locked = new Set(view.roster.map(({ id }) => id));
+      const waiting = view.players.filter(player => player.ready && player.connected && !locked.has(player.id));
+      const names = waiting.slice(0, 3).map(player => player.name).join(', ');
+      const more = waiting.length > 3 ? ` + ${waiting.length - 3} more` : '';
+      setText(waitingLabel, waiting.length ? `Next ${roundName} · ${names}${more}` : '');
+      waitingLabel.hidden = waiting.length === 0;
       countdown.hidden = view.phase !== 'countdown';
       if (view.phase === 'countdown' && count !== displayedCountdown) {
         displayedCountdown = count;
@@ -376,6 +401,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
       podiumRound = view.round;
       showingPlayers = false;
       showPodium(results, view, art);
+      waitingLabel.hidden = true;
       if (renderer && !motion.checked && !motionPreference.matches) {
         renderer.push(view);
         countdown.hidden = true;

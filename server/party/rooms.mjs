@@ -242,7 +242,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     if (input == null) return false;
     if (room.activeRound.inputs.length >= PARTY_LIMITS.queuedInputs) return false;
     connection.lastSeq = message.seq;
-    room.activeRound.inputs.push({ playerId: seat.id, input });
+    room.activeRound.inputs.push({ playerId: seat.id, input, receivedMs: time - room.activeRound.startsAt });
     return true;
   }
 
