@@ -378,7 +378,7 @@ export function applyAction(state, playerId, action) {
   if (!action || typeof action !== 'object' || Array.isArray(action)) throw new Error('Choose an action.');
   const currentPlayer = state.players[playerId];
   if (action.type === 'move') {
-    if (!Object.hasOwn(DIRECTIONS, action.direction)) throw new Error('Choose up, down, left, or right.');
+    if (typeof action.direction !== 'string' || !Object.hasOwn(DIRECTIONS, action.direction)) throw new Error('Choose up, down, left, or right.');
     const [dr, dc] = DIRECTIONS[action.direction];
     if (!inBounds(currentPlayer.row + dr, currentPlayer.col + dc)) throw new Error('That is the edge of the room. Try another direction.');
   } else if (action.type === 'collect') {

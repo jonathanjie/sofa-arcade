@@ -612,3 +612,26 @@ test('foreign Origins are rejected on reads as well as writes', async () => {
   assert.equal(read.body.state, undefined);
   f.sqlite.close();
 });
+
+test('move accepts only a direction string and leaves rejected requests unwritten', async () => {
+  const f = fixture();
+  try {
+    const live = await openedRoom(f);
+    const route = `/api/rooms/${live.code}/action`;
+    const direction = live.openingMove.direction;
+    const move = value => api(f, route, { method: 'POST', token: live.tokens[live.firstPlayer],
+      body: actionBody(live.game.revision, { type: 'move', direction: value }) });
+    const before = rawRoom(f, live.code);
+    for (const invalid of [[direction], { direction }]) {
+      const result = await move(invalid);
+      assert.equal(result.status, 400);
+      assert.equal(result.body.code, 'invalid_action');
+      assert.deepEqual(rawRoom(f, live.code), before);
+    }
+    const accepted = await move(direction);
+    assert.equal(accepted.status, 200);
+    assert.equal(accepted.body.revision, before.revision + 1);
+  } finally {
+    f.sqlite.close();
+  }
+});
