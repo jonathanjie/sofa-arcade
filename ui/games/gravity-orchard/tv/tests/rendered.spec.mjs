@@ -365,7 +365,6 @@ test('an internally inconsistent stage result does not replace the last good TV 
   expect(await labels()).toEqual([
     '4 of 4 orders, 3 of 3 stars', '3 of 4 orders, 2 of 3 stars', '3 of 4 orders, 2 of 3 stars',
   ]);
-  test.fail(true, 'TODO: readPublicView accepts contradictory order and star counts');
   expect({ rows: rejectedRows, totals: rejectedTotals, effects }).toEqual({
     rows: originalRows, totals: ['9/12', '6/9', '3'], effects: [],
   });
