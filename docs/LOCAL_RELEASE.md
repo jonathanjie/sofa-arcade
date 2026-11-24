@@ -72,9 +72,11 @@ shasum -a 256 -c evidence/production-sha256.txt
 Every listed file must report `OK`. Open the matching `.dmg` and copy the app
 to Applications, or extract the matching production `.app.zip`. Check the
 separate `local-native-<target>-<tested-commit>` evidence artifact for the
-integrated Odd Laws checks and screenshots at that same commit. A failed or
-missing native report is an unresolved gate, even if the workflow uploaded a
-bundle.
+integrated Odd Laws checks and `go7-native-<target>-<tested-commit>` for the
+Gravity Orchard WKWebView checks. Match `tested-commit.txt` to the build and
+check the reports and screenshots in each artifact, including
+`go7-native.json` for Gravity Orchard. A failed or missing native report is an
+unresolved gate, even if the workflow uploaded a bundle.
 
 CI artifacts use ad-hoc signing. `codesign --verify --deep --strict` checks a
 bundle's signature integrity; it does not establish Developer ID identity,
@@ -109,7 +111,7 @@ Run `npm ci --prefix desktop --ignore-scripts` for the desktop tooling used by i
 | Gravity Orchard TV and two phones in three browser contexts | `npm run test:gravity-browser` |
 | Secure-LAN component including its dependency inventory | `npm ci --prefix server/secure-lan`, then `npm test --prefix server/secure-lan` |
 
-Install Chromium with `npx playwright install --with-deps chromium` before the browser suites. The Gravity browser journey starts its own loopback host on a free port with a temporary SQLite database. Set `SOFA_GO7_EVIDENCE_DIR` to select the report and screenshot directory. Run the two turn-based collection journeys separately:
+Install Chromium with `npx playwright install chromium` before the browser suites. Linux CI uses `npx playwright install --with-deps chromium` to install system dependencies too. The Gravity browser journey starts its own loopback host on a free port with a temporary SQLite database. Set `SOFA_GO7_EVIDENCE_DIR` to select the report and screenshot directory. Run the two turn-based collection journeys separately:
 
 ```sh
 SOFA_EVIDENCE_DIR=/absolute/path/to/evidence node tests/integration/browser/sofa-kingdoms.mjs
@@ -143,7 +145,7 @@ casting or human-input latency.
 | --- | --- |
 | Browser modules | `scripts/runtime-files.mjs` → `BROWSER_FILES`; preparation copies each exact authored source into `public/` and regenerates `app/route.ts` |
 | Browser assets | `ASSET_FILES` in `scripts/runtime-files.mjs` lists the public assets to stage alongside the modules and ZIP. |
-| Explicit LAN static routes | Explicit `SOURCES` entries in `server/lan.mjs`; no source-directory serving or URL-supplied module registration |
+| Explicit LAN static routes | `SOURCES` for authored modules and `ASSETS` for public assets in `server/lan.mjs`. Keep requests limited to the declared routes. |
 | Portable ZIP | `public/downloads/sofa-arcade-local.zip`; explicit `runtimeFiles()` entries, deterministic bytes, executable launcher |
 | ZIP member manifest | `sofa-arcade-local/artifact-manifest.json` inside the archive; path, byte count, mode and SHA-256 for every other member |
 | Desktop runtime | `desktop/runtime-manifest.json`; explicit repo-shaped files, checksum-verified bundled Node, staging inventory |

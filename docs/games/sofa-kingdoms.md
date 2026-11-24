@@ -10,13 +10,13 @@ Normal room and practice matches have engine `version: 3`:
 - Each player starts with two toys. Banking at least three crumbs restores **one used toy**, capped at two.
 - One action and one toy can select any row or column and either direction for the current swipe. Choosing the unchanged forecast is invalid. Pounces and naps cannot be redirected.
 - `banked` remains the conserved physical crumb count. `bonusPoints` records delivery bonuses and `openingBonus` records the one-time second-player allowance. `scoreFor(player)` adds all three for display/scoring.
-- `upcomingForecasts(state, count = 1)` returns the following one or two deterministic events as `{ round, ...forecast }`, stopping at the final round. Current toys do not alter future forecasts.
+- `upcomingForecasts(state, count = 1)` accepts a count of zero, one or two. It returns deterministic future events as `{ round, ...forecast }` through the final round, with an empty list outside active play. V3 toys change only the current forecast.
 
 Existing version 1 states retain their original scoring, non-replenishing toys, and same-axis/same-direction redirection through match completion. Version 2 states keep delivery bonuses, recharging toys, and expanded steering, with Jon as their initial starter and no opening point. Starting a new match creates version 3. Keep these compatibility paths when changing rules.
 
 Lala resolves after both players' turns. A swipe moves the selected tiles, crumbs, and occupants one square with edge wrapping; home positions stay fixed. A pounce affects the center and four orthogonal neighbours, **not diagonals**. Caught players drop every carried crumb onto their current tile and return home, retaining banked points. A nap leaves the board unchanged. Nobody is eliminated; equal final scores share the crown.
 
-Turn order alternates relative to the initial draw: **drawn starter → other player → Lala**, then **other player → drawn starter → Lala**. The same player therefore receives a fresh turn after Lala in alternating rounds. The UI shows the actual round order and announces the scheduled starter even when `activePlayer` stays the same. Legacy games and the pinned tutorial use Jon as the initial starter.
+Turn order alternates relative to the initial draw: **drawn starter → other player → Lala**, then **other player → drawn starter → Lala**. After Lala acts, the player who ended the previous round starts the next one with two fresh actions. The UI shows the actual round order and announces the scheduled starter even when `activePlayer` stays the same. Legacy games and the pinned tutorial use Jon as the initial starter.
 
 Swipes use a continuous amber lane, highlighted coordinate, and direction cues. Pounces use a coral five-cell cross and a center target. Landing previews stay optional; the forecast card also shows the following round's event.
 

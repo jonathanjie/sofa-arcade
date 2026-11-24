@@ -151,7 +151,7 @@ Define how corners, repeated contacts, overlapping starting fixtures and a gate 
 
 ## 9. Real-time control and recovery
 
-Each phone steers its own tray. If input goes stale, the host applies Brake. If a controller stays disconnected, the shared run pauses. After a restart, play resumes from a saved checkpoint when both phones reconnect and confirm readiness. See the [wire and recovery contract](../GRAVITY_ORCHARD_CONTRACT.md#5-realtime-wire-contract).
+Each phone steers its own tray. If input goes stale, the host applies neutral tilt and Brake. Sustained controller loss pauses the shared run. After a host restart, a valid checkpoint restores the run paused. Reconnect both phones and confirm readiness to start a new countdown. See the [wire and recovery contract](../GRAVITY_ORCHARD_CONTRACT.md#5-realtime-wire-contract).
 
 ## 10. Secure motion setup
 

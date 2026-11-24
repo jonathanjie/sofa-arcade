@@ -1,9 +1,15 @@
 /**
- * Discover eligible *.test.mjs files in game, games, server and ui.
- * Run BROWSER_TESTS separately with npm run test:browser after installing
- * Chromium. Run NESTED_INSTALL_TESTS in their component with its dependencies.
- * For other files, report and skip tests with missing static npm imports.
- * Installing root packages does not select browser or nested suites.
+ * Discover eligible *.test.mjs files in game, games, server and ui so new
+ * unit tests need no registration.
+ *
+ * Several CI jobs run npm test without installing root dependencies. Keep
+ * that regression check working by reporting and skipping tests whose static
+ * import graph needs an unavailable npm package, such as ws.
+ *
+ * Run BROWSER_TESTS with npm run test:browser after installing Chromium.
+ * Run NESTED_INSTALL_TESTS in the owning component after its npm ci because
+ * those tests read that component's installed dependencies. Installing root
+ * packages leaves both suites separate.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';

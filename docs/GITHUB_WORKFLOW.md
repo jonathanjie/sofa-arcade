@@ -17,6 +17,8 @@ The existing public website remains hosted by ChatGPT Sites:
 
 GitHub supplies version control. Sites supplies the current production deployment and database. A GitHub push does **not** automatically publish the website. No automatic GitHub-to-Sites deployment connection is established by this migration, and the Sites repository has not been natively rebound to GitHub. Its managed Git history remains a deployment mirror.
 
+The public URL and root package name still use the legacy `sofa-kingdoms` name. Keep the existing URL and hosting project when publishing Sofa Arcade.
+
 GitHub Pages alone cannot run the current Worker/D1 multiplayer backend. Moving hosting later requires a compatible room service, data migration decisions, and verification of joins, actions, authorization, and reconnects. The optional Mac host is documented separately in [LAN.md](LAN.md).
 
 ## Start a session from GitHub
