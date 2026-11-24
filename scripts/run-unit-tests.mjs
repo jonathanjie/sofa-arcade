@@ -1,18 +1,9 @@
 /**
- * Runs every Node unit test under the source folders, so a new *.test.mjs file
- * runs in `npm test` without anyone editing a file list.
- *
- * Tests that need a real browser are listed in BROWSER_TESTS. They run in the
- * browser CI jobs (`npm run test:browser`) after Playwright installs Chromium.
- * Tests that need a component's own nested `npm ci` are listed in
- * NESTED_INSTALL_TESTS; that component's workflow installs and runs them.
- *
- * Several CI jobs run `npm test` as a dependency-free regression step, without
- * installing packages. A test whose import graph needs an npm package that is
- * not installed (for example `ws` for the Gravity Orchard realtime server) is
- * skipped there, and the runner prints each skipped test and the missing
- * package. With packages installed (`npm ci`), every test runs. The component
- * workflows that own those tests install their packages and run them.
+ * Discover eligible *.test.mjs files in game, games, server and ui.
+ * Run BROWSER_TESTS separately with npm run test:browser after installing
+ * Chromium. Run NESTED_INSTALL_TESTS in their component with its dependencies.
+ * For other files, report and skip tests with missing static npm imports.
+ * Installing root packages does not select browser or nested suites.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -27,7 +18,7 @@ export const BROWSER_TESTS = new Set([
   'server/realtime/gravity-orchard/tests/fixture-browser.test.mjs',
 ]);
 export const NESTED_INSTALL_TESTS = new Set([
-  // Reads server/secure-lan/node_modules, installed by the GO6 workflow.
+  // Reads the secure-LAN component’s own installed dependency inventory.
   'server/secure-lan/tests/inventory.test.mjs',
 ]);
 

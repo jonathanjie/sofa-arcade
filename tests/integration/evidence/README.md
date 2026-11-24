@@ -6,9 +6,7 @@ reviewed. Never commit browser profiles, database files, response traces carryin
 credentials, or storage state.
 
 The JSON report records the source commit and any dirty tracked paths at the
-time of the run. Evidence from a dirty working tree is provisional. Final release
-evidence must come from the exact proposed integration head, with its component
-matrix recorded in `docs/archive/workstreams/integration.md`.
+time of the run. Evidence from a dirty working tree is provisional. Final release evidence must identify the exact tested commit. See the [release checks](../../../docs/LOCAL_RELEASE.md) and the [archived integration report](../../../docs/archive/workstreams/integration.md) for earlier results.
 
 No placeholder images count as rendered acceptance. A browser screenshot does
 not establish native Mac execution or physical-device behavior.

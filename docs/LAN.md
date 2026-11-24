@@ -1,6 +1,6 @@
 # Play Sofa Arcade over your home Wi-Fi
 
-The local host runs on your Mac. Both phones open pages served directly by that Mac, and room changes are pushed to the TV and phones as they happen. The same game engine, room credentials, turn validation, and retry protection are used as on the public Site. Internet access is not needed during a local game once the files and Node.js are available.
+The local host runs on your Mac. Both phones open pages served directly by that Mac, and room changes are pushed to the TV and phones as they happen. The turn-based games share room authority, turn validation and retry protection with the hosted implementation. Gravity Orchard uses the local realtime coordinator. Internet access is not needed during a local game once the files and Node.js are available.
 
 ## Start
 
@@ -12,10 +12,10 @@ The local host runs on your Mac. Both phones open pages served directly by that 
 node scripts/lan-server.mjs
 ```
 
-No `npm install`, framework build, cloud account, or database setup is required for this mode. In a full checkout, `npm run lan` is an equivalent shortcut.
+No `npm install`, framework build, cloud account, or database setup is required for this mode. In a full checkout, `npm run lan` is an equivalent shortcut. On a Mac, you can also double-click `start-sofa.command` in the extracted folder.
 
 4. Open the local address printed in Terminal on the Mac, for example `http://192.168.1.20:4177/`. Keep Terminal open.
-5. Choose Sofa Kingdoms and **Host on the TV**. Scan the room QR code with both phones. All three devices should use the same home Wi-Fi/LAN.
+5. Select an available game and host it on the TV. Scan the room QR code with both phones. All three devices should use the same home Wi-Fi/LAN. For Gravity Orchard, select **Enter the orchard** on the TV and **I'm ready** on both phones. Use touch over HTTP. Trusted tilt setup requires a Mac app build that includes it.
 
 Cast the Mac browser to the TV as usual. The phone-to-Mac traffic stays on the LAN; casting itself can still add display delay. A direct cable or running the local page in the TV browser avoids a separate screencast step where supported.
 
@@ -33,11 +33,13 @@ If port 4177 is in use:
 node scripts/lan-server.mjs --port 4178
 ```
 
+A different port in this checkout still uses the same SQLite file. Use a separate checkout or a test harness with a temporary database for an independent host.
+
 This is a local HTTP host for a trusted home network. It does not expose a public internet server, configure router port forwarding, or create a tunnel. Keep the host running only when you want to play locally.
 
 ## Implementation and tests
 
-`server/lan.mjs` serves the authored UI and local assets, adapts Node's built-in SQLite to the existing `server/rooms.mjs` API, applies checked-in SQL migrations, and streams authenticated room updates at `/api/rooms/CODE/events`. Credentials use the Authorization header and never appear in URLs or QR codes. Streams recheck credentials and maintain presence. Cross-origin requests, unknown Host headers, and access outside the intended static files are rejected.
+`server/lan.mjs` serves the authored UI and local assets, adapts Node's built-in SQLite to the existing `server/rooms.mjs` API, applies checked-in SQL migrations, and streams authenticated room updates at `/api/rooms/CODE/events`. For authenticated HTTP and SSE, credentials use the Authorization header and never appear in URLs or QR codes. Streams recheck credentials and maintain presence. Cross-origin requests, unknown Host headers, and access outside the intended static files are rejected.
 
 `ui/transport.mjs` reads local-host metadata and manages fetch/SSE reconnects. The published Site keeps its cloud transport. The local server does not change the public Site's hosting or database.
 

@@ -2,7 +2,7 @@
 
 These browser modules are standalone components. They do not register a Tauri
 command, import the native bridge, provision a server over HTTP, or replace the
-game’s controller. The GO7 host supplies safe, authorized callbacks.
+game’s controller. The native host supplies safe, authorized callbacks.
 
 ## Host setup view
 
@@ -27,11 +27,11 @@ view.dispose();
 | `provision` | `{replaceRoot:false}` normally; `{replaceRoot:true}` only after the view’s explicit replacement confirmation | Exact status after the host operation |
 | `exportPublicTrust` | `{format:'pem'}` or `{format:'mobileconfig'}` | `{filename,mediaType,contents,certificateFingerprint,validUntil?}` with string public contents only |
 | `remove` | `{mode:'disable'}` or `{mode:'remove'}` | Exact status after the host operation |
-| `onClose` | `{mode:'touch'}` or `{mode:'close'}` | Synchronous notification; GO7 navigates back and disposes the view |
+| `onClose` | `{mode:'touch'}` or `{mode:'close'}` | Synchronous notification; the host navigates back and disposes the view |
 
 The host chooses private storage, current addresses and the actual port. None is
 accepted from a form or passed in the view’s callback options. All callbacks are
-capabilities and must be wrapped by GO7’s authenticated native/host boundary.
+capabilities and require the authenticated native host.
 The view must not receive arbitrary filesystem or native invoke access.
 
 Callbacks can reject `{code:'CANCELLED'}` for a user-cancelled operation. Every
@@ -56,7 +56,7 @@ never exports a directory, key, token or raw callback object.
 
 Host readiness is deliberately distinct from both phones’ trust state. The
 production setup view always labels phone trust **not checked**; the frozen safe
-status does not contain a phone probe channel. GO7 can show actual diagnostics
+status does not contain a phone probe channel. The host can show actual diagnostics
 separately without inventing evidence or extending this status with secrets.
 
 ## Phone diagnostic

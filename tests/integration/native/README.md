@@ -28,25 +28,7 @@ The three distinct native application processes verify:
 3. After another native process exit, the collection remains open and a fresh
    bare-root document does not resurrect the exited game.
 
-Example Apple Silicon job commands, from the repository root:
-
-```sh
-npm --prefix desktop ci --ignore-scripts
-rustup toolchain install 1.100.0 --profile minimal --target aarch64-apple-darwin
-RUSTUP_TOOLCHAIN=1.100.0 APPLE_SIGNING_IDENTITY=- npm --prefix desktop run build:native:arm64
-SOFA_APP_PATH="$GITHUB_WORKSPACE/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Sofa Arcade.app" \
-SOFA_TEST_COMMIT="$(git rev-parse HEAD)" \
-SOFA_EVIDENCE_DIR="$GITHUB_WORKSPACE/tests/integration/evidence/native" \
-node tests/integration/native/run.mjs
-```
-
-For an Intel runner, substitute target `x86_64-apple-darwin` and build script
-`build:native:intel`. Verify `uname -m`, `node -p process.arch`, Rust host target,
-and the exact checked-out PR head before building. Use the desktop handoff's
-pinned Node version. `SOFA_TEST_COMMIT` must equal that exact checkout, not the
-synthetic pull-request merge SHA. Final runtime staging must already include
-the complete WS1–WS4 closure and the catalog must be playable. This gate does
-not inject a planned game into the native host.
+Use the [desktop build recipe](../../../desktop/README.md#reproducible-tests) for the instrumented app on the matching Mac architecture. Follow the [collection-level acceptance steps](../../../docs/LOCAL_RELEASE.md#native-mac-application). Set `SOFA_TEST_COMMIT` to the tested checkout SHA when supplying it. The gate exercises the playable Odd Laws entry with the shipped runtime.
 
 Upload `tests/integration/evidence/native/**` on success **and failure**. The
 machine reports are `integration-native.json` and per-phase JSON; screenshots
@@ -62,11 +44,7 @@ internet-disconnected hardware, trusted physical audio-unlock gestures, device
 audio, sleep/wake, TV casting, Developer
 ID/notarization and downloaded-app Gatekeeper behavior remain separately reported.
 
-Current preparation was source-reviewed against the ready WS5 head
-`618fc837f2f24f55a3aad1477ea9cf35ff478faf`, including its fresh-DOM visibility
-wait correction and the exact locked driver input implementation; syntax checks pass. A prepared test is
-not a native pass. Recheck the delivered WS5 setup contract and run this suite
-at the proposed final integration commit before counting acceptance.
+The [20 November integration report](../../../docs/archive/workstreams/integration.md) records the original native acceptance.
 
 The locked `tauri-plugin-wdio-webdriver` 1.5.1 implements clicks and key/value
 input with evaluated DOM operations. This suite does not describe them as
