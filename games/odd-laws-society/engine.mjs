@@ -486,8 +486,8 @@ function finishSession(state) {
     player.festivalUsed = false;
     if (on(state, 'backRoom')) player.scoutedThisSession = false;
   }
-  openCouncil(state);
   refreshScores(state);
+  openCouncil(state);
 }
 
 function advanceCityTurn(state, playerId) {

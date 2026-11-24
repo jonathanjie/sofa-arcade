@@ -347,3 +347,19 @@ test('random v0.3 matches finish, keep 8 designs per term in play and never dupl
     assert.ok(['jon', 'lydia', 'tie'].includes(state.result.winner));
   }
 });
+
+test('session income can restore the scheduled Chair on a prestige tie', () => {
+  const options = { firstChair: 'lydia', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03, modules: [] };
+  let state = council(fresh03({ options }));
+  state = take(state, 'work');
+  state = take(state, 'build', { designId: 'corner-shop', row: 0, col: 0 });
+  for (let turn = 0; turn < 4; turn++) state = take(state, 'work');
+  assert.equal(state.session, 2);
+  assert.deepEqual([state.players.jon.coins, state.players.lydia.coins], [16, 11]);
+  assert.deepEqual([state.players.jon.score.total, state.players.lydia.score.total], [4, 4]);
+  assert.equal(state.chair, 'jon');
+  state = council(state, { choiceId: 'shop-local', bid: 1 }, { choiceId: 'industrial-pride', bid: 1 });
+  assert.equal(state.activeLaws.civic, 'shop-local');
+  assert.equal(state.activePlayer, 'lydia');
+  assert.equal(take(state, 'work').activePlayer, 'jon');
+});
