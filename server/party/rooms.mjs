@@ -264,7 +264,10 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     const inRound = round?.players.has(seat.id);
     return {
       ...common, self: publicSeat(seat), waiting,
-      state: inRound ? room.game.projectForPhone(round.state, seat.id) : null,
+      state: inRound ? room.game.projectForPhone(round.state, seat.id, {
+        // Use the wall-clock position of the last applied tick, including after catch-up drops ticks.
+        tickAt: room.phase === 'countdown' ? round.startsAt : round.previousAt - round.remainder,
+      }) : null,
       place: round?.results.find(entry => entry.playerId === seat.id)?.place ?? null,
     };
   }

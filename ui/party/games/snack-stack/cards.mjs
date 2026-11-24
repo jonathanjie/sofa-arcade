@@ -24,10 +24,14 @@ export const REVEAL_MS = END_PLAY_MS + GRACE_MS;
 export const ARROWS = ['↑', '→', '↓', '←'];
 export const TRACE = [[12, 23], [34, 71], [57, 29], [80, 76]];
 export const GREEN_CENTRE = 72;
-export const GREEN_HALF_WIDTH = 12;
-export const CHEESE_HALF_WIDTH = 12;
 export const PICTURE_ANGLE = [62, -62, 75, -75];
+export const EXACT_TAP_TARGET = 7;
 export const LALA_TAPS = 5;
+export const PEPPER_TAPS = 6;
+export const QUICK_TAP_TARGET = 32;
+
+export const greenHalfWidth = (difficulty = 0) => 12 - difficulty;
+export const cheeseHalfWidth = (difficulty = 0) => 14 - difficulty * 2;
 
 export function slotPhase(elapsed) {
   if (elapsed < PREVIEW_MS) return 'preview';
@@ -45,6 +49,6 @@ export function cheeseAngle(ms, variant) {
   return (84 + variant * 61 + Math.max(0, ms) * (0.16 + variant * 0.008)) % 360;
 }
 
-export function lalaLooks(ms, variant) {
-  return (Math.max(0, ms) + variant * 185) % 1650 < 650;
+export function lalaLooks(ms, variant, difficulty = 0) {
+  return (Math.max(0, ms) + variant * 185) % 1650 < 650 + difficulty * 50;
 }

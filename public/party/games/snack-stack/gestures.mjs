@@ -10,24 +10,24 @@ export function button(root, label, className, onPress) {
   return node;
 }
 
-export function mountHold(root, send, begin, end) {
+export function mountHold(root, send) {
   const pad = button(root, 'Hold', 'party-tap snack-pad');
   let pointer;
-  let start;
+  let held = false;
   function down() {
-    if (start !== undefined) return;
-    start = begin();
-    if (start !== undefined) pad.textContent = 'Release';
+    if (held) return;
+    held = send('down');
+    if (held) pad.textContent = 'Release';
   }
   function up() {
-    if (start === undefined) return;
-    end(start);
-    start = undefined;
+    if (!held) return;
+    send('up');
+    held = false;
     pad.textContent = 'Hold';
   }
   function cancel() {
-    if (start !== undefined) send('cancel');
-    start = undefined;
+    if (held) send('cancel');
+    held = false;
     pad.textContent = 'Hold';
   }
   pad.addEventListener('pointerdown', event => {

@@ -1,6 +1,6 @@
 import { compileSprite, drawSprite } from '../../kit/sprites.mjs';
 import {
-  CHEESE_HALF_WIDTH, GREEN_CENTRE, GREEN_HALF_WIDTH, PICTURE_ANGLE, TRACE, cheeseAngle, greenPosition, lalaLooks,
+  GREEN_CENTRE, PICTURE_ANGLE, TRACE, cheeseAngle, cheeseHalfWidth, greenHalfWidth, greenPosition, lalaLooks,
 } from './cards.mjs';
 
 const INK = '#362438';
@@ -71,6 +71,16 @@ function disc(context, x, y, radius, colour) {
   context.fill();
 }
 
+function stroke(context, points, colour, width) {
+  context.strokeStyle = colour;
+  context.lineWidth = width;
+  context.lineJoin = 'round';
+  context.lineCap = 'round';
+  context.beginPath();
+  points.forEach(([x, y]) => context.lineTo(x, y));
+  context.stroke();
+}
+
 function pixels(context, x, y, width, height, colour) {
   rect(context, Math.round(x / UNIT) * UNIT, Math.round(y / UNIT) * UNIT, width * UNIT, height * UNIT, colour);
 }
@@ -94,24 +104,33 @@ export function createCardArt(document, art) {
     const sprite = sprites[key];
     drawSprite(context, sprite, x - sprite.width * scale / 2, y - sprite.height * scale / 2, scale);
   }
-  function cat(context, x, y, at, reduced, looking = true) {
+  function cat(context, x, y, at, reduced, looking = true, scale = UNIT) {
     const lift = reduced || Math.floor(at / 260) % 2 === 0 ? 0 : UNIT;
-    icon(context, looking ? 'cat' : 'away', x, y - lift);
+    icon(context, looking ? 'cat' : 'away', x, y - lift, scale);
   }
 
   const visuals = {
     seven(context, x, y, time) {
       for (let index = 0; index < 7; index++) {
-        const spread = (index - 3) * 95;
-        const rise = time >= 0 && Math.floor(time / 140) % 7 === index ? 12 : 0;
-        icon(context, 'paw', x + spread, y + Math.abs(index - 3) * 8 - rise, 5);
+        const px = x + (index - 3) * 102;
+        const beat = time >= 0 && Math.floor(time / 160) % 7 === index;
+        disc(context, px, y - 18, 44, beat ? JAM : '#e2be90');
+        disc(context, px, y - 22, 39, beat ? '#ffd888' : CREAM);
+        icon(context, 'paw', px, y - 20 - (beat ? 7 : 0), 4);
+        label(context, String(index + 1), px, y + 63, 30, { align: 'center' });
       }
     },
     burst(context, x, y, time) {
-      icon(context, 'paw', x, y + (time > 0 && time % 250 > 120 ? 12 : 0));
+      const beat = time >= 0 && time % 250 > 120;
+      disc(context, x, y + 17, 113, INK);
+      disc(context, x, y + (beat ? 17 : 0), 107, '#e8899c');
+      disc(context, x, y + (beat ? 13 : -4), 92, '#ffc0c1');
+      icon(context, 'paw', x, y + (beat ? 13 : -4));
       for (const sign of [-1, 1]) {
         for (let index = 0; index < 3; index++) {
-          pixels(context, x + sign * (116 + index * 48), y + (index - 1) * 40, 3, 1, index === 1 ? JAM : GOLD);
+          const px = x + sign * (137 + index * 38 + (beat ? 10 : 0));
+          stroke(context, [[px - 13, y + (index - 1) * 44], [px + 13, y + (index - 1) * 44]],
+            index === 1 ? JAM : GOLD, 10);
         }
       }
     },
@@ -120,79 +139,121 @@ export function createCardArt(document, art) {
       disc(context, x, y, 95, GOLD);
       disc(context, x, y, 83, CREAM);
       pixels(context, x - 16, y - 130, 4, 3, INK);
+      if (time >= 0) {
+        context.beginPath();
+        context.strokeStyle = GREEN;
+        context.lineWidth = 9;
+        const progress = (time % 4000) / 3000;
+        context.arc(x, y, 90, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, progress));
+        context.stroke();
+      }
       for (let index = 0; index < 3; index++) {
-        disc(context, x + (index - 1) * 40, y + 43, 8, time >= (index + 1) * 1000 ? GREEN : '#ceb388');
+        disc(context, x + (index - 1) * 40, y + 43, 8, time >= 0 && time % 4000 >= (index + 1) * 1000 ? GREEN : '#ceb388');
       }
       label(context, '3s', x, y - 12, 76, { align: 'center', face: 'Georgia' });
     },
-    bar(context, x, y, time, variant) {
+    bar(context, x, y, time, variant, difficulty) {
       const left = x - 320;
+      const half = greenHalfWidth(difficulty);
+      const marker = left + greenPosition(time, variant) * 6.4;
+      const hot = Math.abs(greenPosition(time, variant) - GREEN_CENTRE) <= half;
       rect(context, left - 6, y - 42, 652, 84, INK);
       rect(context, left, y - 36, 640, 72, '#e2c79b');
-      rect(context, left + 6.4 * (GREEN_CENTRE - GREEN_HALF_WIDTH), y - 36, 12.8 * GREEN_HALF_WIDTH, 72, GREEN);
-      label(context, 'RELEASE', left + 6.4 * GREEN_CENTRE, y, 21, { colour: CREAM, align: 'center' });
-      rect(context, left + greenPosition(time, variant) * 6.4 - 7, y - 48, 14, 96, INK);
-      rect(context, left + greenPosition(time, variant) * 6.4 - 3, y - 43, 6, 86, CREAM);
+      rect(context, left + 6.4 * (GREEN_CENTRE - half), y - 36, 12.8 * half, 72, hot ? '#417f58' : GREEN);
+      label(context, 'RELEASE HERE', left + 6.4 * GREEN_CENTRE, y - 78, 29, { colour: GREEN, align: 'center' });
+      rect(context, marker - 9, y - 49, 18, 98, INK);
+      rect(context, marker - 4, y - 43, 8, 86, CREAM);
+      disc(context, marker, y + 56, 14, INK);
+      disc(context, marker, y + 56, 8, hot ? '#a8e297' : GOLD);
     },
     pepper(context, x, y, time) {
       const shake = time < 0 ? 0 : Math.floor(time / 100) % 2 === 0 ? -8 : 8;
-      icon(context, 'pepper', x + shake, y + 10);
+      context.save();
+      context.translate(x + shake, y - 30);
+      context.rotate(shake / 60);
+      icon(context, 'pepper', 0, 0, 13);
+      context.restore();
       for (const dx of [-144, -112, 112, 144]) {
-        pixels(context, x + dx, y - 32, 2, 1, JAM);
-        pixels(context, x + dx, y + 24, 2, 1, JAM);
+        pixels(context, x + dx, y - 60, 2, 1, JAM);
+        pixels(context, x + dx, y - 18, 2, 1, JAM);
       }
+      label(context, '×6', x, y + 106, 40, { colour: JAM, align: 'center' });
     },
     picture(context, x, y, time, variant) {
-      const angle = PICTURE_ANGLE[variant] * (time < 0 ? .005 : .0025 + .0025 * Math.cos(time / 270));
-      pixels(context, x - 8, y - 110, 2, 2, INK);
+      const demonstration = time < 0 ? 1 : Math.max(0, Math.cos(time / 420));
+      const angle = PICTURE_ANGLE[variant] * .006 * demonstration;
+      stroke(context, [[x - 245, y + 24], [x + 245, y + 24]], '#b28864', 4);
+      label(context, '←', x - 217, y - 21, 56, { colour: GREEN, align: 'center' });
+      label(context, '→', x + 217, y - 21, 56, { colour: GREEN, align: 'center' });
+      disc(context, x, y - 108, 12, INK);
       context.save();
       context.translate(x, y - 94);
       context.rotate(angle);
       rect(context, -4, 0, 8, 48, INK);
-      rect(context, -100, 48, 200, 146, INK);
-      rect(context, -88, 60, 176, 122, '#91bda5');
+      rect(context, -110, 42, 220, 154, INK);
+      rect(context, -100, 52, 200, 134, GOLD);
+      rect(context, -90, 62, 180, 114, '#91bda5');
       icon(context, 'cheese', 0, 120, 6);
       context.restore();
+      label(context, 'LEVEL', x, y + 146, 29, { colour: GREEN, align: 'center' });
     },
     crack(context, x, y, time) {
-      const points = TRACE.map(([px, py]) => [x + (px - 46) * 7.7, y + (py - 49) * 2.7]);
-      context.strokeStyle = INK;
-      context.lineWidth = 14;
-      context.lineJoin = 'bevel';
-      context.beginPath();
-      points.forEach(([px, py]) => context.lineTo(px, py));
-      context.stroke();
+      const points = TRACE.map(([px, py]) => [x + (px - 46) * 7.7, y + (py - 49) * 3.15]);
+      stroke(context, points, INK, 15);
+      const progress = time < 0 ? 0 : (time % 2200) / 500;
+      if (progress > 0) {
+        const segment = Math.min(2, Math.floor(progress));
+        const [fromX, fromY] = points[segment];
+        const [toX, toY] = points[segment + 1];
+        const part = Math.min(1, progress - segment);
+        const head = [fromX + (toX - fromX) * part, fromY + (toY - fromY) * part];
+        stroke(context, [...points.slice(0, segment + 1), head], JAM, 9);
+        disc(context, head[0], head[1], 25, GOLD);
+      }
       points.forEach(([px, py], index) => {
-        rect(context, px - 21, py - 21, 42, 42, time >= 0 && Math.floor(time / 350) % 4 === index ? JAM : GREEN);
+        disc(context, px, py, 23, index <= progress ? JAM : GREEN);
         label(context, String(index + 1), px, py, 26, { colour: CREAM, align: 'center' });
       });
     },
     arrow(context, x, y, time, variant) {
-      disc(context, x, y, 108, '#e3c99e');
-      const beat = time >= 0 && time % 480 > 260 ? 8 : 0;
+      disc(context, x, y, 127, INK);
+      disc(context, x, y, 120, GOLD);
+      disc(context, x, y, 105, CREAM);
+      const beat = time >= 0 && time % 480 > 260 ? 14 : 0;
       const dx = [0, beat, 0, -beat][variant];
       const dy = [-beat, 0, beat, 0][variant];
       arrow(context, x + dx, y + dy, variant);
     },
-    wheel(context, x, y, time, variant) {
-      const angle = cheeseAngle(time, variant) * Math.PI / 180 - Math.PI / 2;
-      disc(context, x, y + 16, 101, INK);
-      disc(context, x, y + 16, 90, '#dca578');
-      disc(context, x, y + 16, 70, '#f0cb91');
-      const cheeseArc = CHEESE_HALF_WIDTH * Math.PI / 180;
-      context.strokeStyle = GOLD;
-      context.lineWidth = 16;
+    wheel(context, x, y, time, variant, difficulty) {
+      const turn = cheeseAngle(time, variant);
+      const angle = turn * Math.PI / 180 - Math.PI / 2;
+      const radius = 119;
+      const top = -Math.PI / 2;
+      const halfWidth = cheeseHalfWidth(difficulty);
+      const cheeseArc = halfWidth * Math.PI / 180;
+      const inCheese = Math.min(turn, 360 - turn) <= halfWidth;
+      disc(context, x, y + 5, radius + 9, INK);
+      disc(context, x, y, radius + 6, '#b68067');
+      disc(context, x, y, radius, '#68485c');
+      for (let segment = 0; segment < 12; segment++) {
+        const section = (segment + .5) * Math.PI / 6 + top;
+        stroke(context, [[x + 48 * Math.cos(section), y + 48 * Math.sin(section)],
+          [x + 112 * Math.cos(section), y + 112 * Math.sin(section)]], '#9e7580', 2);
+      }
       context.beginPath();
-      context.arc(x, y + 16, 85, -Math.PI / 2 - cheeseArc, -Math.PI / 2 + cheeseArc);
-      context.stroke();
-      icon(context, 'cheese', x, y - 111, 4);
-      context.strokeStyle = INK;
-      context.lineWidth = 11;
-      context.beginPath();
-      context.moveTo(x, y + 16);
-      context.lineTo(x + 75 * Math.cos(angle), y + 16 + 75 * Math.sin(angle));
-      context.stroke();
-      disc(context, x, y + 16, 12, INK);
+      context.moveTo(x, y);
+      context.arc(x, y, radius, top - cheeseArc, top + cheeseArc);
+      context.closePath();
+      context.fillStyle = inCheese ? '#fff09a' : '#ffc145';
+      context.fill();
+      icon(context, 'cheese', x + 220, y - 92, 5);
+      label(context, 'CHEESE', x + 220, y - 38, 29, { align: 'center' });
+      stroke(context, [[x + 160, y - 92], [x + 126, y - 92], [x + 30, y - 113]], INK, 4);
+      const tip = [x + 98 * Math.cos(angle), y + 98 * Math.sin(angle)];
+      stroke(context, [[x, y], tip], INK, 17);
+      stroke(context, [[x, y], tip], CREAM, 9);
+      disc(context, x, y, 14, INK);
+      disc(context, x, y, 7, GOLD);
     },
     mice(context, x, y, time, variant) {
       for (let index = 0; index < 3 + variant; index++) {
@@ -203,28 +264,32 @@ export function createCardArt(document, art) {
         art.runner(context, (index * 5 + variant) % 16, pose, px - 48, py - 48, 6);
       }
     },
-    lookout(context, x, y, time, variant, realTime, reduced) {
-      const looking = lalaLooks(realTime, variant);
-      disc(context, x - 136, y, 96, looking ? '#e6a49b' : '#acd4ad');
-      cat(context, x - 136, y, time, reduced, looking);
-      label(context, looking ? 'WAIT' : 'TAP!', x + 105, y, 74, { colour: looking ? JAM : GREEN, align: 'center' });
+    lookout(context, x, y, time, variant, difficulty, realTime, reduced) {
+      const looking = lalaLooks(realTime, variant, difficulty);
+      disc(context, x - 145, y, 119, looking ? '#e6a49b' : '#acd4ad');
+      cat(context, x - 145, y, time, reduced, looking, 12);
+      label(context, looking ? 'WAIT' : 'TAP!', x + 114, y - 20, 78, { colour: looking ? JAM : GREEN, align: 'center' });
+      label(context, '5 TAPS', x + 114, y + 53, 29, { colour: looking ? JAM : GREEN, align: 'center' });
     },
     snacks(context, x, y, time, variant) {
       for (let index = 0; index < 4; index++) {
         const px = x + (index - 1.5) * 167;
         const lift = time < 0 ? 0 : (time + index * 120) % 1000 < 240 ? 8 : 0;
+        disc(context, px, y - 14, 75, '#cea578');
+        disc(context, px, y - 19, 72, CREAM);
         icon(context, index === variant ? 'berry' : 'cheese', px, y - 19 - lift);
-        label(context, String(index + 1), px, y + 73, 31, { align: 'center' });
+        disc(context, px, y + 83, 22, INK);
+        label(context, String(index + 1), px, y + 84, 30, { align: 'center', colour: CREAM });
       }
     },
   };
   return {
     cat,
-    draw(context, key, x, y, elapsed, variant, reduced) {
+    draw(context, key, x, y, elapsed, variant, difficulty, reduced) {
       // The cue itself stays live when motion communicates a scoring window.
       const essential = key === 'bar' || key === 'wheel';
       const animationTime = reduced && !essential ? -1 : elapsed;
-      visuals[key](context, x, y, animationTime, variant, elapsed, reduced);
+      visuals[key](context, x, y, animationTime, variant, difficulty, elapsed, reduced);
     },
   };
 }

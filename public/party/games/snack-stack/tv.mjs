@@ -1,119 +1,233 @@
 import { createArcadeLoop, createJuice, createSoundHooks } from '../../kit/animation.mjs';
+import { fitSpriteScale } from '../../kit/sprites.mjs';
 import { LOOKS } from '../../looks.mjs';
 import { CARDS, PLAY_MS, PREVIEW_MS } from './cards.mjs';
 import { createCardArt, label, rect } from './art.mjs';
 
-const WIDTH = 1760;
-const HEIGHT = 816;
-const CREAM = '#fff1d3';
-const JAM = '#983550';
-const GOLD = '#ffc56b';
-const GREEN = '#2e6554';
-const DARK = '#35263d';
-const SHIFT_MS = 450;
+const CREAM = '#fff3d7';
+const JAM = '#892e49';
+const GOLD = '#ffd075';
+const GREEN = '#285949';
+const DARK = '#342538';
+const PLATTER = '#f0d6a9';
+const RANK_COLOURS = [GOLD, '#ded4ef', '#efaf91'];
+const SHIFT_MS = 550;
+const EXIT_MS = 260;
+const SPRITE = { width: 16, height: 16 };
 
-function backplate(document) {
-  const canvas = document.createElement('canvas');
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
+function panel(context, { x, y, width, height }, colour, radius = 20) {
+  context.beginPath();
+  context.roundRect(x, y, width, height, radius);
+  context.fillStyle = colour;
+  context.fill();
+}
+
+function makeLayout({ width, height, safe }) {
+  const unit = Math.min(1, width / 1440, height / 850);
+  const margin = 9;
+  const x = safe.x / unit + margin;
+  const y = safe.y / unit + margin;
+  const usableWidth = safe.width / unit - margin * 2;
+  const usableHeight = safe.height / unit - margin * 2;
+  const gap = 22;
+  const ladderWidth = Math.min(706, usableWidth * .4);
+  const cardWidth = usableWidth - gap - ladderWidth;
+  return {
+    unit, card: { x, y, width: cardWidth, height: usableHeight },
+    ladder: { x: x + cardWidth + gap, y, width: ladderWidth, height: usableHeight },
+  };
+}
+
+function drawBackground(canvas, layout) {
   const context = canvas.getContext('2d');
-  rect(context, 0, 0, WIDTH, HEIGHT, '#743449');
-  for (let y = 0; y < HEIGHT; y += 44) {
-    for (let x = 0; x < WIDTH; x += 44) {
-      rect(context, x, y, 22, 22, '#8b4256');
-      rect(context, x + 22, y + 22, 22, 22, '#8b4256');
+  rect(context, 0, 0, canvas.width, canvas.height, '#663349');
+  context.save();
+  context.scale(layout.unit, layout.unit);
+  const square = 32;
+  for (let y = 0; y < canvas.height / layout.unit; y += square) {
+    for (let x = 0; x < canvas.width / layout.unit; x += square) {
+      if ((x / square + y / square) % 2 === 0) rect(context, x, y, square, square, '#773c50');
     }
   }
-  rect(context, 31, 41, 1095, 751, '#3a2439');
-  rect(context, 26, 26, 1095, 751, CREAM);
-  rect(context, 47, 45, 1053, 713, '#e0b784');
-  rect(context, 51, 49, 1045, 705, CREAM);
-  rect(context, 1119 + 32, 41, 582, 751, '#3a2439');
-  rect(context, 1146, 26, 582, 751, DARK);
-  rect(context, 1172, 112, 530, 2, '#6a5169');
-  rect(context, 1172, 692, 530, 2, '#6a5169');
-  return canvas;
+  for (const [box, colour] of [[layout.card, CREAM], [layout.ladder, DARK]]) {
+    panel(context, { ...box, y: box.y + 6 }, '#492838');
+    panel(context, box, colour);
+    panel(context, { x: box.x + 8, y: box.y + 8, width: box.width - 16, height: box.height - 16 },
+      box === layout.card ? '#f0d5ad' : '#47364c', 16);
+    panel(context, { x: box.x + 11, y: box.y + 11, width: box.width - 22, height: box.height - 22 }, colour, 13);
+  }
+  context.restore();
 }
 
-function position(index, twoColumns) {
-  if (twoColumns) return { x: 1172 + (index >= 8 ? 270 : 0), y: 134 + (index % 8) * 69, width: 260 };
-  return { x: 1172, y: 134 + index * 69, width: 530 };
-}
-
-function drawRow(context, art, player, width, pose) {
-  const { rank, direction, gained } = player;
-  const colour = LOOKS[player.look].colour;
-  rect(context, 0, 0, width, 59, player.done ? '#514157' : '#44354d');
-  rect(context, 0, 0, 5, 59, colour);
-  if (direction) label(context, direction < 0 ? '↑' : '↓', 21, 14, 19, {
-    colour: direction < 0 ? '#a6dbad' : '#e3c8c4', align: 'center',
+function rowLayout(ladder, count) {
+  if (count === 0) return () => null;
+  const columns = count > 8 ? 2 : 1;
+  const rows = Math.ceil(count / columns);
+  const gap = columns === 2 ? 8 : 4;
+  const width = (ladder.width - 38 - (columns - 1) * gap) / columns;
+  const usableHeight = ladder.height - 148;
+  const height = Math.min(count <= 3 ? 188 : 123, (usableHeight - (rows - 1) * gap) / rows);
+  const padding = columns === 2 ? 8 : 4;
+  const scale = Math.max(1, Math.min(count <= 3 ? 10 : 7,
+    fitSpriteScale(SPRITE, 1, { width: width - 190, height: height - padding })));
+  const top = ladder.y + 86 + Math.max(0, (usableHeight - rows * (height + gap) + gap) / 2);
+  return index => ({
+    x: ladder.x + 19 + Math.floor(index / rows) * (width + gap),
+    y: top + (index % rows) * (height + gap),
+    width: Math.floor(width), height: Math.floor(height), scale, compact: columns === 2,
   });
-  label(context, String(rank), 21, direction ? 38 : 30, 23, { colour: '#e3c8c4', align: 'center' });
-  art.runner(context, player.look, pose, 38, 5, 3);
-  rect(context, 71, 36, 18, 18, colour);
-  art.badge(context, player.look, 73, 38, 2);
-  label(context, player.name, 95, 30, 24, { colour: CREAM, max: width - 165 });
-  label(context, String(player.total), width - 10, gained ? 19 : 30, 24, { colour: CREAM, align: 'right' });
-  if (gained) label(context, '+' + player.gain, width - 10, 43, 19, { colour: GOLD, align: 'right' });
 }
 
-function drawCard(context, art, scene, time, reduced, roundPhase) {
-  const { card, index, variant, multiplier, phase } = scene;
+function drawRow(context, art, player, box, pose) {
+  const { rank, direction, gained } = player;
+  const { width, height, scale, compact } = box;
+  const leading = player.total > 0 && rank <= 3 ? RANK_COLOURS[rank - 1] : null;
+  const look = LOOKS[player.look];
+  const large = scale >= 8;
+  panel(context, { x: 0, y: 0, width, height }, leading ? '#5e485c' : player.done ? '#493a4f' : '#413448', 10);
+  rect(context, 0, 10, 5, height - 20, look.colour);
+  if (leading) rect(context, 12, 3, width - 24, 2, leading);
+
+  const rankX = large ? 33 : 24;
+  const mid = height / 2;
+  label(context, player.ranked ? String(rank) : '—', rankX, mid + (direction ? -10 : 0), large ? 32 : 22,
+    { colour: leading ?? '#e9d7dc', align: 'center' });
+  if (direction) label(context, direction < 0 ? '↑' : '↓', rankX, mid + 15, 21,
+    { colour: direction < 0 ? '#ace4b8' : '#e6c5c5', align: 'center' });
+  const mouseX = large ? 57 : 43;
+  art.runner(context, player.look, pose, mouseX, Math.round(mid - scale * 8), scale);
+  const badgeX = mouseX + 11 * scale;
+  const badgeY = mid + scale * 3;
+  panel(context, { x: badgeX - 2, y: badgeY - 2, width: 18, height: 18 }, look.colour, 3);
+  art.badge(context, player.look, badgeX, badgeY, 2);
+  const nameX = mouseX + scale * 15 + 10;
+  const scoreSpace = large ? 122 : 73;
+  const colour = player.connected ? CREAM : '#cec0ca';
+  label(context, player.name, nameX, mid - (!player.connected || large ? 13 : 0), large ? 36 : compact ? 25 : 31, {
+    colour, max: width - nameX - scoreSpace,
+  });
+  if (!player.connected || large) {
+    const status = !player.connected ? 'Seat held' : player.done ? 'Ready for next' : '';
+    label(context, status, nameX, mid + 22, 19, { colour: '#e8ced3' });
+  }
+  const right = width - (large ? 25 : 12);
+  label(context, String(player.total), right, mid - (gained ? 12 : 0), large ? 49 : compact ? 28 : 38,
+    { colour: leading ?? CREAM, align: 'right' });
+  if (gained) label(context, '+' + player.gain, right, mid + (large ? 32 : 20), large ? 29 : 22,
+    { colour: GOLD, align: 'right' });
+}
+
+function drawCard(context, art, box, scene, time, reduced, roundPhase, results) {
+  const { index, card, phase, multiplier, variant, difficulty, nextCard } = scene;
   const entry = CARDS[card];
-  const elapsed = Math.max(0, Math.min(PLAY_MS, time - PREVIEW_MS));
+  const { x, y, width, height } = box;
+  const centre = x + width / 2;
   const bonus = multiplier === 2;
   const accent = bonus ? JAM : GREEN;
-  rect(context, 68, 66, 1010, 55, accent);
-  label(context, 'CHALLENGE ' + (index + 1) + ' / ' + CARDS.length, 89, 93, 26, { colour: CREAM });
-  if (bonus) label(context, 'LALA BONUS  ×2', 1057, 93, 28, { colour: GOLD, align: 'right' });
-  const status = roundPhase === 'countdown' ? 'Do each challenge to build your score.'
-    : phase === 'score' ? ''
-    : phase === 'preview' ? 'Get ready'
-    : phase === 'check' ? 'Time!'
-    : '';
-  label(context, entry.instruction, 573, 207, 76, { align: 'center', face: 'Georgia', max: 991 });
-  rect(context, 93, 272, 960, 325, bonus ? '#f5d4bc' : '#f3dfb6');
-  rect(context, 93, 272, 960, 4, bonus ? '#e6ac98' : '#e7c995');
-  if (phase === 'score' && bonus) {
-    art.cat(context, 425, 431, time, reduced);
-    label(context, 'Double points!', 564, 426, 54, { colour: JAM, face: 'Georgia', max: 410 });
-  } else if (phase === 'score' && !bonus) {
-    label(context, 'Points served!', 573, 431, 88, { colour: GREEN, align: 'center', face: 'Georgia' });
+  const elapsed = Math.max(0, Math.min(PLAY_MS, time - PREVIEW_MS));
+  const progress = (index + 1) + ' / ' + CARDS.length;
+  panel(context, { x: x + 21, y: y + 21, width: width - 42, height: 56 }, accent, 9);
+  label(context, 'CHALLENGE ' + progress, x + 42, y + 50, 23, { colour: CREAM });
+  if (bonus) label(context, 'LALA BONUS   ×2', x + width - 41, y + 50, 28, { colour: GOLD, align: 'right' });
+  else label(context, 'Highest score wins', x + width - 42, y + 50, 25, { colour: CREAM, align: 'right' });
+
+  const winning = roundPhase === 'results';
+  const scored = phase === 'score' || winning;
+  const headline = winning ? 'Round complete!' : scored ? (bonus ? 'Lala doubles it!' : 'Points served!') : entry.instruction;
+  label(context, headline, centre, y + height * .2, 70,
+    { face: 'Georgia', align: 'center', colour: scored ? accent : DARK, max: width - 66 });
+
+  const tray = { x: x + 33, y: y + height * .298, width: width - 66, height: height * .47 };
+  const trayY = tray.y + tray.height / 2;
+  panel(context, { ...tray, y: tray.y + 6 }, '#dbb887', 23);
+  panel(context, tray, bonus ? '#edbbad' : PLATTER, 23);
+  panel(context, { x: tray.x + 8, y: tray.y + 8, width: tray.width - 16, height: tray.height - 16 },
+    bonus ? '#f5cec1' : '#f8e4ba', 18);
+  if (scored) {
+    if (bonus || winning) {
+      const beat = reduced ? 0 : Math.sin(time / 140) * 8;
+      art.cat(context, centre - 136, trayY + beat, time, reduced, true, 14);
+      const result = results.length === 0 ? '—' : results[0].place === results[1]?.place ? 'TIE!' : 'WIN!';
+      label(context, winning ? result : '×2', centre + 129, trayY - 15, 126,
+        { face: 'Georgia', align: 'center', colour: JAM });
+      label(context, winning ? 'See the podium' : 'DOUBLE POINTS', centre + 129, trayY + 76, 26,
+        { align: 'center', colour: JAM });
+    } else {
+      const x0 = centre - 201;
+      for (const [index, tier] of [2, 1, 3].entries()) {
+        const top = trayY - (tier === 1 ? 98 : tier === 2 ? 51 : 15);
+        const column = x0 + index * 136;
+        panel(context, { x: column, y: top, width: 128, height: trayY + 85 - top },
+          RANK_COLOURS[tier - 1], 10);
+        label(context, String(tier), column + 64, top + 39, 36, { align: 'center' });
+      }
+    }
   } else {
-    art.draw(context, entry.visual, 573, 431, phase === 'play' ? elapsed : -1, variant, reduced);
+    const scale = Math.min(tray.width / 770, tray.height / 310);
+    context.save();
+    context.translate(centre, trayY);
+    context.scale(scale, scale);
+    art.draw(context, entry.visual, 0, 0, phase === 'play' ? elapsed : -1, variant, difficulty, reduced);
+    context.restore();
   }
-  if (roundPhase !== 'countdown' && phase === 'play') {
-    const seconds = Math.ceil((PLAY_MS - elapsed) / 1000);
-    rect(context, 117, 636, 912, 25, '#d9bc94');
-    rect(context, 117, 636, 912 * (1 - elapsed / PLAY_MS), 25, seconds <= 1 ? JAM : accent);
-    label(context, seconds + ' s left', 573, 708, 40, { align: 'center' });
+
+  const foot = y + height * .874;
+  if (scored) {
+    const next = nextCard === undefined ? '' : 'Next · ' + CARDS[nextCard].instruction;
+    label(context, winning ? '' : next || 'Final scores', centre, foot, 32, { align: 'center', max: width - 76 });
+  } else if (roundPhase !== 'countdown' && phase === 'play') {
+    const fraction = 1 - elapsed / PLAY_MS;
+    const seconds = Math.ceil(PLAY_MS * fraction / 1000);
+    const left = x + 45;
+    const trackWidth = width - 90;
+    panel(context, { x: left, y: foot - 20, width: trackWidth, height: 23 }, '#e0be8f', 10);
+    if (fraction > 0) panel(context, { x: left, y: foot - 20, width: trackWidth * fraction, height: 23 },
+      seconds <= 1 ? JAM : accent, 10);
+    label(context, seconds + ' s left', centre, foot + 48, 32, { align: 'center' });
   } else {
-    label(context, status, 573, 683, 47, { align: 'center', max: 965 });
+    const status = roundPhase === 'countdown' ? 'Play each challenge. Highest score wins.'
+      : phase === 'preview' ? 'Get ready' : 'Time!';
+    label(context, status, centre, foot + 14, 35, { colour: accent, align: 'center', max: width - 75 });
   }
 }
 
 export function mountSnackStackTv(canvas, { art, sound }) {
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
   const document = canvas.ownerDocument;
   const context = canvas.getContext('2d', { alpha: false });
-  const background = backplate(document);
+  const background = document.createElement('canvas');
   const cardArt = createCardArt(document, art);
   const juice = createJuice();
-  const playSound = createSoundHooks(sound, { start: 'move', hit: 'collect', score: 'bank', win: 'win' });
+  const playSound = createSoundHooks(sound, { start: 'move', hit: 'collect', score: 'bank', bonus: 'win', win: 'win' });
+  const tiles = new Map();
+  const exits = new Map();
+  const shifts = new Map();
+  let layout;
   let view;
   let rows = [];
   let positions = new Map();
-  let ranks = new Map();
   let directions = new Map();
-  const tiles = new Map();
   let arrival = 0;
-  let movedAt = 0;
-  let rowCount = 0;
+  let effectTime = 0;
   let finished = 0;
   let lastHit = -Infinity;
 
-  function tile(player, width, pose) {
+  function positionRows() {
+    const position = rowLayout(layout.ladder, rows.length);
+    positions = new Map(rows.map((player, index) => [player.id, position(index)]));
+  }
+
+  function resize(area) {
+    canvas.width = background.width = area.width;
+    canvas.height = background.height = area.height;
+    layout = makeLayout(area);
+    drawBackground(background, layout);
+    tiles.clear();
+    exits.clear();
+    shifts.clear();
+    positionRows();
+  }
+
+  function tile(player, box, pose) {
     let cache = tiles.get(player.id);
     if (cache?.key !== player.key) {
       cache = { key: player.key, frames: [] };
@@ -121,100 +235,150 @@ export function mountSnackStackTv(canvas, { art, sound }) {
     }
     if (!cache.frames[pose]) {
       const frame = document.createElement('canvas');
-      frame.width = width;
-      frame.height = 59;
-      drawRow(frame.getContext('2d'), art, player, width, pose);
+      frame.width = box.width;
+      frame.height = box.height;
+      drawRow(frame.getContext('2d'), art, player, box, pose);
       cache.frames[pose] = frame;
     }
     return cache.frames[pose];
   }
 
+  function rowPoint(id, at, reduced) {
+    const to = positions.get(id);
+    const from = shifts.get(id);
+    if (reduced || !from) return to;
+    const t = Math.max(0, Math.min(1, (at - effectTime) / SHIFT_MS));
+    const remaining = (1 - t) ** 3;
+    if (t === 1) shifts.delete(id);
+    return { ...to, x: to.x + (from.x - to.x) * remaining, y: to.y + (from.y - to.y) * remaining };
+  }
+
   function draw(at, reduced) {
-    if (!view) return;
+    if (!view || !layout) return;
     const { scene } = view;
+    const { ladder, unit, card } = layout;
     const clock = view.phase === 'playing' && scene.phase === 'play'
       ? scene.elapsed + Math.min(100, Math.max(0, at - arrival)) : scene.elapsed;
     context.drawImage(background, 0, 0);
-    drawCard(context, cardArt, scene, clock, reduced, view.phase);
-    label(context, 'Score ladder', 1174, 74, 42, { colour: CREAM, face: 'Georgia' });
-    const part = reduced ? 1 : Math.min(1, Math.max(0, (at - movedAt) / SHIFT_MS));
-    const fraction = 1 - (1 - part) ** 3;
+    context.save();
+    context.scale(unit, unit);
+    drawCard(context, cardArt, card, scene, clock, reduced, view.phase, view.results);
+    label(context, 'Score ladder', ladder.x + 25, ladder.y + 46, 41, { colour: CREAM, face: 'Georgia' });
+    rect(context, ladder.x + 22, ladder.y + 77, ladder.width - 44, 2, '#6e5369');
     for (const player of rows) {
-      const box = positions.get(player.id);
-      // A short slide in the direction of a rank change keeps all rows legible.
-      const rise = Math.round(-player.direction * 4 * (1 - fraction));
-      const pop = juice.squash(player.id, at) !== 0;
-      const idle = (Math.floor(at / 170) + player.look * 5) % 21;
-      const pose = reduced ? 0 : pop ? 2 : idle === 1 ? 1 : 0;
-      context.drawImage(tile(player, box.width, pose), box.x, box.y + rise);
+      const point = rowPoint(player.id, at, reduced);
+      const idle = (Math.floor(at / 190) + player.look * 5) % 19;
+      const pose = reduced ? 0 : juice.squash(player.id, at) !== 0 ? 2 : idle === 1 ? 1 : 0;
+      context.drawImage(tile(player, point, pose), Math.round(point.x), Math.round(point.y));
     }
-    const progress = view.phase === 'results' ? 'Round complete'
-      : scene.phase === 'score' ? 'Scores locked' : finished + ' / ' + rowCount + ' finished';
-    label(context, progress, 1437, 733, 34, { colour: GOLD, align: 'center' });
+    for (const [id, exit] of exits) {
+      const fraction = (at - exit.at) / EXIT_MS;
+      if (reduced || fraction >= 1) {
+        exits.delete(id);
+        continue;
+      }
+      const { x, y, height, scale } = exit.box;
+      context.globalAlpha = 1 - Math.max(0, fraction);
+      art.runner(context, exit.look, 1, x + (scale >= 8 ? 57 : 43) + fraction * 20,
+        y + height / 2 - scale * 8 - fraction * 17, scale);
+      context.globalAlpha = 1;
+    }
+    const progress = view.phase === 'results' ? 'Final scores'
+      : scene.phase === 'score' ? 'Scores updated' : finished + ' / ' + rows.length + ' finished';
+    label(context, progress, ladder.x + ladder.width / 2, ladder.y + ladder.height - 28, 27,
+      { colour: GOLD, align: 'center' });
     juice.draw(context, at);
+    context.restore();
   }
 
-  const loop = createArcadeLoop(draw, reduced => juice.setReducedMotion(reduced));
+  const loop = createArcadeLoop(draw, reduced => {
+    juice.setReducedMotion(reduced);
+    if (reduced) {
+      shifts.clear();
+      exits.clear();
+    }
+  });
   function push(next) {
     const scene = next.scene;
-    if (!scene) return;
+    if (!scene || !layout) return;
     const time = performance.now();
     const prior = view?.round === next.round ? view.scene : null;
     if (!prior) {
-      ranks = new Map();
-      directions = new Map();
+      rows = [];
+      directions.clear();
+      exits.clear();
+      shifts.clear();
       tiles.clear();
       juice.clear();
     }
-    const players = new Map(next.players.map(player => [player.id, player]));
-    rows = scene.players.filter(player => players.has(player.id))
-      .map(player => ({ ...player, ...players.get(player.id) }))
+    const old = new Map(rows.map(player => [player.id, player]));
+    const oldPoints = new Map(rows.map(player => [player.id, rowPoint(player.id, time, false)]));
+    const seats = new Map(next.players.map(player => [player.id, player]));
+    const identities = new Map(next.roster.map(player => [player.id, player]));
+    rows = scene.players.filter(player => seats.has(player.id))
+      .map(player => ({ ...player, ...identities.get(player.id), connected: seats.get(player.id).connected }))
       .sort((a, b) => b.total - a.total);
-    rowCount = rows.length;
     finished = rows.filter(player => player.done).length;
-    positions = new Map(rows.map((player, index) => [player.id, position(index, rows.length > 8)]));
-    let rank = 0;
-    const nextRanks = new Map(rows.map(({ id, total }, index) => {
-      if (rows[index - 1]?.total !== total) rank = index + 1;
-      return [id, rank];
-    }));
-    if (scene.phase === 'score' && prior?.phase !== 'score') {
-      directions = new Map([...nextRanks].map(([id, place]) => [id, Math.sign(place - (ranks.get(id) ?? place))]));
-      movedAt = time;
+    const reveal = scene.phase === 'score' && prior?.phase !== 'score';
+    const remaining = new Set(rows.map(row => row.id));
+    const departed = [...old.values()].filter(player => !remaining.has(player.id));
+    for (const player of departed) {
+      exits.set(player.id, { look: player.look, box: oldPoints.get(player.id), at: time });
+      tiles.delete(player.id);
     }
-    ranks = nextRanks;
-    rows = rows.map(player => {
-      const rank = ranks.get(player.id);
+    if (!prior || reveal || departed.length) {
+      positions.clear();
+      positionRows();
+      shifts.clear();
+      if (prior) {
+        for (const [id, from] of oldPoints) {
+          const to = positions.get(id);
+          if (to && from.width === to.width && (from.x !== to.x || from.y !== to.y)) shifts.set(id, from);
+        }
+      }
+      effectTime = time;
+    }
+    if (reveal) directions = new Map();
+    const ranked = scene.index > 0 || scene.phase === 'score' || next.phase === 'results';
+    let rank = 0;
+    rows = rows.map((player, index) => {
+      if (rows[index - 1]?.total !== player.total) rank = index + 1;
+      const before = old.get(player.id);
+      if (reveal && before?.ranked) directions.set(player.id, Math.sign(rank - before.rank));
       const direction = scene.phase === 'score' ? directions.get(player.id) ?? 0 : 0;
       const gained = scene.phase === 'score' && player.gain > 0;
-      const key = [rows.length > 8, player.done, player.look, player.name, player.total, gained && player.gain, rank, direction].join('/');
-      return { ...player, rank, direction, gained, key };
+      const box = positions.get(player.id);
+      const key = [box.width, box.height, box.scale, player.connected, player.done, player.look,
+        player.name, player.total, gained && player.gain, rank, ranked, direction].join('/');
+      return { ...player, rank, ranked, direction, gained, key };
     });
+
     if (scene.phase === 'play' && prior?.phase !== 'play') playSound('start');
     if (scene.phase === 'play' && prior?.index === scene.index) {
-      const priorDone = new Set(prior.players.filter(player => player.done).map(player => player.id));
-      const hits = rows.filter(player => player.done && !priorDone.has(player.id));
+      const hits = rows.filter(player => player.done && !old.get(player.id)?.done);
       for (const player of hits) {
-        const { x, y } = positions.get(player.id);
-        juice.impact({ x: x + 58, y: y + 30, id: player.id, colour: LOOKS[player.look].colour, time });
+        const { x, y, height, scale } = positions.get(player.id);
+        juice.impact({ x: x + 43 + scale * 8, y: y + height / 2, id: player.id, colour: LOOKS[player.look].colour, time });
       }
       if (hits.length && time - lastHit > 130) {
         playSound('hit');
         lastHit = time;
       }
     }
-    if (scene.phase === 'score' && prior?.phase !== 'score') {
-      playSound('score');
-      juice.impact({ x: 573, y: 510, colour: GOLD, time, strong: scene.multiplier === 2 });
+    const { card } = layout;
+    if (reveal) {
+      const bonus = scene.multiplier === 2;
+      playSound(bonus ? 'bonus' : 'score');
+      juice.impact({ x: card.x + card.width / 2, y: card.y + card.height * .59, colour: GOLD, time, strong: bonus });
     }
     if (next.phase === 'results' && view?.phase !== 'results' && next.results.length) {
       playSound('win');
-      juice.impact({ x: 573, y: 510, colour: GOLD, label: next.results[0].place === next.results[1]?.place ? 'TIE!' : 'WIN!', time, strong: true });
+      juice.impact({ x: card.x + card.width / 2, y: card.y + card.height * .59, colour: GOLD, time, strong: true });
     }
-    canvas.setAttribute('aria-label', CARDS[scene.card].instruction + '. ' + finished + ' of ' + rowCount + ' finished.');
+    canvas.setAttribute('aria-label', CARDS[scene.card].instruction + '. ' + finished + ' of ' + rows.length + ' finished.');
     view = next;
     arrival = time;
   }
 
-  return { push, setReducedMotion: loop.setReducedMotion, dispose: loop.dispose };
+  return { push, resize, setReducedMotion: loop.setReducedMotion, dispose: loop.dispose };
 }

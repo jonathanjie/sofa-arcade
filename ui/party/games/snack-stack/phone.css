@@ -9,8 +9,19 @@
 .party-handset:has(.snack-phone:not([hidden])) [data-status] { font-size: 15px; }
 .party-handset:has(.snack-phone[data-active="true"]:not([hidden])) [data-status] { display: none; }
 .snack-phone { display: grid; gap: 13px; }
-.snack-brief { font-size: clamp(15px, 4.9vw, 20px); font-weight: 850; line-height: 1.2; }
+.snack-brief { font-size: clamp(14px, 4.35vw, 18px); font-weight: 850; line-height: 1.2; }
 .snack-control { min-height: 286px; display: grid; gap: 10px; align-content: start; }
+.snack-phone > :is(p, div, output):empty { display: none; }
+.snack-practice {
+  border: 2px solid var(--snack-ink);
+  border-radius: 8px;
+  min-height: 48px;
+  background: var(--phone-look);
+  color: var(--snack-ink);
+  font-weight: 800;
+}
+.snack-practice:active { transform: translateY(2px); }
+.snack-control .party-tap.snack-wait:not(:disabled) { background: #523448; color: #fff2d4; }
 .snack-control .party-tap, .snack-control .party-stick {
   min-height: clamp(230px, 42svh, 345px);
   border-color: var(--snack-ink);
@@ -58,7 +69,15 @@
   border-radius: 8px;
   background: #ded0af;
 }
-.snack-green { position: absolute; inset-block: 0; background: #245949; }
+.snack-green {
+  position: absolute;
+  inset-block: 0;
+  background: #245949;
+  color: #fff2d4;
+  display: grid;
+  place-items: center;
+  font: 800 12px/1 system-ui, sans-serif;
+}
 .snack-timing > i {
   position: absolute;
   inset-block: 0;
@@ -67,7 +86,14 @@
   box-shadow: 0 0 0 2px var(--snack-ink);
   translate: -50% 0;
 }
-.snack-wheel { width: 92px; height: 92px; margin-inline: auto; border-radius: 50%; }
+.snack-wheel {
+  width: 115px;
+  height: 115px;
+  margin-inline: auto;
+  border-radius: 50%;
+  background: conic-gradient(from calc(-1 * var(--cheese-half)),
+    #ffc23f 0 calc(2 * var(--cheese-half)), #ac8177 0 100%);
+}
 .snack-needle { position: absolute; inset: 0; }
 .snack-needle i {
   position: absolute;
@@ -84,7 +110,14 @@
   border-radius: 50%;
   background: var(--snack-ink);
 }
-.snack-cheese { position: absolute; top: 0; left: 39%; width: 22%; height: 12%; background: #a94a1c; }
+.snack-cheese { position: absolute; top: 1px; left: 50%; translate: -50% 0; font-size: 16px; }
+.snack-stopwatch {
+  display: grid;
+  place-items: center;
+  background: #f7d88d;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
 .snack-level { height: 105px; background: #e6d3ad; display: grid; place-items: center; border-radius: 8px; }
 .snack-picture {
   width: 88px;

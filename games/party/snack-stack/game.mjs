@@ -1,5 +1,5 @@
 import { CHALLENGES, makeSchedule } from './schedule.mjs';
-import { PLAY_MS, PREVIEW_MS, REVEAL_MS, SLOT_MS, slotPhase } from '../../../ui/party/games/snack-stack/cards.mjs';
+import { EXACT_TAP_TARGET, PLAY_MS, PREVIEW_MS, REVEAL_MS, SLOT_MS, slotPhase } from '../../../ui/party/games/snack-stack/cards.mjs';
 
 const MAX_INPUT_LAG_MS = 450;
 const MAX_INPUT_LEAD_MS = 100;
@@ -45,7 +45,7 @@ function grade(attempt, challenge) {
   return attempt.points ?? Math.max(0, challenge.score(attempt));
 }
 
-function step(state, inputs, dt) {
+function step(state, inputs, dt, { departures = [] } = {}) {
   if (isRoundOver(state)) return state;
   const { index, elapsed, challenge, variant } = currentSlot(state);
   const nextElapsed = elapsed + dt;
@@ -54,15 +54,19 @@ function step(state, inputs, dt) {
   const settle = elapsed < REVEAL_MS && nextElapsed >= REVEAL_MS;
   const advance = nextElapsed >= SLOT_MS && index + 1 < state.slots.length;
   let players = state.players;
-  if (acceptsInput && inputs.length) {
+  if (departures.length) {
     players = { ...players };
+    for (const { playerId } of departures) delete players[playerId];
+  }
+  if (acceptsInput && inputs.length) {
+    if (players === state.players) players = { ...players };
     for (const { playerId, input } of inputs) {
       if (!Object.hasOwn(players, playerId) || input.slot !== index) continue;
       const player = players[playerId];
       const attempt = player.attempt;
       if (attempt.finish !== null || input.at < (attempt.last ?? 0)) continue;
       if (input.at < now - MAX_INPUT_LAG_MS || input.at > now + MAX_INPUT_LEAD_MS) continue;
-      const updated = challenge.input(attempt, input, variant);
+      const updated = challenge.input(attempt, input, variant, state.difficulty);
       if (updated !== attempt) players[playerId] = { ...player, attempt: { ...updated, last: input.at } };
     }
   }
@@ -85,10 +89,12 @@ export const snackStack = Object.freeze({
   minPlayers: 2,
   maxPlayers: 16,
   durationMs: CHALLENGES.length * SLOT_MS + STALL_RESERVE_MS,
-  createRound(players, seed) {
+  createRound(players, seed, gameRound = 1, { startsAt } = {}) {
     return {
       slots: makeSchedule(seed),
       elapsed: 0,
+      startsAt,
+      difficulty: Math.min(2, Math.max(0, gameRound - 1)),
       players: Object.fromEntries(players.map(({ id }) => [id, { total: 0, gain: 0, attempt: EMPTY_ATTEMPT }])),
     };
   },
@@ -99,7 +105,7 @@ export const snackStack = Object.freeze({
     return Object.entries(state.players).map(([playerId, player]) => ({ playerId, score: player.total }))
       .sort((a, b) => b.score - a.score);
   },
-  projectForPhone(state, playerId) {
+  projectForPhone(state, playerId, { tickAt = state.startsAt === undefined ? undefined : state.startsAt + state.elapsed } = {}) {
     if (!Object.hasOwn(state.players, playerId)) return null;
     const { index, card, variant, elapsed, challenge } = currentSlot(state);
     const { attempt, gain, total } = state.players[playerId];
@@ -108,16 +114,22 @@ export const snackStack = Object.freeze({
     if (elapsed >= REVEAL_MS) {
       view.g = gain;
       view.s = total;
+    } else if (Number.isFinite(tickAt)) {
+      view.a = Math.round(tickAt - elapsed + PREVIEW_MS);
+      if (state.difficulty && challenge.timing) view.b = state.difficulty;
     }
     return view;
   },
   projectForTv(state) {
-    const { index, card, variant, elapsed } = currentSlot(state);
+    const { index, card, variant, elapsed, challenge } = currentSlot(state);
     const phase = slotPhase(elapsed);
     return {
-      index, card, variant, elapsed, phase, multiplier: multiplier(index),
+      index, card, variant, elapsed, phase, multiplier: multiplier(index), difficulty: state.difficulty,
+      nextCard: state.slots[index + 1]?.card,
       players: Object.entries(state.players).map(([id, { attempt, total, gain }]) => ({
-        id, total, gain, done: phase === 'score' || attempt.finish !== null,
+        id, total, gain,
+        done: phase === 'score' || attempt.finish !== null
+          || (challenge.id === 'exact-seven' && attempt.count === EXACT_TAP_TARGET),
       })),
     };
   },

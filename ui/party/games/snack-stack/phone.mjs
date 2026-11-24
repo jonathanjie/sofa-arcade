@@ -1,5 +1,8 @@
 import { mountButton, mountTilt } from '../../phone/controls.mjs';
-import { CARDS, GREEN_CENTRE, GREEN_HALF_WIDTH, PICTURE_ANGLE, PLAY_MS, cheeseAngle, slotPhase } from './cards.mjs';
+import {
+  CARDS, EXACT_TAP_TARGET, GREEN_CENTRE, LALA_TAPS, PEPPER_TAPS, PICTURE_ANGLE, PLAY_MS, QUICK_TAP_TARGET,
+  cheeseAngle, cheeseHalfWidth, greenHalfWidth, greenPosition, lalaLooks, slotPhase,
+} from './cards.mjs';
 import { createCardClock } from './clock.mjs';
 import { button, mountHold, mountSwipe, mountTrace } from './gestures.mjs';
 
@@ -20,7 +23,7 @@ function mountChoices(root, control, send) {
 }
 
 function mountShake(root, send, window) {
-  const tap = mountButton(root, { label: 'Tap!', onPress: () => send('tap') });
+  const tap = mountButton(root, { label: 'Tap pepper', onPress: () => send('tap') });
   const sensor = window.DeviceMotionEvent;
   let disposed = false;
   let listening = false;
@@ -105,48 +108,38 @@ function mountPicture(root, variant, send) {
   };
 }
 
-function mountTimingCue(root, visual, variant) {
-  const document = root.ownerDocument;
-  const note = document.createElement('div');
+function mountTimingCue(root, visual, variant, difficulty) {
+  const note = root.ownerDocument.createElement('div');
   note.className = 'snack-timing';
   note.setAttribute('aria-hidden', 'true');
   root.prepend(note);
-  let cycle;
-  let lead;
-  let animation;
+
   if (visual === 'bar') {
-    note.innerHTML = '<div class="snack-green"></div><i></i>';
-    const green = note.querySelector('div');
-    green.style.left = (GREEN_CENTRE - GREEN_HALF_WIDTH) + '%';
-    green.style.width = (2 * GREEN_HALF_WIDTH) + '%';
-    cycle = 2200 / (1 + variant / 16);
-    lead = 280 / (1 + variant / 16);
-    animation = note.querySelector('i').animate([{ left: '0%' }, { left: '100%' }, { left: '0%' }],
-      { duration: cycle, iterations: Infinity });
-  } else {
-    note.classList.add('snack-wheel');
-    note.innerHTML = '<div class="snack-needle"><i></i></div><div class="snack-pin"></div><div class="snack-cheese"></div>';
-    cycle = 360 / (.16 + variant * .008);
-    lead = 0;
-    const start = cheeseAngle(0, variant);
-    animation = note.querySelector('.snack-needle').animate([
-      { transform: 'rotate(' + start + 'deg)' }, { transform: 'rotate(' + (start + 360) + 'deg)' },
-    ], { duration: cycle, iterations: Infinity });
+    note.innerHTML = '<div class="snack-green">Release</div><i></i>';
+    const green = note.firstElementChild;
+    const marker = note.lastElementChild;
+    const halfWidth = greenHalfWidth(difficulty);
+    green.style.left = (GREEN_CENTRE - halfWidth) + '%';
+    green.style.width = (2 * halfWidth) + '%';
+    return at => { marker.style.left = greenPosition(at, variant) + '%'; };
   }
-  animation.pause();
-  animation.currentTime = lead;
-  return {
-    sync(at, live) {
-      const desired = Math.max(0, Math.min(PLAY_MS, at)) + lead;
-      if (Math.abs(animation.currentTime - desired) > 35 || !live) animation.currentTime = desired;
-      if (live && animation.playState !== 'running') animation.play();
-      if (!live && animation.playState === 'running') animation.pause();
-    },
-    dispose() { animation.cancel(); },
+  if (visual === 'wheel') {
+    note.classList.add('snack-wheel');
+    note.style.setProperty('--cheese-half', cheeseHalfWidth(difficulty) + 'deg');
+    note.innerHTML = '<div class="snack-needle"><i></i></div><div class="snack-pin"></div><div class="snack-cheese">🧀</div>';
+    const needle = note.firstElementChild;
+    return at => { needle.style.transform = 'rotate(' + cheeseAngle(at, variant) + 'deg)'; };
+  }
+  note.classList.add('snack-stopwatch');
+  return (_at, heldFor) => {
+    const value = (Math.max(0, heldFor) / 1000).toFixed(1) + ' / 3 s';
+    if (note.textContent !== value) note.textContent = value;
   };
 }
 
-export function mountSnackStackPhone(root, { input }) {
+const TAP_TARGETS = { seven: EXACT_TAP_TARGET, burst: QUICK_TAP_TARGET, pepper: PEPPER_TAPS, lookout: LALA_TAPS };
+
+export function mountSnackStackPhone(root, { input, serverNow }) {
   const document = root.ownerDocument;
   const window = document.defaultView;
   addStyle(document);
@@ -155,117 +148,146 @@ export function mountSnackStackPhone(root, { input }) {
   const brief = root.querySelector('.snack-brief');
   const controls = root.querySelector('.snack-control');
   const feedback = root.querySelector('.snack-feedback');
-  const clock = createCardClock();
+  const clock = createCardClock(serverNow);
+  let practiceTaps = 0;
+  const practice = button(root, 'Warm up · 0 taps', 'snack-practice', () => {
+    practiceTaps = (practiceTaps + 1) % 100;
+    practice.textContent = 'Warm up · ' + practiceTaps + (practiceTaps === 1 ? ' tap' : ' taps');
+  });
+  practice.hidden = true;
   let current;
   let widget;
   let cue;
+  let tapPad;
   let allowed = false;
+  let waiting = false;
   let pendingAt;
+  let holdingAt;
   let localTaps = 0;
-  let liveUntil;
-  let liveFrom;
-  let closeTimer;
+  let frame;
+  let enabled;
+  let preparing;
 
-  function refreshFeedback() {
+  function refreshFeedback(at = clock.at(current?.a)) {
+    const visual = current && CARDS[current.c].visual;
+    const count = current ? Math.max(localTaps, current.n) : 0;
+    const reachedExactTarget = visual === 'seven' && count >= EXACT_TAP_TARGET;
+    const locked = current?.d || pendingAt !== undefined || current?.g !== undefined;
+    practice.hidden = !(waiting || (allowed && (locked || reachedExactTarget)));
     if (!current) return;
-    const card = CARDS[current.c];
-    const phase = slotPhase(current.t);
+    const target = TAP_TARGETS[visual];
     let text = '';
-    if (phase === 'score') text = '+' + current.g + ' · ' + current.s + ' total';
-    else if (phase === 'preview' && allowed) text = 'Get ready';
+    if (current.g !== undefined) text = '+' + current.g + ' · ' + current.s + ' total';
+    else if (allowed && at === null) text = 'Syncing clock…';
+    else if (at < 0 && allowed) text = 'Get ready';
     else if (pendingAt !== undefined || current.d) text = 'Locked in';
-    else if (phase === 'check') text = 'Time!';
-    else if (card.control === 'tap' || card.control === 'shake') text = String(Math.max(localTaps, current.n));
+    else if (at >= PLAY_MS) text = 'Time!';
+    else if (target) {
+      text = count + ' / ' + target;
+      if (visual === 'seven' && count === EXACT_TAP_TARGET) text += ' · Stop';
+    }
     if (feedback.textContent !== text) feedback.textContent = text;
   }
 
-  function send(kind, value = 0, stamp = clock.at(performance.now())) {
-    if (!allowed || !current || pendingAt !== undefined || current.d || stamp < 0 || stamp >= PLAY_MS) return false;
-    const submitted = input({ kind, slot: current.i, at: stamp, value });
-    if (submitted === false) return false;
-    if (kind === 'choose' || kind === 'up' || (kind === 'tap' && CARDS[current.c].control === 'stop')) pendingAt = stamp;
-    if (kind === 'tap' && ['exact-seven', 'quick-taps'].includes(CARDS[current.c].id)) localTaps++;
-    refreshFeedback();
+  function send(kind, value = 0) {
+    const at = clock.at(current?.a);
+    if (!allowed || at === null || pendingAt !== undefined || current.d || at < 0 || at >= PLAY_MS) return false;
+    if (input({ kind, slot: current.i, at, value }) === false) return false;
+    const card = CARDS[current.c];
+    if (kind === 'down') holdingAt = at;
+    if (kind === 'cancel') holdingAt = undefined;
+    if (kind === 'choose' || kind === 'up' || (kind === 'tap' && card.control === 'stop')) pendingAt = at;
+    if (kind === 'tap' && ['seven', 'burst'].includes(card.visual)) localTaps++;
+    refreshFeedback(at);
     return true;
   }
 
-  function rebuild(card, state) {
+  function clearWidget() {
     widget?.dispose?.();
-    cue?.dispose();
-    widget = cue = undefined;
+    widget = cue = tapPad = undefined;
+    enabled = preparing = undefined;
     controls.replaceChildren();
+    cancelAnimationFrame(frame);
+    frame = undefined;
+  }
+
+  function rebuild(card, state) {
+    clearWidget();
     controls.dataset.control = card.control;
     brief.textContent = card.instruction;
-    if (card.control === 'hold') {
-      widget = mountHold(controls, send, () => {
-        const local = performance.now();
-        const stamp = clock.at(local);
-        return send('down', 0, stamp) ? { local, stamp } : undefined;
-      }, ({ local, stamp }) => send('up', 0, stamp + Math.round(performance.now() - local)));
-    } else if (card.control === 'swipe') widget = mountSwipe(controls, send);
+    if (card.control === 'hold') widget = mountHold(controls, send);
+    else if (card.control === 'swipe') widget = mountSwipe(controls, send);
     else if (card.control === 'trace') widget = mountTrace(controls, send);
     else if (card.control === 'number' || card.control === 'choice') widget = mountChoices(controls, card.control, send);
     else if (card.control === 'tilt') widget = mountPicture(controls, state.v, send);
     else if (card.control === 'shake') widget = mountShake(controls, send, window);
-    else widget = mountButton(controls, {
-      label: card.control === 'stop' ? 'Stop!' : 'Tap!', onPress: () => send('tap'),
-    });
-    if (card.visual === 'bar' || card.visual === 'wheel') cue = mountTimingCue(controls, card.visual, state.v);
+    else {
+      widget = mountButton(controls, { label: card.control === 'stop' ? 'Stop!' : 'Tap!', onPress: () => send('tap') });
+      if (card.visual === 'lookout') tapPad = controls.querySelector('button');
+    }
+    if (['bar', 'wheel', 'timer'].includes(card.visual)) {
+      cue = mountTimingCue(controls, card.visual, state.v, state.b);
+    }
   }
 
   function paintClock() {
-    const now = performance.now();
-    const at = clock.at(now);
-    const live = allowed && now >= liveFrom && now < liveUntil;
+    frame = undefined;
+    if (!current) return;
+    const at = clock.at(current.a);
+    const live = allowed && at !== null && at >= 0 && at < PLAY_MS;
     const acceptsInput = live && pendingAt === undefined && !current.d;
-    widget?.setEnabled(acceptsInput, allowed && now < liveFrom);
-    cue?.sync(pendingAt ?? (Number.isFinite(at) ? at : 0), acceptsInput);
-    clearTimeout(closeTimer);
-    if (allowed && now < liveFrom) closeTimer = setTimeout(paintClock, liveFrom - now + 1);
-    else if (live) closeTimer = setTimeout(paintClock, liveUntil - now + 1);
+    const isPreparing = allowed && at < 0;
+    if (enabled !== acceptsInput || preparing !== isPreparing) {
+      enabled = acceptsInput;
+      preparing = isPreparing;
+      widget.setEnabled(enabled, preparing);
+    }
+    const displayAt = Math.max(0, Math.min(PLAY_MS, pendingAt ?? at ?? 0));
+    cue?.(displayAt, holdingAt === undefined ? 0 : displayAt - holdingAt);
+    if (tapPad) {
+      const looking = !live || lalaLooks(displayAt, current.v, current.b);
+      const label = looking ? 'Wait' : 'Tap!';
+      if (tapPad.textContent !== label) {
+        tapPad.textContent = label;
+        tapPad.setAttribute('aria-label', label);
+      }
+      tapPad.classList.toggle('snack-wait', looking);
+    }
+    refreshFeedback(at);
+    if (allowed && current.a !== undefined && (at === null || at < PLAY_MS)) frame = requestAnimationFrame(paintClock);
   }
 
   return {
+    setWaiting(value) {
+      waiting = value;
+      practice.hidden = !waiting;
+    },
     update(state, enabled) {
       root.dataset.active = String(enabled);
-      if (!state) {
-        allowed = false;
+      allowed = enabled;
+      if (!state || waiting) {
         current = undefined;
-        widget?.dispose?.();
-        cue?.dispose();
-        widget = cue = undefined;
-        controls.replaceChildren();
-        clearTimeout(closeTimer);
+        clearWidget();
+        brief.textContent = '';
+        feedback.textContent = '';
+        refreshFeedback();
         return;
       }
       const isNew = !current || state.i !== current.i || state.c !== current.c || state.t < current.t;
       if (isNew) {
-        clock.reset();
-        pendingAt = undefined;
-        localTaps = 0;
+        pendingAt = holdingAt = undefined;
+        localTaps = practiceTaps = 0;
+        practice.textContent = 'Warm up · 0 taps';
         rebuild(CARDS[state.c], state);
-      } else if (!enabled && allowed) {
-        clock.reset();
-        if (!state.d) pendingAt = undefined;
-      }
+      } else if (!enabled && !state.d) pendingAt = holdingAt = undefined;
       current = state;
-      if (enabled) {
-        const now = performance.now();
-        clock.sample(state.t, now);
-        const at = clock.at(now);
-        liveFrom = now - at;
-        liveUntil = liveFrom + PLAY_MS;
-      }
-      allowed = enabled;
       root.dataset.phase = slotPhase(state.t);
       widget.update?.(state.n);
+      cancelAnimationFrame(frame);
       paintClock();
-      refreshFeedback();
     },
     dispose() {
-      clearTimeout(closeTimer);
-      widget?.dispose?.();
-      cue?.dispose();
+      clearWidget();
       root.classList.remove('snack-phone');
       delete root.dataset.active;
       delete root.dataset.phase;

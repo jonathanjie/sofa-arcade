@@ -39,6 +39,8 @@ test('seven taps score for accuracy and excess taps cost points', () => {
     if (index < 7) records.push(input('tap', index * 50));
     state = tick(state, records);
   }
+  assert.deepEqual(snackStack.projectForTv(state).players.map(player => player.done), [true, false]);
+  assert.equal(snackStack.projectForPhone(state, 'p0').d, 0, 'seven taps still leave room for an overtap');
   while (!snackStack.isRoundOver(state)) state = tick(state);
   assert.deepEqual(snackStack.scores(state), [
     { playerId: 'p0', score: 99 }, { playerId: 'p1', score: 56 },
@@ -102,7 +104,7 @@ test('every fourth slot doubles a settled gain and only settles it once', () => 
     const at = elapsed % SLOT_MS - PREVIEW_MS;
     state = tick(state, at === 0 ? [{ playerId: 'p0', input: { kind: 'tap', at, value: 0, slot } }] : []);
   }
-  assert.deepEqual(snackStack.scores(state), [{ playerId: 'p0', score: 10 }, { playerId: 'p1', score: 0 }]);
+  assert.deepEqual(snackStack.scores(state), [{ playerId: 'p0', score: 15 }, { playerId: 'p1', score: 0 }]);
   assert.equal(tick(state), state);
 });
 
@@ -115,4 +117,35 @@ test('a phone only sees its own answer status and the TV keeps the count cue', (
     i: 0, c: byId('count-mice'), t: PREVIEW_MS + 50, n: 0, d: 0,
   });
   assert.equal(snackStack.projectForTv(state).variant, 0);
+});
+
+test('permanent departures leave the game before input and settlement', () => {
+  const state = { ...fixture('quick-taps'), elapsed: PREVIEW_MS + PLAY_MS + 200 };
+  const next = snackStack.step(state, [input('tap', 4999)], 50, {
+    departures: [{ playerId: 'p0', reason: 'kicked' }],
+  });
+  assert.equal(snackStack.projectForPhone(next, 'p0'), null);
+  assert.deepEqual(snackStack.projectForTv(next).players.map(player => player.id), ['p1']);
+  assert.deepEqual(snackStack.scores(next), [{ playerId: 'p1', score: 0 }]);
+  assert.equal(snackStack.projectForPhone(state, 'p0').n, 0, 'preserve the previous state for replay');
+});
+
+test('a later round narrows the cheese target, with difficulty capped after round three', () => {
+  function stop(round) {
+    const initial = snackStack.createRound(roster, 'cheese', round);
+    // At 1812 ms the pointer is just inside the first-round target and outside round three.
+    let state = { ...initial, slots: [{ card: byId('cheese-wheel'), variant: 0 }], elapsed: PREVIEW_MS + 1800 };
+    state = tick(state, [input('tap', 1812)]);
+    while (!snackStack.isRoundOver(state)) state = tick(state);
+    return snackStack.scores(state)[0].score;
+  }
+  assert.ok(stop(1) > stop(3));
+  assert.equal(stop(3), stop(12));
+});
+
+test('the phone gets a play anchor in host time and it follows discarded ticks', () => {
+  const state = snackStack.createRound(roster, 'clock', 1, { startsAt: 82_000 });
+  assert.equal(snackStack.projectForPhone(state, 'p0').a, 83_500);
+  const next = tick(state);
+  assert.equal(snackStack.projectForPhone(next, 'p0', { tickAt: 82_400 }).a, 83_850);
 });

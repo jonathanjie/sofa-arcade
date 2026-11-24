@@ -8,7 +8,7 @@ import { CARDS, PICTURE_ANGLE, TRACE, PREVIEW_MS, cheeseAngle, greenPosition, la
 import { launchPartyHarness } from './harness.mjs';
 import { inputsForCard } from './snack-stack-driver.mjs';
 
-const output = fileURLToPath(new URL('../../work/snack-stack/', import.meta.url));
+const output = fileURLToPath(new URL('../../work/snack-stack/review/', import.meta.url));
 
 async function waitFor(predicate, label, timeout = 5000) {
   const limit = performance.now() + timeout;
@@ -22,6 +22,18 @@ function percentiles(values) {
   const sorted = [...values].sort((a, b) => a - b);
   assert.ok(sorted.length >= 100);
   return { median: sorted[Math.ceil(sorted.length * .5) - 1], p95: sorted[Math.ceil(sorted.length * .95) - 1] };
+}
+
+function watchMouseHeights() {
+  const draw = CanvasRenderingContext2D.prototype.drawImage;
+  window.mouseHeights = new Set();
+  CanvasRenderingContext2D.prototype.drawImage = function (source, x, y, width, height) {
+    if (source.width === 16 && source.height === 16 && height >= 64) {
+      // Shared mice have 15 opaque rows. Snack Stack composites at CSS size on this TV.
+      window.mouseHeights.add(height * 15 / 16);
+    }
+    return draw.apply(this, arguments);
+  };
 }
 
 async function checkViewport(page) {
@@ -127,6 +139,7 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
   const issues = [];
   async function page(options, name) {
     const context = await browser.newContext(options);
+    if (name === 'TV') await context.addInitScript(watchMouseHeights);
     await context.addInitScript(() => {
       window.snackCsp = [];
       const animate = window.requestAnimationFrame.bind(window);
@@ -209,6 +222,7 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
     }
   };
   await phones[0].locator('.snack-phone[data-active="true"]').waitFor();
+  assert.equal(await tv.evaluate(() => window.mouseHeights.has(75)), true);
   const measure = () => tv.evaluate(() => new Promise(resolve => {
     const frames = [];
     let previous;
@@ -229,13 +243,17 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
   for (let index = 0; index < CARDS.length; index++) {
     await waitFor(() => view.scene.index === index && view.scene.phase === 'play', 'challenge ' + (index + 1), 10_000);
     const purpose = CARDS[view.scene.card].instruction;
-    for (const phone of phones) await phone.getByText(purpose, { exact: true }).waitFor();
+    for (const phone of phones) {
+      const brief = phone.getByText(purpose, { exact: true });
+      await brief.waitFor();
+      assert.ok(await brief.evaluate(node => node.clientHeight <= parseFloat(getComputedStyle(node).lineHeight) + 1));
+    }
     await Promise.all(phones.map(checkViewport));
     const plays = Promise.all(phones.map(phone => playController(phone, () => view)));
     if (index === 0) {
       await tv.locator('[data-party-canvas]').screenshot({ path: output + 'play-board.png' });
       await Promise.all([
-        tv.screenshot({ path: output + 'mid-play.png' }),
+        tv.screenshot({ path: output + 'mid-play-16.png' }),
         phones[0].screenshot({ path: output + 'phone-play.png' }),
       ]);
     }
@@ -246,7 +264,20 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
       await tv.emulateMedia({ reducedMotion: 'no-preference' });
     }
     if (index === 2) timing = measure();
+    await tv.screenshot({ path: output + 'card-' + CARDS[view.scene.card].id + '.png' });
     await plays;
+    if (view.scene.card === 0) {
+      await phones[0].getByText('7 / 7 · Stop').waitFor();
+      assert.equal(await phones[0].getByRole('button', { name: /Warm up/ }).isVisible(), true);
+    }
+    if ([2, 3, 8, 10].includes(view.scene.card)) {
+      await waitFor(() => view.scene.index === index && view.scene.phase === 'score', 'timed card reveal');
+      for (const name of names) {
+        const id = view.roster.find(player => player.name === name).id;
+        assert.ok(view.scene.players.find(player => player.id === id).gain >= 50 * view.scene.multiplier,
+          name + ' hit the timing window for ' + purpose);
+      }
+    }
     if (index === 3) {
       await waitFor(() => view.scene.index === index && view.scene.phase === 'score', 'Lala bonus reveal');
       await phones[0].locator('.snack-phone[data-phase="score"]').waitFor();
@@ -278,3 +309,48 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
   assert.ok(result.drawMs.p95 < 16.7);
   t.diagnostic(JSON.stringify(result));
 });
+
+for (const count of [2, 8]) {
+  test(`Snack Stack fits ${count} seats in the full TV play area`, { timeout: 20_000 }, async t => {
+    const fixture = await launchPartyHarness(t, { gameId: 'snack-stack' });
+    const host = await fixture.create();
+    const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
+    t.after(() => browser.close());
+    const names = ['Pepper', 'Juniper', 'Pistachio', 'Dumpling', 'Olive', 'Paprika', 'Biscuit', 'Sesame'];
+    await Promise.all(names.slice(0, count).map(async (name, look) => {
+      const phone = await fixture.connect(await fixture.join(host.code, look, name));
+      phone.send({ type: 'ready', value: true });
+    }));
+    const tv = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    await tv.addInitScript(watchMouseHeights);
+    const code = host.code;
+    // This separate context opens the existing room using the normal TV route.
+    await tv.goto(fixture.origin + '/?shelf=1');
+    await tv.evaluate(({ code, token }) => {
+      sessionStorage.setItem('sofa-party:host:' + code, JSON.stringify({ code, token }));
+    }, host);
+    await tv.goto(fixture.origin + '/?party=host&code=' + code);
+    const start = tv.getByRole('button', { name: 'Start', exact: true });
+    for (let attempt = 0; attempt < 20 && !(await start.isEnabled()); attempt++) await fixture.advance();
+    await start.click();
+    await fixture.advance(5150);
+    await tv.locator('[data-phase="playing"] canvas[data-party-canvas]').waitFor();
+    await tv.waitForFunction(() => window.mouseHeights.size > 0);
+    const heights = await tv.evaluate(() => [...window.mouseHeights]);
+    assert.ok(heights.includes(count === 2 ? 150 : 90), heights.join(', '));
+    await checkViewport(tv);
+    await tv.screenshot({ path: output + `mid-play-${count}.png` });
+    if (count === 2) {
+      const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+      await phone.goto(fixture.origin + '/?party=join&code=' + code);
+      await phone.getByLabel('Your name').fill('Late guest');
+      await phone.getByRole('radio').nth(2).check();
+      await phone.getByRole('button', { name: 'Ready', exact: true }).tap();
+      await phone.getByText('You’re in the next round').waitFor();
+      const warmUp = phone.getByRole('button', { name: /Warm up/ });
+      await warmUp.tap();
+      assert.equal(await warmUp.textContent(), 'Warm up · 1 tap');
+      await phone.screenshot({ path: output + 'phone-waiting.png' });
+    }
+  });
+}
