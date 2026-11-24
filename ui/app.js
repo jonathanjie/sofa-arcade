@@ -34,6 +34,7 @@ let collectionGame = null;
 let collectionIdentity = null;
 let collectionModules = null;
 let collectionLoading = null;
+let collectionStyles = null;
 let collectionLoadError = '';
 let collectionModalHTML = null;
 let collectionTutorial = null;
@@ -442,6 +443,8 @@ function renderOrchardMatch(){
 }
 function releaseCollectionGame() {
   collectionGame?.dispose();
+  collectionStyles?.release();
+  collectionStyles=null;
   collectionGame=null;
   collectionIdentity=null;
   collectionModalHTML=null;
@@ -527,7 +530,16 @@ function renderCollectionMatch() {
     else if(focusSelector){const control=overlays.querySelector(focusSelector);if(control&&!control.disabled){control.focus({preventScroll:true});if(selection)try{control.setSelectionRange(selection.start,selection.end);}catch{}}}
   }
   const root=$('#collection-game-root');
-  if(!collectionModules){
+  if(collectionModules&&!collectionLoadError&&!collectionStyles){
+    const styles=collectionModules.prepareStyles(document,state.role);
+    collectionStyles=styles;
+    styles.ready.then(()=>{
+      if(collectionStyles===styles){styles.loaded=true;render();}
+    },error=>{
+      if(collectionStyles===styles){styles.release();collectionStyles=null;collectionLoadError=error.message;render();}
+    });
+  }
+  if(!collectionStyles?.loaded){
     root.innerHTML=collectionLoadError?`<section class="collection-loading" role="alert"><h1>The council could not open.</h1><p>${esc(collectionLoadError)}</p><button class="button" data-action="retry-collection">Try again</button><button class="text-button" data-action="home">Back to the collection</button></section>`:'<div class="collection-loading" role="status"><span class="spinner"></span> Preparing the council…</div>';
     prepareCollectionModules();return;
   }
