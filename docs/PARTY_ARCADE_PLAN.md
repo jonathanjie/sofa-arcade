@@ -1,10 +1,10 @@
 # Party arcade build plan
 
-Status: in progress from 24 November 2026. Integration branch: `feature/party-arcade`. This file is the resume point. Update the "Progress" table after each phase.
+Integration branch: `party/integration`, based on `feature/party-arcade`. Update the "Progress" table after each phase.
 
 ## Goal
 
-Add arcade games for 2 to 16 phones and one TV to Sofa Arcade, as described in [party arcade ideas](games/party-arcade-ideas.md). The first release has the shared party platform and five playable games.
+Add arcade games for 2 to 16 phones and one TV to Sofa Arcade, as described in [party arcade ideas](games/party-arcade-ideas.md). The first release has the shared party platform, Tap Race, and five more games.
 
 ## Decisions (defaults chosen without the owner; change them here if Jon disagrees)
 
@@ -36,7 +36,7 @@ Add arcade games for 2 to 16 phones and one TV to Sofa Arcade, as described in [
 | 2 | Second Sol pass reviews phase 1 | Sol reviewer | Defects fixed; contract frozen in `docs/PARTY_CONTRACT.md` |
 | 3 | Five games in parallel, each in its own worktree and folder | One Sol worker per game | Each game passes its tests, plays with 2, 8 and 16 simulated phones, and looks right in screenshots |
 | 4 | Cross-review each game | Sol reviewer per game | Defects fixed |
-| 5 | Integrate, verify, open a pull request | Integrator | All checks green; browser play verified |
+| 5 | Integrate, verify, and record the results | Integrator | All checks green; browser play verified |
 
 First five games: **Don't Wake Lala**, **Dust Bunny Sumo**, **Wall of Paddles**, **Tug of Yarn**, **Snack Stack**.
 
@@ -46,10 +46,10 @@ First five games: **Don't Wake Lala**, **Dust Bunny Sumo**, **Wall of Paddles**,
 | --- | --- | --- | --- |
 | 1 | Done | `party/platform` | Tap Race and the shared party kit. Real sockets verified 16 phones, reconnects, late join, and two rounds. Chromium verified 3 phone pages plus 13 simulated phones, with 16.6 ms median and 17.6 ms p95 frame time. Peak phone downstream was 1,165 B/s. See the [party contract](PARTY_CONTRACT.md). |
 | 2 | Done | `party/platform` | Hardened room authority, peer admission, reconnects, fixed ticks and slow-phone handling. Verified 2, 8 and 16 phones, caught ten deliberate regressions, and reviewed the TV and phone captures. In Chromium at 1920×1080, the 16-runner draw callback took 0.3 ms at p95 and the display interval was 16.7 ms at p95. Browser join took 2.1 s. See the [additive contract changes](PARTY_CONTRACT.md#contract-changes-after-review). |
-| 3 | Game branches built | `party/game-*` | Five games were built on separate branches. Their game reports identify the shared platform gaps below. |
+| 3 | Done | `party/game-*` | Built Don't Wake Lala, Dust Bunny Sumo, Wall of Paddles, Tug of Yarn, and Snack Stack. Each branch has rule, controller, and 2-, 8-, and 16-phone checks. |
 | 3 follow-up | Platform changes complete | `party/platform-2` | Added round context, departures, duration-based harness budgets, phone clock sync, a full-stage TV layout and sprite scale guidance. Chromium verified the new frame and the 64 CSS px minimum for 16 Tap Race runners at 1920×1080. See the [party contract](PARTY_CONTRACT.md). |
-| 4 | Not started | | |
-| 5 | Not started | | |
+| 4 | Done | `party/game-*` | Reviewed revisions supplied for integration include the full-stage TV changes and game-specific fixes. |
+| 5 | Done | `party/integration` | Merged all five games and regenerated delivery files. One Chromium party played all six games with 16 seats and five game switches. All required suites passed. The hosted build listed six local-only games and refused party creation. See the local report at `outputs/party-integration-report.md`. |
 
 ## Checks for every phase
 

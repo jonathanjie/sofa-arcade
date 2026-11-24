@@ -8,7 +8,7 @@ Play on one Mac with a shared TV board and phone controllers. Party play support
 | --- | --- | --- |
 | Sofa Kingdoms | Playable | A crumb-collecting rivalry on a board rearranged by Lala |
 | Borrowed Minutes | Planned | A cooperative time-loop heist with echoes of earlier attempts |
-| Tap Race | Playable on the local Mac host | Race pixel mice in 20-second rounds for 2–16 phones |
+| Party arcade | Playable on the local Mac host | Six short games with one TV and 2–16 phones |
 | Gravity Orchard | Playable on the local Mac host | Tilt your garden and pass fruit across the bridge to fill picnic orders together |
 | Afterglow Market | Planned | Build and trade at an unpredictable night market |
 | The Odd Laws Society | Playable on the local host | Build a nine-plot borough through six sealed councils, finite markets and changing laws |
@@ -24,11 +24,15 @@ Games marked **Planned** have a design brief but cannot start a room.
 3. Scan the room QR code on each phone, or enter its six-character code at the same local address. Choose Jon on one phone and Lydia on the other.
 4. Start the game from the TV. In Gravity Orchard, select **Enter the orchard** on the TV. On each phone, select **Use touch controls** or finish tilt setup, then select **Ready**.
 
-For Tap Race, open **Party → Tap Race** on the local host. Guests can scan the TV code or choose **Join a party** and enter it. See the [LAN party guide](docs/LAN.md#party-games).
-
 The **desktop v0.2.0 tag** predates Gravity Orchard. For that game, use the portable host from this checkout or a Mac build from a commit that enables it. The hosted Site has no realtime coordinator. See the [release guide](docs/LOCAL_RELEASE.md) for Mac artifact selection and device checks.
 
 Sofa Kingdoms **Same-screen practice** lets one person play both characters in one browser. Each two-player game has a replayable tutorial. Sofa Kingdoms saves tutorial completion and Odd Laws Society saves tutorial progress in the current browser.
+
+## Party arcade
+
+Play Tap Race, Don't Wake Lala, Dust Bunny Sumo, Wall of Paddles, Tug of Yarn, or Snack Stack with one TV and 2–16 phones. Party play is available on the local Mac host only.
+
+Open a Mac app build from this source or run `start-sofa.command` from the portable ZIP. On the TV, open **Party**, select a game, and select **Host on the TV**. On each phone, scan the QR code or select **Join a party** and enter the room code. Choose a name and look, then tap **Ready**. Select **Start** on the TV. Use **Next game** on the podium to keep the same players for a new game. See the [LAN party guide](docs/LAN.md#party-games).
 
 ## Sound and motion
 
