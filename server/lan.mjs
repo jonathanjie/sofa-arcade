@@ -11,6 +11,11 @@ import { getGame } from '../games/catalog.mjs';
 import { createGravityOrchardHost } from './gravity-orchard-host.mjs';
 import { GRAVITY_BROWSER_FILES, GRAVITY_ASSET_FILES } from './gravity-orchard-delivery.mjs';
 import { createRequestPolicy } from './runtime/gravity-orchard-dependencies.mjs';
+import { PARTY_BROWSER_FILES } from './party-delivery.mjs';
+import { PARTY_ROOMS_PATH, handlePartyRequest } from './party/http.mjs';
+import { PARTY_ROOM_LIMITS } from './party/rooms.mjs';
+import { createPartyRealtime } from './realtime/party/index.mjs';
+import { PARTY_ENDPOINT, PARTY_LIMITS } from './realtime/party/protocol.mjs';
 
 const PROJECT_ROOT = fileURLToPath(new URL('../', import.meta.url));
 // A shared home host only needs a few simultaneous rooms and occasional retries.
@@ -38,9 +43,45 @@ function isLoopback(address) {
   return address === '::1' || address?.startsWith('127.');
 }
 
+function socketAdmission(limit, loopbackReserve) {
+  const sockets = new Set();
+  let remoteCount = 0;
+  return {
+    sockets,
+    admit(socket) {
+      const local = isLoopback(peerAddress(socket));
+      if (sockets.size >= limit || (!local && remoteCount >= limit - loopbackReserve)) return false;
+      sockets.add(socket);
+      if (!local) remoteCount++;
+      socket.once('close', () => {
+        sockets.delete(socket);
+        if (!local) remoteCount--;
+      });
+      return true;
+    },
+  };
+}
+
+function createPeerBudget(budget, windowMs) {
+  const peers = new Map();
+  let windowEnds = 0;
+  return (socket, now) => {
+    const address = peerAddress(socket);
+    if (isLoopback(address)) return true;
+    if (now >= windowEnds) {
+      peers.clear();
+      windowEnds = now + windowMs;
+    }
+    const used = peers.get(address) || 0;
+    if (used >= budget || (!used && peers.size >= ROOM_CREATE_PEER_LIMIT)) return false;
+    peers.set(address, used + 1);
+    return true;
+  };
+}
+
 const ROOM_CODE = '[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}';
 const SOURCES = new Map([
-  ...GRAVITY_BROWSER_FILES.map(({ url, source }) => [url, source]),
+  ...[...GRAVITY_BROWSER_FILES, ...PARTY_BROWSER_FILES].map(({ url, source }) => [url, source]),
   ['/app.js', 'ui/app.js'], ['/styles.css', 'ui/styles.css'],
   ['/audio.js', 'ui/audio.js'], ['/score.mjs', 'ui/score.mjs'],
   ['/motion.js', 'ui/motion.js'], ['/motion.css', 'ui/motion.css'],
@@ -317,9 +358,9 @@ async function respondWeb(response, result) {
   response.end(Buffer.from(await result.arrayBuffer()));
 }
 
-async function bodyBytes(request) {
+async function bodyBytes(request, limit = MAX_BODY_BYTES) {
   const declared = Number(request.headers['content-length']);
-  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
+  if (Number.isFinite(declared) && declared > limit) {
     request.resume();
     throw Object.assign(new Error('That request is too large.'), { status: 413 });
   }
@@ -331,7 +372,7 @@ async function bodyBytes(request) {
     const end = () => { clean(); resolve(Buffer.concat(chunks)); };
     const data = chunk => {
       size += chunk.length;
-      if (size > MAX_BODY_BYTES) {
+      if (size > limit) {
         clean(); request.resume();
         reject(Object.assign(new Error('That request is too large.'), { status: 413 }));
       } else chunks.push(chunk);
@@ -361,6 +402,8 @@ export async function startLanServer({
   enableGravityOrchard = getGame('gravity-orchard')?.status === 'playable',
   realtimeClock,
   realtimeSeed,
+  partyClock,
+  partySeed,
   onRuntimeTiming,
 } = {}) {
   if (roomApi !== undefined && typeof roomApi !== 'function') throw new TypeError('roomApi must be an authoritative request handler.');
@@ -376,24 +419,13 @@ export async function startLanServer({
   const streams = new Map();
   let streamCount = 0;
   let activeRoomCount;
-  const peerBudgets = new Map();
-  let budgetWindowEnds = 0;
+  const takeCreateBudget = createPeerBudget(roomCreateBudget, roomCreateWindowMs);
+  const takePartyCreateBudget = createPeerBudget(roomCreateBudget, roomCreateWindowMs);
   let pendingCreates = 0;
 
   function admitCreate(socket) {
     const now = Date.now();
-    const address = peerAddress(socket);
-    if (!isLoopback(address)) {
-      if (now >= budgetWindowEnds) {
-        peerBudgets.clear();
-        budgetWindowEnds = now + roomCreateWindowMs;
-      }
-      const used = peerBudgets.get(address) || 0;
-      if (used >= roomCreateBudget || (!used && peerBudgets.size >= ROOM_CREATE_PEER_LIMIT)) {
-        return { status: 429, code: 'room_create_rate', error: 'Too many new rooms. Try again in a minute.' };
-      }
-      peerBudgets.set(address, used + 1);
-    }
+    if (!takeCreateBudget(socket, now)) return { status: 429, code: 'room_create_rate', error: 'Too many new rooms. Try again in a minute.' };
     // Reserve before yielding to the async room authority and release on every result.
     activeRoomCount ??= sqlite.prepare('SELECT count(*) AS count FROM sofa_rooms WHERE expires_at > ?');
     if (pendingCreates + activeRoomCount.get(now).count >= activeRoomLimit) {
@@ -411,6 +443,7 @@ export async function startLanServer({
   let secureStatus = Object.freeze({ enabled: false, status: 'disabled', controllerOrigins: [], requiresPhoneTrust: false });
   function makePolicy(httpsOrigins) {
     const tlsPolicy = createRequestPolicy({ httpsOrigins });
+    const partyTlsPolicy = createRequestPolicy({ httpsOrigins, upgradePath: PARTY_ENDPOINT });
     function validateRequest(request) {
       if (request.socket.encrypted === true) return tlsPolicy.validateRequest(request);
       const header = name => {
@@ -443,11 +476,12 @@ export async function startLanServer({
     }
     return {
       validateRequest,
-      validateUpgrade(request) {
-        if (request.socket.encrypted === true) return tlsPolicy.validateUpgrade(request);
+      validateUpgrade(request, party = false) {
+        if (party && request.headers['sec-websocket-protocol'] !== undefined) return false;
+        if (request.socket.encrypted === true) return (party ? partyTlsPolicy : tlsPolicy).validateUpgrade(request);
         const result = validateRequest(request);
         const count = name => request.rawHeaders.filter((value, i) => i % 2 === 0 && value.toLowerCase() === name).length;
-        return result.ok && request.method === 'GET' && request.url === '/api/realtime/gravity-orchard'
+        return result.ok && request.method === 'GET' && request.url === (party ? PARTY_ENDPOINT : '/api/realtime/gravity-orchard')
           && count('origin') === 1 && request.headers.origin === result.origin
           && count('upgrade') === 1 && request.headers.upgrade?.toLowerCase() === 'websocket'
           && count('connection') === 1 && request.headers.connection?.split(',').some(value => value.trim().toLowerCase() === 'upgrade');
@@ -486,6 +520,11 @@ export async function startLanServer({
     },
   });
   const effectiveRoomApi = roomApi || orchard.authority;
+  const partySockets = socketAdmission(PARTY_LIMITS.sockets, PARTY_LIMITS.localSocketReserve);
+  const party = createPartyRealtime({
+    clock: partyClock, seed: partySeed, admitSocket: partySockets.admit,
+    validateUpgrade: request => !closed && requestPolicy?.validateUpgrade(request, true) === true,
+  });
 
   // The exact same injected authority handles HTTP and every subscriber's GET.
   // Neither this adapter nor a broadcast cache ever sees a full engine state.
@@ -587,7 +626,7 @@ export async function startLanServer({
       const currentHost = url.hostname;
       const joinHost = ['localhost', '127.0.0.1', '[::1]'].includes(currentHost) ? (addresses[0] || currentHost) : currentHost;
       const joinOrigin = url.protocol === 'https:' ? url.origin : `http://${joinHost}:${actualPort}`;
-      const meta = `<meta name="sofa-transport" content="lan"><meta name="sofa-join-origin" content="${escapeAttribute(joinOrigin)}">`
+      const meta = `<meta name="sofa-transport" content="lan"><meta name="sofa-party" content="enabled"><meta name="sofa-join-origin" content="${escapeAttribute(joinOrigin)}">`
         + (enableGravityOrchard ? '<meta name="sofa-gravity-orchard" content="candidate">' : '');
       const html = (await readFile(path.join(root, 'ui/index.html'), 'utf8')).replace('</head>', meta + '</head>');
       const webSocketOrigin = `${url.protocol === 'https:' ? 'wss' : 'ws'}://${url.host}`;
@@ -644,14 +683,24 @@ export async function startLanServer({
         return await subscribe(request, response, stream[1].toUpperCase(), origin);
       }
       if (url.pathname.startsWith('/api/')) {
+        const partyRoute = url.pathname.startsWith('/api/party/');
         if (!['GET', 'HEAD'].includes(request.method)) {
           const types = request.headersDistinct['content-type'] || [];
           if (types.length !== 1 || types[0].split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
             return respondJson(response, 415, { error: 'Send the room command as JSON.', code: 'json_required' });
           }
         }
-        const body = ['GET', 'HEAD'].includes(request.method) ? undefined : await bodyBytes(request);
+        const body = ['GET', 'HEAD'].includes(request.method) ? undefined
+          : await bodyBytes(request, partyRoute ? PARTY_ROOM_LIMITS.bodyBytes : MAX_BODY_BYTES);
         const webRequest = new Request(url, { method: request.method, headers: request.headers, ...(body ? { body } : {}) });
+        if (partyRoute) {
+          if (url.search) return respondJson(response, 400, { code: 'invalid_address', error: 'Use the party address without a query.' });
+          if (request.method === 'POST' && url.pathname === PARTY_ROOMS_PATH && !takePartyCreateBudget(request.socket, Date.now())) {
+            return respondJson(response, 429, { code: 'party_create_rate', error: 'Too many new parties. Try again in a minute.' });
+          }
+          const result = await handlePartyRequest(webRequest, url.pathname, party.rooms);
+          return respondJson(response, result.status, result.body);
+        }
         const creating = request.method === 'POST' && /^\/api\/rooms\/?$/.test(url.pathname);
         if (creating) {
           const denied = admitCreate(request.socket);
@@ -675,22 +724,10 @@ export async function startLanServer({
     }
   };
   const server = createServer(requestHandler);
-  const sockets = new Set();
-  let remoteSocketCount = 0;
+  const { sockets, admit } = socketAdmission(httpSocketLimit, loopbackSocketReserve);
   let ready = false;
   server.on('connection', socket => {
-    const local = isLoopback(peerAddress(socket));
-    if (!ready || closed || sockets.size >= httpSocketLimit
-      || (!local && remoteSocketCount >= httpSocketLimit - loopbackSocketReserve)) {
-      socket.destroy();
-      return;
-    }
-    sockets.add(socket);
-    if (!local) remoteSocketCount++;
-    socket.once('close', () => {
-      sockets.delete(socket);
-      if (!local) remoteSocketCount--;
-    });
+    if (!ready || closed || !admit(socket)) socket.destroy();
   });
 
   async function closeHttp() {
@@ -704,7 +741,9 @@ export async function startLanServer({
       clearTimeout(deadline);
     }
   }
-  const handleUpgrade = (request, socket, head) => orchard.handleUpgrade(request, socket, head);
+  const handleUpgrade = (request, socket, head) => request.url?.split('?', 1)[0] === PARTY_ENDPOINT
+    ? party.handleUpgrade(request, socket, head)
+    : orchard.handleUpgrade(request, socket, head);
   server.on('upgrade', handleUpgrade);
   server.requestTimeout = 15_000;
   server.headersTimeout = 15_000;
@@ -719,6 +758,7 @@ export async function startLanServer({
     await orchard.restoreExisting();
     ready = true;
   } catch (error) {
+    party.close();
     await orchard.close();
     if (server.listening) await closeHttp();
     sqlite.close(); throw error;
@@ -732,6 +772,7 @@ export async function startLanServer({
     close() {
       if (closing) return closing;
       closed = true;
+      party.close();
       for (const clients of streams.values()) for (const client of [...clients]) { removeClient(client); client.response.end(); }
       closing = (async () => {
         const drain = async () => {

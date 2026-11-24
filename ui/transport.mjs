@@ -9,7 +9,8 @@ export function readTransportConfig({ document: doc = globalThis.document, origi
     } catch {}
   }
   const orchard = mode === 'lan' && ['candidate', 'enabled'].includes(doc?.querySelector('meta[name="sofa-gravity-orchard"]')?.getAttribute('content'));
-  return Object.freeze({ mode, joinOrigin, realtime: mode === 'lan', ...(orchard ? {gravityOrchard: true} : {}) });
+  const party = mode === 'lan' && doc?.querySelector('meta[name="sofa-party"]')?.getAttribute('content') === 'enabled';
+  return Object.freeze({ mode, joinOrigin, realtime: mode === 'lan', ...(orchard ? { gravityOrchard: true } : {}), ...(party ? { party: true } : {}) });
 }
 
 /** Keep native listener identities intact; phones receive only usable LAN links. */

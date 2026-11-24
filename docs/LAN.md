@@ -19,7 +19,7 @@ No `npm install`, framework build, cloud account, or database setup is required 
 
 Cast the Mac browser to the TV as usual. The phone-to-Mac traffic stays on the LAN; casting itself can still add display delay. A direct cable or running the local page in the TV browser avoids a separate screencast step where supported.
 
-To stop, press **Control+C** in Terminal. Room state is saved in `.sofa-lan/rooms.sqlite`; keep this folder to resume within the normal 24-hour room lifetime. Phone credentials remain in each browser. These local rooms are separate from rooms created on the public Site.
+To stop, press **Control+C** in Terminal. Two-seat room state is saved in `.sofa-lan/rooms.sqlite`; keep this folder to resume within the normal 24-hour room lifetime. Phone credentials remain in each browser. These local rooms are separate from rooms created on the public Site.
 
 ## Connecting the phones
 
@@ -36,6 +36,12 @@ node scripts/lan-server.mjs --port 4178
 A different port in this checkout still uses the same SQLite file. Use a separate checkout or a test harness with a temporary database for an independent host.
 
 This is a local HTTP host for a trusted home network. It does not expose a public internet server, configure router port forwarding, or create a tunnel. Keep the host running only when you want to play locally.
+
+## Party games
+
+Open **Party → Tap Race → Host on the TV** for 2–16 phones. Guests can scan the QR code or choose **Join a party** and enter the TV code. Each guest chooses a name and look, then taps **Ready**. On the TV, select **Start** once at least two guests are ready. The podium has **Next round** and a **Players** button for managing seats.
+
+Party rooms end when the host stops. If a phone disconnects, its seat stays reserved for 30 seconds after the host detects the disconnect. See the [party contract](PARTY_CONTRACT.md) for limits, routes, and game authoring.
 
 ## Implementation and tests
 

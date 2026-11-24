@@ -3,8 +3,11 @@ import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { GRAVITY_BROWSER_FILES, GRAVITY_ASSET_FILES, GRAVITY_HOST_FILES } from '../server/gravity-orchard-delivery.mjs';
 
+import { PARTY_BROWSER_FILES, PARTY_HOST_FILES } from '../server/party-delivery.mjs';
+
 export const BROWSER_FILES = Object.freeze([
   ...GRAVITY_BROWSER_FILES,
+  ...PARTY_BROWSER_FILES,
   { url: '/app.js', source: 'ui/app.js' },
   { url: '/styles.css', source: 'ui/styles.css' },
   { url: '/audio.js', source: 'ui/audio.js' },
@@ -39,6 +42,7 @@ export const BROWSER_FILES = Object.freeze([
 
 export const SERVER_FILES = Object.freeze([
   ...GRAVITY_HOST_FILES,
+  ...PARTY_HOST_FILES,
   'server/lan.mjs',
   'server/rooms.mjs',
   'game/engine.mjs',
@@ -158,7 +162,7 @@ export const ASSET_FILES = Object.freeze([
 /** No directory walk: adding a source/test beside a runtime file never ships it. */
 export async function runtimeFiles(root) {
   const files = [...new Set([
-    'start-sofa.command', 'scripts/lan-server.mjs', 'ui/index.html', 'docs/LAN.md',
+    'start-sofa.command', 'scripts/lan-server.mjs', 'ui/index.html', 'docs/LAN.md', 'docs/PARTY_CONTRACT.md',
     ...SERVER_FILES, ...BROWSER_FILES.map(entry => entry.source), ...ASSET_FILES,
   ])].sort();
   for (const file of files) await checkedRuntimePath(root, file);
