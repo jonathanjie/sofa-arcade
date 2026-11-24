@@ -105,6 +105,12 @@ Run `npm ci --prefix desktop --ignore-scripts` for the desktop tooling used by i
 
 | Check | Command |
 | --- | --- |
+| Authored source lint with a content cache in `work/eslint/` | `npm run lint` |
+| Installed unit suite with representative simulations | `npm test` |
+| Dependency-free unit subset | `npm run test:standalone` |
+| Full game simulation proofs and replays | `npm run test:exhaustive` |
+| Full realtime input and checkpoint checks | `npm run test:realtime:exhaustive` |
+| Local Worker and D1 council flow after building | `npm run test:cloud` |
 | Local room protocol, package and integration | `npm run test:integration` |
 | Gravity Orchard integration | `npm run test:gravity-orchard` |
 | Room and realtime fixture browser tests | `npm run test:browser` |
