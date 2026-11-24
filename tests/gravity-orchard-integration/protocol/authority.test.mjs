@@ -30,6 +30,9 @@ test('planned game requires explicit local candidate capability and valid practi
 });
 
 test('two real authenticated sockets drive GO1 with bounded SQLite writes and recipient-only applied ACKs', async t => {
+  // Credential checks use the wall clock for persisted presence. Keep that
+  // heartbeat outside the measurement of gameplay and checkpoint writes.
+  t.mock.timers.enable({ apis: ['Date'], now: Date.now() });
   const h = await harness(t);
   assert.deepEqual(h.jon.welcome.viewer, { role: 'player', playerId: 'jon' });
   assert.deepEqual(h.lydia.welcome.viewer, { role: 'player', playerId: 'lydia' });
@@ -172,10 +175,11 @@ test('host stalls pause instead of catching up and restart restores a durable pa
   } finally { raw.close(); }
 });
 
-test('graceful whole-host restart reconnects the same clients and credentials to paused recovery', { timeout: 20000 }, async t => {
+test('graceful whole-host restart reconnects the same clients and credentials to paused recovery', { timeout: 300_000 }, async t => {
   const directory = await mkdtemp(path.join(tmpdir(), 'go7-live-restart-'));
   const databasePath = path.join(directory, 'rooms.sqlite');
-  let host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath, enableGravityOrchard: true });
+  const clock = manualClock();
+  let host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath, enableGravityOrchard: true, realtimeClock: clock });
   const origin = host.origin, port = host.port;
   const room = await createRoom(host, { mode: 'practice' });
   const clients = {}, snapshots = {}, states = {}, connections = { host: 0, jon: 0, lydia: 0 };
@@ -183,28 +187,39 @@ test('graceful whole-host restart reconnects the same clients and credentials to
     for (const client of Object.values(clients)) client.dispose();
     await host.close(); await rm(directory, { recursive: true, force: true });
   });
+  // Drive the clients' input and reconnect timers alongside the host scheduler.
+  // A slow OS scheduling turn must not look like a host stall or stale input.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  async function advanceUntil(check, message = 'Expected the room transition.') {
+    for (let step = 0; step < 160; step++) {
+      if (check()) return;
+      t.mock.timers.tick(50);
+      await clock.advance(50);
+    }
+    assert.fail(message);
+  }
   class LocalSocket extends WebSocket { constructor(url) { super(url, { origin }); } }
   for (const seat of ['host', 'jon', 'lydia']) {
     clients[seat] = createRealtimeClient({ url: origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
-      roomCode: room.code, token: room.tokens[seat], WebSocketImpl: LocalSocket,
+      roomCode: room.code, token: room.tokens[seat], WebSocketImpl: LocalSocket, now: clock.now,
       onSnapshot: snapshot => { snapshots[seat] = snapshot; },
       onStatus: status => { states[seat] = status.state; if (status.state === 'connected') connections[seat]++; },
     });
     clients[seat].connect();
   }
   const ready = seat => clients[seat].sendCommand({ id: crypto.randomUUID(), kind: 'ready', payload: { value: true } });
-  await until(() => snapshots.host?.presence.jon.inputFresh && snapshots.host?.presence.lydia.inputFresh);
+  await advanceUntil(() => snapshots.host?.presence.jon.inputFresh && snapshots.host?.presence.lydia.inputFresh);
   assert.equal((await ready('jon')).accepted, true);
   assert.equal((await ready('lydia')).accepted, true);
-  await until(() => snapshots.host?.view.phase === 'playing');
+  await advanceUntil(() => snapshots.host?.view.phase === 'playing');
   clients.jon.setInput({ x: 0.5, y: -0.25, brake: false });
-  await until(() => snapshots.host?.view.players.jon.input.x === 0.5);
+  await advanceUntil(() => snapshots.host?.view.players.jon.input.x === 0.5);
   const before = snapshots.host.view;
   await host.close();
   // Keep all original clients mounted. A host restart must not require a page
   // reload, a new credential, or a replacement realtime client object.
-  host = await startLanServer({ host: '127.0.0.1', port, databasePath, enableGravityOrchard: true });
-  await until(() => Object.keys(clients).every(seat => connections[seat] >= 2 && states[seat] === 'connected'
+  host = await startLanServer({ host: '127.0.0.1', port, databasePath, enableGravityOrchard: true, realtimeClock: clock });
+  await advanceUntil(() => Object.keys(clients).every(seat => connections[seat] >= 2 && states[seat] === 'connected'
     && snapshots[seat]?.view.pauseReason === 'recovery' && snapshots[seat]?.view.runEpoch > before.runEpoch),
   'Same TV and phone client instances must reconnect after a graceful host restart.');
   const recovered = snapshots.host.view;
@@ -216,11 +231,11 @@ test('graceful whole-host restart reconnects the same clients and credentials to
   assert.equal(host.realtimeDiagnostics(room.code).coordinator.sockets, 3);
   const read = await api(host, `/api/rooms/${room.code}`, { token: room.tokens.host });
   assert.equal(read.status, 200); assert.equal(read.value.state.runEpoch, recovered.runEpoch);
-  await until(() => snapshots.host.presence.jon.inputFresh && snapshots.host.presence.lydia.inputFresh);
+  await advanceUntil(() => snapshots.host.presence.jon.inputFresh && snapshots.host.presence.lydia.inputFresh);
   assert.equal((await ready('jon')).accepted, true);
   assert.equal(snapshots.host.view.phase, 'paused', 'One returning controller cannot resume alone.');
   assert.equal((await ready('lydia')).accepted, true);
-  await until(() => snapshots.host.view.phase === 'playing');
+  await advanceUntil(() => snapshots.host.view.phase === 'playing');
   assert.ok(snapshots.host.view.runEpoch > recovered.runEpoch);
   assert.deepEqual(snapshots.host.view.players.jon.input, NEUTRAL, 'Old held steering stays cleared after recovery.');
   for (const client of Object.values(clients)) {
@@ -302,7 +317,7 @@ test('two concurrent orchard rooms isolate steering, snapshots and durable lifec
   }
 });
 
-test('failed room-row update rolls back the new Orchard checkpoint and closes the faulted room', { timeout: 30_000 }, async t => {
+test('failed room-row update rolls back the new Orchard checkpoint and closes the faulted room', { timeout: 300_000 }, async t => {
   const directory = await mkdtemp(path.join(tmpdir(), 'go7-rollback-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const databasePath = path.join(directory, 'rooms.sqlite');

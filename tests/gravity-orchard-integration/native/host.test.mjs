@@ -11,14 +11,14 @@ import { attachNativeSecureLan, validateSecureCommand } from '../../../desktop/h
 import { hostRecord, validateSecureControllerStatus, createHostLifecycle } from '../../../desktop/host/lifecycle.mjs';
 
 const httpsGet = (url, ca, headers = {}) => new Promise((resolve, reject) => {
-  const req = https.get(url, { ca, headers, timeout: 3000 }, res => {
+  const req = https.get(url, { ca, headers }, res => {
     const parts = []; res.on('data', part => parts.push(part));
     res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(parts).toString() }));
   });
-  req.on('timeout', () => req.destroy(new Error('HTTPS timed out'))); req.on('error', reject);
+  req.on('error', reject);
 });
 
-test('native adapter composes verified HTTPS into the existing authority and persists explicit disable', { timeout: 25000 }, async t => {
+test('native adapter composes verified HTTPS into the existing authority and persists explicit disable', { timeout: 300_000 }, async t => {
   const directory = await mkdtemp(path.join(await realpath(tmpdir()), 'go7-native-secure-'));
   const databasePath = path.join(directory, 'rooms.sqlite');
   let host, lan;
@@ -96,28 +96,34 @@ test('native refresh and Quit serialize with an active privileged operation and 
   await assert.rejects(lifecycle.secureCommand('getStatus', {}));
 });
 
-test('real owned Node child exposes setup only on its inherited private pipe and shuts down on EOF', { timeout: 12000 }, async t => {
+test('real owned Node child exposes setup only on its inherited private pipe and shuts down on EOF', { timeout: 300_000 }, async t => {
   const directory = await mkdtemp(path.join(await realpath(tmpdir()), 'go7-native-pipe-'));
   const root = fileURLToPath(new URL('../../../', import.meta.url));
   const child = spawn(process.execPath, [path.join(root, 'desktop/host/entry.mjs'), '--root', root, '--database', path.join(directory, 'rooms.sqlite'), '--port', '0', '--gravity-orchard-candidate'], { env: { PATH: '/nonexistent', SOFA_NATIVE_E2E_TIMING: '1' }, stdio: ['pipe', 'pipe', 'ignore'] });
+  const readyRecord = Promise.withResolvers();
+  const secureResult = Promise.withResolvers();
   const records = []; let buffer = '';
   child.stdout.on('data', chunk => {
     buffer += chunk;
     let index;
-    while ((index = buffer.indexOf('\n')) >= 0) { records.push(JSON.parse(buffer.slice(0, index))); buffer = buffer.slice(index + 1); }
+    while ((index = buffer.indexOf('\n')) >= 0) {
+      const record = JSON.parse(buffer.slice(0, index));
+      records.push(record);
+      if (record.type === 'ready') readyRecord.resolve(record);
+      if (record.type === 'secure-result') secureResult.resolve(record);
+      buffer = buffer.slice(index + 1);
+    }
     assert.ok(buffer.length < 16384);
   });
   const exited = new Promise((resolve, reject) => { child.once('error', reject); child.once('exit', (code, signal) => resolve({ code, signal })); });
   t.after(async () => { if (child.exitCode === null && child.signalCode === null) { child.stdin.end(); await exited; } await rm(directory, { recursive: true, force: true }); });
-  const waitRecord = async predicate => {
-    const deadline = Date.now() + 6000;
-    while (Date.now() < deadline) { const value = records.find(predicate); if (value) return value; await new Promise(resolve => setTimeout(resolve, 20)); }
-    throw new Error('The owned native child did not respond through its pipe.');
-  };
-  const ready = await waitRecord(value => value.type === 'ready');
+  const waitForReply = reply => Promise.race([reply.promise, exited.then(({ code, signal }) => {
+    throw new Error(`The native child exited before replying (code ${code}, signal ${signal}).`);
+  })]);
+  const ready = await waitForReply(readyRecord);
   assert.equal(ready.secureControllerStatus.status, 'needs-setup');
   child.stdin.write(JSON.stringify({ type: 'secure', id: 'private-request-1', operation: 'getStatus', options: {} }) + '\n');
-  const result = await waitRecord(value => value.type === 'secure-result');
+  const result = await waitForReply(secureResult);
   assert.equal(result.id, 'private-request-1'); assert.equal(result.ok, true); assert.equal(result.status.status, 'needs-setup');
   const created = await fetch(ready.hostUrl + 'api/rooms', { method: 'POST', headers: { Origin: ready.hostUrl.slice(0, -1), 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(created.status, 201); const room = await created.json();

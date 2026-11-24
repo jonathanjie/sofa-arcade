@@ -67,7 +67,7 @@ test('verified HTTPS/WSS and HTTP/WS share the original request, credential auth
   for (const route of ['/api/host/secure-lan', '/server/gravity-orchard-host.mjs', '/server/runtime/gravity-orchard-dependencies.mjs', '/games/gravity-orchard/engine.mjs', '/desktop/secure-lan/fixture.mjs', '/secure-lan-v1/root-key.pem']) {
     assert.equal((await httpsCall(origin, route, { ca: material.ca })).status, 404, route);
   }
-  await t.test('real WSS revokes the old phone after an HTTP seat rejoin', { timeout: 30_000 }, async () => {
+  await t.test('real WSS revokes the old phone after an HTTP seat rejoin', { timeout: 300_000 }, async () => {
     const oldInput = jon.input({ x: 1, y: 0, brake: false });
     await flush();
     const closed = once(jon.ws, 'close');

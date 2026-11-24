@@ -7,7 +7,7 @@ import { performance } from 'node:perf_hooks';
 import { DatabaseSync } from 'node:sqlite';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startLanServer } from '../../../server/lan.mjs';
-import { api, connectPeer, createRoom, flush, harness, until } from './helpers.mjs';
+import { api, connectPeer, createRoom, flush, harness, manualClock, until } from './helpers.mjs';
 
 const operations = new Set(['sqlite.prepare', 'sqlite.get', 'sqlite.all', 'sqlite.run', 'sqlite.exec',
   'sqlite.begin', 'sqlite.commit', 'sqlite.rollback', 'checkpoint.project', 'checkpoint.stringify', 'realtime.timer']);
@@ -81,13 +81,14 @@ test('optional timing observes real SQLite, heartbeat and coordinator work witho
   assert.equal(records.length, afterClose, 'Closed coordinator callbacks cannot reappear through the observer.');
 });
 
-test('throwing timing observers preserve default-clock auth, commands, persistence and owned close', async t => {
+test('throwing timing observers preserve auth, countdown, pause and persistence', async t => {
   const directory = await mkdtemp(path.join(tmpdir(), 'go7-runtime-timing-throw-'));
   const filename = path.join(directory, 'rooms.sqlite');
   const records = [], peers = [], startedAt = performance.now();
   let host;
   t.after(async () => { for (const peer of peers) peer.ws.terminate(); await host?.close(); await rm(directory, { recursive: true, force: true }); });
-  host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath: filename, enableGravityOrchard: true,
+  const clock = manualClock();
+  host = await startLanServer({ realtimeClock: clock, host: '127.0.0.1', port: 0, databasePath: filename, enableGravityOrchard: true,
     onRuntimeTiming(record) { records.push(record); throw new Error('observer must not escape'); } });
   const room = await createRoom(host);
   const jon = await connectPeer(host, room, 'jon'); peers.push(jon);
@@ -98,6 +99,7 @@ test('throwing timing observers preserve default-clock auth, commands, persisten
   jon.input(); lydia.input(); await flush();
   assert.equal((await jon.command('ready', { value: true })).result.accepted, true);
   assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
+  await clock.advance(100);
   await until(() => tv.snapshot.view.phase === 'countdown' && tv.snapshot.view.tick >= 3);
   assert.equal((await tv.command('pause', { reason: 'help' })).result.accepted, true);
   await until(() => tv.snapshot.view.phase === 'paused');
@@ -106,7 +108,7 @@ test('throwing timing observers preserve default-clock auth, commands, persisten
   assert.equal(read.status, 200); assert.equal(read.value.state.runEpoch, tv.snapshot.view.runEpoch);
   assert.deepEqual(read.value.state.ready, { jon: false, lydia: false });
   assert.equal(host.realtimeDiagnostics(room.code).coordinator.checkpointErrors, 0);
-  assert.ok(records.some(record => record.operation === 'realtime.timer'), 'The default real timer is observed.');
+  assert.ok(records.some(record => record.operation === 'realtime.timer'), 'The coordinator timer is observed.');
   assert.ok(records.some(record => record.operation === 'sqlite.commit'));
   assertSafeRecords(records, startedAt);
   await host.close();
@@ -118,6 +120,34 @@ test('throwing timing observers preserve default-clock auth, commands, persisten
     assert.equal(checkpoint.engine.state.pauseReason, 'help');
   } finally { saved.close(); }
   const afterClose = records.length;
+  await clock.advance(80);
+  assert.equal(records.length, afterClose, 'Owned close cancels the observed callbacks.');
+});
+
+test('throwing observers preserve the default real timer, authenticated commands and owned close', async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-observed-clock-'));
+  const databasePath = path.join(directory, 'rooms.sqlite');
+  const records = [];
+  const host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath, enableGravityOrchard: true,
+    onRuntimeTiming(record) { records.push(record); throw new Error('observer must not escape'); } });
+  t.after(async () => { await host.close(); await rm(directory, { recursive: true, force: true }); });
+  const room = await createRoom(host);
+  const jon = await connectPeer(host, room, 'jon');
+  t.after(() => jon.ws.terminate());
+  const rejected = await connectPeer(host, room, 'jon', { token: 'x'.repeat(43) });
+  assert.equal(rejected.welcome, null);
+  const id = crypto.randomUUID();
+  assert.equal((await jon.command('ready', { value: false }, id)).result.accepted, true);
+  await until(() => records.some(record => record.operation === 'realtime.timer'), 'The default real timer is observed.');
+  await host.close();
+  const afterClose = records.length;
+  const db = new DatabaseSync(databasePath);
+  try {
+    const saved = db.prepare('SELECT checkpoint FROM sofa_gravity_checkpoints WHERE code = ?').get(room.code);
+    const entry = JSON.parse(saved.checkpoint).commands.find(command => command.command.id === id);
+    assert.equal(entry.actor, 'player:jon');
+    assert.equal(entry.result.accepted, true);
+  } finally { db.close(); }
   await delay(80);
   assert.equal(records.length, afterClose, 'Owned close cancels the observed default-clock callbacks.');
 });

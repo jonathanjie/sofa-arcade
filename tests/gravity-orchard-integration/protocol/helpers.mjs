@@ -7,8 +7,8 @@ import { startLanServer } from '../../../server/lan.mjs';
 export const NEUTRAL = Object.freeze({ x: 0, y: 0, brake: true });
 export async function flush() { for (let i = 0; i < 4; i++) await turn(); }
 export async function until(predicate, message = 'Timed out waiting for the live host.') {
-  const end = Date.now() + 4000;
-  while (!predicate()) { if (Date.now() >= end) throw new Error(message); await delay(4); }
+  const end = performance.now() + 4000;
+  while (!predicate()) { if (performance.now() >= end) throw new Error(message); await delay(4); }
   return predicate();
 }
 
