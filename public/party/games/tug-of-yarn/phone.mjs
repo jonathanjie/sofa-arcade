@@ -143,9 +143,9 @@ export function mountTugOfYarnPhone(root, { input, serverNow }) {
 
   return {
     practiceWhileWaiting: true,
-    update(next, active, { practice = false } = {}) {
+    update(next, active, { practice = false, round: nextRound } = {}) {
       const nextMode = practice ? 'practice' : active && next ? 'play' : 'idle';
-      if (nextMode !== mode || next?.s !== state?.s || info?.round !== round) {
+      if (nextMode !== mode || next?.s !== state?.s || nextRound !== round) {
         stopRing();
         clearFeedback();
         pressedBeat = undefined;
@@ -155,7 +155,7 @@ export function mountTugOfYarnPhone(root, { input, serverNow }) {
       pad.toggleAttribute('data-practice', nextMode === 'practice');
       mode = nextMode;
       state = next;
-      round = info?.round;
+      round = nextRound;
       labelTeam();
       paintRhythm();
     },
