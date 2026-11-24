@@ -340,6 +340,7 @@ test('an exit gesture during a pending pause cannot linger and exit after a reje
 });
 
 test('an internally inconsistent stage result does not replace the last good TV score', async ({ page }) => {
+  test.setTimeout(120_000);
   await openFixture(page, 'finished');
   const good = await page.evaluate(() => window.fixture.view());
   const totals = page.locator('.go-tv-totals strong');

@@ -65,7 +65,8 @@ async function completeStep(page, step) {
 
 for (const viewport of [{ width: 1280, height: 720 }, { width: 1920, height: 1080 }]) {
   test(`optional tutorial completes all eight private lessons at ${viewport.width}×${viewport.height}`, async ({ page }, testInfo) => {
-    test.setTimeout(120_000);
+    // Each of the eight lessons captures a rendered screenshot.
+    test.setTimeout(240_000);
     await page.clock.install();
     await page.setViewportSize(viewport); await openFixture(page);
     const before = await page.evaluate(() => window.fixture.view());
