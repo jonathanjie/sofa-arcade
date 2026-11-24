@@ -304,7 +304,7 @@ test('a command awaiting authorization cannot be overwritten by a captured stage
   t.after(() => h.close());
   await h.players(); const host = await h.connect('host');
   held = true;
-  const { command } = await host.command('pause', { reason: 'requested' }, 'held-pause');
+  const { command } = await host.command('pause', { reason: 'requested' }, 'held-pause', { waitForResult: false });
   const before = h.coordinator.getPublicView('UNIT');
   await h.clock.advance(100);
   assert.equal(h.coordinator.getPublicView('UNIT').tick, before.tick);
@@ -325,7 +325,7 @@ test('a trusted pause queued behind a wire pause is a safe no-op, not a storage 
   await h.players(); const host = await h.connect('host');
   const previousEpoch = h.coordinator.getPublicView('UNIT').runEpoch;
   held = true;
-  await host.command('pause', { reason: 'requested' }, 'wire-pause');
+  await host.command('pause', { reason: 'requested' }, 'wire-pause', { waitForResult: false });
   const systemPause = h.coordinator.pauseRoom('UNIT', 'network');
   held = false; resume(); await flush(); await systemPause;
   assert.equal(h.coordinator.getPublicView('UNIT').phase, 'paused');
@@ -406,7 +406,7 @@ test('disconnect clears Ready even when the Ready checkpoint is still pending', 
   t.after(async () => { release.resolve(); await h.close(); });
   const jon = await h.connect('jon'), lydia = await h.connect('lydia');
   jon.input();
-  await jon.command('ready', { value: true }, 'departing-ready');
+  await jon.command('ready', { value: true }, 'departing-ready', { waitForResult: false });
   await writing.promise;
   jon.ws.close();
   await once(jon.ws, 'close');
@@ -516,7 +516,7 @@ test('losing the first ready controller during the second Ready save prevents co
   const jon = await h.connect('jon'), lydia = await h.connect('lydia');
   jon.input(); lydia.input(); await flush();
   assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
-  await jon.command('ready', { value: true });
+  await jon.command('ready', { value: true }, 'pending-ready', { waitForResult: false });
   await writing.promise;
   lydia.ws.close();
   await once(lydia.ws, 'close');

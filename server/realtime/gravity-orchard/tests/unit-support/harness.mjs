@@ -1,12 +1,23 @@
 import { createServer } from 'node:http';
 import { once } from 'node:events';
-import { setImmediate as nextTurn } from 'node:timers/promises';
+import { setImmediate as nextTurn, setTimeout as delay } from 'node:timers/promises';
 import { WebSocket } from 'ws';
 import { createRealtimeCoordinator } from '../../index.mjs';
 import { createMockSimulation } from '../../fixture/simulation.mjs';
 import { createStrictUpgradePolicy } from '../../fixture/upgrade-policy.mjs';
 
 export async function flush() { for (let index = 0; index < 8; index++) await nextTurn(); }
+
+// Socket delivery is asynchronous even when the simulation clock is frozen.
+async function waitForPacket(ws, messages, predicate, description, first = 0) {
+  const deadline = performance.now() + 2000;
+  while (ws.readyState === WebSocket.OPEN && performance.now() < deadline) {
+    const packet = messages.find((message, index) => index >= first && predicate(message));
+    if (packet) return packet;
+    await delay(1);
+  }
+  throw new Error(`Missing unit packet: ${description}`);
+}
 
 export function fakeClock() {
   let at = 0, serial = 0;
@@ -71,9 +82,7 @@ export async function harness({ simulation = createMockSimulation({ countdownTic
     ws.on('error', () => {});
     await once(ws, 'open');
     ws.send(JSON.stringify({ type: 'auth', protocol: 1, roomCode: 'UNIT', token: `unit-${seat}` }));
-    await flush();
-    const welcome = messages.find((message) => message.type === 'welcome');
-    if (!welcome) throw new Error('Missing unit welcome');
+    const welcome = await waitForPacket(ws, messages, message => message.type === 'welcome', 'welcome');
     const client = {
       ws, messages, welcome, seq: 0,
       send(value) { ws.send(JSON.stringify(value)); },
@@ -83,11 +92,18 @@ export async function harness({ simulation = createMockSimulation({ countdownTic
           controllerEpoch: welcome.controllerEpoch, seq: client.seq++, observedTick: view.tick, ...value };
         client.send(message); return message;
       },
-      async command(kind, payload, id = `${seat}-${kind}-${++commandSerial}`) {
+      async command(kind, payload, id = `${seat}-${kind}-${++commandSerial}`, { waitForResult = true } = {}) {
         const view = coordinator.getPublicView('UNIT');
         const command = { type: 'command', protocol: 1, id, matchId: view.matchId, runEpoch: view.runEpoch, kind, payload };
-        client.send(command); await flush();
-        return { command, result: messages.findLast((message) => message.type === 'command-result' && message.id === id) };
+        const first = messages.length;
+        client.send(command);
+        if (!waitForResult) {
+          await flush();
+          return { command };
+        }
+        const result = await waitForPacket(ws, messages,
+          message => message.type === 'command-result' && message.id === id, id, first);
+        return { command, result };
       },
     };
     clients.push(client); return client;
