@@ -105,10 +105,11 @@ function fallbackCat() {
 function character(id, extra = '') {
   return `<span class="character ${id} ${extra}" data-character="${id}" role="img" aria-label="${id === 'lala' ? 'Lala the orange cat' : NAMES[id] + ' the tiny adventurer'}"><span class="character-sprite"></span><span class="character-fallback">${id === 'lala' ? fallbackCat() : fallbackMouse(id)}</span></span>`;
 }
+const hasCurrentRoom = () => !!state.code && state.room?.code === state.code;
 function header() {
   const inMatch=state.view==='game'||state.view==='tutorial';
   const settings=audio.getSettings();
-  return `<header class="topbar"><button class="brand" data-action="home" aria-label="Back to Sofa Arcade"><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${inMatch?esc(gameById(state.gameId).title):'Sofa Arcade'}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></button><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!state.code?'hidden':''}>${connectionLabel()}</span>${state.code ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'&&!([ODD_LAWS_GAME_ID,GRAVITY_ORCHARD_GAME_ID].includes(state.gameId)&&state.view==='game')?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
+  return `<header class="topbar"><button class="brand" data-action="home" aria-label="Back to Sofa Arcade"><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${inMatch?esc(gameById(state.gameId).title):'Sofa Arcade'}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></button><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!hasCurrentRoom()?'hidden':''}>${connectionLabel()}</span>${hasCurrentRoom() ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'&&!([ODD_LAWS_GAME_ID,GRAVITY_ORCHARD_GAME_ID].includes(state.gameId)&&state.view==='game')?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
 }
 function notices() {
   const text = state.error || state.notice;
@@ -116,7 +117,7 @@ function notices() {
 }
 function footer() {
   if(state.view==='game'||state.view==='tutorial')return '';
-  return `<footer class="footer"><span>${icon('shelf')} One shelf. Many little adventures.</span>${state.code && state.mode === 'network' ? `<span class="network ${state.network === 'connected' ? '' : 'offline'}">${connectionLabel()}</span>` : `<span>Made for Jon & Lydia</span>`}</footer>`;
+  return `<footer class="footer"><span>${icon('shelf')} One shelf. Many little adventures.</span>${hasCurrentRoom() && state.mode === 'network' ? `<span class="network ${state.network === 'connected' ? '' : 'offline'}">${connectionLabel()}</span>` : `<span>Made for Jon & Lydia</span>`}</footer>`;
 }
 const gameById = id => GAME_CATALOG.find(g=>g.id===id)||GAME_CATALOG.find(g=>g.id===SOFA_GAME_ID);
 const canPlayGame = game => game.id === GRAVITY_ORCHARD_GAME_ID ? transport.gravityOrchard === true : game.status === 'playable';
@@ -151,10 +152,10 @@ function lobby() {
   return `<main class="lobby-wrap"><section class="lobby-intro"><span class="eyebrow">Make yourselves comfortable</span><h1>${state.gameId===GRAVITY_ORCHARD_GAME_ID?'Your picnic<br>is almost ready.':state.gameId===ODD_LAWS_GAME_ID?'Your council<br>is almost ready.':'Your kingdom<br>is almost ready.'}</h1><p>Leave this screen on the TV. Scan the code with each phone, then choose Jon or Lydia. Your phones become the controllers.</p><div class="lobby-cat">${character('lala')}</div><div class="lobby-steps"><span class="lobby-step"><span class="step-dot">1</span> Scan on both phones</span><span class="lobby-step"><span class="step-dot">2</span> Pick your character</span><span class="lobby-step"><span class="step-dot">3</span> ${state.gameId===GRAVITY_ORCHARD_GAME_ID?'Enter the orchard':state.gameId===ODD_LAWS_GAME_ID?'Convene the council':'Let Lala loose'}</span></div></section><section class="lobby-card"><span class="eyebrow">Join this room</span><div class="room-code" aria-label="Room code ${esc(state.code.split('').join(' '))}">${esc(state.code)}</div><div class="qr-wrap" id="room-qr"><span class="qr-fallback">Open this page on your phone<br>and enter the room code.</span></div><button class="text-button" data-action="copy-link">${icon('copy')} Copy phone link</button>${orchardJoinOptions()}<div class="lobby-players">${lobbySeat('jon')}${lobbySeat('lydia')}</div><button class="button full" data-action="start" ${!both || state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('paw')}${both ? (state.gameId===GRAVITY_ORCHARD_GAME_ID?'Enter the orchard':state.gameId===ODD_LAWS_GAME_ID?'Convene the council':'Let the mischief begin') : 'Waiting for both players'}</button><p class="lobby-hint">${both ? 'Both adventurers have arrived. Start when you’re ready.' : 'Each phone controls one adventurer. Keep this TV page open.'}</p></section></main>`;
 }
 function joinScreen() {
-  const choosing = !!state.code;
+  const choosing = hasCurrentRoom();
   const ps = roomPlayers();
   const ownTokens=readCredentials(state.code).playerTokens||{};
-  return `<main class="join-wrap"><section class="join-card"><span class="eyebrow">A seat on the sofa</span><h1>${choosing ? 'Who’s playing?' : 'Join the room.'}</h1><p>${choosing ? `You’re joining room <strong>${esc(state.code)}</strong>. Choose your adventurer.` : 'Enter the room code shown on your TV.'}</p>${choosing ? `<div class="character-choices">${['jon','lydia'].map(id => {const taken=ps[id]?.joined&&!ownTokens[id];return `<button class="character-choice ${id} ${state.preferredSeat===id?'preferred':''}" data-action="claim" data-player="${id}" ${state.busy || taken ? 'disabled' : ''}><div class="portrait">${character(id)}</div><strong>${NAMES[id]}</strong><small>${taken ? 'Already on the sofa' : ownTokens[id]?'Return to this controller':id === 'jon' ? 'The teal kingdom' : 'The rose kingdom'}</small></button>`;}).join('')}</div><button class="link-button" data-action="different-room">Use a different room code</button>` : `<form id="join-form"><label class="form-label" for="room-input">Room code</label><input class="code-input" id="room-input" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="ABCDEF" required aria-describedby="join-code-hint"><button class="button full" type="submit" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('phone')} Find my room</button></form>`}</section><p class="join-caption" id="join-code-hint">${choosing ? 'The big board stays on the TV.<br>Your moves happen here.' : 'You can also scan the QR code on the TV.'}</p></main>`;
+  return `<main class="join-wrap"><section class="join-card"><span class="eyebrow">A seat on the sofa</span><h1>${choosing ? 'Who’s playing?' : 'Join the room.'}</h1><p>${choosing ? `You’re joining room <strong>${esc(state.code)}</strong>. Choose your adventurer.` : 'Enter the room code shown on your TV.'}</p>${choosing ? `<div class="character-choices">${['jon','lydia'].map(id => {const taken=ps[id]?.joined&&!ownTokens[id];return `<button class="character-choice ${id} ${state.preferredSeat===id?'preferred':''}" data-action="claim" data-player="${id}" ${state.busy || taken ? 'disabled' : ''}><div class="portrait">${character(id)}</div><strong>${NAMES[id]}</strong><small>${taken ? 'Already on the sofa' : ownTokens[id]?'Return to this controller':id === 'jon' ? 'The teal kingdom' : 'The rose kingdom'}</small></button>`;}).join('')}</div><button class="link-button" data-action="different-room">Use a different room code</button>` : `<form id="join-form"><label class="form-label" for="room-input">Room code</label><input class="code-input" id="room-input" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="ABCDEF" value="${esc(state.code)}" ${state.busy ? 'readonly' : ''} required aria-describedby="join-code-hint"><button class="button full" type="submit" ${state.busy ? 'disabled' : ''}>${state.busy ? '<span class="spinner"></span>' : icon('phone')} Find my room</button></form>`}</section><p class="join-caption" id="join-code-hint">${choosing ? 'The big board stays on the TV.<br>Your moves happen here.' : 'You can also scan the QR code on the TV.'}</p></main>`;
 }
 function waiting() {
   const id = state.playerId;
@@ -454,7 +455,7 @@ function connectionLabel() {
 }
 function updateConnectionChrome() {
   const status=app.querySelector('[data-shell-connection]');
-  if(status){status.hidden=state.network==='connected'||!state.code;status.textContent=connectionLabel();}
+  if(status){status.hidden=state.network==='connected'||!hasCurrentRoom();status.textContent=connectionLabel();}
 }
 function setNetworkConnection(value,{terminal=false}={}) {
   const next=connectionStatus(value);
@@ -712,7 +713,7 @@ function controllerQueue() {
   return actionQueue;
 }
 async function poll(force=false) {
-  if(isLocal()||!state.code||pollInFlight)return;
+  if(isLocal()||!state.code||pollInFlight||(state.view==='join'&&!hasCurrentRoom()))return;
   const now=Date.now();
   const interval=document.hidden?5000:orchardGame?10000:streamConnected?10000:state.room?.phase==='playing'?250:900;
   if(!force&&now-lastPollAt<interval)return;
@@ -801,12 +802,21 @@ async function findRoom(code,preferredSeat=null,recovering=false) {
     const unavailable=[401,403,404,410].includes(err.status);
     if(unavailable&&stored(LAST_SESSION_KEY)?.code===code)persist(LAST_SESSION_KEY,null);
     if(recovering&&unavailable){goHome();state.notice='Your saved room is no longer available. Choose a game to start a new one.';render();}
-    else if(err.status===401||err.status===403){state.playerToken=null;state.playerId=null;state.room=null;}else state.error=err.message;
+    else {
+      if(err.status===401||err.status===403){state.playerToken=null;state.playerId=null;}
+      state.error=err.message;
+    }
   }
-  finally {if(current()){state.busy=false;render();}}
+  finally {
+    if(current()){
+      state.busy=false;render();
+      const input=!hasCurrentRoom()&&$('#room-input');
+      if(input){input.value=code;input.focus({preventScroll:true});input.select();}
+    }
+  }
 }
 async function claimPlayer(id) {
-  if(state.busy)return;
+  if(state.busy||!hasCurrentRoom())return;
   const code=state.code,epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.busy=true;state.error='';render();
   try {
