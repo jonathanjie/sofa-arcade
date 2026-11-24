@@ -143,7 +143,7 @@ function collection() {
     const cards = games.map(game => `<button class="game-card" data-action="open-game" data-game="${esc(game.id)}" style="--game-accent:${esc(game.accent)}">
       ${gameArtwork(game.id)}
       <span class="concept-status">${availability}</span><h3>${esc(game.title)}</h3>
-      <p>${esc(game.tagline)}</p><span class="concept-meta">${esc(game.mode)} <span>·</span> ${esc(game.duration)}</span>
+      <p>${esc(game.tagline)}</p><span class="concept-meta"><span>${esc(game.mode)}</span><span class="meta-divider" aria-hidden="true">·</span><span>${esc(game.duration)}</span></span>
     </button>`).join('');
     return `<section class="drawing-board"><div class="shelf-section-title"><h2>${title}</h2></div><div class="game-shelf">${cards}</div></section>`;
   }
