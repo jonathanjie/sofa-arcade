@@ -11,7 +11,7 @@ const ACTIONABLE_SENSOR_STATES = new Set(['insecure', 'unsupported', 'needs-perm
 const sheetOwners = new WeakMap();
 let mountSequence = 0;
 
-function useStyles(document) {
+function acquireStyles(document) {
   let record = sheetOwners.get(document);
   if (!record) {
     const link = document.createElement('link');
@@ -64,7 +64,7 @@ export function mountPhone(root, {
   }
   const document = root.ownerDocument;
   const window = document.defaultView;
-  const releaseStyles = useStyles(document);
+  const releaseStyles = acquireStyles(document);
   const instance = ++mountSequence;
   const id = `go3-${instance}`;
   const playerName = playerId === 'jon' ? 'Jon' : 'Lydia';
@@ -182,7 +182,6 @@ export function mountPhone(root, {
       </section>
     </div>`;
   root.replaceChildren(shell);
-  const element = (name) => shell.querySelector(`[data-go3="${name}"]`);
   const refs = Object.fromEntries([...shell.querySelectorAll('[data-go3]')].map((node) => [node.dataset.go3, node]));
   const source = assetSource(assets, playerId);
   if (source) {

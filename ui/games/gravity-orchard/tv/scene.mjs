@@ -586,7 +586,7 @@ export function mountScene(root, { geometry, assets, reducedMotion = false } = {
   }
 
   function updateBaskets(view, time) {
-    for (const [id, item] of baskets) {
+    for (const item of baskets.values()) {
       const source = view.baskets?.[item.type];
       const count = clamp(Math.floor(numeric(source?.count)), 0, 3);
       const full = count === 3;

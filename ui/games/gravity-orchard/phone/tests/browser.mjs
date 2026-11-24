@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { startFixture } from '../fixture/server.mjs';
 import {
-  select, SAFE, input, status, waitInput, safe, chooseTouch, beginPlay, enableTilt,
+  select, input, status, waitInput, safe, chooseTouch, beginPlay, enableTilt,
   bounds, mouseSteer, touchController, assertLayout, checkRecordedInput,
 } from './browser-helpers.mjs';
 

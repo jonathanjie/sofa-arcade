@@ -136,7 +136,6 @@ export async function assertLayout(page, { active = false, allTargets = true } =
     await page.evaluate(() => scrollTo(0, 0));
     const viewport = page.viewportSize();
     for (const name of ['joystick', 'brake', 'pause', 'recenter', 'help']) {
-      const target = page.locator(select(name));
       const box = await bounds(page, name);
       assert.ok(box.y >= -1 && box.y + box.height <= viewport.height + 1,
         `${name} is visible with all live controls (no play-time scrolling): ${JSON.stringify({ box, viewport })}`);

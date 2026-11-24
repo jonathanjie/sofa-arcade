@@ -261,9 +261,9 @@ test('live private streams reject untrusted authority, rotate credentials, and n
     assert.equal(response.status, 404, source);
     assert.ok(!(await response.text()).includes(PRIVATE_SENTINEL));
   }
-  const module = await fetch(host.origin + '/room-client.mjs');
-  assert.equal(module.status, 200);
-  assert.match(await module.text(), /createRoomClient/);
+  const moduleResponse = await fetch(host.origin + '/room-client.mjs');
+  assert.equal(moduleResponse.status, 200);
+  assert.match(await moduleResponse.text(), /createRoomClient/);
 });
 
 test('SQLite restart restores locked own vote, identity, fixed budget and per-viewer SSE; expiry closes restored rooms', { timeout: 12000 }, async t => {

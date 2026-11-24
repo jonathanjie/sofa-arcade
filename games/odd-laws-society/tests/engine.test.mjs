@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { engine, chairForSession, legalActions } from '../engine.mjs';
 import { BUILDINGS } from '../catalog.mjs';
 import { buildQuote } from '../preview.mjs';
-import { SEATS, other, clone, fresh, action, take, council, emptyTurns, toSession, frozen, scenario, cityOf, assertRuleError, OPENING_AGENDA } from './helpers.mjs';
+import { SEATS, other, clone, fresh, take, council, emptyTurns, toSession, frozen, scenario, cityOf, assertRuleError, OPENING_AGENDA } from './helpers.mjs';
 
 test('setup is deterministic, has no session-one income, and publishes each law exactly once', () => {
   const parameters = frozen({ seed: 'seed-a', matchId: 'match-a' });

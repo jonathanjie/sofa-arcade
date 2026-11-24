@@ -50,7 +50,8 @@ const server = createServer(async (request, response) => {
       if (!pendingRender || value.id !== pendingRender.id) throw new Error('Out-of-order render result');
       const job = pendingRender; pendingRender = null;
       response.writeHead(200, { 'Content-Type': 'application/json' }); response.end('{"accepted":true}');
-      value.error ? job.reject(new Error(value.error)) : job.resolve(value.result);
+      if (value.error) job.reject(new Error(value.error));
+      else job.resolve(value.result);
     } catch (error) { response.writeHead(400); response.end(error.message); }
   } else if (path === '/favicon.ico') { response.writeHead(204); response.end(); }
   else if (files.has(path)) { response.writeHead(200, { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-store' }); response.end(files.get(path)); }

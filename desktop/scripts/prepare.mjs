@@ -4,7 +4,7 @@ import { readFile, writeFile, mkdir, rm, copyFile, chmod, lstat, mkdtemp } from 
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { desktopRoot, repoRoot, sha256, stageRuntime, verifyRuntime } from './runtime-files.mjs';
+import { desktopRoot, sha256, stageRuntime, verifyRuntime } from './runtime-files.mjs';
 
 export function nativeTarget(platform = process.platform, arch = process.arch) {
   const target = { 'darwin:arm64': 'aarch64-apple-darwin', 'darwin:x64': 'x86_64-apple-darwin', 'linux:x64': 'x86_64-unknown-linux-gnu', 'linux:arm64': 'aarch64-unknown-linux-gnu' }[`${platform}:${arch}`];
