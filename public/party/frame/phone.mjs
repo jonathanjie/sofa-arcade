@@ -254,8 +254,9 @@ export function mountPartyPhone(root, { credential, actions }) {
     setText(statusLabel, status);
     readyButton.hidden = !lobby || Boolean(autoReady);
     setText(readyButton, view.self.ready ? 'Not ready' : 'Ready');
-    controls.hidden = view.waiting || (!active && view.phase !== 'countdown');
-    renderer?.update(view.state, active);
+    const practice = Boolean(view.waiting && renderer?.practiceWhileWaiting);
+    controls.hidden = !practice && (view.waiting || (!active && view.phase !== 'countdown'));
+    renderer?.update(view.state, active, { practice });
   }
 
   readyButton.addEventListener('click', () => {
