@@ -551,6 +551,21 @@ function renderCollectionMatch() {
 function sofaLoadingView() {
   return engineLoadFailed?'<main class="collection-loading" role="alert"><h1>The board could not load.</h1><p>Your room is saved. Reload this screen to try again.</p><button class="button" data-action="reload-view">Reload game</button></main>':'<main class="collection-loading" role="status"><span class="spinner"></span> Preparing your board…</main>';
 }
+function renderScreen() {
+  switch (state.view) {
+    case 'collection': return collection();
+    case 'detail': return gameDetail();
+    case 'join':
+      if (!state.code || state.room || !state.busy) return joinScreen();
+      break;
+    case 'lobby':
+      if (state.room || !state.busy) return state.role === 'host' ? lobby() : waiting();
+      break;
+    case 'game': return engine && game() ? (state.role === 'player' ? controller(game()) : tvBoard(game())) : sofaLoadingView();
+    case 'tutorial': return engine && game() ? tutorialView() : sofaLoadingView();
+  }
+  return '<main class="collection-loading" role="status"><span class="spinner"></span> Opening your room…</main>';
+}
 function render() {
   const current=game();
   const odd=state.gameId===ODD_LAWS_GAME_ID, orchard=state.gameId===GRAVITY_ORCHARD_GAME_ID;
@@ -570,12 +585,7 @@ function render() {
   const focusSelector = focused?.id ? '#'+CSS.escape(focused.id) : focused?.dataset?.action ? '[data-action="'+CSS.escape(focused.dataset.action)+'"]'+['command','direction','player','index','axis','value'].filter(k=>focused.dataset[k]!==undefined).map(k=>'[data-'+k+'="'+CSS.escape(focused.dataset[k])+'"]') .join('') : null;
   const inputState = focused?.tagName === 'INPUT' ? {value:focused.value,start:focused.selectionStart,end:focused.selectionEnd} : null;
   const old = new Map([...app.querySelectorAll('[data-piece]')].map(n=>[n.dataset.piece,n.getBoundingClientRect()]));
-  let content=collection();
-  if(state.view==='detail')content=gameDetail();
-  if(state.view==='join') content=joinScreen();
-  if(state.view==='lobby') content=state.role==='host'?lobby():waiting();
-  if(state.view==='game' && game())content=engine?(state.role==='player'?controller(game()):tvBoard(game())):sofaLoadingView();
-  if(state.view==='tutorial' && game())content=engine?tutorialView():sofaLoadingView();
+  const content=renderScreen();
   app.innerHTML=`<div class="app-shell ${state.role==='player'?'is-controller':''} ${state.view==='game'?'is-match':''} ${state.view==='tutorial'?'is-tutorial':''} view-${state.view}">${header()}${notices()}${content}${footer()}</div>${modal()}`;
   if(old.size && !motionPreference.matches) {
     app.querySelectorAll('[data-piece]').forEach(n=>{
@@ -954,10 +964,9 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.cod
 window.addEventListener('online',()=>{setNetworkConnection('reconnecting');poll(true);});
 window.addEventListener('offline',()=>{setNetworkConnection('offline');render();});
 const atlas=new Image();atlas.onload=()=>document.documentElement.classList.add('generated-art');atlas.src='/assets/characters.png';
-render();
 async function restoreHostRoom(code) {
   const creds=readCredentials(code);
-  if(!creds.hostToken){await findRoom(code);return;}
+  if(!creds.hostToken){state.view='join';state.role='player';await findRoom(code);return;}
   stopPolling();
   const epoch=roomEpoch,current=()=>epoch===roomEpoch&&code===state.code;
   state.code=code;state.role='host';state.hostToken=creds.hostToken;state.view='lobby';state.busy=true;render();
@@ -990,7 +999,7 @@ async function restoreLocalSession() {
 }
 async function init() {
   const params=new URLSearchParams(location.search);
-  if(params.has('join')){await findRoom(params.get('join')||'',params.get('seat'));return;}
+  if(params.has('join')){state.view='join';state.role='player';await findRoom(params.get('join')||'',params.get('seat'));return;}
   if(params.has('room')) {
     const code=(params.get('room')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
     await restoreHostRoom(code);return;
@@ -998,12 +1007,16 @@ async function init() {
   if(params.has('tutorial')){
     if(params.get('game')===GRAVITY_ORCHARD_GAME_ID){openGame(GRAVITY_ORCHARD_GAME_ID);await openOrchardTutorial();}
     else if(params.get('game')===ODD_LAWS_GAME_ID){openGame(ODD_LAWS_GAME_ID);await openOddTutorial();}
-    else await startTutorial();
+    else {state.view='tutorial';render();await startTutorial();}
     return;
   }
-  if(params.has('practice')){if(params.get('game')===GRAVITY_ORCHARD_GAME_ID){openGame(GRAVITY_ORCHARD_GAME_ID);await createRoom('practice');}else await startPractice();return;}
+  if(params.has('practice')){
+    if(params.get('game')===GRAVITY_ORCHARD_GAME_ID){openGame(GRAVITY_ORCHARD_GAME_ID);await createRoom('practice');}
+    else {state.view='game';await startPractice();}
+    return;
+  }
   if(params.has('game')){openGame(params.get('game'));return;}
-  await restoreLocalSession();
+  if(!await restoreLocalSession())render();
 }
 let audioSnapshot='';
 audio.subscribe(settings=>{const snapshot=JSON.stringify(settings);if(snapshot===audioSnapshot)return;audioSnapshot=snapshot;if(state.modal==='audio'&&document.activeElement?.id!=='volume-slider')render();});
