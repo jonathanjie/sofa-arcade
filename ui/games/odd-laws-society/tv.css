@@ -290,3 +290,14 @@
   .collection-match:not(.is-controller) .topbar { margin-bottom: 4px; }
   .collection-match:not(.is-controller) .ols-game-shell { min-height: 0; }
 }
+
+@media (min-width: 1000px) {
+  .ols .ols-tv-ballot > span:last-child,
+  .ols .ols-tv-card-top .ols-tv-stock {
+    color: var(--tv-ink);
+    font-size: var(--tv-type-label, 18px);
+  }
+  .ols .ols-tv-borough-foot > span:first-child {
+    font-size: var(--tv-type-emphasis, 20px);
+  }
+}

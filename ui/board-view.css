@@ -38,7 +38,7 @@
 .pounce-bullseye{position:absolute;width:48%;height:48%;left:26%;top:26%;display:grid;place-items:center;border-radius:50%;border:2px solid #983f31;background:#fff0d8bd;box-shadow:0 0 0 5px #ad50443d;color:#983f31}
 .pounce-bullseye .icon{height:66%;width:66%;stroke-width:1.5}
 .pounce-corner-mark{position:absolute;right:12%;top:12%;width:13%;height:13%;border-top:3px solid #a44839;border-right:3px solid #a44839}
-.round-order{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:31px;margin:0 0 14px;font-size:13px;line-height:1.2;color:#78695b}
+.round-order{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:31px;margin:0 0 14px;font-size:13px;line-height:1.2;color:var(--muted)}
 .round-order-label{font-size:12px;margin-right:3px}
 .round-order-seat,.round-order-cat{display:inline-flex;align-items:center;gap:5px;min-height:27px;border:1px solid transparent;border-radius:8px;padding:4px 6px;white-space:nowrap}
 .round-order-seat.current{background:#fff9ee;border-color:#648a7b;color:#365b4f;font-weight:750;box-shadow:0 2px 0 #57736214}
@@ -71,3 +71,16 @@
 }
 @media(prefers-reduced-motion:reduce){.forecast-lane .forecast-lane-flow{animation:none!important;transform:none!important;opacity:.55}}
 .motion-paused .forecast-lane .forecast-lane-flow{animation-play-state:paused!important}
+
+@media (min-width: 1000px) {
+  .clean-game .board-axis,
+  .clean-game .board-axis .targeted,
+  .clean-game .round-order,
+  .clean-game .round-order-label,
+  .clean-game .forecast-lookahead,
+  .clean-game .compact-forecast .forecast-lookahead strong {
+    font-size: var(--tv-type-label);
+  }
+  .clean-game .board-axis,
+  .clean-game .round-order { color: var(--ink); }
+}
