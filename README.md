@@ -21,7 +21,7 @@ Games marked **Planned** have a design brief but cannot start a room.
 1. Open the Mac app or open **Sofa Kingdoms** on the hosted Site. For portable play, select **Play over local Wi-Fi**, then **Download portable ZIP** and [start the LAN host](docs/LAN.md). Connect the Mac and both phones to the same local network.
 2. Select an available game and host a room. For Gravity Orchard with tilt, configure [trusted phone access](desktop/README.md#optional-trusted-local-access) in the Mac app and switch the lobby link to **Phone link with tilt** before scanning.
 3. Scan the room QR code on each phone, or enter its six-character code at the same local address. Choose Jon on one phone and Lydia on the other.
-4. Start the game from the TV. In Gravity Orchard, select **Enter the orchard** on the TV. On each phone, select **Use touch controls** or finish tilt setup, then select **I'm ready**.
+4. Start the game from the TV. In Gravity Orchard, select **Enter the orchard** on the TV. On each phone, select **Use touch controls** or finish tilt setup, then select **Ready**.
 
 The **desktop v0.2.0 tag** predates Gravity Orchard. For that game, use the portable host from this checkout or a Mac build from a commit that enables it. The hosted Site has no realtime coordinator. See the [release guide](docs/LOCAL_RELEASE.md) for Mac artifact selection and device checks.
 

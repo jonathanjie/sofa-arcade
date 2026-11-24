@@ -15,7 +15,7 @@ node scripts/lan-server.mjs
 No `npm install`, framework build, cloud account, or database setup is required for this mode. In a full checkout, `npm run lan` is an equivalent shortcut. On a Mac, you can also double-click `start-sofa.command` in the extracted folder.
 
 4. Open the local address printed in Terminal on the Mac, for example `http://192.168.1.20:4177/`. Keep Terminal open.
-5. Select an available game and host it on the TV. Scan the room QR code with both phones. All three devices should use the same home Wi-Fi/LAN. For Gravity Orchard, select **Enter the orchard** on the TV, then **Use touch controls** and **I'm ready** on both phones. For tilt, use a Mac app build with trusted phone access.
+5. Select an available game and host it on the TV. Scan the room QR code with both phones. All three devices should use the same home Wi-Fi/LAN. For Gravity Orchard, select **Enter the orchard** on the TV, then **Use touch controls** and **Ready** on both phones. For tilt, use a Mac app build with trusted phone access.
 
 Cast the Mac browser to the TV as usual. The phone-to-Mac traffic stays on the LAN; casting itself can still add display delay. A direct cable or running the local page in the TV browser avoids a separate screencast step where supported.
 

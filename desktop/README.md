@@ -8,7 +8,7 @@ their existing repository locations.
 
 Open **Sofa Arcade.app**, select a game available in this build and host it on the TV. Both
 phones use ordinary browsers to scan the room QR and select different seats.
-For Gravity Orchard, enter the orchard on the TV and select **I'm ready** on both phones.
+For Gravity Orchard, enter the orchard on the TV and select **Ready** on both phones.
 Keep the Mac and phones on the same local network. The application supplies its
 own Node runtime and starts it automatically; playing does not require Terminal,
 an installed Node runtime, a phone app, or a cloud service.
