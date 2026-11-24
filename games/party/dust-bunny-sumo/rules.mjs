@@ -239,7 +239,7 @@ function simulate(next, inputs, live, dt) {
   }
 }
 
-function projectForPhone(state, playerId, now) {
+function projectForPhone(state, playerId, { now } = {}) {
   const body = state.bodies.find(candidate => candidate.id === playerId);
   if (!body) return null;
   const out = body.outAt !== null;

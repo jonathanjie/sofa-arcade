@@ -62,7 +62,7 @@ test('dash locks for two seconds and uses the last steering direction', () => {
   state = tick(state, command('p1', 'roll', { x: 0, y: 1 }), command('p1', 'roll', { x: 0, y: 0 }), command('p1', 'dash'));
   assert.equal(state.bodies[0].vx, 0);
   assert.ok(state.bodies[0].vy > 50);
-  assert.deepEqual(game.projectForPhone(state, 'p1', 10_005.6), { out: false, cd: 2000, at: 12_006 });
+  assert.deepEqual(game.projectForPhone(state, 'p1', { now: 10_005.6 }), { out: false, cd: 2000, at: 12_006 });
   assert.deepEqual(tick(state, command('p1', 'dash')), tick(state));
   state = advance(state, 39);
   assert.equal(game.projectForPhone(state, 'p1').cd, STEP_MS);

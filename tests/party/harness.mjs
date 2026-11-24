@@ -175,9 +175,25 @@ export async function runPartyRounds(t, { gameId, drive, assertResults, playerCo
   assert.equal(late.view.state, null);
   assert.equal(tv.view.roster.length, playerCount);
 
-  await fixture.until(() => tv.view.phase === 'results', {
-    ticks: playTicks, drive: tick => drive(phones, tick, 1),
-  });
+  async function play(round) {
+    let previous;
+    await fixture.until(() => tv.view.round === round && tv.view.phase === 'results', {
+      ticks: playTicks,
+      async drive(tick) {
+        // Advance the manual clock only after the previous TV snapshot was delivered.
+        // Socket callbacks can arrive a turn later when other integration suites run.
+        const deadline = performance.now() + 1000;
+        while (tv.view === previous) {
+          assert.ok(performance.now() < deadline, 'TV did not receive the next play tick');
+          await settle();
+        }
+        previous = tv.view;
+        if (previous.round === round && previous.phase === 'playing') await drive(phones, tick, round, previous);
+      },
+    });
+  }
+
+  await play(1);
   assertResults?.(tv.view, phones, 1);
   await fixture.until(() => ready() === playerCount && late.view.phase === 'results', { ticks: 12 });
   phones.push(late);
@@ -185,9 +201,7 @@ export async function runPartyRounds(t, { gameId, drive, assertResults, playerCo
   await fixture.until(() => late.view.round === 2 && late.view.phase === 'playing', { ticks: 80 });
   assert.equal(late.view.waiting, false);
   assert.equal(tv.view.roster.length, playerCount);
-  await fixture.until(() => tv.view.round === 2 && tv.view.phase === 'results', {
-    ticks: playTicks, drive: tick => drive(phones, tick, 2),
-  });
+  await play(2);
   assertResults?.(tv.view, phones, 2);
   return { ...fixture, tv, phones };
 }
