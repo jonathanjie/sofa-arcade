@@ -363,3 +363,21 @@ test('session income can restore the scheduled Chair on a prestige tie', () => {
   assert.equal(state.activePlayer, 'lydia');
   assert.equal(take(state, 'work').activePlayer, 'jon');
 });
+
+test('an older v0.3 save replays the original Chair across a session boundary', () => {
+  const options = { firstChair: 'lydia', agenda: clone(OPENING_AGENDA), rulesVersion: RULES_V03, modules: [] };
+  let state = council(fresh03({ options }));
+  state = take(state, 'work');
+  state = take(state, 'build', { designId: 'corner-shop', row: 0, col: 0 });
+  for (let turn = 0; turn < 3; turn++) state = take(state, 'work');
+  const oldSave = clone(state);
+  delete oldSave.chairScoreTiming;
+  const replay = take(oldSave, 'work');
+  assert.equal(replay.chair, 'lydia');
+  const jonVote = { choiceId: 'shop-local', bid: 1 };
+  const lydiaVote = { choiceId: 'industrial-pride', bid: 1 };
+  const resolved = council(clone(replay), jonVote, lydiaVote);
+  assert.equal(resolved.activeLaws.civic, 'industrial-pride');
+  assert.equal(resolved.activePlayer, 'jon');
+  assert.deepEqual(council(take(clone(oldSave), 'work'), jonVote, lydiaVote), resolved);
+});

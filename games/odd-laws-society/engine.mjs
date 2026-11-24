@@ -308,7 +308,7 @@ export function create(input) {
   const secondChair = otherPlayer(firstChair);
   const state = {
     schemaVersion: 1, gameId: GAME_ID, rulesVersion,
-    ...(rulesVersion === RULES_V03 ? { modules } : {}),
+    ...(rulesVersion === RULES_V03 ? { modules, chairScoreTiming: 'after-income' } : {}),
     seed: input.seed, matchId: input.matchId,
     phase: 'playing', stage: 'council', phaseId: '', session: 1, term: 1,
     chair: firstChair,
@@ -486,8 +486,11 @@ function finishSession(state) {
     player.festivalUsed = false;
     if (on(state, 'backRoom')) player.scoutedThisSession = false;
   }
-  refreshScores(state);
+  // An unmarked v0.3 snapshot must replay the original pre-income Chair.
+  const afterIncome = state.chairScoreTiming === 'after-income';
+  if (afterIncome) refreshScores(state);
   openCouncil(state);
+  if (!afterIncome) refreshScores(state);
 }
 
 function advanceCityTurn(state, playerId) {

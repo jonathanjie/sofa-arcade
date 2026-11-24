@@ -635,3 +635,34 @@ test('move accepts only a direction string and leaves rejected requests unwritte
     f.sqlite.close();
   }
 });
+
+test('the winning request is still acknowledged after two rematches', async () => {
+  const f = fixture();
+  try {
+    const live = await openedRoom(f);
+    const route = `/api/rooms/${live.code}`;
+    let room = live.game;
+    let winnerRequest;
+    for (let match = 0; match < 2; match++) {
+      while (room.phase === 'playing') {
+        const token = live.tokens[room.state.activePlayer];
+        const body = actionBody(room.revision, { type: 'end' });
+        const result = await api(f, route + '/action', { method: 'POST', token, body });
+        assert.equal(result.status, 200);
+        room = result.body;
+        if (match === 0 && room.phase === 'finished') winnerRequest = { method: 'POST', token, body };
+      }
+      const result = await api(f, route + '/rematch', { method: 'POST', token: live.hostToken });
+      assert.equal(result.status, 200);
+      room = result.body;
+    }
+    const writes = f.stats.writes;
+    const retry = await api(f, route + '/action', winnerRequest);
+    assert.equal(retry.status, 200);
+    assert.deepEqual(retry.body.state, room.state);
+    assert.equal(retry.body.revision, room.revision);
+    assert.equal(f.stats.writes, writes);
+  } finally {
+    f.sqlite.close();
+  }
+});

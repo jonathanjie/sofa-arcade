@@ -640,3 +640,36 @@ test('random rules v4 matches keep their invariants to the end', () => {
     }
   }
 });
+
+test('banking at the toy cap does not expose a sealed toy before reveal', () => {
+  const state = createGame({ firstPlayer: 'lydia', rulesVersion: 4 });
+  state.nextForecast = { type: 'swipe', axis: 'row', index: 0, direction: 1 };
+  state.players.lydia.carried = 3;
+  const sealed = applyAction(state, 'lydia', { type: 'lure', index: 1 });
+  const secretBank = applyAction(sealed, 'lydia', { type: 'bank' });
+  const publicBank = applyAction(state, 'lydia', { type: 'bank' });
+  for (const viewer of ['jon', null]) {
+    assert.deepEqual(projectState(secretBank, viewer), projectState(publicBank, viewer));
+  }
+  assert.deepEqual(projectState(secretBank, 'lydia').sealedToys.lydia, sealed.sealedToys.lydia);
+});
+
+test('classic saved snapshots reject bad toy fields for either seat', () => {
+  for (const version of [1, 2, 3]) {
+    const state = createGame({ firstPlayer: 'jon' });    state.version = version;
+    state.activePlayer = 'lydia';
+    state.forecast = { type: 'swipe', axis: 'row', index: 0, direction: 1 };
+    const saved = JSON.parse(JSON.stringify(state));
+    for (const index of [[1], {}, '1', null, -1, 5]) {
+      assert.throws(() => applyAction(saved, 'lydia', { type: 'lure', index }), /Choose a row or column/);
+    }
+    for (const axis of [['row'], {}, null, 1]) {
+      assert.throws(() => applyAction(saved, 'lydia', { type: 'lure', index: 1, axis }), /Choose a row or a column/);
+    }
+    for (const direction of [[1], {}, null, '1']) {
+      assert.throws(() => applyAction(saved, 'lydia', { type: 'lure', index: 1, direction }), /swipe directions/);
+    }
+    assert.deepEqual(saved, state);
+    assert.equal(applyAction(saved, 'lydia', { type: 'lure', index: 1 }).forecast.index, 1);
+  }
+});

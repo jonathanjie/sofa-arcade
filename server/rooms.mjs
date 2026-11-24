@@ -346,9 +346,10 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
         throw new Error('The engine did not establish match and phase boundaries.');
       }
       nextData.phase = 'playing';
-      // Only receipts with a known request revision can acknowledge a previous match.
+      // Keep the bounded history across rematches. Older receipts without a
+      // request revision cannot prove an exact retry across a match boundary.
       nextData.recentActions = (nextData.recentActions || [])
-        .filter(receipt => !receipt.previousMatch && Number.isSafeInteger(receipt.revision))
+        .filter(receipt => Number.isSafeInteger(receipt.revision))
         .map(receipt => ({ ...receipt, previousMatch: true }));
       envelope({ ...room, data: nextData }, auth);
       const committed = await commit(db, room, nextData);
