@@ -347,3 +347,29 @@ test('reconnect keeps the deadman deadline but requires new control input', asyn
   await h.clock.advance(1);
   assert.equal(view().pauseReason, 'network');
 });
+
+test('countdown input is first acknowledged on a playing tick', async (t) => {
+  const h = await harness({ simulation: orchard });
+  t.after(() => h.close());
+  const { jon, lydia } = await h.players();
+  const view = () => h.coordinator.getPublicView('UNIT');
+  const tilt = { x: 0.75, y: 0, brake: false };
+  jon.input(tilt); await flush();
+  await h.clock.advance(50);
+  assert.equal(view().phase, 'countdown');
+  assert.equal(jon.messages.findLast(packet => packet.type === 'snapshot').ack, null);
+  while (view().countdownTicks > 12) {
+    jon.input(); lydia.input(); await flush();
+    await h.clock.advance(200);
+  }
+  const last = jon.input(tilt);
+  lydia.input(); await flush();
+  await h.clock.advance(view().countdownTicks * (1000 / 60));
+  assert.equal(view().phase, 'playing');
+  const firstPlayingTick = view().tick + 1;
+  await h.clock.advance(50);
+  const packet = jon.messages.findLast(message => message.type === 'snapshot');
+  assert.equal(packet.ack.seq, last.seq);
+  assert.equal(packet.ack.appliedTick, firstPlayingTick);
+  assert.deepEqual(packet.view.players.jon.input, tilt);
+});

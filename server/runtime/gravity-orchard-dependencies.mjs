@@ -5779,6 +5779,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
           }
           room.state = state;
           room.view = view;
+          if (view.phase !== "playing") continue;
           for (const id of PLAYERS) {
             const seat = room.seats[id];
             if (fresh(seat) && seat.latest && seat.ack?.seq !== seat.latest.seq) {
