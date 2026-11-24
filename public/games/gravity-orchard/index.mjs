@@ -114,13 +114,18 @@ export function mountGravityOrchard(root, {
     const nextCountdownId = view.phase === 'countdown' ? `countdown:${view.matchId}:${view.runEpoch}:${Math.max(1,Math.ceil(view.countdownTicks/60))}` : null;
     if (receivedLive && nextCountdownId && nextCountdownId !== countdownId) cues.effect('countdown', {id: nextCountdownId});
     countdownId = nextCountdownId;
-    presentation.setConnection({...status, ...(presence ? {presence} : {})});
-    presentation.update(view);
+    const connection = {...status, ...(presence ? {presence} : {})};
+    if (viewer.role === 'player') {
+      presentation.update(view, connection);
+    } else {
+      presentation.setConnection(connection);
+      presentation.update(view);
+    }
     latest = view;
-    root.dataset.matchId = view.matchId;
-    root.dataset.runEpoch = String(view.runEpoch);
-    root.dataset.tick = String(view.tick);
-    root.dataset.phase = view.phase;
+    for (const key of ['matchId', 'runEpoch', 'tick', 'phase']) {
+      const value = String(view[key]);
+      if (root.dataset[key] !== value) root.dataset[key] = value;
+    }
     onView(view);
     return true;
   }
