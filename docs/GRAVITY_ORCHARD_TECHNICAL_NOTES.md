@@ -71,6 +71,8 @@ WebRTC needs offer/answer and ICE candidate exchange outside its data channel. Q
 
 A stationary phone may send no new orientation events. Its network heartbeat therefore sends the latest held vector. A delayed TCP backlog can make old input appear recent. The coordinator checks the observed simulation tick and connection identity before applying it. A lost controller causes a shared pause, and both players confirm readiness to resume.
 
+A late host callback can advance at most five fixed ticks (about 83 ms of game time). The host drops the remaining whole ticks, so a brief scheduling delay slows the clock without sending fruit across the garden in one frame. Stale steering becomes neutral with Brake after 250 ms. A gap over one second represents 20 missed snapshot intervals without live feedback. At that point the host pauses before stepping and both players confirm readiness. Replay uses the inputs applied on each simulation tick.
+
 The [wire contract](GRAVITY_ORCHARD_CONTRACT.md#5-realtime-wire-contract) defines authentication, fields, rates, limits and checkpoint recovery.
 
 ## Secure-controller status

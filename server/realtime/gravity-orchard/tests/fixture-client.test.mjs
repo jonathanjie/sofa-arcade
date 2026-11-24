@@ -89,12 +89,12 @@ test('real browser-client seam interoperates with fixture authority for two simu
   assert.equal((await command(jon, 'jon-rematch-ready', 'ready', { value: true })).accepted, true);
   assert.equal((await command(lydia, 'lydia-rematch-ready', 'ready', { value: true })).accepted, true);
   await until(() => clients.every(peer => peer.snapshot.view.phase === 'playing'), 'the rematch starts for all recipients');
-  await clock.jump(220);
+  await clock.jump(350);
   const beforeStall = fixture.diagnostics().transport;
   assert.equal(beforeStall.phase, 'playing', 'A sub-threshold wake stays in play');
   assert.equal(beforeStall.hostStalls, 0);
-  // Deliver the first overdue scheduler callback at the end of a 350 ms stall.
-  await clock.jump(350);
+  // Deliver the first overdue scheduler callback at the end of a 1250 ms stall.
+  await clock.jump(1250);
   await until(() => clients.every(peer => peer.snapshot.view.pauseReason === 'host-stall'), 'a late host callback pauses every recipient');
   for (const peer of clients) {
     assert.equal(peer.snapshot.view.phase, 'paused');

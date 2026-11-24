@@ -212,7 +212,7 @@ async function recoverObservedHostStall(control, recoveries, deadline) {
     priorEpochs[id] = prior.runEpoch;
   }
   // Shared CI Macs (Intel most often) can stall the host past the contract's
-  // 250 ms limit once in a while, so each stage run may recover from one stall.
+  // one-second limit once in a while, so each stage run may recover from one stall.
   // A stall in a run that already resumed from a stall still fails: the run
   // epoch changes at every stage boundary, so the same resumed epoch means the
   // same stage run stalled twice.

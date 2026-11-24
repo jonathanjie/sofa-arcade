@@ -97,16 +97,54 @@ test('host stall pauses rather than fast-forwarding; smaller catch-up never exce
   await h.clock.jump(100);
   assert.equal(h.coordinator.getPublicView('UNIT').tick - before.tick, 5);
   assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').tickOverruns, 1);
-  await h.clock.jump(250);
-  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing', 'The 250 ms boundary is still playable');
+  await h.clock.jump(350);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing', 'A 350 ms stall stays playable');
+  await h.clock.jump(1000);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing', 'One second is still playable');
   assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').hostStalls, 0);
   const tickBeforeStall = h.coordinator.getPublicView('UNIT').tick;
-  await h.clock.jump(251);
+  await h.clock.jump(1001);
   const after = h.coordinator.getPublicView('UNIT');
   assert.equal(after.phase, 'paused');
   assert.equal(after.pauseReason, 'host-stall');
   assert.equal(after.tick, tickBeforeStall);
   assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').hostStalls, 1);
+  jon.input(); lydia.input(); await flush();
+  assert.equal((await jon.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'paused');
+  assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'countdown');
+  await h.clock.advance(1000 / 60);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing');
+});
+
+test('a short stall replays as five fixed Orchard ticks with stale controls braked', async t => {
+  async function playThroughGap(stalled) {
+    const h = await harness({ simulation: orchard });
+    t.after(() => h.close());
+    const { jon, lydia } = await h.players();
+    // Advance through countdown and spawn fruit with fresh, non-neutral steering.
+    for (let turn = 0; turn < 65; turn++) {
+      jon.input({ x: 1, y: 0, brake: false });
+      lydia.input({ x: 0, y: 1, brake: false });
+      await flush();
+      await h.clock.advance(50);
+    }
+    const before = h.coordinator.getPublicView('UNIT');
+    assert.equal(before.phase, 'playing');
+    assert.ok(before.fruits.length > 0);
+    if (stalled) {
+      await h.clock.jump(350);
+    } else {
+      jon.input(orchard.SAFE_INPUT); lydia.input(orchard.SAFE_INPUT); await flush();
+      await h.clock.advance(5 * 1000 / 60);
+    }
+    await h.clock.advance(1000 / 60); // The next turn must have no catch-up debt.
+    const after = h.coordinator.getPublicView('UNIT');
+    assert.equal(after.tick, before.tick + 6);
+    return after;
+  }
+  assert.deepEqual(await playThroughGap(true), await playThroughGap(false));
 });
 
 const exhaustiveInputs = process.env.SOFA_EXHAUSTIVE === '1';

@@ -118,7 +118,7 @@ export async function createFixtureServer({
           || request.headers['content-type'] !== 'application/json') return reply(response, 403, { code: 'fixture-origin-denied' });
         const body = await readJSON(request);
         if (Object.keys(body).length !== 1 || body.kind !== 'host-stall') return reply(response, 400, { code: 'fixture-control-invalid' });
-        clockOffset += 1000;
+        clockOffset += 1250;
         return reply(response, 200, { accepted: true, kind: 'host-stall' });
       }
       if (request.method === 'GET' && STATIC.has(url.pathname)) {

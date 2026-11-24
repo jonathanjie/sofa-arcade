@@ -247,9 +247,9 @@ try{
  await run.screenshot(tv,'paused-recovery');
  run.check('Practice uses the same authority; synthetic tilt works; restart restores paused with a fresh epoch',{sensor:'Synthetic beta/gamma events through the real mounted controller; not physical phone evidence.',before:{tick:beforeRecovery.tick,epoch:beforeRecovery.runEpoch},after:{tick:restored.tick,epoch:restored.runEpoch},mode:restored.mode});
  await readyBoth();
- Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,350);
+ Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,1250);
  const stalled=await waitPhase(tv,'paused');assert.equal(stalled.pauseReason,'host-stall');
- run.check('An actual 350 ms host event-loop stall pauses rather than fast-forwarding',run.diagnostics(code).coordinator);
+ run.check('An actual 1250 ms host event-loop stall pauses rather than fast-forwarding',run.diagnostics(code).coordinator);
  await tv.emulateMedia({reducedMotion:'reduce'});await tv.waitForFunction(()=>document.querySelector('[data-go-tv]')?.dataset.reducedMotion==='true');await run.screenshot(tv,'reduced-motion-paused');
  const imageReport=await tv.evaluate(async()=>{const urls=[...new Set([...document.querySelectorAll('[data-go-tv] image')].map(n=>n.getAttribute('href')).filter(Boolean))];for(const url of urls){const img=new Image();img.src=url;await img.decode();}return urls;});
  assert.ok(imageReport.some(url=>url.includes('/assets/gravity-orchard/characters/')),'Final character atlases are rendered');assert.ok(imageReport.some(url=>url.includes('/assets/gravity-orchard/environments/')),'Final orchard environment is rendered');run.evidence.renderedAssets=imageReport;
