@@ -124,8 +124,7 @@ values, cue timestamps, file hashes and encoder version are in the report.
 **No auditory evaluation is claimed.** Written musical review, structural tests,
 numerical rendering and browser decode/play/seek verification are distinct from
 listening. Final timbre and volume should be auditioned through the integrated
-shared audio engine on the Mac/TV. Physical speakers and the complete game's
-sound lifecycle are WS6 acceptance work.
+shared audio engine on the Mac/TV. The [integration report](../../../docs/archive/workstreams/integration.md) records the software checks. Physical speaker checks remain open.
 
 ## Reproducible checks
 

@@ -1,12 +1,10 @@
 # The Odd Laws Society — full strategy design
 
-**Status:** proposed rules v0.2, 20 November 2026; not implemented or playtested. **Catalog ID:** `odd-laws-society`. **Players:** exactly two. **Target:** 35–45 minutes once familiar, approximately eight minutes to teach; allow a longer first game. **Implementation branch:** `feature/odd-laws-society`.
+Rules v0.2 are playable in the local collection. Rules v0.3 are an opt-in engine prototype. **Catalog ID** `odd-laws-society`. **Players** Two. **Design targets** 35–45 minutes once familiar and about eight minutes to teach.
 
 This document replaces the earlier 5×5 movement-and-star prototype. That prototype lacked the lasting investments, economic tradeoffs, and competing plans requested by Jon. This revision is a city-building strategy game with a shared market and laws that both players can influence. The name and rule-changing identity remain; the movement race does not.
 
-All costs, values, caps, and duration estimates are starting hypotheses. The specification is detailed enough to implement a rules prototype; its balance and intended weight still require actual play. Keep the catalog entry `planned` until the release gates pass.
-
-Read [parallel development](../PARALLEL_DEVELOPMENT.md), [hosting and Tauri options](../archive/DEPLOYMENT_OPTIONS.md), and [networking](../NETWORKING.md). **Sealed council bids require private state projection and simultaneous commitments.** This is no longer a public-information-only integration.
+Human balance and playtime still need validation. See the [private turn-based integration checklist](../PARALLEL_DEVELOPMENT.md).
 
 ## 0. Rules v0.3 prototype: base game and modules (21 November 2026)
 
@@ -321,7 +319,7 @@ Write a recognizable chamber-comedy theme in AABA form, with a clarinet-like mel
 
 ## 12. Engine and privacy contract
 
-These are proposed interfaces, not a claim that the shared platform supports them today. Retain its outer `phase: playing | finished` field; use a game-specific `stage` internally.
+The examples below describe the design. See the [engine](../../games/odd-laws-society/engine.mjs) and [room adapter](../../games/registry.mjs) for the implemented interfaces. Retain its outer `phase: playing | finished` field; use a game-specific `stage` internally.
 
 Full state includes `rulesVersion`, `matchId`, public setup seed/agenda, session/term/stage/phase ID, Chair schedule, active player/actions, two laws, term stock, city instances/positions, resources, score ledger, evaluated streets, Build/Festival flags, private commitments, and result. Derive actor identity from verified credentials, never from action payloads.
 
@@ -355,37 +353,9 @@ Law evaluation dispatches over explicit data templates, never evaluated strings.
 
 The same engine serves LAN and supported online backends. Tauri and Pages are delivery adapters, not separate rule implementations.
 
-## 13. Implementation plan and parallel ownership
+## 13. Local release history
 
-### Milestone 1: executable rules prototype
-
-Engine owner: `games/odd-laws-society/`. Implement catalog data, deterministic setup, validation, transitions, projection, quotes, scoring, fixtures, and meaningful tests. Reproduce the worked opening and a complete six-session match in an inspectable sandbox before final art.
-
-Exit: all branches terminate, accounting fixtures agree, all 36 Economy/Civic combinations allow valid progress, council order independence/idempotency works, and score breakdowns reproduce.
-
-### Milestone 2: shared platform
-
-The platform owner handles registry, action normalization, viewer projection, simultaneous commitment semantics, shell, online adapter, LAN streams, and packaging allowlists. Follow Gates A/B/C in [parallel development](../PARALLEL_DEVELOPMENT.md). Preserve Sofa Kingdoms and existing rooms.
-
-Exit: a TV and two authenticated phone seats receive correct distinct council views, same-phase commitments work, and reconnects preserve privacy. An exposed two-hand sandbox does not satisfy this gate.
-
-### Milestone 3: TV and phone frontend
-
-Frontend owner: `ui/games/odd-laws-society/`, against agreed projected fixtures while the engine/platform proceed. Build ordinary actions, council, waiting, reconnect, tutorial, Help, and results with placeholder art. Shared routing and audio lifecycle stay coordinated with the integrator.
-
-Exit: two narrow phones and a sofa-readable TV finish a match without the PRD; quotes match committed results. Include audio unlock, reduced motion, keyboard navigation, and errors.
-
-### Milestone 4: balance and teaching
-
-Run the protocol below. Tune versioned data before adding currencies, offices, objectives, or more laws. Record what changed and why; existing matches keep their rules version.
-
-Exit: actual two-player sessions support the intended teaching/pacing; no obvious automatic opening or control loop remains; alternative approaches can win for explainable reasons. This is not a mathematical proof of balance.
-
-### Milestone 5: art, music, release
-
-Art/audio work can independently produce eighteen district illustrations, four guild icons, twelve law cards, council props, character reactions, and a composed motif. Asset replacement should not alter rules. The integrator aligns production/LAN/ZIP allowlists, runs regression/build/browser checks, and only then marks the game playable.
-
-One repository and collection remain. WebSocket deployment, static Pages export, and Tauri packaging may have independent branches. None is needed to determine whether the rules are enjoyable.
+The 20 November [dispatch](../archive/DISPATCH_LOCAL.md) split engine, private multiplayer, views, media, desktop and integration work. The [integration report](../archive/workstreams/integration.md) records the software acceptance at merge. Use the protocol below for human playtests.
 
 ## 14. Acceptance and balance protocol
 
