@@ -17,9 +17,10 @@ test('GO6 runtime file inventories close every local import and separate native/
   const hostFiles = new Set(inventory.hostRuntimeFiles);
   const browserFiles = new Set([...browser.hostViewFiles, ...browser.publicDiagnosticFiles]);
   const packages = new Set(inventory.runtimeDependencies.map(item => item.name));
+  const hostPath = /^(?:server\/secure-lan\/|server\/reject-upgrade\.mjs$)/;
   for (const [files, hostOnly] of [[hostFiles, true], [browserFiles, false]]) {
     for (const file of files) {
-      assert.match(file, hostOnly ? /^server\/secure-lan\// : /^desktop\/secure-lan\//);
+      assert.match(file, hostOnly ? hostPath : /^desktop\/secure-lan\//);
       assert.doesNotMatch(file, /(?:fixture|tests|evidence|node_modules|\.pem|\.key|\.sqlite)/);
       const absolute = path.join(root, file);
       assert.equal(await realpath(absolute), absolute);

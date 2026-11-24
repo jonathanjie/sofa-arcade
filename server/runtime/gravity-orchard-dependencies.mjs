@@ -5152,6 +5152,25 @@ var require_cjs = __commonJS({
   }
 });
 
+// server/reject-upgrade.mjs
+var UPGRADE_CLOSE_GRACE_MS = 250;
+function rejectUpgrade(socket, status, reason) {
+  if (socket.destroyed) return;
+  const destroy = () => socket.destroy();
+  const deadline = setTimeout(destroy, UPGRADE_CLOSE_GRACE_MS);
+  deadline.unref();
+  socket.on("error", destroy);
+  socket.once("close", () => {
+    clearTimeout(deadline);
+    socket.off("error", destroy);
+  });
+  socket.end(`HTTP/1.1 ${status} ${reason}\r
+Connection: close\r
+Content-Length: 0\r
+\r
+`);
+}
+
 // server/realtime/gravity-orchard/index.mjs
 import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
@@ -6082,7 +6101,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     }
     if (!permitted || pendingAuth >= LIMITS.maxPendingAuth || pendingAuthorityCalls >= LIMITS.maxPendingAuth * 2 || connections.size + draining.size >= LIMITS.maxSockets) {
       globalStats.rejectedUpgrades++;
-      socket.end("HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n");
+      rejectUpgrade(socket, 403, "Forbidden");
       return false;
     }
     try {
@@ -18453,17 +18472,6 @@ function failedResponse(response) {
   response.writeHead(500, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", Connection: "close" });
   response.end('{"error":"The local host could not serve this request.","code":"request_failed"}');
 }
-function rejectUpgrade(socket, status = 404) {
-  if (socket.destroyed) return;
-  socket.end(`HTTP/1.1 ${status} ${status === 404 ? "Not Found" : "Service Unavailable"}\r
-Connection: close\r
-Content-Length: 0\r
-\r
-`);
-  const timer = setTimeout(() => socket.destroy(), CLOSE_GRACE_MS);
-  timer.unref();
-  socket.once("close", () => clearTimeout(timer));
-}
 async function createSecureLanServer({ tlsMaterial, host = "0.0.0.0", port = 4178, requestHandler, onUpgrade, onError } = {}) {
   if (typeof requestHandler !== "function" || onUpgrade !== void 0 && typeof onUpgrade !== "function" || onError !== void 0 && typeof onError !== "function" || !Number.isInteger(port) || port < 0 || port > 65535) {
     throw new SecureLanListenerError("configuration_invalid");
@@ -18543,7 +18551,8 @@ async function createSecureLanServer({ tlsMaterial, host = "0.0.0.0", port = 417
   server.on("upgrade", (request, socket, head) => {
     track(socket);
     if (closed || !onUpgrade) {
-      rejectUpgrade(socket, closed ? 503 : 404);
+      if (closed) rejectUpgrade(socket, 503, "Service Unavailable");
+      else rejectUpgrade(socket, 404, "Not Found");
       return;
     }
     try {

@@ -3,8 +3,8 @@
   "builder": "esbuild@0.28.0",
   "output": {
     "path": "server/runtime/gravity-orchard-dependencies.mjs",
-    "bytes": 703645,
-    "sha256": "c4ce5f3f4fb95d3c17d241d3a76b999165ff46266609b3e5332f2eeed452d5f5"
+    "bytes": 703810,
+    "sha256": "77b8fff151312e90f83302fd2e016933c978d3e8f7d2f1824fb93a73cb249f6e"
   },
   "optionalUnbundledAccelerators": [
     "bufferutil",
@@ -1287,8 +1287,8 @@
     },
     {
       "path": "server/realtime/gravity-orchard/index.mjs",
-      "bytes": 38057,
-      "sha256": "aafe67e1b66709e6e88b29d0dabeb0e9979c9d5ba3879a013fcdc2fe8b2268dc"
+      "bytes": 38068,
+      "sha256": "cae093f8f11ba1409e536b2d239aee084e1075ed754013989d956733746be727"
     },
     {
       "path": "server/realtime/gravity-orchard/lib/checkpoint.mjs",
@@ -1299,6 +1299,11 @@
       "path": "server/realtime/gravity-orchard/lib/protocol.mjs",
       "bytes": 6376,
       "sha256": "d0e44bab926c1514e6c3227e6bfb0a224fa158eef704ddd5c8402c7f4c9cd38c"
+    },
+    {
+      "path": "server/reject-upgrade.mjs",
+      "bytes": 562,
+      "sha256": "df1176873f4d5a4e2b9fe947731a6ec78f348cb650d19157b0c21d88c5b18fe7"
     },
     {
       "path": "server/secure-lan/certificates/errors.mjs",
@@ -1337,8 +1342,8 @@
     },
     {
       "path": "server/secure-lan/index.mjs",
-      "bytes": 12362,
-      "sha256": "faa21ba6739054103420a1b3ffab51ba7e39d2346ba673e4492aac48968030b5"
+      "bytes": 12068,
+      "sha256": "7637d15c1bc1635cb0643e83a389e879c24905c3aae16c6beeada4743071ea86"
     },
     {
       "path": "server/secure-lan/request-policy.mjs",

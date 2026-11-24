@@ -1,3 +1,4 @@
+import { rejectUpgrade } from '../../reject-upgrade.mjs';
 import { randomUUID } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -519,7 +520,7 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
     if (!permitted || pendingAuth >= LIMITS.maxPendingAuth || pendingAuthorityCalls >= LIMITS.maxPendingAuth * 2
       || connections.size + draining.size >= LIMITS.maxSockets) {
       globalStats.rejectedUpgrades++;
-      socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
+      rejectUpgrade(socket, 403, 'Forbidden');
       return false;
     }
     try {
