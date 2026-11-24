@@ -11,17 +11,19 @@ function vectorLength(values) {
   return values.every(Number.isFinite) ? Math.hypot(...values) : 0;
 }
 
-function mountStrictMode(button, input) {
+function mountStrictMode(button, input, serverNow) {
   const window = button.ownerDocument.defaultView;
   const sensor = window.DeviceMotionEvent;
   button.hidden = !window.isSecureContext || !sensor;
   let optedIn = false;
-  let enabled = false;
+  let lookUntil;
   let disposed = false;
   let lastSignal = -Infinity;
 
   function onMotion(event) {
-    if (!enabled) return;
+    if (lookUntil === undefined) return;
+    const sampledAt = serverNow();
+    if (sampledAt === null || sampledAt >= lookUntil) return;
     const now = window.performance.now();
     if (now - lastSignal < MOTION_INTERVAL_MS) return;
     const { acceleration, rotationRate } = event;
@@ -54,7 +56,7 @@ function mountStrictMode(button, input) {
 
   button.addEventListener('click', toggle);
   return {
-    update(value) { enabled = value; },
+    update(deadline) { lookUntil = deadline; },
     dispose() {
       disposed = true;
       window.removeEventListener('devicemotion', onMotion);
@@ -62,7 +64,7 @@ function mountStrictMode(button, input) {
   };
 }
 
-export function mountDontWakeLalaPhone(root, { input }) {
+export function mountDontWakeLalaPhone(root, { input, serverNow }) {
   const document = root.ownerDocument;
   const window = document.defaultView;
   const css = document.createElement('link');
@@ -83,23 +85,27 @@ export function mountDontWakeLalaPhone(root, { input }) {
   const progress = root.querySelector('.lala-progress span');
   const icon = root.querySelector('canvas').getContext('2d');
   const drawIcon = createCatIcon(document);
-  const strict = mountStrictMode(root.querySelector('.lala-strict'), input);
+  const strict = mountStrictMode(root.querySelector('.lala-strict'), input, serverNow);
   let pointer = null;
   let key = null;
   let refresh;
   let cue;
   let distance;
   let caught = false;
+  let practice = false;
 
   function updateAction() {
-    const text = caught ? 'Caught!' : cue === 'look' ? 'Freeze!' : refresh !== undefined ? 'Tiptoe…' : 'Hold';
+    const held = pointer !== null || key !== null;
+    const text = caught ? 'Caught!' : cue === 'look' ? 'Freeze!' : held ? 'Tiptoe…' : 'Hold';
     if (action.textContent !== text) action.textContent = text;
+    if (practice) progress.style.width = held ? '100%' : '0%';
   }
 
   function startHold() {
-    if (pad.disabled || refresh !== undefined) return;
-    input({ kind: 'hold', held: true });
-    refresh = window.setInterval(() => input({ kind: 'hold', held: true }), HOLD_REFRESH_MS);
+    if (!practice) {
+      input({ kind: 'hold', held: true });
+      refresh = window.setInterval(() => input({ kind: 'hold', held: true }), HOLD_REFRESH_MS);
+    }
     pad.dataset.held = 'true';
     updateAction();
   }
@@ -109,10 +115,11 @@ export function mountDontWakeLalaPhone(root, { input }) {
     pointer = null;
     key = null;
     if (heldPointer !== null && pad.hasPointerCapture(heldPointer)) pad.releasePointerCapture(heldPointer);
-    if (refresh === undefined) return;
-    window.clearInterval(refresh);
-    refresh = undefined;
-    input({ kind: 'hold', held: false });
+    if (refresh !== undefined) {
+      window.clearInterval(refresh);
+      refresh = undefined;
+      input({ kind: 'hold', held: false });
+    }
     pad.dataset.held = 'false';
     updateAction();
   }
@@ -146,17 +153,18 @@ export function mountDontWakeLalaPhone(root, { input }) {
   document.addEventListener('visibilitychange', visibilityChanged);
 
   return {
-    update(state, enabled) {
-      if (!enabled) stopHold();
-      pad.disabled = !enabled;
-      strict.update(enabled);
+    practiceWhileWaiting: true,
+    update(state, enabled, { practice: nextPractice = false } = {}) {
+      if ((!enabled && !nextPractice) || practice !== nextPractice) stopHold();
+      practice = nextPractice;
+      pad.disabled = !enabled && !practice;
+      strict.update(enabled && !state?.caught ? state?.lookUntil : undefined);
       const nextCue = state?.cue ?? 'sleep';
-      if (nextCue !== cue) {
-        cue = nextCue;
-        pad.dataset.cue = cue;
-        signal.textContent = SIGNAL_LABELS[cue];
-        drawIcon(icon, cue);
-      }
+      if (nextCue !== cue) drawIcon(icon, nextCue);
+      cue = nextCue;
+      pad.dataset.cue = cue;
+      const label = practice ? 'Practice · hold and release' : SIGNAL_LABELS[cue];
+      if (signal.textContent !== label) signal.textContent = label;
       caught = Boolean(state?.caught);
       pad.dataset.caught = String(caught);
       if (distance !== state?.distance) {

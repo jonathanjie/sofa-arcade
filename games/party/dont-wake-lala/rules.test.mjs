@@ -166,3 +166,33 @@ test('a fixed seed and input log replay to the same cues, catches, scores and en
   assert.notDeepEqual(first.scenes.map(scene => scene.cue), replay('different').scenes.map(scene => scene.cue));
   assert.deepEqual(Object.keys(first.scenes[0]).sort(), ['cue', 'finish', 'runners', 'target']);
 });
+
+test('departures remove bodies and queued holds before the next simulation step', () => {
+  const before = tick(begin(3), movement('p1'), movement('p2'));
+  const after = game.step(before, [movement('p1'), movement('p3')], 50, {
+    departures: [{ playerId: 'p1', reason: 'kicked' }, { playerId: 'p2', reason: 'expired' }],
+  });
+  assert.deepEqual(game.projectForTv(after).runners.map(runner => runner.playerId), ['p3']);
+  assert.deepEqual(game.scores(after), [{ playerId: 'p3', score: 0.25 }]);
+  assert.equal(game.projectForPhone(after, 'p1'), null);
+  assert.equal(lane(before).distance, 0.25);
+  const empty = game.step(after, [], 50, { departures: [{ playerId: 'p3', reason: 'expired' }] });
+  assert.equal(game.isRoundOver(empty), true);
+  assert.deepEqual(game.scores(empty), []);
+});
+
+test('the phone receives a host clock deadline only while Lala is looking', () => {
+  const startsAt = 1_000_000;
+  let state = game.createRound(players, 'hallway', 2, { startsAt });
+  assert.equal(game.projectForPhone(state, 'p1').lookUntil, undefined);
+  state = until(state, value => cue(value) === 'look');
+  const opensAt = startsAt + state.elapsedMs;
+  const { lookUntil } = game.projectForPhone(state, 'p1');
+  assert.ok(lookUntil - opensAt >= 850 && lookUntil - opensAt <= 1150);
+  do {
+    assert.equal(game.projectForPhone(state, 'p1').lookUntil, lookUntil);
+    state = tick(state);
+  } while (cue(state) === 'look');
+  assert.equal(startsAt + state.elapsedMs, lookUntil);
+  assert.equal(game.projectForPhone(state, 'p1').lookUntil, undefined);
+});

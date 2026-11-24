@@ -23,8 +23,9 @@ function buildCues(seed, round) {
   const cues = [];
   let start = 0;
   function add(name, ticks) {
-    cues.push({ name, start });
-    start += ticks * TICK_MS;
+    const end = start + ticks * TICK_MS;
+    cues.push({ name, start, end });
+    start = end;
   }
   const minWarningTicks = Math.max(12, 18 - 2 * (round - 1));
   let untilFake = pick(2, 4);
@@ -55,7 +56,7 @@ function normalizeInput(input) {
   return null;
 }
 
-function step(state, inputs, dt) {
+function step(state, inputs, dt, { departures = [] } = {}) {
   if (isRoundOver(state)) return state;
   const elapsedMs = Math.min(ROUND_MS, state.elapsedMs + dt);
   const nextCue = state.cues[state.cueIndex + 1];
@@ -64,6 +65,7 @@ function step(state, inputs, dt) {
   const lookingFor = cue.name === 'look' ? elapsedMs - cue.start : -1;
   const pressed = new Set();
   const runners = Object.fromEntries(Object.entries(state.runners).map(([id, runner]) => [id, { ...runner }]));
+  for (const { playerId } of departures) delete runners[playerId];
   for (const { playerId, input } of inputs) {
     if (!Object.hasOwn(runners, playerId)) continue;
     const runner = runners[playerId];
@@ -93,7 +95,7 @@ function step(state, inputs, dt) {
 }
 
 function isRoundOver(state) {
-  return state.finish || state.elapsedMs === ROUND_MS;
+  return state.finish || state.elapsedMs === ROUND_MS || Object.keys(state.runners).length === 0;
 }
 
 export const dontWakeLala = Object.freeze({
@@ -101,13 +103,12 @@ export const dontWakeLala = Object.freeze({
   minPlayers: 2,
   maxPlayers: 16,
   durationMs: ROUND_MS,
-  // The current party contract supplies only roster and seed. A host that supplies
-  // its round ordinal as the third argument can enable the later-round cues.
-  createRound(players, seed, round = 1) {
+  createRound(players, seed, round = 1, match) {
     return {
       cues: buildCues(seed, round),
       cueIndex: 0,
       elapsedMs: 0,
+      startsAt: match?.startsAt ?? 0,
       finish: false,
       runners: Object.fromEntries(players.map(({ id }) => [id, {
         ticks: 0, heldUntil: 0, moving: false, motion: false, caught: false, catchId: 0,
@@ -120,7 +121,10 @@ export const dontWakeLala = Object.freeze({
   projectForPhone(state, playerId) {
     if (!Object.hasOwn(state.runners, playerId)) return null;
     const { ticks, caught } = state.runners[playerId];
-    return { cue: state.cues[state.cueIndex].name, distance: ticks / TICKS_PER_POINT, caught };
+    const { name: cue, end } = state.cues[state.cueIndex];
+    const view = { cue, distance: ticks / TICKS_PER_POINT, caught };
+    if (cue === 'look') view.lookUntil = Math.ceil(state.startsAt + Math.min(ROUND_MS, end));
+    return view;
   },
   projectForTv(state) {
     return {

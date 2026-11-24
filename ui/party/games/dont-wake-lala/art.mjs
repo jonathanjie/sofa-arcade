@@ -160,7 +160,7 @@ export function createHallwayArt(document) {
       drawSprite(context, right, x + (31 + twitch) * scale, y + (6 - breath - twitch) * scale, scale);
       drawSprite(context, body, x, y - breath * scale, scale);
       drawSprite(context, eyelid, x + 7 * scale, y + (36 - breath) * scale, scale);
-      drawSprite(context, eyelid, x + 28 * scale, y + (35 - breath) * scale, scale);
+      drawSprite(context, cue === 'blink' ? eyes.sleep : eyelid, x + 28 * scale, y + (35 - breath) * scale, scale);
     },
     cheese(context, x, y, scale) { drawSprite(context, cheese, x, y, scale); },
   };

@@ -5,7 +5,42 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { launchPartyHarness } from './harness.mjs';
 
-const output = fileURLToPath(new URL('../../work/dont-wake-lala/', import.meta.url));
+const output = fileURLToPath(new URL('../../work/dont-wake-lala/review/', import.meta.url));
+
+async function checkMice(tv, count, minimumHeight) {
+  const mice = await tv.locator('[data-party-canvas]').evaluate(canvas => new Promise(resolve => {
+    const context = canvas.getContext('2d');
+    const draw = context.drawImage;
+    const visible = [];
+    context.drawImage = function (sprite, x, y, width, height) {
+      if (sprite.width === 16 && sprite.height === 16) {
+        const source = sprite.getContext('2d').getImageData(0, 0, 16, 16).data;
+        const rows = [];
+        for (let row = 0; row < 16; row++) {
+          if (source.subarray(row * 64, (row + 1) * 64).some((alpha, i) => i % 4 === 3 && alpha)) rows.push(row);
+        }
+        visible.push({ x, y: y + rows[0] * height / 16, width, height: rows.length * height / 16 });
+      }
+      return draw.apply(this, arguments);
+    };
+    requestAnimationFrame(() => {
+      delete context.drawImage;
+      const { left, top, width, height } = canvas.getBoundingClientRect();
+      resolve(visible.map(mouse => ({
+        x: left + mouse.x * width / canvas.width,
+        y: top + mouse.y * height / canvas.height,
+        width: mouse.width * width / canvas.width,
+        height: mouse.height * height / canvas.height,
+      })));
+    });
+  }));
+  assert.equal(mice.length, count);
+  for (const mouse of mice) {
+    assert.ok(Math.round(mouse.height) >= minimumHeight, JSON.stringify(mouse));
+    assert.ok(mouse.x >= 1920 * .03 && mouse.x + mouse.width <= 1920 * .97);
+    assert.ok(mouse.y >= 1080 * .03 && mouse.y + mouse.height <= 1080 * .97);
+  }
+}
 
 function percentiles(values) {
   assert.ok(values.length >= 100, `Only ${values.length} frames collected`);
@@ -102,11 +137,14 @@ test('Lala plays on a 1080p TV, two touch phones and fourteen socket phones', { 
     });
   }
 
+  let variedPace = false;
   const movement = setInterval(() => {
     for (const [index, bot] of bots.entries()) {
       if (bot?.view.phase !== 'playing') continue;
       const elapsed = 60_000 - bot.view.ms;
-      const held = elapsed > 2500 || elapsed > index % 6 * 370;
+      const watching = bot.view.state.cue === 'blink' || bot.view.state.cue === 'look';
+      const held = variedPace ? !watching && Math.floor(elapsed / 155) % 16 < 2 + index * .55
+        : elapsed > 2500 || elapsed > index % 6 * 370;
       bot.input({ kind: 'hold', held });
     }
   }, 100);
@@ -115,10 +153,10 @@ test('Lala plays on a 1080p TV, two touch phones and fourteen socket phones', { 
   await pepper.locator('.lala-hold[data-held=true]').waitFor();
   await tv.waitForFunction(() => document.querySelector('[data-party-canvas]').dataset.cue === 'sleep');
   await pepper.waitForFunction(() => Number.parseFloat(document.querySelector('.lala-progress span').style.width) >= 6);
-  await tv.screenshot({ path: output + 'mid-play.png' });
   await pepper.screenshot({ path: output + 'phone.png' });
 
   await tv.waitForFunction(() => document.querySelector('[data-party-canvas]').dataset.cue === 'look');
+  await juniper.locator('.lala-hold[data-cue=look]').waitFor({ timeout: 950 });
   await juniper.evaluate(() => {
     window.dispatchEvent(new DeviceMotionEvent('devicemotion', { acceleration: { x: 3, y: 0, z: 0 } }));
   });
@@ -130,6 +168,7 @@ test('Lala plays on a 1080p TV, two touch phones and fourteen socket phones', { 
   await setHold(false);
   await strict.tap();
   assert.equal(await strict.getAttribute('aria-pressed'), 'false');
+  variedPace = true;
 
   const measures = tv.evaluate(() => new Promise(resolve => {
     const cadence = [];
@@ -154,6 +193,10 @@ test('Lala plays on a 1080p TV, two touch phones and fourteen socket phones', { 
     window.lalaCueObserver.observe(canvas, { attributeFilter: ['data-cue'] });
     void follow();
   });
+  await pepper.waitForFunction(() => Number.parseFloat(document.querySelector('.lala-progress span').style.width) >= 37);
+  await tv.locator('[data-party-canvas][data-cue=sleep]').waitFor();
+  await tv.screenshot({ path: output + 'mid-play-16.png' });
+  await checkMice(tv, 16, 75);
   try {
     const podium = tv.getByRole('heading', { name: 'Podium' });
     const stalled = tv.getByText('The host paused. Start the round again when ready.');
@@ -186,3 +229,70 @@ test('Lala plays on a 1080p TV, two touch phones and fourteen socket phones', { 
   assert.ok(metrics.renderMs.p95 < 16.7, JSON.stringify(metrics));
   t.diagnostic(JSON.stringify(metrics));
 });
+
+for (const count of [2, 8]) {
+  test(`the hallway fits ${count} mice and late guests can practice`, { timeout: 20_000 }, async t => {
+    const fixture = await launchPartyHarness(t, { gameId: 'dont-wake-lala' });
+    const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
+    t.after(() => browser.close());
+    await mkdir(output, { recursive: true });
+    const tv = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    tv.setDefaultTimeout(3000);
+    await tv.goto(`${fixture.origin}/?party=host&game=dont-wake-lala`);
+    await tv.locator('[data-party-qr] svg').waitFor();
+    const code = await tv.locator('[data-party-code]').textContent();
+    const names = ['Scout', 'Juniper', 'Poppy', 'Pip', 'Nutmeg', 'Pickle', 'Peaches', 'Fig'];
+    const mice = await Promise.all(names.slice(0, count).map(async (name, index) => {
+      const mouse = await fixture.connect(await fixture.join(code, index, name));
+      mouse.send({ type: 'ready', value: true });
+      return mouse;
+    }));
+    for (let tick = 0; tick < 6; tick++) await fixture.advance();
+    await tv.getByText(`${count} of 16 ready`).waitFor();
+    await tv.getByRole('button', { name: 'Start', exact: true }).click();
+    await fixture.until(() => mice[0].view.phase === 'countdown', { ticks: 8 });
+    await tv.locator('.party-countdown').waitFor();
+    await fixture.until(() => mice.every(mouse => mouse.view.phase === 'playing'), { ticks: 65 });
+
+    for (let tick = 0; tick < 410 || mice[0].view.state.cue !== 'sleep'; tick++) {
+      assert.ok(tick < 570, 'expected a nap near the middle of the round');
+      for (const [index, mouse] of mice.entries()) {
+        if (tick % 2 === 0) {
+          mouse.input({ kind: 'hold', held: mouse.view.state.cue === 'sleep' && tick % 40 < 32 - index * (count === 2 ? 16 : 3) });
+        }
+      }
+      await fixture.advance();
+    }
+    const canvas = tv.locator('[data-party-canvas]');
+    await tv.locator('[data-party-canvas][data-cue=sleep]').waitFor();
+    const dimensions = await canvas.evaluate(node => [node.width, node.height, node.clientWidth, node.clientHeight]);
+    assert.deepEqual(dimensions.slice(0, 2), dimensions.slice(2));
+    assert.equal(dimensions[0], 1920);
+    assert.ok(dimensions[1] > 950);
+    await tv.screenshot({ path: output + `mid-play-${count}.png` });
+    await checkMice(tv, count, count === 2 ? 180 : 90);
+
+    if (count === 2) {
+      const late = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+      await late.goto(`${fixture.origin}/?party=join&code=${code}`);
+      await late.getByLabel('Your name').fill('Button');
+      await late.getByRole('button', { name: 'Ready', exact: true }).tap();
+      await late.getByText('Practice · hold and release').waitFor({ timeout: 3000 });
+      const pad = late.getByRole('button', { name: 'Hold to tiptoe' });
+      await pad.focus();
+      await late.keyboard.down('Space');
+      await pad.getByText('Tiptoe…').waitFor({ timeout: 3000 });
+      await late.keyboard.up('Space');
+      await pad.getByText('Hold', { exact: true }).waitFor({ timeout: 3000 });
+      assert.equal(mice[0].view.state.caught, false);
+    }
+
+    if (count === 8) {
+      for (const cue of ['ear', 'blink']) {
+        await fixture.until(() => mice[0].view.state.cue === cue, { ticks: 120 });
+        await tv.locator(`[data-party-canvas][data-cue=${cue}]`).waitFor();
+        await tv.screenshot({ path: output + `${cue}.png` });
+      }
+    }
+  });
+}

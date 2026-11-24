@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { launchPartyHarness } from '../../party/harness.mjs';
+import { getPartyGame } from '../../../games/party/registry.mjs';
+import { launchPartyHarness, partyPlayTicks } from '../../party/harness.mjs';
 
 const gameId = 'dont-wake-lala';
+const game = getPartyGame(gameId);
 const hold = (phone, held) => phone.input({ kind: 'hold', held });
 const isWatching = cue => cue === 'blink' || cue === 'look';
 
@@ -19,8 +21,6 @@ async function start(fixture, tv, number, players) {
   assert.equal(tv.view.roster.length, players.length);
 }
 
-// The shared helper that drives Tap Race has a 500-tick budget. Use the same
-// WebSocket harness directly for this game's 30 seconds of movement and 60 s timeout.
 test('sixteen phones play two full Lala rounds with reconnect, removal and a late guest', { timeout: 20_000 }, async t => {
   const fixture = await launchPartyHarness(t, { gameId });
   const host = await fixture.create();
@@ -37,13 +37,14 @@ test('sixteen phones play two full Lala rounds with reconnect, removal and a lat
   const removed = phones.pop();
   tv.send({ type: 'kick', playerId: removed.playerId });
   assert.equal(await removed.disconnected, 4403);
+  await fixture.until(() => !tv.view.scene.runners.some(runner => runner.playerId === removed.playerId), { ticks: 4 });
   const late = await readyPhone(fixture, host.code, 15, 'Late Guest');
   assert.equal(late.view.waiting, true);
   assert.equal(late.view.state, null);
   hold(late, true);
 
   let sawCatch = false;
-  await fixture.until(() => tv.view.phase === 'results', { ticks: 1250, drive(tick) {
+  await fixture.until(() => tv.view.phase === 'results', { ticks: partyPlayTicks(game), drive(tick) {
     if (tick % 2 === 0) {
       hold(phones[0], !isWatching(tv.view.scene.cue));
       for (const phone of phones.slice(1)) hold(phone, true);
@@ -64,7 +65,20 @@ test('sixteen phones play two full Lala rounds with reconnect, removal and a lat
   assert.equal(Object.hasOwn(phones[0].view, 'scene'), false);
   assert.ok(!JSON.stringify(phones[0].view).includes('Late Guest'));
   const startsAt = fixture.clock.now() + tv.view.ms - 60_000;
-  await fixture.until(() => tv.view.phase === 'results', { ticks: 1250 });
+  let previousCue;
+  let warningStartedAt;
+  let fakeOuts = 0;
+  const warnings = [];
+  await fixture.until(() => tv.view.phase === 'results', { ticks: partyPlayTicks(game), drive() {
+    const { cue } = tv.view.scene;
+    if (cue === previousCue) return;
+    if (cue === 'ear') warningStartedAt = fixture.clock.now();
+    if (cue === 'sleep' && previousCue === 'ear') fakeOuts++;
+    if (cue === 'look') warnings.push(fixture.clock.now() - warningStartedAt);
+    previousCue = cue;
+  } });
+  assert.ok(fakeOuts > 0, 'live round two must have an ear-only fake-out');
+  assert.ok(warnings.length > 0 && warnings.every(ms => ms >= 800 && ms <= 850), String(warnings));
   assert.equal(fixture.clock.now() - startsAt, 60_000);
   assert.equal(tv.view.results.length, 16);
   assert.ok(tv.view.results.every(result => result.score === 0 && result.place === 1));
