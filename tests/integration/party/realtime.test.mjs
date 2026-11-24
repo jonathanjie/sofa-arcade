@@ -67,3 +67,34 @@ test('a silent phone loses its connection, then its held credential', { timeout:
   await harness.advance(30_000);
   await assert.rejects(harness.connect(credential), /4403/);
 });
+
+test('harness play budget covers long game durations on the simulated clock', async t => {
+  const { partyPlayTicks } = await import('../../party/harness.mjs');
+  const fixture = await launchPartyHarness(t, { gameId: 'tap-race' });
+  const start = fixture.clock.now();
+  await fixture.until(() => fixture.clock.now() >= start + 108_000, {
+    ticks: partyPlayTicks?.({ durationMs: 114_000 }),
+  });
+  assert.equal(fixture.clock.now(), 108_000);
+  assert.equal(partyPlayTicks({}), 500);
+});
+
+test('only authenticated phones can request a bounded clock sample', { timeout: 5000 }, async t => {
+  const fixture = await launchPartyHarness(t, { gameId: 'tap-race' });
+  const room = await fixture.create();
+  const tv = await fixture.connect(room);
+  const phone = await fixture.connect(await fixture.join(room.code, 0));
+  await fixture.advance(50);
+  tv.send({ type: 'clock-ping', id: 1 });
+  phone.send({ type: 'clock-ping', id: 1, timestamp: 123 });
+  phone.send({ type: 'clock-ping', id: -1 });
+  for (let id = 1; id <= 4; id++) phone.send({ type: 'clock-ping', id });
+  await fixture.until(() => phone.packets.filter(packet => packet.type === 'clock-pong').length === 3, { ticks: 10 });
+  await fixture.advance(50);
+  assert.deepEqual(phone.packets.filter(packet => packet.type === 'clock-pong').map(packet => packet.clock), [
+    { type: 'clock-pong', id: 1, serverAt: 50 },
+    { type: 'clock-pong', id: 2, serverAt: 50 },
+    { type: 'clock-pong', id: 3, serverAt: 50 },
+  ]);
+  assert.ok(!tv.packets.some(packet => packet.type === 'clock-pong'));
+});

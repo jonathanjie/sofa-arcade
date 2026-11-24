@@ -271,7 +271,7 @@ export function mountPartyPhone(root, { credential, actions }) {
       }
       if (!previous || previous.gameId !== view.gameId) {
         renderer?.dispose();
-        renderer = partyGameView(view.gameId).mountPhone(controls, { input: actions.input });
+        renderer = partyGameView(view.gameId).mountPhone(controls, { input: actions.input, serverNow: actions.serverNow });
         setText(find('[data-game]'), getGame(view.gameId)?.title ?? 'Party');
       }
       setText(find('[data-you]'), view.self.name);

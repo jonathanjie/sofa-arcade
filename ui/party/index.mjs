@@ -15,6 +15,7 @@ export function mountParty(root, { params, joinOrigin, getSecureOrigin, sound, m
     const actions = {
       send: command => client?.send(command),
       input: input => client?.input(input),
+      serverNow: () => client?.serverNow() ?? null,
     };
     const joinUrl = new URL(`/?party=join&code=${credential.code}`, joinOrigin).href;
     const presentation = role === 'host'

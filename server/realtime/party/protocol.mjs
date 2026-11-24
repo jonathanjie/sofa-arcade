@@ -24,6 +24,8 @@ export const PARTY_LIMITS = Object.freeze({
   messageBurst: 12,
   inputsPerSecond: INPUT_RATE,
   inputBurst: INPUT_BURST,
+  clocksPerSecond: 1,
+  clockBurst: 3,
   // At most one second of traffic can survive the stall policy.
   queuedInputs: MAX_PLAYERS * (INPUT_RATE + INPUT_BURST),
 });

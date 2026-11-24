@@ -41,6 +41,7 @@ function newSeat(id, token, time, extra = {}) {
     id, tokenHash: digest(token), connection: null, expiresAt: time + PARTY_ROOM_LIMITS.seatHoldMs,
     ready: false, nextError: time, inputBudget: { at: time, tokens: PARTY_LIMITS.inputBurst },
     messageBudget: { at: time, tokens: PARTY_LIMITS.messageBurst }, ...extra,
+    clockBudget: { at: time, tokens: PARTY_LIMITS.clockBurst },
   };
 }
 
@@ -54,15 +55,9 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
   const tokenFor = (purpose, room, key) => createHmac('sha256', secret)
     .update(`${purpose}:${room.nonce}:${key}`).digest('base64url');
 
-  function removeSeat(room, seat) {
-    room.seats.delete(seat.id);
-    discardInputs(room, seat);
-    seat.connection?.terminate?.(4403);
-  }
-
   function sweepRoom(room, time) {
     for (const seat of room.seats.values()) {
-      if (!seat.connection && time >= seat.expiresAt) forgetSeat(room, seat);
+      if (!seat.connection && time >= seat.expiresAt) forgetSeat(room, seat, 'expired');
     }
   }
 
@@ -115,6 +110,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
       code, game, nonce: randomBytes(16).toString('hex'), initialGameId: game.id, createKey: key, creatorPeer: peer,
       seats: new Map(), revoked: new Set(), peerJoins: new Map(),
       nextPlayer: 1, phase: 'lobby', round: 0, activeRound: null, notice: null, touchedAt: time,
+      gameRound: 0, previousResults: [],
     };
     const token = tokenFor('host', room, key);
     room.host = newSeat('host', token, time);
@@ -173,19 +169,21 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     return { code: room.code, token, playerId: id };
   }
 
-  function forgetSeat(room, seat) {
+  function forgetSeat(room, seat, reason) {
     room.revoked.add(seat.retryKey);
-    removeSeat(room, seat);
+    room.seats.delete(seat.id);
+    const round = room.activeRound;
+    if (isActive(room.phase) && round.players.delete(seat.id)) {
+      round.inputs = round.inputs.filter(input => input.playerId !== seat.id);
+      round.departures.push({ playerId: seat.id, reason });
+    }
+    seat.connection?.terminate?.(4403);
   }
 
   function attach(seat, connection) {
     const old = seat.connection;
     seat.connection = connection;
     old?.terminate?.(4409);
-  }
-
-  function discardInputs(room, seat) {
-    if (room.activeRound) room.activeRound.inputs = room.activeRound.inputs.filter(input => input.playerId !== seat.id);
   }
 
   function detach(seat, connection, room) {
@@ -212,7 +210,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     if (message?.type === 'kick' && exactFields(message, 'type', 'playerId')
       && typeof message.playerId === 'string' && /^p[1-9][0-9]{0,2}$/.test(message.playerId)) {
       const player = room.seats.get(message.playerId);
-      if (player) forgetSeat(room, player);
+      if (player) forgetSeat(room, player, 'kicked');
       return;
     }
     const starting = message?.type === 'start' && exactFields(message, 'type', 'round');
@@ -225,6 +223,8 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
       const game = getPartyGame(message.gameId);
       if (!game) fail(400, 'invalid_game', 'Choose an available party game.');
       room.game = game;
+      room.gameRound = 0;
+      room.previousResults = [];
       room.activeRound = null;
       room.phase = 'lobby';
       room.notice = null;
