@@ -1,38 +1,41 @@
 import { createArcadeLoop, createJuice, createSoundHooks, createTimeline } from '../../kit/animation.mjs';
+import { fitSpriteScale } from '../../kit/sprites.mjs';
 import { LOOKS } from '../../looks.mjs';
 
-const WIDTH = 1760;
-const HEIGHT = 816;
-const TRACK_TOP = 78;
-const TRACK_HEIGHT = 724;
+const DEFAULT_AREA = { width: 1760, height: 816, safe: { x: 18, y: 0, width: 1724, height: 798 } };
+const RUNNER = { width: 16, height: 16 };
+const COLUMN_GAP = 16;
+const TRACK_HEADER = 46;
 const MAX_DUST = 128;
 const DUST_MS = 360;
 const PALETTE = { linen: '#fff2d7', ink: '#192b2b', dim: '#bcd6c7', gold: '#fbd280' };
 
-function lanes(roster) {
+function lanes(roster, safe) {
   const columns = roster.length > 8 ? 2 : 1;
   const rows = Math.ceil(roster.length / columns);
-  const columnWidth = WIDTH / columns;
-  const height = Math.min(180, Math.floor(TRACK_HEIGHT / rows));
-  const top = TRACK_TOP + Math.floor((TRACK_HEIGHT - height * rows) / 2);
+  const width = Math.floor((safe.width - COLUMN_GAP * (columns - 1)) / columns);
+  const trackHeight = Math.max(1, safe.height - TRACK_HEADER);
+  const height = Math.min(220, Math.floor(trackHeight / rows));
+  const top = safe.y + TRACK_HEADER + Math.floor((trackHeight - height * rows) / 2);
+  const labelWidth = Math.round(Math.min(columns === 2 ? 192 : 250, width * 0.32));
+  const finishInset = Math.round(Math.min(38, width * 0.08));
+  // Leave at least half the distance for movement and room above the floor for a running hop.
+  const spriteArea = { width: Math.floor((width - labelWidth - finishInset) / 2) * columns, height: (height - 18) * rows };
+  const scale = Math.min(10, fitSpriteScale(RUNNER, roster.length, spriteArea, { columns }));
   return new Map(roster.map((player, index) => {
-    const x = Math.floor(index / rows) * columnWidth + 18;
+    const x = safe.x + Math.floor(index / rows) * (width + COLUMN_GAP);
     const y = top + (index % rows) * height;
-    const width = columnWidth - 36;
     return [player.id, {
       ...player, x, y, width, height,
-      start: x + (columns === 2 ? 192 : 250), finish: x + width - 38,
-      floor: y + height - 15, scale: Math.min(10, Math.floor(height / 15)),
+      start: x + labelWidth, finish: x + width - finishInset,
+      floor: y + height - 12, scale,
     }];
   }));
 }
 
-function paintTrack(context, laneMap, art) {
+function paintTrack(context, laneMap, art, area) {
   context.fillStyle = '#274946';
-  context.fillRect(0, 0, WIDTH, HEIGHT);
-  context.fillStyle = '#1e3835';
-  context.fillRect(0, 0, WIDTH, 64);
-  context.font = '800 24px system-ui';
+  context.fillRect(0, 0, area.width, area.height);
   for (const { x, y, width, height, start, finish, floor, name, look } of laneMap.values()) {
     context.fillStyle = '#355a52';
     context.fillRect(x, y, width, height - 6);
@@ -43,24 +46,31 @@ function paintTrack(context, laneMap, art) {
     for (let marker = start; marker < finish - 38; marker += 64) {
       context.fillRect(marker, floor - 11, 21, 3);
     }
-    for (let row = 0; row * 8 < height - 12; row++) {
+    const tile = Math.min(8, Math.floor((x + width - finish) / 2));
+    for (let stripe = 0; tile > 0 && stripe < height - 12; stripe += tile) {
       for (let col = 0; col < 2; col++) {
-        context.fillStyle = (row + col) % 2 === 0 ? PALETTE.gold : '#243f38';
-        context.fillRect(finish + col * 8, y + 3 + row * 8, 8, Math.min(8, height - 9 - row * 8));
+        context.fillStyle = (stripe / tile + col) % 2 === 0 ? PALETTE.gold : '#243f38';
+        context.fillRect(finish + col * tile, y + 3 + stripe, tile, Math.min(tile, height - 9 - stripe));
       }
     }
     const colour = LOOKS[look].colour;
+    const badgeScale = Math.min(4, Math.floor((height - 16) / 17), Math.floor((start - x - 20) / 10));
+    const badgeSize = 10 * badgeScale;
     context.fillStyle = colour;
-    context.fillRect(x + 14, y + 9, 39, 39);
-    art.badge(context, look, x + 19, y + 14, 4);
-    context.font = '850 28px system-ui';
+    if (badgeScale > 0) {
+      context.fillRect(x + 10, y + 8, badgeSize, badgeSize);
+      art.badge(context, look, x + 10 + badgeScale, y + 8 + badgeScale, badgeScale);
+    }
+    const nameSize = Math.min(28, Math.floor(height * 0.32));
+    if (nameSize < 8) continue;
+    context.font = `850 ${nameSize}px system-ui`;
     context.fillStyle = PALETTE.linen;
-    context.fillText(name, x + 14, y + 75, start - x - 23);
+    context.fillText(name, x + 10, y + 13 + Math.max(0, badgeSize) + nameSize, start - x - 16);
   }
 }
 
 function runnerPosition(lane, distance, target) {
-  const nose = lane.scale * 12;
+  const nose = lane.scale * 15;
   return lane.start + (lane.finish - lane.start - nose) * distance / target;
 }
 
@@ -73,12 +83,8 @@ function interpolate(previous, current, amount, lerp) {
 }
 
 export function mountTapRaceTv(canvas, { art, sound }) {
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
   const context = canvas.getContext('2d');
   const track = canvas.ownerDocument.createElement('canvas');
-  track.width = WIDTH;
-  track.height = HEIGHT;
   const trackContext = track.getContext('2d');
   const playSound = createSoundHooks(sound, { checkpoint: 'collect', finish: 'win' });
   const timeline = createTimeline();
@@ -90,6 +96,23 @@ export function mountTapRaceTv(canvas, { art, sound }) {
   let leaders = new Set();
   let dust = [];
   let reducedMotion = false;
+  let area;
+
+  function layout(roster) {
+    byId = lanes(roster, area.safe);
+    paintTrack(trackContext, byId, art, area);
+  }
+
+  function resize(next) {
+    if (area && area.width === next.width && area.height === next.height && area.safe.height === next.safe.height) return;
+    area = next;
+    canvas.width = track.width = area.width;
+    canvas.height = track.height = area.height;
+    if (previous) layout(previous.roster);
+    dust = [];
+    juice.clear();
+  }
+  resize(DEFAULT_AREA);
 
   function addDust(lane, runner, time, target) {
     const x = runnerPosition(lane, runner.distance, target) + lane.scale * 4;
@@ -123,17 +146,18 @@ export function mountTapRaceTv(canvas, { art, sound }) {
       context.strokeRect(lane.x + 2, lane.y + 2, lane.width - 4, lane.height - 10);
     }
     const final = previous.phase === 'results';
-    context.font = '850 29px system-ui';
+    context.font = '850 22px system-ui';
     context.fillStyle = final ? PALETTE.gold : PALETTE.linen;
-    context.fillText(final ? (previous.notice === 'time_limit' ? 'TIME!' : 'FINISH!') : 'START', 23, 42);
+    if (final) context.fillText(previous.notice === 'time_limit' ? 'TIME!' : 'FINISH!', area.safe.x, 31);
     context.textAlign = 'right';
     context.fillStyle = PALETTE.gold;
-    context.fillText(`FINISH LINE · ${display.target} TAPS`, WIDTH - 25, 42);
+    context.fillText(`FINISH LINE · ${display.target} TAPS`, area.safe.x + area.safe.width, 31, area.safe.width);
     context.textAlign = 'start';
 
     drawDust(at);
     for (const runner of display.runners) {
       const lane = byId.get(runner.playerId);
+      if (!lane.scale) continue;
       const x = runnerPosition(lane, runner.distance, display.target);
       const stride = activity.get(runner.playerId);
       const running = !reduced && !final && stride && at - stride.at < 245;
@@ -142,7 +166,7 @@ export function mountTapRaceTv(canvas, { art, sound }) {
       const hop = running && swing ? lane.scale : 0;
       context.fillStyle = PALETTE.ink;
       context.fillRect(Math.round(x + lane.scale * 3), lane.floor + 1, lane.scale * 9, 4);
-      art.runner(context, lane.look, pose, x + dx, lane.floor - 16 * lane.scale - hop + dy, lane.scale);
+      art.runner(context, lane.look, pose, x + dx, lane.floor - RUNNER.height * lane.scale - hop + dy, lane.scale);
     }
     juice.draw(context, at);
     painted = display;
@@ -158,8 +182,7 @@ export function mountTapRaceTv(canvas, { art, sound }) {
     if (!scene || (previous && view.round < previous.round)) return;
     const sameRound = previous?.round === view.round;
     if (!sameRound) {
-      byId = lanes(view.roster);
-      paintTrack(trackContext, byId, art);
+      layout(view.roster);
       painted = null;
       activity.clear();
       dust = [];
@@ -205,5 +228,5 @@ export function mountTapRaceTv(canvas, { art, sound }) {
     previous = view;
   }
 
-  return { push, setReducedMotion: loop.setReducedMotion, dispose: loop.dispose };
+  return { push, resize, setReducedMotion: loop.setReducedMotion, dispose: loop.dispose };
 }

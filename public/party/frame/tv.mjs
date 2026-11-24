@@ -4,6 +4,7 @@ import { createSoundHooks } from '../kit/animation.mjs';
 import { partyGameView } from '../games/registry.mjs';
 
 const FINISH_DISPLAY_MS = 640;
+const OVERSCAN_FRACTION = 0.03;
 const MOTION_KEY = 'sofa-party-reduced-motion';
 const STATUS = {
   connecting: 'Opening room…', reconnecting: 'Reconnecting…',
@@ -120,6 +121,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
         <button type="button" class="party-secondary" data-end disabled>End party</button>
         <details class="party-settings"><summary>Settings</summary>
           <div class="party-setting-panel">
+            <strong data-menu-settings hidden>Settings</strong>
             <label><input type="checkbox" data-music> Music</label>
             <label><input type="checkbox" data-effects> Sound effects</label>
             <label class="party-volume">Volume <input type="range" min="0" max="100" data-volume></label>
@@ -162,6 +164,16 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
   const find = selector => root.querySelector(selector);
   const document = root.ownerDocument;
   const art = createLookArt(document);
+  const main = find('.party-tv');
+  const bar = find('.party-bar');
+  const titleRow = find('.party-tv-title');
+  const title = find('[data-party-title]');
+  const back = find('.party-back');
+  const tools = find('.party-tools');
+  const menu = find('.party-settings');
+  const menuLabel = menu.querySelector('summary');
+  const menuPanel = find('.party-setting-panel');
+  const menuSettings = find('[data-menu-settings]');
   const canvas = find('[data-party-canvas]');
   const stage = find('.party-stage');
   const grid = find('.party-tv-grid');
@@ -194,6 +206,39 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
   let connection = 'connecting';
   let displayedCountdown;
   let showingPlayers = false;
+
+  function showStage(visible) {
+    if (main.hasAttribute('data-stage') === visible) return;
+    menu.open = false;
+    back.hidden = visible;
+    menuSettings.hidden = !visible;
+    titleRow.hidden = visible;
+    main.toggleAttribute('data-stage', visible);
+    setText(menuLabel, visible ? 'Menu' : 'Settings');
+    if (visible) {
+      bar.prepend(title, timer);
+      menuPanel.append(end);
+    } else {
+      titleRow.append(title, timer);
+      tools.insertBefore(end, menu);
+    }
+  }
+
+  function resize() {
+    if (!renderer?.resize || stage.hidden) return;
+    const width = stage.clientWidth;
+    const height = stage.clientHeight;
+    if (!width || !height) return;
+    const side = Math.ceil(width * OVERSCAN_FRACTION);
+    const bottom = Math.ceil(main.clientHeight * OVERSCAN_FRACTION);
+    renderer.resize({
+      width, height,
+      safe: { x: side, y: 0, width: width - 2 * side, height: Math.max(0, height - bottom) },
+    });
+  }
+
+  const stageObserver = new ResizeObserver(resize);
+  stageObserver.observe(stage);
 
   const cat = find('.party-lala');
   art.cat(cat.getContext('2d'), 0, 0, 6);
@@ -279,6 +324,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     clearTimeout(finishTimer);
     finishTimer = undefined;
     stage.hidden = true;
+    showStage(false);
     grid.hidden = false;
     renderer?.dispose();
     renderer = null;
@@ -289,12 +335,12 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     const prior = previous;
     previous = view;
     const game = getGame(view.gameId);
-    setText(find('[data-party-title]'), game?.title ?? 'Party lobby');
+    setText(title, game?.title ?? 'Party lobby');
     if (nextGame.value !== view.gameId) nextGame.value = view.gameId;
     const active = view.phase === 'countdown' || view.phase === 'playing';
     if (stage.dataset.phase !== view.phase) stage.dataset.phase = view.phase;
     const count = Math.max(0, Math.ceil(view.ms / 1000));
-    setText(timer, active && view.phase === 'playing' ? `Round ${view.round} · ${clockLabel(count)}`
+    setText(timer, active ? `Round ${view.round} · ${clockLabel(count)}`
       : view.round ? `Round ${view.round}` : 'Party lobby');
     updateActions(view);
     updateWall(view.players);
@@ -304,15 +350,18 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     if (active) {
       clearTimeout(finishTimer);
       finishTimer = undefined;
+      showStage(true);
+      stage.hidden = false;
+      grid.hidden = true;
       if (!renderer || playingGame !== view.gameId) {
         renderer?.dispose();
         playingGame = view.gameId;
         renderer = partyGameView(playingGame).mountTv(canvas, { art, sound });
         renderer.setReducedMotion(motion.checked);
+        stage.toggleAttribute('data-adaptive', typeof renderer.resize === 'function');
+        resize();
       }
       renderer.push(view);
-      stage.hidden = false;
-      grid.hidden = true;
       countdown.hidden = view.phase !== 'countdown';
       if (view.phase === 'countdown' && count !== displayedCountdown) {
         displayedCountdown = count;
@@ -357,11 +406,13 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
         renderer?.dispose();
         renderer = null;
         stage.hidden = true;
+        showStage(false);
         grid.hidden = true;
       }
     },
     dispose() {
       clearTimeout(finishTimer);
+      stageObserver.disconnect();
       motionPreference.removeEventListener('change', motionChanged);
       renderer?.dispose();
     },

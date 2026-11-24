@@ -2,7 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { createPartyRooms, PartyError } from '../../party/rooms.mjs';
 import { rejectUpgrade } from '../../reject-upgrade.mjs';
 import { WebSocketServer } from '../../runtime/gravity-orchard-dependencies.mjs';
-import { PARTY_LIMITS as limits, takeBudget, validAuth } from './protocol.mjs';
+import { PARTY_LIMITS as limits, exactFields, takeBudget, validAuth, validSequence } from './protocol.mjs';
 import { PARTY_TICK_MS } from './round.mjs';
 
 const realClock = {
@@ -98,6 +98,13 @@ export function createPartyRealtime({ validateUpgrade, admitSocket, clock = real
       return;
     }
     if (!seat) return authenticate(connection, message, time);
+    if (message.type === 'clock-ping') {
+      if (seat !== room.host && exactFields(message, 'type', 'id') && validSequence(message.id)
+        && takeBudget(seat.clockBudget, time, limits.clocksPerSecond, limits.clockBurst)) {
+        send(connection, { type: 'clock-pong', id: message.id, serverAt: time });
+      }
+      return;
+    }
     if (message.type === 'input') {
       rooms.acceptInput(room, seat, message, connection);
       return;

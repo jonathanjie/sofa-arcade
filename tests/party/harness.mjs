@@ -4,7 +4,14 @@ import { setImmediate as settle } from 'node:timers/promises';
 import { WebSocket } from 'ws';
 import { getPartyGame } from '../../games/party/registry.mjs';
 import { startLanServer } from '../../server/lan.mjs';
-import { PARTY_TICK_MS } from '../../server/realtime/party/round.mjs';
+import { PARTY_COUNTDOWN_MS, PARTY_TICK_MS } from '../../server/realtime/party/round.mjs';
+
+export function partyPlayTicks(game) {
+  const duration = game?.durationMs;
+  if (!Number.isFinite(duration) || duration <= 0) return 500;
+  // Allow the last result snapshot to reach the socket after the deadline.
+  return Math.ceil(duration / PARTY_TICK_MS) + 10;
+}
 
 export function createManualClock() {
   let time = 0;
@@ -80,7 +87,10 @@ export async function launchPartyHarness(t, { gameId, manual = true, ...hostOpti
         if (clock) {
           // Server frames are unmasked. Count the WebSocket header and text payload.
           const header = bytes.length < 126 ? 2 : 4;
-          packets.push({ at: clock.now(), type: packet.type, bytes: bytes.length + header, phase: packet.view?.phase });
+          packets.push({
+            at: clock.now(), type: packet.type, bytes: bytes.length + header, phase: packet.view?.phase,
+            ...(packet.type === 'clock-pong' && { clock: packet }),
+          });
         }
         if (packet.view) view = packet.view;
         if (packet.type !== 'welcome') return;
@@ -108,7 +118,8 @@ export async function launchPartyHarness(t, { gameId, manual = true, ...hostOpti
     await settle();
   }
 
-  async function until(predicate, { ticks = 500, drive } = {}) {
+  const defaultTicks = Math.max(500, partyPlayTicks(getPartyGame(gameId)) + PARTY_COUNTDOWN_MS / PARTY_TICK_MS);
+  async function until(predicate, { ticks = defaultTicks, drive } = {}) {
     for (let tick = 0; tick < ticks; tick++) {
       if (predicate()) return;
       await drive?.(tick);
@@ -128,7 +139,7 @@ export async function launchPartyHarness(t, { gameId, manual = true, ...hostOpti
 export async function runPartyRounds(t, { gameId, drive, assertResults, playerCount = 16 }) {
   const game = getPartyGame(gameId);
   assert.ok(game && Number.isInteger(playerCount) && playerCount >= game.minPlayers && playerCount <= game.maxPlayers);
-  const playTicks = Math.ceil(game.durationMs / PARTY_TICK_MS) + 10;
+  const playTicks = partyPlayTicks(game);
   const fixture = await launchPartyHarness(t, { gameId });
   const host = await fixture.create();
   let tv = await fixture.connect(host);

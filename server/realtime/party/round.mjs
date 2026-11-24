@@ -1,5 +1,5 @@
 export const PARTY_TICK_MS = 50;
-const COUNTDOWN_MS = 3000;
+export const PARTY_COUNTDOWN_MS = 3000;
 const MAX_CATCH_UP_TICKS = 5;
 const INTERRUPT_MS = 1000;
 
@@ -20,15 +20,24 @@ export function startRound(room, now, seed) {
   if (players.length < room.game.minPlayers) return false;
   const roster = players.slice(0, room.game.maxPlayers).map(({ id, name, look }) => ({ id, name, look }));
   room.round++;
+  room.gameRound++;
+  const startsAt = now + PARTY_COUNTDOWN_MS;
+  const match = {
+    roomRound: room.round,
+    gameId: room.game.id,
+    startsAt,
+    previousResults: room.previousResults.map(result => ({ ...result })),
+  };
   room.activeRound = {
     roster,
     players: new Set(roster.map(({ id }) => id)),
-    state: room.game.createRound(roster, seed),
+    state: room.game.createRound(roster, seed, room.gameRound, match),
     inputs: [],
+    departures: [],
     previousAt: now,
     remainder: 0,
-    startsAt: now + COUNTDOWN_MS,
-    endsAt: now + COUNTDOWN_MS + room.game.durationMs,
+    startsAt,
+    endsAt: startsAt + room.game.durationMs,
     results: [],
   };
   room.notice = null;
@@ -45,6 +54,7 @@ function finishRound(room, notice) {
     score,
     place: ranked.findIndex(entry => entry.score === score) + 1,
   }));
+  room.previousResults = round.results;
   round.inputs.length = 0;
   room.phase = 'results';
   room.notice = notice;
@@ -72,7 +82,8 @@ export function tickRound(room, now) {
   round.remainder = remainder;
   for (let tick = 0; tick < ticks; tick++) {
     const inputs = round.inputs.splice(0);
-    round.state = room.game.step(round.state, inputs, PARTY_TICK_MS);
+    const departures = round.departures.splice(0);
+    round.state = room.game.step(round.state, inputs, PARTY_TICK_MS, { departures });
     if (room.game.isRoundOver(round.state)) {
       finishRound(room, null);
       return;

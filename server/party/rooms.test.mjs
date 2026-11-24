@@ -260,3 +260,90 @@ test('a short gap across the countdown applies only ticks after the start', () =
   assert.equal(room.activeRound.state.elapsedMs, 150);
   assert.equal(room.activeRound.remainder, 25);
 });
+
+function readyRoundFixture() {
+  const { rooms, room, join, at } = fixture();
+  const calls = [];
+  const departures = [];
+  room.game = {
+    ...room.game,
+    durationMs: 45_000,
+    createRound(players, seed, gameRound, match) {
+      calls.push({ gameRound, match, seed });
+      return { players };
+    },
+    step(state, inputs, dt, context) {
+      departures.push(...context?.departures ?? []);
+      return { ...state, inputs };
+    },
+    isRoundOver: () => false,
+    scores: state => state.players.map(({ id }, index) => ({ playerId: id, score: 2 - index })),
+  };
+  const seats = [0, 1, 2].map(look => {
+    const seat = rooms.authorize(room, join(look).token);
+    rooms.attach(seat, { lastSeq: -1 });
+    rooms.command(room, seat, { type: 'ready', value: true });
+    return seat;
+  });
+  let now = 0;
+  function advanceTo(end) {
+    for (; now < end;) {
+      now = Math.min(now + 50, end);
+      at(now);
+      rooms.tick(now);
+    }
+  }
+  return { rooms, room, seats, calls, departures, advanceTo };
+}
+
+test('createRound receives a game round, start time and previous results', () => {
+  const { rooms, room, calls, advanceTo } = readyRoundFixture();
+  rooms.command(room, room.host, { type: 'start', round: 0 });
+  assert.deepEqual(calls[0], {
+    gameRound: 1, seed: 'test-seed',
+    match: { roomRound: 1, gameId: 'tap-race', startsAt: 3000, previousResults: [] },
+  });
+  advanceTo(48_000);
+  rooms.command(room, room.host, { type: 'start', round: 1 });
+  assert.deepEqual(calls[1], {
+    gameRound: 2, seed: 'test-seed',
+    match: { roomRound: 2, gameId: 'tap-race', startsAt: 51_000, previousResults: [
+      { playerId: 'p1', score: 2, place: 1 },
+      { playerId: 'p2', score: 1, place: 2 },
+      { playerId: 'p3', score: 0, place: 3 },
+    ] },
+  });
+  advanceTo(96_000);
+  const game = room.game;
+  rooms.command(room, room.host, { type: 'select', gameId: 'tap-race', round: 2 });
+  room.game = game;
+  rooms.command(room, room.host, { type: 'start', round: 2 });
+  assert.deepEqual(calls[2].match.previousResults, []);
+  assert.equal(calls[2].gameRound, 1);
+  assert.equal(calls[2].match.roomRound, 3);
+});
+
+test('the next game step reports each kicked or expired round seat once', () => {
+  const { rooms, room, seats: [kicked, expired, held], departures, advanceTo } = readyRoundFixture();
+  rooms.command(room, room.host, { type: 'start', round: 0 });
+  rooms.detach(expired, expired.connection, room);
+  advanceTo(3000);
+  assert.ok(rooms.acceptInput(room, kicked, { type: 'input', round: 1, seq: 0, input: { kind: 'tap' } }, kicked.connection));
+  rooms.command(room, room.host, { type: 'kick', playerId: kicked.id });
+  rooms.command(room, room.host, { type: 'kick', playerId: kicked.id });
+  advanceTo(3050);
+  assert.deepEqual(room.activeRound.state.inputs, []);
+  assert.deepEqual(departures, [{ playerId: kicked.id, reason: 'kicked' }]);
+  rooms.detach(held, held.connection, room);
+  advanceTo(29_999);
+  assert.equal(departures.length, 1);
+  advanceTo(30_000);
+  assert.deepEqual(departures, [
+    { playerId: kicked.id, reason: 'kicked' },
+    { playerId: expired.id, reason: 'expired' },
+  ]);
+  rooms.attach(held, {});
+  advanceTo(31_000);
+  assert.equal(departures.length, 2);
+  assert.equal(room.activeRound.roster.length, 3);
+});

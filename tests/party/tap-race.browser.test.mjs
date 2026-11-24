@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { launchPartyHarness } from './harness.mjs';
 
-const output = fileURLToPath(new URL('../../work/party-p1/review/', import.meta.url));
+const output = fileURLToPath(new URL('../../work/party-p2/', import.meta.url));
 
 test('TV and three phone browsers play Tap Race with thirteen socket controllers', { timeout: 35_000 }, async t => {
   const fixture = await launchPartyHarness(t, { gameId: 'tap-race', manual: false });
@@ -13,6 +13,7 @@ test('TV and three phone browsers play Tap Race with thirteen socket controllers
   t.after(() => browser.close());
   await mkdir(output, { recursive: true });
   const issues = [];
+  const phoneClockSamples = [];
   async function page(options, name) {
     const context = await browser.newContext(options);
     await context.addInitScript(() => {
@@ -47,6 +48,12 @@ test('TV and three phone browsers play Tap Race with thirteen socket controllers
     tab.on('console', message => { if (message.type() === 'error') issues.push(`${name}: ${message.text()}`); });
     tab.on('pageerror', error => issues.push(`${name}: ${error.message}`));
     tab.on('response', response => { if (response.status() === 404) issues.push(`${name}: 404 ${new URL(response.url()).pathname}`); });
+    if (name === 'Pepper') tab.on('websocket', socket => {
+      socket.on('framereceived', ({ payload }) => {
+        const packet = JSON.parse(payload);
+        if (packet.type === 'clock-pong') phoneClockSamples.push(packet);
+      });
+    });
     return tab;
   }
 
@@ -94,9 +101,45 @@ test('TV and three phone browsers play Tap Race with thirteen socket controllers
   await tv.locator('[data-party-wall]').evaluate(wall => { wall.style.filter = ''; });
   await tv.getByRole('button', { name: 'Start', exact: true }).click();
   await tv.locator('.party-countdown').waitFor({ state: 'visible' });
+  assert.equal(await tv.getByRole('link', { name: /Game shelf/ }).isVisible(), false);
+  assert.match(await tv.locator('.party-round-label').textContent(), /^Round 1 · 0:0[123]$/);
+  const menu = tv.getByText('Menu', { exact: true });
+  await menu.click();
+  await tv.getByText('Settings', { exact: true }).waitFor();
+  assert.equal(await tv.getByLabel('Sound effects').isVisible(), true);
+  assert.equal(await tv.getByRole('button', { name: 'End party' }).isEnabled(), true);
+  await menu.click();
   await tv.screenshot({ path: output + 'countdown.png' });
   await phones[0].getByText('Go!', { exact: true }).waitFor();
   await tv.locator('.party-countdown').waitFor({ state: 'hidden' });
+  const board = tv.locator('[data-party-canvas]');
+  const bounds = await board.boundingBox();
+  assert.equal(bounds.x, 0);
+  assert.equal(bounds.width, 1920);
+  assert.ok(bounds.y < 80, `TV bar was ${bounds.y} px tall`);
+  assert.equal(bounds.y + bounds.height, 1080);
+  const runnerHeights = await board.evaluate(async canvas => {
+    const context = canvas.getContext('2d');
+    const drawImage = context.drawImage;
+    const heights = [];
+    context.drawImage = function (source, ...dest) {
+      if (source.width === 16 && source.height === 16) {
+        const alpha = source.getContext('2d').getImageData(0, 0, 16, 16).data;
+        const occupied = Array.from({ length: 16 }, (_, y) => y).filter(y =>
+          Array.from({ length: 16 }, (_, x) => alpha[4 * (y * 16 + x) + 3]).some(Boolean));
+        const fraction = (occupied.at(-1) - occupied[0] + 1) / 16;
+        heights.push(dest[3] * fraction * canvas.clientHeight / canvas.height);
+      }
+      return drawImage.call(this, source, ...dest);
+    };
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    context.drawImage = drawImage;
+    return heights;
+  });
+  assert.equal(runnerHeights.length, 16);
+  assert.ok(runnerHeights.every(height => height >= 64), `Runner heights: ${runnerHeights.join(', ')}`);
+  assert.equal(phoneClockSamples.length, 3);
+  assert.ok(phoneClockSamples.every(sample => Number.isFinite(sample.serverAt)));
   const playControls = await phones[0].getByRole('button', { name: 'Tap!', exact: true }).evaluate(button => ({
     width: button.getBoundingClientRect().width,
     height: button.getBoundingClientRect().height,
