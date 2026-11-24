@@ -180,3 +180,56 @@ test('a distinct loopback origin cannot frame the LAN game, and direct navigatio
   });
   assert.equal(status, 201);
 });
+
+test('all playable LAN games show their TV and both controllers under the document CSP', async t => {
+  const { chromium } = await import(process.env.SOFA_PLAYWRIGHT_MODULE || 'playwright');
+  const host = await startLanServer({ port: 0, databasePath: ':memory:' });
+  t.after(() => host.close());
+  const origin = new URL(host.urls[0]).origin;
+  const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE,
+    args: ['--no-proxy-server'] });
+  t.after(() => browser.close());
+
+  for (const [game, board, controller] of [
+    ['sofa-kingdoms', '.board-shell', '.clean-controller'],
+    ['odd-laws-society', '.ols-shell-tv', '.ols-shell-phone'],
+    ['gravity-orchard', '.go-tv-header', '[data-go3="phone"]'],
+  ]) {
+    await t.test(game, async t => {
+      const violations = [];
+      async function screen() {
+        const page = await browser.newPage();
+        t.after(() => page.close());
+        page.on('console', message => {
+          if (/content.security.policy/i.test(message.text())) violations.push(message.text());
+        });
+        await page.exposeFunction('recordCspViolation', directive => violations.push(directive));
+        await page.addInitScript(() => document.addEventListener('securitypolicyviolation',
+          event => window.recordCspViolation(event.effectiveDirective)));
+        return page;
+      }
+      const tv = await screen();
+      await tv.goto(origin + '/?game=' + game);
+      await tv.locator('[data-action="create"]').click();
+      await tv.locator('#room-qr svg').waitFor();
+      const room = new URL(tv.url()).searchParams.get('room');
+      assert.ok(room);
+      const phones = await Promise.all(['jon', 'lydia'].map(async seat => {
+        const page = await screen();
+        await page.goto(origin + '/?join=' + room);
+        await page.locator('[data-action="claim"][data-player="' + seat + '"]').click();
+        return page;
+      }));
+      await tv.locator('[data-action="start"]').click();
+      await tv.locator(board).waitFor();
+      for (let reload = 0; reload < 3; reload++) {
+        await Promise.all(phones.map(async phone => {
+          await phone.locator(controller).waitFor();
+          await phone.reload({ waitUntil: 'domcontentloaded' });
+        }));
+      }
+      await Promise.all(phones.map(phone => phone.locator(controller).waitFor()));
+      assert.deepEqual(violations, []);
+    });
+  }
+});

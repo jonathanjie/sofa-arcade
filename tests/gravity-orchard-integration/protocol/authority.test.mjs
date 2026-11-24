@@ -338,3 +338,18 @@ test('expired orchards free coordinator capacity and restart restores only the n
   assert.equal(host.realtimeDiagnostics(expired.code).coordinator, null);
   assert.equal(host.realtimeDiagnostics(newest.code).checkpointWrites, 1);
 });
+
+test('a second host that cannot bind leaves the running orchard checkpoint intact', async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-occupied-port-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const options = { host: '127.0.0.1', port: 0, databasePath: path.join(directory, 'rooms.sqlite'),
+    realtimeClock: manualClock() };
+  const host = await startLanServer(options);
+  t.after(() => host.close());
+  const room = await createRoom(host);
+  const read = () => api(host, '/api/rooms/' + room.code, { token: room.tokens.host });
+  const before = await read();
+  assert.equal(before.status, 200);
+  await assert.rejects(startLanServer({ ...options, port: host.port }), { code: 'EADDRINUSE' });
+  assert.equal((await read()).value.revision, before.value.revision);
+});

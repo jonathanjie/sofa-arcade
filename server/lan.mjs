@@ -400,10 +400,6 @@ export async function startLanServer({
       if (url.origin !== authority.origin) return { ok: false, status: 400, code: 'address_rejected' };
       if (url.pathname.startsWith('/api/') && !['GET', 'HEAD'].includes(request.method)) {
         if (origins.length !== 1) return { ok: false, status: 403, code: 'origin_rejected' };
-        const mediaTypes = header('content-type');
-        if (mediaTypes.length !== 1 || mediaTypes[0].split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
-          return { ok: false, status: 415, code: 'json_required' };
-        }
       }
       return { ok: true, origin: authority.origin, scheme: 'http', url };
     }
@@ -608,6 +604,12 @@ export async function startLanServer({
         return await subscribe(request, response, stream[1].toUpperCase(), origin);
       }
       if (url.pathname.startsWith('/api/')) {
+        if (!['GET', 'HEAD'].includes(request.method)) {
+          const types = request.headersDistinct['content-type'] || [];
+          if (types.length !== 1 || types[0].split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+            return respondJson(response, 415, { error: 'Send the room command as JSON.', code: 'json_required' });
+          }
+        }
         const body = ['GET', 'HEAD'].includes(request.method) ? undefined : await bodyBytes(request);
         const webRequest = new Request(url, { method: request.method, headers: request.headers, ...(body ? { body } : {}) });
         const creating = request.method === 'POST' && /^\/api\/rooms\/?$/.test(url.pathname);
@@ -635,9 +637,10 @@ export async function startLanServer({
   const server = createServer(requestHandler);
   const sockets = new Set();
   let remoteSocketCount = 0;
+  let ready = false;
   server.on('connection', socket => {
     const local = isLoopback(peerAddress(socket));
-    if (closed || sockets.size >= httpSocketLimit
+    if (!ready || closed || sockets.size >= httpSocketLimit
       || (!local && remoteSocketCount >= httpSocketLimit - loopbackSocketReserve)) {
       socket.destroy();
       return;
@@ -666,13 +669,15 @@ export async function startLanServer({
   server.requestTimeout = 15_000;
   server.headersTimeout = 15_000;
   try {
-    await orchard.restoreExisting();
     await new Promise((resolve, reject) => {
       server.once('error', reject);
       server.listen(port, host, () => { server.off('error', reject); resolve(); });
     });
     actualPort = server.address().port;
     refreshPolicy();
+    // Only the process that owns the port may advance saved orchard checkpoints.
+    await orchard.restoreExisting();
+    ready = true;
   } catch (error) {
     await orchard.close();
     if (server.listening) await closeHttp();

@@ -49,6 +49,8 @@ test('verified HTTPS/WSS and HTTP/WS share the original request, credential auth
     assert.equal(write.status, 403, JSON.stringify(requestOrigin));
   }
   assert.equal((await httpsCall(origin, '/api/rooms', { ca: material.ca, body: {} })).status, 201);
+  const nonJson = await httpsCall(origin, '/api/rooms', { ca: material.ca, body: {}, headers: { 'Content-Type': 'text/plain' } });
+  assert.equal(nonJson.status, 415);
   const publicRead = await httpsCall(origin, `/api/rooms/${h.room.code}`, { ca: material.ca });
   assert.equal(publicRead.status, 200);
   assert.equal(JSON.parse(publicRead.text).state.matchId, h.room.started.state.matchId);
