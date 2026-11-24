@@ -222,6 +222,9 @@ test('all playable LAN games show their TV and both controllers under the docume
       }));
       await tv.locator('[data-action="start"]').click();
       await tv.locator(board).waitFor();
+      if (game === 'sofa-kingdoms') {
+        await tv.locator('html.generated-art').waitFor({ state: 'attached' });
+      }
       for (let reload = 0; reload < 3; reload++) {
         await Promise.all(phones.map(async phone => {
           await phone.locator(controller).waitFor();

@@ -594,7 +594,9 @@ export async function startLanServer({
       const csp = [
         "default-src 'self'", "frame-ancestors 'none'", "base-uri 'none'", "object-src 'none'", "form-action 'none'",
         // The game sets inline styles for board positions and animation.
-        "style-src 'self' 'unsafe-inline'", "img-src 'self' data:", "media-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
+        // The Sofa character atlas decodes a fetched WebP through an object URL.
+        "img-src 'self' data: blob:", "media-src 'self'",
         // Some browsers do not include WebSocket origins in 'self'.
         `connect-src 'self' ${webSocketOrigin}`,
       ].join('; ');
