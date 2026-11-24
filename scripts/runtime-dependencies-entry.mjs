@@ -4,3 +4,4 @@ export { createSecureLanServer, SecureLanListenerError } from '../server/secure-
 export { createSecureLanHost, createLoopbackHostAuthorizer } from '../server/secure-lan/host-capabilities.mjs';
 export { createRequestPolicy } from '../server/secure-lan/request-policy.mjs';
 export { createCertificateStore, normalizeIdentity, normalizeIdentities, validateTlsMaterial, SecureLanCertificateError } from '../server/secure-lan/certificates/index.mjs';
+export { WebSocketServer } from 'ws';

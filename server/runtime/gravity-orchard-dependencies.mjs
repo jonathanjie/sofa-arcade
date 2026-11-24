@@ -19101,11 +19101,13 @@ function createSecureLanHost({
   };
   return Object.freeze(methods);
 }
+var export_WebSocketServer = import_websocket_server.default;
 export {
   ENDPOINT,
   LIMITS,
   SecureLanCertificateError,
   SecureLanListenerError,
+  export_WebSocketServer as WebSocketServer,
   createCertificateStore,
   createLoopbackHostAuthorizer,
   createRealtimeCoordinator,
