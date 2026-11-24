@@ -107,10 +107,11 @@ function character(id, extra = '') {
   return `<span class="character ${id} ${extra}" data-character="${id}" role="img" aria-label="${id === 'lala' ? 'Lala the orange cat' : NAMES[id] + ' the tiny adventurer'}"><span class="character-sprite"></span><span class="character-fallback">${id === 'lala' ? fallbackCat() : fallbackMouse(id)}</span></span>`;
 }
 const hasCurrentRoom = () => !!state.code && state.room?.code === state.code;
-function header() {
+function header({titleOnly=false}={}) {
+  const brandTag=titleOnly?'h1':'button';
   const inMatch=state.view==='game'||state.view==='tutorial';
   const settings=audio.getSettings();
-  return `<header class="topbar"><button class="brand" data-action="home" aria-label="Back to Sofa Arcade"><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${inMatch?esc(gameById(state.gameId).title):'Sofa Arcade'}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></button><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!hasCurrentRoom()?'hidden':''}>${connectionLabel()}</span>${hasCurrentRoom() ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'&&!([ODD_LAWS_GAME_ID,GRAVITY_ORCHARD_GAME_ID].includes(state.gameId)&&state.view==='game')?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
+  return `<header class="topbar"><${brandTag} class="brand" ${titleOnly?'':'data-action="home" aria-label="Back to Sofa Arcade"'}><span class="brand-mark">${icon(inMatch?'paw':'shelf')}</span><span><span class="brand-title">${inMatch?esc(gameById(state.gameId).title):'Sofa Arcade'}</span>${inMatch?'':'<span class="brand-sub">The living-room game shelf</span>'}</span></${brandTag}><div class="top-actions"><span class="connection-pill" data-shell-connection role="status" ${state.network==='connected'||!hasCurrentRoom()?'hidden':''}>${connectionLabel()}</span>${hasCurrentRoom() ? `<span class="room-label hide-mobile">Room <strong>${esc(state.code)}</strong></span>` : ''}<button class="icon-button" data-action="audio" aria-label="Music and sound settings">${icon(settings.music?'music':'muted')}</button>${state.view!=='collection'&&!([ODD_LAWS_GAME_ID,GRAVITY_ORCHARD_GAME_ID].includes(state.gameId)&&state.view==='game')?`<button class="icon-button" data-action="rules" aria-label="How to play">${icon('help')}</button>`:''}<button class="icon-button hide-mobile" data-action="fullscreen" aria-label="Toggle full screen">${icon('expand')}</button></div></header>`;
 }
 function notices() {
   const text = state.error || state.notice;
@@ -516,7 +517,7 @@ function renderCollectionMatch() {
     releaseCollectionGame();collectionIdentity=identity;
     app.innerHTML=`<div class="app-shell collection-match ${state.role==='player'?'is-controller':''}"><div id="collection-chrome"></div><div id="collection-notices"></div><main id="collection-game-root"></main><div id="collection-room-actions"></div></div><div id="collection-overlays"></div>`;
   }
-  $('#collection-chrome').innerHTML=header();
+  $('#collection-chrome').innerHTML=header({titleOnly:state.role==='host'&&collectionStyles?.loaded});
   $('#collection-notices').innerHTML=notices();
   $('#collection-room-actions').innerHTML=state.room?.phase==='finished'&&state.role==='host'?`<button class="button" data-action="rematch" ${state.busy?'disabled':''}>${icon('reset')} Start a new council</button>`:'';
   app.querySelector('.collection-match').classList.toggle('has-room-actions',!!$('#collection-room-actions').firstElementChild);
