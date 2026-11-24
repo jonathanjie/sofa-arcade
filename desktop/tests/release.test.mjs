@@ -50,3 +50,8 @@ test('the app checks GitHub Releases and trusts only its configured public key',
   // Update bundles are created only by the release workflow, which holds the private key.
   assert.notEqual(config.bundle.createUpdaterArtifacts, true);
 });
+
+test('the Tauri updater requires each package signature to bind its announced version', async () => {
+  const config = JSON.parse(await readFile(path.join(desktop, 'src-tauri/tauri.conf.json'), 'utf8'));
+  assert.equal(config.plugins.updater.requireSignedVersion, true);
+});
