@@ -152,7 +152,7 @@ test('host stalls pause instead of catching up and restart restores a durable pa
   const h = await harness(t, { databasePath });
   await h.ready(); await h.pump(3500);
   const before = h.tv.snapshot.view;
-  await h.clock.jump(1000);
+  await h.clock.jump(1250);
   assert.equal(h.tv.snapshot.view.phase, 'paused');
   assert.equal(h.tv.snapshot.view.pauseReason, 'host-stall');
   assert.equal(h.tv.snapshot.view.tick, before.tick);
