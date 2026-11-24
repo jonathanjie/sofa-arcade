@@ -117,3 +117,22 @@ test('Odd Laws shows the council at its styled position on the first paint', { t
     allowStyles();
   }
 });
+
+test('reduced motion preserves the Odd Laws vote draft and drawer focus', { timeout: 120_000 }, async t => {
+  const { phone } = await prepareCouncil(t);
+  const law = phone.locator('[data-action="phone-law"]:not([data-choice-id="keep"])').first();
+  const bid = phone.locator('[data-action="phone-bid"][data-bid="1"]');
+  await law.evaluate(button => button.click());
+  await bid.evaluate(button => button.click());
+  await press(phone, 'open-city');
+  const close = phone.locator('[role="dialog"] [data-action="close-drawer"]');
+  await close.focus();
+  await phone.emulateMedia({ reducedMotion: 'reduce' });
+  await phone.locator('.ols-reduced-motion').waitFor();
+  assert.equal(await close.isVisible(), true, 'The My city drawer remains open');
+  assert.equal(await close.evaluate(button => document.activeElement === button), true);
+  await close.evaluate(button => button.click());
+  assert.equal(await law.getAttribute('aria-pressed'), 'true');
+  assert.equal(await bid.getAttribute('aria-pressed'), 'true');
+  assert.match(await phone.locator('[data-action="phone-seal"]').textContent(), /Seal vote · 1 influence/);
+});

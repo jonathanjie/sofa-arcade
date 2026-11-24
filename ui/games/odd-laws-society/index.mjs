@@ -146,5 +146,11 @@ export function mount(root,{viewer={role:'public'},dispatch,rules,assets={},soun
  root.addEventListener('click',click);root.addEventListener('keydown',keydown);root.addEventListener('load',mediaLoaded,true);root.addEventListener('error',mediaFailed,true);
  function dispose() {if(disposed)return;disposed=true;commandToken++;tutorial.dispose();motion.dispose();root.removeEventListener('click',click);root.removeEventListener('keydown',keydown);root.removeEventListener('load',mediaLoaded,true);root.removeEventListener('error',mediaFailed,true);root.replaceChildren();root.className=originalClass;delete root.dataset.viewer;styles.release();room=null;retiredMatches.clear();Object.assign(ui,emptyDraft(),{drawer:null,error:null,busy:false});}
  render();
- return Object.freeze({update,setConnection,dispose});
+ function setReducedMotion(value) {
+  if(disposed)return;
+  const reduced = value === true;
+  root.classList.toggle('ols-reduced-motion',reduced);
+  motion.setReducedMotion(reduced);
+ }
+ return Object.freeze({update,setConnection,setReducedMotion,dispose});
 }
