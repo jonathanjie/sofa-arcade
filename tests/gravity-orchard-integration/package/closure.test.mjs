@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, mkdtemp, realpath, rm, mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -62,7 +62,7 @@ test('declared public closure matches component inventories and excludes authori
 });
 
 test('extracted portable package starts both shared listeners without installed runtime packages', async () => {
-  const temporary = await mkdtemp(path.join(tmpdir(),'go7-portable-'));
+  const temporary = await mkdtemp(path.join(await realpath(tmpdir()),'go7-portable-'));
   let host, secure;
   try {
     await extractZip(readZip(await readFile(path.join(root,'public/downloads/sofa-arcade-local.zip'))),temporary);
@@ -95,7 +95,7 @@ test('extracted portable package starts both shared listeners without installed 
 });
 
 test('native staging includes all final private/public runtime inputs and no developer tools',async()=>{
-  const temporary=await mkdtemp(path.join(tmpdir(),'go7-stage-'));
+  const temporary=await mkdtemp(path.join(await realpath(tmpdir()),'go7-stage-'));
   try {
     const files=await stageRuntime({destination:path.join(temporary,'runtime')});
     const paths=new Set(files.map(item=>item.path));

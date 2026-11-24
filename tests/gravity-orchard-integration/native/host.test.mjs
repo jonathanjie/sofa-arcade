@@ -4,7 +4,7 @@ import path from 'node:path';
 import https from 'node:https';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdtemp, realpath, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { startLanServer } from '../../../server/lan.mjs';
 import { attachNativeSecureLan, validateSecureCommand } from '../../../desktop/host/secure-lan.mjs';
@@ -19,7 +19,7 @@ const httpsGet = (url, ca, headers = {}) => new Promise((resolve, reject) => {
 });
 
 test('native adapter composes verified HTTPS into the existing authority and persists explicit disable', { timeout: 25000 }, async t => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'go7-native-secure-'));
+  const directory = await mkdtemp(path.join(await realpath(tmpdir()), 'go7-native-secure-'));
   const databasePath = path.join(directory, 'rooms.sqlite');
   let host, lan;
   t.after(async () => { await host?.close(); await rm(directory, { recursive: true, force: true }); });
@@ -97,7 +97,7 @@ test('native refresh and Quit serialize with an active privileged operation and 
 });
 
 test('real owned Node child exposes setup only on its inherited private pipe and shuts down on EOF', { timeout: 12000 }, async t => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'go7-native-pipe-'));
+  const directory = await mkdtemp(path.join(await realpath(tmpdir()), 'go7-native-pipe-'));
   const root = fileURLToPath(new URL('../../../', import.meta.url));
   const child = spawn(process.execPath, [path.join(root, 'desktop/host/entry.mjs'), '--root', root, '--database', path.join(directory, 'rooms.sqlite'), '--port', '0', '--gravity-orchard-candidate'], { env: { PATH: '/nonexistent', SOFA_NATIVE_E2E_TIMING: '1' }, stdio: ['pipe', 'pipe', 'ignore'] });
   const records = []; let buffer = '';

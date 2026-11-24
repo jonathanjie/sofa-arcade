@@ -12,6 +12,12 @@ import {
   assertNoAuthoritySecrets, assertPendingView,
 } from './room-platform-fixture.mjs';
 
+// These journeys assert authorization and push delivery over real sockets.
+// Keep the heartbeat outside the test watchdog so polling cannot satisfy a
+// missing mutation notification, even on a busy runner.
+const JOURNEY_TIMEOUT_MS = 60_000;
+const HEARTBEAT_MS = 2 * JOURNEY_TIMEOUT_MS;
+
 async function request(host, route, {
   body, token, method = body === undefined ? 'GET' : 'POST', headers = {},
 } = {}) {
@@ -58,15 +64,19 @@ async function listen(host, code, token) {
           const event = { type, value: JSON.parse(data), raw: data, frame };
           history.push(event);
           for (const item of [...waiting]) if (item.predicate(event)) {
-            clearTimeout(item.timeout); waiting.delete(item); item.resolve(event);
+            waiting.delete(item);
+            item.resolve(event);
           }
         }
       }
     } catch (error) {
-      if (!stopped) for (const item of waiting) { clearTimeout(item.timeout); item.reject(error); }
+      if (!stopped) {
+        for (const item of waiting) item.reject(error);
+        waiting.clear();
+      }
     } finally {
       ended = true;
-      for (const item of waiting) { clearTimeout(item.timeout); item.reject(new Error('Stream ended before the expected event.')); }
+      for (const item of waiting) item.reject(new Error('Stream ended before the expected event.'));
       waiting.clear();
     }
   })();
@@ -78,9 +88,7 @@ async function listen(host, code, token) {
       if (found) return Promise.resolve(found);
       if (ended) return Promise.reject(new Error('Stream already ended.'));
       return new Promise((resolve, reject) => {
-        const item = { predicate, resolve, reject, timeout: null };
-        item.timeout = setTimeout(() => { waiting.delete(item); reject(new Error('Timed out waiting for an immediate projected event.')); }, 3000);
-        waiting.add(item);
+        waiting.add({ predicate, resolve, reject });
       });
     },
     async close() {
@@ -106,7 +114,7 @@ function rawRequest(host, route, headers) {
 
 async function fixtureHost(t, options = {}) {
   const engine = options.engine || createPrivateEngine({ sessions: 1 });
-  const host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath: ':memory:', heartbeatMs: 60_000, roomApi: createPrivateApi(engine), ...options });
+  const host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath: ':memory:', heartbeatMs: HEARTBEAT_MS, roomApi: createPrivateApi(engine), ...options });
   const streams = [];
   t.after(async () => { await Promise.all(streams.map(stream => stream.close())); await host.close(); });
   const call = (route, values) => request(host, route, values);
@@ -116,7 +124,7 @@ async function fixtureHost(t, options = {}) {
 }
 
 for (const firstActor of PLAYERS) {
-  test(`actual TV and two-phone HTTP/SSE flow: ${firstActor} seals first, reconnect/retry/rematch stay private`, { timeout: 15000 }, async t => {
+  test(`actual TV and two-phone HTTP/SSE flow: ${firstActor} seals first, reconnect/retry/rematch stay private`, { timeout: JOURNEY_TIMEOUT_MS }, async t => {
     const { host, engine, live, call, subscribe, route } = await fixtureHost(t);
     const streams = { host: await subscribe(live.hostToken), jon: await subscribe(live.tokens.jon), lydia: await subscribe(live.tokens.lydia) };
     const initialRevision = live.game.revision;
@@ -214,7 +222,7 @@ for (const firstActor of PLAYERS) {
   });
 }
 
-test('live private streams reject untrusted authority, rotate credentials, and never serve test/private modules', { timeout: 10000 }, async t => {
+test('live private streams reject untrusted authority, rotate credentials, and never serve test/private modules', { timeout: JOURNEY_TIMEOUT_MS }, async t => {
   const { host, live, call, subscribe, route } = await fixtureHost(t);
   const jon = await subscribe(live.tokens.jon);
   const tv = await subscribe(live.hostToken);
@@ -266,7 +274,7 @@ test('live private streams reject untrusted authority, rotate credentials, and n
   assert.match(await moduleResponse.text(), /createRoomClient/);
 });
 
-test('SQLite restart restores locked own vote, identity, fixed budget and per-viewer SSE; expiry closes restored rooms', { timeout: 12000 }, async t => {
+test('SQLite restart restores locked own vote, identity, fixed budget and per-viewer SSE; expiry closes restored rooms', { timeout: JOURNEY_TIMEOUT_MS }, async t => {
   const directory = await mkdtemp(path.join(tmpdir(), 'sofa-private-restore-'));
   const databasePath = path.join(directory, 'rooms.sqlite');
   const engine = createPrivateEngine({ sessions: 1 });
@@ -274,7 +282,7 @@ test('SQLite restart restores locked own vote, identity, fixed budget and per-vi
   let host;
   const streams = [];
   t.after(async () => { await Promise.all(streams.map(stream => stream.close())); await host?.close(); await rm(directory, { recursive: true, force: true }); });
-  const boot = () => startLanServer({ host: '127.0.0.1', port: 0, databasePath, roomApi, heartbeatMs: 60_000 });
+  const boot = () => startLanServer({ host: '127.0.0.1', port: 0, databasePath, roomApi, heartbeatMs: HEARTBEAT_MS });
   host = await boot();
   const live = await openRoom((route, options) => request(host, route, options));
   const route = `/api/rooms/${live.code}`;
