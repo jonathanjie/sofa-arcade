@@ -43,8 +43,8 @@ async function checkLayout(page, phone = false) {
  return layout;
 }
 
-async function checkPausedAcrossHostTicks(tick) {
- await run.waitForHostTicks();
+async function checkPausedAcrossHostTicks(tick, observationMs) {
+ await run.waitForHostTicks(observationMs);
  const authority = run.diagnostics(code).coordinator;
  assert.equal(authority.phase, 'paused');
  assert.equal(authority.tick, tick);
@@ -109,7 +109,7 @@ try{
  const afterReplay=await view(tv);assert.equal(afterReplay.runEpoch,paused.runEpoch);assert.equal(afterReplay.phase,'paused');
  run.check('Recenter pauses both gardeners; lost ACK replays once; obsolete input cannot cross the epoch',{epoch:paused.runEpoch,rejectedReasons:run.diagnostics(code).coordinator.rejectedInputReasons});
  await tv.locator('[data-go-action="help"]').click();await tv.locator('[data-go-tutorial]').waitFor();await run.screenshot(tv,'help-paused');
- const beforeTutorial=await view(tv);await checkPausedAcrossHostTicks(beforeTutorial.tick);const duringTutorial=await view(tv);assert.equal(duringTutorial.tick,beforeTutorial.tick);assert.deepEqual(duringTutorial.orders,beforeTutorial.orders);
+ const beforeTutorial=await view(tv);await checkPausedAcrossHostTicks(beforeTutorial.tick,300);const duringTutorial=await view(tv);assert.equal(duringTutorial.tick,beforeTutorial.tick);assert.deepEqual(duringTutorial.orders,beforeTutorial.orders);
  await tv.locator('[data-tutorial-action="close"]').click();assert.equal((await view(tv)).phase,'paused');
  const oldConnections=await phones.jon.evaluate(()=>window.__go7Probe.stats().connections);await phones.jon.evaluate(()=>window.__go7Probe.disconnect());
  await until(async()=>phones.jon.evaluate(n=>window.__go7Probe.stats().connections>n&&document.querySelector('[data-go3="phone"]')?.dataset.connection==='connected',oldConnections),'Authenticated phone reconnect');
@@ -128,7 +128,7 @@ try{
  assert.ok(['requested','network'].includes(backgroundPause.pauseReason));
  assert.ok(backgroundPause.runEpoch>beforeBackground.runEpoch);
  for(const id of IDS)assert.deepEqual(backgroundPause.players[id].input,{x:0,y:0,brake:true});
- await checkPausedAcrossHostTicks(backgroundPause.tick);assert.equal((await view(tv)).tick,backgroundPause.tick,'Shared simulation remains stopped while the phone document is absent');
+ await checkPausedAcrossHostTicks(backgroundPause.tick,350);assert.equal((await view(tv)).tick,backgroundPause.tick,'Shared simulation remains stopped while the phone document is absent');
  await phones.jon.goBack();await phones.jon.locator(phoneSelector('phone')).waitFor();await roomCredential(run,phones.jon,code,'jon');
  const lifecycle=await phones.jon.evaluate(start=>window.__go7Probe.lifecycle().slice(start),lifecycleStart);
  assert.ok(lifecycle.some(event=>event.type==='pagehide'&&event.trusted),'Chromium delivered an actual pagehide event');
@@ -138,7 +138,7 @@ try{
  await run.screenshot(phones.jon,'360-returned-after-pagehide');
  await phones.jon.locator(phoneSelector('ready')).click();
  await until(async()=>{const current=await view(tv);return current.ready.jon;},'Returned gardener explicitly readies');
- await checkPausedAcrossHostTicks(backgroundPause.tick);assert.equal((await view(tv)).phase,'paused','One gardener cannot resume the run alone');
+ await checkPausedAcrossHostTicks(backgroundPause.tick,300);assert.equal((await view(tv)).phase,'paused','One gardener cannot resume the run alone');
  await readyBoth();
  run.check('Actual pagehide navigation clears held steering; the saved seat returns paused and requires both gardeners ready',{method:'Real navigation to about:blank and browser Back. A test-only sessionStorage key retains trusted pagehide observer records across document replacement; no saved credentials, visibility properties or game state are rewritten. Playwright foreground emulation made CDP freeze ineffective, so this verifies navigation/pagehide and socket loss, not physical phone background/lock behavior.',pauseReason:backgroundPause.pauseReason,fromEpoch:beforeBackground.runEpoch,pausedEpoch:backgroundPause.runEpoch,lifecycle});
 

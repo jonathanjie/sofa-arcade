@@ -32,9 +32,10 @@ export async function createSession(){
  return {origin,evidence,browser,
   protect(value){if(typeof value==='string'&&value)secrets.add(value);},
   check(name,detail=true){checks.push({name,result:'passed',detail});console.log(`GO7 browser: ${name}`);},
-  async waitForHostTicks() {
-    const target = tickCallbacks + 2;
-    await until(() => tickCallbacks >= target, 'two coordinator tick callbacks');
+  async waitForHostTicks(observationMs) {
+    const callbacks = Math.ceil(observationMs / LIMITS.tickMs);
+    const target = tickCallbacks + callbacks;
+    await until(() => tickCallbacks >= target, `${callbacks} coordinator tick callbacks while paused`);
   },
   diagnostics(code){return server.realtimeDiagnostics(code);},
   async restart(){await server.close();server=await startLanServer({...options,port});},

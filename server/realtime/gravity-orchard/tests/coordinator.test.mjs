@@ -94,8 +94,11 @@ test('host stall pauses rather than fast-forwarding; smaller catch-up never exce
   await h.clock.jump(100);
   assert.equal(h.coordinator.getPublicView('UNIT').tick - before.tick, 5);
   assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').tickOverruns, 1);
+  await h.clock.jump(250);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing', 'The 250 ms boundary is still playable');
+  assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').hostStalls, 0);
   const tickBeforeStall = h.coordinator.getPublicView('UNIT').tick;
-  await h.clock.jump(1000);
+  await h.clock.jump(251);
   const after = h.coordinator.getPublicView('UNIT');
   assert.equal(after.phase, 'paused');
   assert.equal(after.pauseReason, 'host-stall');

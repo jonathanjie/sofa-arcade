@@ -82,5 +82,23 @@ test('real browser-client seam interoperates with fixture authority for two simu
   assert.deepEqual(host.snapshot.view.players.jon.input, { x: 0, y: 0, brake: true });
   assert.equal((await command(host, 'same-seed-rematch', 'rematch', { seedMode: 'same' })).accepted, true);
   await until(() => clients.every((peer) => peer.snapshot.view.phase === 'waiting' && peer.snapshot.view.matchId !== oldMatch), 'new match reaches all clients without stale overwrites');
+  await until(() => {
+    const { presence } = fixture.diagnostics().transport;
+    return presence.jon.inputFresh && presence.lydia.inputFresh;
+  }, 'both seats deliver fresh input for the rematch epoch');
+  assert.equal((await command(jon, 'jon-rematch-ready', 'ready', { value: true })).accepted, true);
+  assert.equal((await command(lydia, 'lydia-rematch-ready', 'ready', { value: true })).accepted, true);
+  await until(() => clients.every(peer => peer.snapshot.view.phase === 'playing'), 'the rematch starts for all recipients');
+  await clock.jump(220);
+  const beforeStall = fixture.diagnostics().transport;
+  assert.equal(beforeStall.phase, 'playing', 'A sub-threshold wake stays in play');
+  assert.equal(beforeStall.hostStalls, 0);
+  // Deliver the first overdue scheduler callback at the end of a 350 ms stall.
+  await clock.jump(350);
+  await until(() => clients.every(peer => peer.snapshot.view.pauseReason === 'host-stall'), 'a late host callback pauses every recipient');
+  for (const peer of clients) {
+    assert.equal(peer.snapshot.view.phase, 'paused');
+    assert.equal(peer.snapshot.view.tick, beforeStall.tick);
+  }
   for (const peer of clients) assert.equal(peer.client.getStats().invalidMessages, 0);
 });

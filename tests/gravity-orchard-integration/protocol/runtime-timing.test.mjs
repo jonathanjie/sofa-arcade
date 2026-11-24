@@ -54,9 +54,12 @@ test('optional timing observes real SQLite, heartbeat and coordinator work witho
     assert.ok(fixture.prepare('SELECT jon_seen FROM sofa_rooms WHERE code = ?').get(h.room.code).jon_seen > 0);
   } finally { fixture.close(); }
 
+  await h.clock.jump(230);
+  assert.equal(h.host.realtimeDiagnostics(h.room.code).coordinator.phase, 'playing', 'A sub-threshold wake stays in play');
+  assert.equal(h.host.realtimeDiagnostics(h.room.code).coordinator.hostStalls, 0);
   const epoch = h.tv.snapshot.view.runEpoch;
   await h.clock.jump(350);
-  await until(() => h.tv.snapshot.view.phase === 'paused');
+  await until(() => h.tv.snapshot.view.phase === 'paused', 'A 350 ms scheduler stall must publish a pause to the TV');
   assert.equal(h.tv.snapshot.view.pauseReason, 'host-stall');
   assert.ok(h.tv.snapshot.view.runEpoch > epoch);
   assert.deepEqual(h.tv.snapshot.view.players.jon.input, { x: 0, y: 0, brake: true });

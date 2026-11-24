@@ -358,11 +358,19 @@ test('port conflicts fail closed without attaching to or closing the existing li
   assert.equal((await httpsGet(replacement.port)).status, 200);
 });
 
-test('bounded idempotent close stops raw handshakes and active HTTP and releases the port', { timeout: 15_000 }, async t => {
+test('bounded idempotent close stops raw handshakes, active HTTP and upgrades and releases the port', { timeout: 15_000 }, async t => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   let handlerEntered;
   const entered = new Promise(resolve => { handlerEntered = resolve; });
-  const value = await listener(t, { requestHandler() { handlerEntered(); } });
+  const wss = new WebSocketServer({ noServer: true });
+  t.after(() => wss.close());
+  const value = await listener(t, {
+    requestHandler() { handlerEntered(); },
+    onUpgrade(req, socket, head) { wss.handleUpgrade(req, socket, head, () => {}); },
+  });
+  const ws = new WebSocket(`wss://127.0.0.1:${value.port}/`, { ca: good.ca });
+  t.after(() => ws.terminate());
+  await once(ws, 'open');
   const raw = connectTcp({ host: '127.0.0.1', port: value.port });
   raw.on('error', () => {});
   raw.resume();
@@ -371,11 +379,12 @@ test('bounded idempotent close stops raw handshakes and active HTTP and releases
   const pending = httpsGet(value.port).catch(error => error);
   await entered;
   const rawClosed = new Promise(resolve => raw.once('close', resolve));
+  const upgradeClosed = once(ws, 'close');
   const closing = value.close();
   assert.equal(closing, value.close());
   // Advance through the 250 ms grace period with I/O still open.
   t.mock.timers.tick(250);
-  await Promise.all([closing, rawClosed]);
+  await Promise.all([closing, rawClosed, upgradeClosed]);
   assert.equal(value.status.status, 'disabled');
   assert.deepEqual(value.status.controllerOrigins, []);
   assert.ok(await pending instanceof Error);

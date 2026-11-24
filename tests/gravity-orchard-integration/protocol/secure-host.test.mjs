@@ -70,16 +70,19 @@ test('verified HTTPS/WSS and HTTP/WS share the original request, credential auth
   await t.test('real WSS revokes the old phone after an HTTP seat rejoin', { timeout: 300_000 }, async () => {
     const oldInput = jon.input({ x: 1, y: 0, brake: false });
     await flush();
-    const closed = once(jon.ws, 'close');
     const rotated = await api(h.host, `/api/rooms/${h.room.code}/join`, { body: { playerId: 'jon', clientId: h.room.clientIds.jon } });
     assert.equal(rotated.status, 200);
     const id = crypto.randomUUID();
     const { matchId, runEpoch } = jon.snapshot.view;
-    jon.send({ type: 'command', protocol: 1, matchId, runEpoch, id, kind: 'pause', payload: { reason: 'help' } });
+    const closed = once(jon.ws, 'close');
+    jon.send({ type: 'command', protocol: 1, matchId, runEpoch, id, kind: 'pause', payload: { reason: 'requested' } });
+    await until(() => jon.ws.readyState === WebSocket.CLOSED ||
+      jon.messages.some(message => message.type === 'command-result' && message.id === id),
+    'A command from the former seat must cause revocation before any result');
+    assert.ok(!jon.messages.some(m => m.type === 'command-result' && m.id === id));
     const [code] = await closed;
     assert.equal(code, 4401);
     assert.equal(jon.ws.readyState, WebSocket.CLOSED);
-    assert.ok(!jon.messages.some(m => m.type === 'command-result' && m.id === id && m.accepted));
     const revoked = await connectPeer(h.host, h.room, 'jon', { origin, ca: material.ca });
     assert.equal(revoked.welcome, null);
     revoked.ws.terminate();
