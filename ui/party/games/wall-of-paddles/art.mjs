@@ -1,4 +1,4 @@
-import { compileSprite, drawSprite } from '../../kit/sprites.mjs';
+import { compileSprite, drawSprite, fitSpriteScale } from '../../kit/sprites.mjs';
 import { LOOKS } from '../../looks.mjs';
 
 export const TEAMS = [
@@ -13,34 +13,34 @@ export const BOOSTS = {
   slow: { name: 'Slow motion', colour: '#8fcaff', glyph: ['#######', '.#...#.', '..#.#..', '...#...', '..#.#..', '.#####.', '#######'] },
 };
 
-const SCALE = 4;
 const DRONE = [
-  ['..cc.......', '.coocc.....', 'coossscc...', 'coossssww..', 'coossscc...', '.coocc.....', '..cc.......'],
-  ['..cc.......', '.coocc.....', 'coossscc...', 'coossssaa..', 'coossscc...', '.coocc.....', '..cc.......'],
-  ['..cc.....a.', '.coocc..aa.', 'coocsscc...', 'coocssswwaa', 'coocsscc...', '.coocc..aa.', '..cc.....a.'],
+  '....ss.....', '...sccs....', '..scoocs...', '.scooocs...', 'scoosscsc..',
+  'scoossowwcc', 'scoosscsc..', '.scooocs...', '..scoocs...', '...sccs....', '....ss.....',
 ];
 
 export function createPaddleArt(document) {
-  const drones = LOOKS.map(look => DRONE.map(rows => compileSprite(document, rows, {
-    c: '#24394b', o: '#08121e', s: look.colour, w: '#f1ffff', a: '#88c9e0',
-  })));
+  const drones = LOOKS.map(look => compileSprite(document, DRONE, {
+    c: '#2c435c', o: '#101d2c', s: look.colour, w: '#f1ffff',
+  }));
   const boosts = Object.fromEntries(Object.entries(BOOSTS).map(([kind, boost]) =>
     [kind, compileSprite(document, boost.glyph, { '#': boost.colour })]));
   return {
-    drone(context, look, team, pose, x, y) {
-      const sprite = drones[look][pose];
-      if (team === 0) drawSprite(context, sprite, x, y, SCALE);
-      else {
-        context.save();
-        context.translate(Math.round(x), 0);
-        context.scale(-1, 1);
-        drawSprite(context, sprite, 0, y, SCALE);
-        context.restore();
-      }
+    droneScale(area, slots) {
+      return Math.min(13 - Math.ceil((slots - 1) / 2), fitSpriteScale(drones[0], slots, area, { columns: 1, gap: 10 }));
+    },
+    drone(context, look, team, x, y, scale) {
+      if (!scale) return;
+      const sprite = drones[look];
+      context.save();
+      context.translate(Math.round(x), Math.round(y));
+      if (team === 1) context.scale(-1, 1);
+      drawSprite(context, sprite, -sprite.width * scale / 2, -sprite.height * scale / 2, scale);
+      context.restore();
     },
     boost(context, kind, x, y) {
       const sprite = boosts[kind];
-      drawSprite(context, sprite, x - sprite.width * SCALE / 2, y - sprite.height * SCALE / 2, SCALE);
+      const scale = 4;
+      drawSprite(context, sprite, x - sprite.width * scale / 2, y - sprite.height * scale / 2, scale);
     },
   };
 }

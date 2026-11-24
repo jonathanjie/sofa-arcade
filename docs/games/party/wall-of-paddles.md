@@ -1,34 +1,43 @@
 # Wall of Paddles
 
-## Rules
+## Rules and controls
 
-Cyan and Coral defend opposite walls, and each player moves one paddle in an assigned slot.
-A ball scores for the opposite team when it clears a wall, then returns from the centre.
-Each paddle hit speeds the ball up, and hits near the tip bounce at a sharper angle.
-A ball collects a centre boost for the team that last touched it, triggering wide paddles, a split ball, a curve ball, or slow motion.
-The first team to seven wins, or the higher score wins after 90 seconds, with equal scores sharing first place.
+Slide one thumb up or down to move your paddle. Block balls and send them past the other team's wall. Release to hold your position. The pad also accepts keyboard input. Look for your name, badge and drone beside your slot on the TV. Cyan and Coral defend opposite walls.
 
-## Controls
+Each ball that clears a wall scores one point for the other team. Balls return from the centre. Hits add speed, and hits near a paddle tip produce sharper angles. A ball that a paddle has hit can collect a centre boost. Boosts widen the collecting team's paddles, split a ball, bend a ball or briefly slow all balls.
 
-Slide one thumb up or down anywhere on the phone's pad. The position maps to the paddle's available travel within its slot. Release to hold that position. Find your name, colour, and pattern next to your slot on the TV. The slider also accepts keyboard input. The TV plays the hit, boost, goal, and win cues using the host sound settings. Reduced motion keeps the scores, boost labels, and contact highlights visible while removing trails, shake, particles, and interpolated motion.
+After 45 seconds, a team wins if it has reached the target and leads. If both teams are tied at the target, the next goal wins. At 90 seconds, the higher score wins and equal scores share first place. An empty wall ends the round early. The other team wins if it still has players.
 
-## Scaling
+## Players and departures
 
-Two to sixteen ready players alternate between the teams in seating order. Each team divides its wall into equal slots. With an odd roster, the smaller team's slots and paddles grow in the same proportion, so both teams start with the same total paddle length. Three balls open a game with two to seven players. Four open a game with eight to sixteen. Every active player keeps a paddle for the round. It holds each paddle at its last position if a phone leaves and keeps that slot for the round. The platform removes revoked or expired seats from the podium and admits late arrivals at the next round.
+The host alternates ready players between teams. Each team divides its wall into equal slots. A smaller team gets longer slots and paddles, so both teams have the same total base paddle length. Bright brackets mark the slots. Players can slide together to close a gap that an unattended ball could pass through.
+
+A sleeping or disconnected phone holds its place and position during the platform's reconnect window. A kicked or expired seat loses its paddle on the next simulation tick. The TV shows a short burst at the old position. The remaining teammates keep their positions on their phone pads as the game redivides that wall. The podium excludes departed seats.
+
+A guest who joins mid-round can practice on the phone immediately. Slide to the marked target to block it and get a new one. Practice runs on the phone and sends no game input. Live play uses absolute positions and judges all timing on the host.
 
 ## Tuning
 
+| Players | Opening balls | Target | Base slot coverage | Reason |
+| --- | ---: | ---: | ---: | --- |
+| 2 | 2 | 12 | 36% | One opening ball heads toward each solo defender. Long travel gives each player room to cover either end. |
+| 8 | 4 | 15 | 48% | Two balls open toward each wall. The higher target gives softer walls enough time for a comeback. |
+| 16 | 6 | 11 | 64% | More balls give the eight players on each wall more chances to act. The dense wall blocks more shots, so the target drops. |
+
+The ball count and target change at 6 and 12 players. Coverage grows by 4 percentage points per additional seat on the larger team. The opening count, target and coverage stay fixed during a round. Each ready player helps protect one wall throughout play.
+
 | Setting | Reason |
 | --- | --- |
-| 1,440 × 640 court, 10-unit ball radius | The wide court gives players time to spot incoming balls. The bright 20-unit ball stays visible across the room. |
-| 29% starting slot coverage, plus 1.8 percentage points per extra seat on the larger team | Solo defenders have room to move. At 8 per side, 41.6% coverage keeps the narrow slots playable. |
-| 365–460 units/s serve, 8% gain per hit, 1,050 units/s cap, 57.6° maximum rebound angle | Serves give players time to react. Rallies speed up and edge hits redirect the ball without turning it almost vertical. |
-| 1.8 s re-serve delay, towards the scoring team | Leaves time to read a goal and gives the other team a chance to recover. |
-| Boost at 4.5 s, then every 8.5 s, visible for up to 7 s | Introduces the first boost after the opening serves. One visible boost at a time keeps the centre clear. An untouched ball passes through. |
-| Wide paddles at 1.55× for 6.5 s, capped at 77% of a slot | Rewards the collecting team and preserves gaps between adjacent paddles. |
-| Split ball, maximum seven including pending serves | The new ball travels in the same horizontal direction with an opposite vertical component. Both balls stay in rotation. At capacity, the next boost replaces split. |
-| Curve for 3.1 s or until the next paddle hit | The collecting ball bends toward the centre of the court or across it, with a distinct purple trail. |
-| Slow motion at 62% speed for 2.8 s | Both teams get a short recovery window. The round timer continues normally. |
-| 50 ms simulation tick with swept contacts | The server checks the path through the tick. The earliest contact resolves first. Exact ties use ball creation order. |
+| 1,440 × 640 logical court and 9-unit ball radius | The full TV stage fits this court between two wide identity lanes. At 16 players and 1920 × 1080, the drones stand 88 CSS px tall. With two players, they stand 132 CSS px tall. |
+| 365–460 units/s at the first serve, 8% faster per game round through round five | Later rounds put pressure on defenders. Each hit adds 8% speed up to 1,050 units/s. Rebounds turn up to 57.6°. |
+| 1.8 s re-serve delay toward the scoring team | The goal has time to register and the conceding team gets a chance to respond. |
+| Boost at 4.5 s, then every 8.5 s, visible for up to 7 s | The opening balls move first. The court shows one boost at a time. |
+| Wide paddles at 1.55× for 6.5 s, capped at 76% of a slot | At 16 players, a centred wide wall still has a gap at each slot boundary. |
+| Split ball, maximum seven including pending serves | The new ball moves in the same horizontal direction with opposite vertical motion. At capacity, another boost replaces split. |
+| Curve for 3.1 s or until the next paddle hit | The collecting ball bends and shows a purple highlight. |
+| Slow at 62% speed for 2.8 s | Both teams get a short recovery. The round timer keeps running. |
+| 50 ms fixed tick and swept contacts | Earliest contact resolves first. Exact ties use ball creation order. A replay uses the seed, game round, ordered inputs and departures. |
 
-The shared contract keeps the roster locked. A departure event in that contract would let the rules retire a revoked paddle separately from a briefly disconnected one.
+In 540 seeded runs, staggered slide inputs produced median rounds of 52.0 seconds for 2 players, 49.6 for 8, and 50.3 for 16. The runs covered rounds one and five with idle, staggered, and single-wall tracking inputs. Human playtime and balance remain open.
+
+The host plays hit, boost, goal and win cues. A goal lights the breached wall and updates the team score at once. Reduced motion keeps the names, contact highlights, goal text and wall light while removing trails, bursts, the goal wave and position interpolation. The phone stays quiet.

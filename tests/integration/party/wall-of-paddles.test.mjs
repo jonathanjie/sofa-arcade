@@ -6,13 +6,11 @@ const gameId = 'wall-of-paddles';
 const slide = position => ({ kind: 'slide', position });
 
 function assertTeamResults(view, phones) {
-  assert.equal(view.roster.length, view.scene.paddles.length);
+  assert.equal(view.scene.paddles.length, phones.length);
   assert.equal(view.results.length, phones.length);
   assert.equal(new Set(view.results.map(result => result.playerId)).size, phones.length);
   const [cyan, coral] = view.scene.points;
   const winning = Math.max(cyan, coral);
-  assert.equal(winning, 7);
-  assert.ok(Math.min(cyan, coral) < winning);
   const winners = view.results.filter(result => result.score === winning).length;
   for (const result of view.results) {
     const paddle = view.scene.paddles.find(entry => entry.playerId === result.playerId);
@@ -31,7 +29,14 @@ test('the shared 16-phone harness plays two full rounds and enforces phone priva
         phone.input(slide(phone.view.state.team === 0 ? 0 : -1));
       }
     },
-    assertResults: assertTeamResults,
+    assertResults(view, phones, round) {
+      assertTeamResults(view, phones);
+      if (round === 1) {
+        const removed = view.roster.find(player => !phones.some(phone => phone.playerId === player.id));
+        assert.ok(removed);
+        assert.equal(view.scene.paddles.some(paddle => paddle.playerId === removed.id), false);
+      }
+    },
   });
   let peak = 0;
   for (const { packets, view, playerId } of phones) {
@@ -68,7 +73,6 @@ for (const count of [2, 8]) {
     await fixture.until(() => phones.every(phone => phone.view.phase === 'playing'));
     assert.deepEqual(tv.view.scene.paddles.map(paddle => paddle.team), phones.map((_, index) => index % 2));
     await fixture.until(() => tv.view.phase === 'results', {
-      ticks: 1801,
       drive(tick) {
         if (tick % 4 === 0) phones.forEach((phone, index) => phone.input(slide(index % 2 === 0 ? 0 : -1)));
       },
@@ -78,7 +82,7 @@ for (const count of [2, 8]) {
   });
 }
 
-test('all seats can leave a round without changing geometry or retaining podium places', async t => {
+test('an empty wall ends the round and departed seats leave no podium places', async t => {
   const fixture = await launchPartyHarness(t, { gameId });
   const credential = await fixture.create();
   const tv = await fixture.connect(credential);
@@ -90,11 +94,11 @@ test('all seats can leave a round without changing geometry or retaining podium 
   await fixture.until(() => left.view.phase === 'playing' && right.view.phase === 'playing');
   left.input(slide(1));
   await fixture.until(() => left.view.state.position === 1);
-  const paddles = tv.view.scene.paddles;
   for (const seat of [left, right]) tv.send({ type: 'kick', playerId: seat.playerId });
   assert.deepEqual(await Promise.all([left.disconnected, right.disconnected]), [4403, 4403]);
-  await fixture.until(() => tv.view.phase === 'results', { ticks: 1801 });
+  await fixture.until(() => tv.view.phase === 'results', { ticks: 4 });
   assert.deepEqual(tv.view.players, []);
-  assert.deepEqual(tv.view.scene.paddles, paddles);
+  assert.deepEqual(tv.view.scene.paddles, []);
+  assert.deepEqual(tv.view.scene.events.filter(event => event.kind === 'leave').map(event => event.playerId), [left.playerId, right.playerId]);
   assert.deepEqual(tv.view.results, []);
 });

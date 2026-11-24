@@ -1,7 +1,7 @@
-export const COURT = Object.freeze({ width: 1440, height: 640, radius: 10, pickupRadius: 24 });
+export const COURT = Object.freeze({ width: 1440, height: 640, radius: 9, pickupRadius: 24 });
 const { width, height, radius, pickupRadius } = COURT;
 const ROUND_MS = 90_000;
-const TARGET = 7;
+const MIN_ROUND_MS = 45_000;
 const MAX_BALLS = 7;
 const SERVE_DELAY_MS = 1800;
 const FIRST_PICKUP_MS = 4500;
@@ -40,14 +40,14 @@ function positionPaddles(state) {
     const slot = paddle.bottom - paddle.top;
     paddle.length = paddle.baseLength;
     if (state.wideUntil[paddle.team] > state.elapsedMs) {
-      paddle.length = Math.min(slot * 0.77, paddle.baseLength * 1.55);
+      paddle.length = Math.min(slot * 0.76, paddle.baseLength * 1.55);
     }
     paddle.y = paddle.top + paddle.length / 2 + (paddle.position + 1) * (slot - paddle.length) / 2;
   }
 }
 
 function serve(state, direction, y) {
-  const speed = 365 + random(state) * 95;
+  const speed = (365 + random(state) * 95) * state.difficulty;
   const angle = (random(state) - 0.5) * 0.93;
   state.balls.push({
     id: state.nextBall++, x: width / 2, y,
@@ -56,31 +56,40 @@ function serve(state, direction, y) {
   });
 }
 
-function createRound(players, seed) {
-  const largerTeam = Math.ceil(players.length / 2);
-  const coverage = 0.29 + (largerTeam - 1) * 0.018;
-  const paddles = players.map(({ id }, index) => {
-    const team = index % 2;
-    const size = team === 0 ? largerTeam : Math.floor(players.length / 2);
-    const slotIndex = Math.floor(index / 2);
-    return {
-      playerId: id, team, top: height * slotIndex / size, bottom: height * (slotIndex + 1) / size,
-      baseLength: height / size * coverage, position: 0,
-    };
-  });
+function divideWalls(state) {
+  for (const team of [0, 1]) {
+    const wall = state.paddles.filter(paddle => paddle.team === team);
+    for (const [index, paddle] of wall.entries()) {
+      paddle.top = height * index / wall.length;
+      paddle.bottom = height * (index + 1) / wall.length;
+      paddle.baseLength = height / wall.length * state.coverage;
+    }
+  }
+}
+
+function createRound(players, seed, gameRound = 1) {
+  const count = players.length;
   const state = {
-    paddles, balls: [], serves: [],
+    paddles: players.map(({ id }, index) => ({ playerId: id, team: index % 2, position: 0 })),
+    balls: [], serves: [],
     elapsedMs: 0, points: [0, 0], wideUntil: [0, 0], slowUntil: 0,
     rng: seedHash(seed), nextBall: 1, nextEvent: 1, events: [],
     pickup: null, nextPickupAt: FIRST_PICKUP_MS, boostIndex: 0,
+    // Keep the same total paddle length on each wall, including after a departure.
+    coverage: 0.36 + (Math.ceil(count / 2) - 1) * 0.04,
+    // Dense teams block much more of their wall, even with a busier court.
+    target: count < 6 ? 12 : count < 12 ? 15 : 11,
+    difficulty: 1 + 0.08 * clamp(gameRound - 1, 0, 4),
+    walkover: false,
   };
   state.boostIndex = Math.floor(random(state) * BOOSTS.length);
+  divideWalls(state);
   positionPaddles(state);
-  const count = players.length < 8 ? 3 : 4;
+  const ballCount = count < 6 ? 2 : count < 12 ? 4 : 6;
   const firstDirection = random(state) < 0.5 ? 1 : -1;
-  for (let index = 0; index < count; index++) {
+  for (let index = 0; index < ballCount; index++) {
     const direction = index % 2 === 0 ? firstDirection : -firstDirection;
-    serve(state, direction, height * (index + 1) / (count + 1));
+    serve(state, direction, height * (index + 1) / (ballCount + 1));
   }
   return state;
 }
@@ -140,6 +149,20 @@ function firstContact(state, ball, seconds, pace) {
 function record(state, event) {
   state.events.push({ ...event, id: state.nextEvent++ });
   if (state.events.length > 16) state.events.shift();
+}
+
+function removeDepartures(state, departures) {
+  if (!departures.length) return;
+  const previousCount = state.paddles.length;
+  for (const { playerId } of departures) {
+    const index = state.paddles.findIndex(paddle => paddle.playerId === playerId);
+    if (index === -1) continue;
+    const [paddle] = state.paddles.splice(index, 1);
+    record(state, { kind: 'leave', team: paddle.team, playerId, x: paddle.team * width, y: paddle.y });
+  }
+  if (state.paddles.length === previousCount) return;
+  divideWalls(state);
+  state.walkover = !state.paddles.some(paddle => paddle.team === 0) || !state.paddles.some(paddle => paddle.team === 1);
 }
 
 function collect(state, ball) {
@@ -212,7 +235,7 @@ function sweepCourt(state, seconds) {
     }
     if (!next) return;
     resolveContact(state, next);
-    if (state.points.includes(TARGET)) return;
+    if (hasWinningScore(state)) return;
     seconds -= travel;
   }
 }
@@ -243,8 +266,12 @@ function prepareTick(state, dt) {
   }
 }
 
+function hasWinningScore({ elapsedMs, points: [cyan, coral], target }) {
+  return elapsedMs >= MIN_ROUND_MS && cyan !== coral && Math.max(cyan, coral) >= target;
+}
+
 function isRoundOver(state) {
-  return state.points.includes(TARGET) || state.elapsedMs >= ROUND_MS;
+  return state.walkover || hasWinningScore(state) || state.elapsedMs >= ROUND_MS;
 }
 
 export const wallOfPaddles = Object.freeze({
@@ -259,17 +286,19 @@ export const wallOfPaddles = Object.freeze({
       !Number.isFinite(input.position) || Math.abs(input.position) > 1) return null;
     return { kind: 'slide', position: input.position || 0 };
   },
-  step(state, inputs, dt) {
+  step(state, inputs, dt, { departures = [] } = {}) {
     if (isRoundOver(state)) return state;
     const next = {
       ...state, paddles: state.paddles.map(paddle => ({ ...paddle })), balls: state.balls.map(ball => ({ ...ball })),
       serves: [...state.serves], points: [...state.points], wideUntil: [...state.wideUntil], events: [...state.events],
     };
+    removeDepartures(next, departures);
     for (const { playerId, input } of inputs) {
       const paddle = next.paddles.find(entry => entry.playerId === playerId);
       if (paddle && input.kind === 'slide') paddle.position = input.position;
     }
     positionPaddles(next);
+    if (next.walkover) return next;
     const tickMs = Math.min(dt, ROUND_MS - next.elapsedMs);
     prepareTick(next, tickMs);
     sweepCourt(next, tickMs / 1000);
@@ -283,7 +312,8 @@ export const wallOfPaddles = Object.freeze({
   projectForTv(state) {
     const pickup = state.pickup && { kind: state.pickup.kind, x: state.pickup.x, y: state.pickup.y };
     return {
-      court: COURT, target: TARGET, points: state.points, pickup, events: state.events,
+      court: COURT, target: state.target, points: state.points, pickup, events: state.events,
+      opening: state.elapsedMs < MIN_ROUND_MS, walkover: state.walkover,
       slow: state.slowUntil > state.elapsedMs,
       paddles: state.paddles.map(({ playerId, team, top, bottom, y, length }) =>
         ({ playerId, team, top, bottom, y, length })),

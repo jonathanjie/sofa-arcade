@@ -2,162 +2,222 @@ import { createArcadeLoop, createJuice, createSoundHooks, createTimeline } from 
 import { LOOKS } from '../../looks.mjs';
 import { BOOSTS, createPaddleArt, TEAMS } from './art.mjs';
 
-const WIDTH = 1760;
-const HEIGHT = 816;
-const FIELD_X = 160;
-const FIELD_Y = 132;
-const TRAIL_LENGTH = 11;
-const INK = '#070e18';
-const WHITE = '#e9f6ff';
-const LABEL = '#a6bbd2';
-const TYPE = 'ui-monospace, monospace';
+const TRAIL_LENGTH = 10;
+const GOAL_MS = 1250;
+const INK = '#080e19';
+const WHITE = '#edf7ff';
+const LABEL = '#b3c6dc';
+const INSTRUCTIONS = 'Slide to block balls. Send them past the other wall.';
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-function surface(document, width, height) {
-  return Object.assign(document.createElement('canvas'), { width, height });
-}
-
-function text(context, value, x, y, size, colour, align = 'left', maxWidth) {
-  context.font = `800 ${size}px ${TYPE}`;
+function text(context, value, x, y, size, colour, align = 'center', maxWidth) {
+  context.font = `800 ${size}px system-ui, sans-serif`;
   context.fillStyle = colour;
   context.textAlign = align;
   if (maxWidth) context.fillText(value, x, y, maxWidth);
   else context.fillText(value, x, y);
 }
 
-function paintField(context, scene, players, art) {
-  const { width, height } = scene.court;
-  context.fillStyle = INK;
-  context.fillRect(0, 0, WIDTH, HEIGHT);
-  const light = context.createRadialGradient(WIDTH / 2, FIELD_Y + height / 2, 40, WIDTH / 2, FIELD_Y + height / 2, 730);
-  light.addColorStop(0, '#132436');
-  light.addColorStop(1, '#0a1523');
-  context.fillStyle = light;
-  context.fillRect(FIELD_X, FIELD_Y, width, height);
-
-  context.save();
-  context.translate(FIELD_X, FIELD_Y);
-  context.beginPath();
-  context.rect(0, 0, width, height);
-  context.clip();
-  context.strokeStyle = '#9fb7da13';
-  context.beginPath();
-  for (let x = 40; x < width; x += 40) {
-    context.moveTo(x + 0.5, 0);
-    context.lineTo(x + 0.5, height);
-  }
-  for (let y = 40; y < height; y += 40) {
-    context.moveTo(0, y + 0.5);
-    context.lineTo(width, y + 0.5);
-  }
-  context.stroke();
-  context.strokeStyle = '#53749177';
-  context.lineWidth = 2;
-  context.setLineDash([5, 10]);
-  context.beginPath();
-  context.moveTo(width / 2, 0);
-  context.lineTo(width / 2, height);
-  context.stroke();
-  context.setLineDash([]);
-  context.beginPath();
-  context.arc(width / 2, height / 2, 128, 0, Math.PI * 2);
-  context.moveTo(width / 2 + 19, height / 2);
-  context.arc(width / 2, height / 2, 19, 0, Math.PI * 2);
-  context.stroke();
-  context.restore();
-
-  context.fillStyle = '#38516a';
-  context.fillRect(FIELD_X, FIELD_Y - 3, width, 3);
-  context.fillRect(FIELD_X, FIELD_Y + height, width, 3);
-  for (const paddle of scene.paddles) {
-    const { team, top, bottom, playerId } = paddle;
-    const { name, look, status } = players.get(playerId);
-    const { colour } = LOOKS[look];
-    const left = team === 0;
-    const wall = FIELD_X + (left ? 0 : width);
-    const cardX = left ? 12 : wall + 16;
-    const y = FIELD_Y + top;
-    const slot = bottom - top;
-    const marker = y + slot / 2;
-    context.fillStyle = TEAMS[team].dark;
-    context.fillRect(cardX, y + 3, 132, slot - 6);
-    context.fillStyle = status ? '#6f8595' : colour;
-    context.fillRect(cardX, y + 3, 3, slot - 6);
-    context.fillStyle = TEAMS[team].rail;
-    context.fillRect(wall - 2, y + 2, 4, slot - 4);
-    context.fillRect(wall - 9, y, 18, 2);
-    context.fillStyle = status ? '#6f8595' : colour;
-    const badgeX = cardX + (status ? 13 : 48);
-    context.fillRect(badgeX, marker - 30, 36, 36);
-    art.badge(context, look, badgeX + 4, marker - 26, 4);
-    text(context, name, cardX + 66, marker + 30, 23, WHITE, 'center', 114);
-    if (status) text(context, status, cardX + 57, marker - 7, 16, LABEL, 'left', 67);
-  }
+function fitCourt(safe, court) {
+  const flank = Math.min(246, Math.round(safe.width * 0.155));
+  const header = clamp(Math.round(safe.height * 0.125), 65, 125);
+  const width = safe.width - 2 * flank;
+  const height = Math.max(1, safe.height - header - 16);
+  return {
+    safe, flank, header, width, height,
+    left: safe.x + flank, right: safe.x + flank + width, top: safe.y + header, bottom: safe.y + header + height,
+    sx: width / court.width, sy: height / court.height,
+  };
 }
 
-function scoreboard(context, scene, goal, result, reduced, now) {
-  for (const [index, team] of TEAMS.entries()) {
-    const x = index === 0 ? FIELD_X : 1260;
-    const scored = goal?.team === index && goal.until > now;
-    context.fillStyle = scored ? team.rail : team.dark;
-    context.fillRect(x, 19, 340, 88);
-    context.fillStyle = team.light;
-    context.fillRect(x, 19, 340, 4);
-    text(context, team.name.toUpperCase(), x + 22, 55, 26, team.light);
-    for (let point = 0; point < scene.target; point++) {
-      context.fillStyle = point < scene.points[index] ? team.light : team.rail;
-      context.fillRect(x + 23 + point * 22, 70, 16, 10);
-    }
-    const bump = scored && !reduced ? Math.ceil(13 * (goal.until - now) / 850) : 0;
-    text(context, scene.points[index], x + 305, 86, 72 + bump, WHITE, 'right');
+function paintField(context, layout, width, height) {
+  const { left, right, top, bottom } = layout;
+  context.fillStyle = INK;
+  context.fillRect(0, 0, width, height);
+  const wallLight = context.createLinearGradient(left, 0, right, 0);
+  wallLight.addColorStop(0, '#0c2a39');
+  wallLight.addColorStop(0.23, '#111e30');
+  wallLight.addColorStop(0.77, '#151d30');
+  wallLight.addColorStop(1, '#321b30');
+  context.fillStyle = wallLight;
+  context.fillRect(left, top, layout.width, layout.height);
+
+  context.strokeStyle = '#b7d7fa12';
+  context.lineWidth = 1;
+  context.beginPath();
+  for (let column = 1; column < 24; column++) {
+    const x = left + column * layout.width / 24;
+    context.moveTo(x, top);
+    context.lineTo(x, bottom);
   }
-  const leader = Math.sign(scene.points[1] - scene.points[0]);
-  const title = result ? (leader ? `${TEAMS[leader > 0 ? 1 : 0].name.toUpperCase()} WINS` : 'TIED WALLS')
-    : goal?.until > now ? `${TEAMS[goal.team].name.toUpperCase()} +1` : `FIRST TO ${scene.target}`;
-  text(context, title, WIDTH / 2, 62, 42, WHITE, 'center');
-  text(context, 'Guard your wall and send balls past theirs.', WIDTH / 2, 101, 24, LABEL, 'center');
+  for (let row = 1; row < 16; row++) {
+    const y = top + row * layout.height / 16;
+    context.moveTo(left, y);
+    context.lineTo(right, y);
+  }
+  context.stroke();
+
+  const center = (left + right) / 2;
+  const middle = (top + bottom) / 2;
+  const circle = Math.min(layout.width, layout.height) * 0.19;
+  context.strokeStyle = '#8faec658';
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(center, top);
+  context.lineTo(center, bottom);
+  context.moveTo(center + circle, middle);
+  context.arc(center, middle, circle, 0, 2 * Math.PI);
+  context.moveTo(center + 9, middle);
+  context.arc(center, middle, 9, 0, 2 * Math.PI);
+  context.stroke();
+  context.fillStyle = '#6485a6';
+  context.fillRect(left - 3, top - 3, layout.width + 6, 3);
+  context.fillRect(left - 3, bottom, layout.width + 6, 3);
+}
+
+function winningTeam(scene) {
+  if (scene.walkover) return TEAMS[scene.paddles[0]?.team];
+  const [cyan, coral] = scene.points;
+  return cyan === coral ? undefined : TEAMS[cyan > coral ? 0 : 1];
+}
+
+function drawScores(context, scene, layout, phase, goals, now) {
+  const { safe, left, right, header } = layout;
+  const scale = Math.min(1, header / 112, safe.width / 1560);
+  const cardWidth = 300 * scale;
+  const cardTop = safe.y + 5;
+  const center = (left + right) / 2;
+  for (const [index, team] of TEAMS.entries()) {
+    const x = index === 0 ? left : right - cardWidth;
+    const scored = goals[index]?.until > now;
+    context.fillStyle = scored ? team.rail : team.dark;
+    context.fillRect(x, cardTop, cardWidth, 91 * scale);
+    context.fillStyle = team.light;
+    context.fillRect(x, cardTop, cardWidth, 3);
+    text(context, team.name.toUpperCase(), x + 18 * scale, cardTop + 38 * scale, 26 * scale, team.light, 'left');
+    text(context, scene.points[index], x + cardWidth - 18 * scale, cardTop + 70 * scale, 64 * scale, WHITE, 'right');
+    const barWidth = 113 * scale;
+    context.fillStyle = '#ffffff25';
+    context.fillRect(x + 18 * scale, cardTop + 65 * scale, barWidth, 6 * scale);
+    context.fillStyle = team.light;
+    context.fillRect(x + 18 * scale, cardTop + 65 * scale, barWidth * Math.min(1, scene.points[index] / scene.target), 6 * scale);
+  }
+
+  let title = `TARGET ${scene.target}`;
+  let subtitle = INSTRUCTIONS;
+  let colour = WHITE;
+  const [cyanGoal, coralGoal] = goals;
+  const goal = (cyanGoal?.until ?? 0) > (coralGoal?.until ?? 0) ? cyanGoal : coralGoal;
+  if (phase === 'results') {
+    const team = winningTeam(scene);
+    title = team ? `${team.name.toUpperCase()} WINS` : scene.walkover ? 'ROUND CLOSED' : 'TIED WALLS';
+    subtitle = scene.walkover && team ? 'The other wall is empty.' : `Final score  ${scene.points[0]} – ${scene.points[1]}`;
+    colour = team?.light ?? WHITE;
+  } else if (goal && now < goal.until) {
+    if (cyanGoal?.until === coralGoal?.until) title = 'BOTH TEAMS SCORE';
+    else {
+      title = `${TEAMS[goal.team].name.toUpperCase()} SCORES +${goal.count}`;
+      colour = TEAMS[goal.team].light;
+    }
+  } else if (scene.opening && Math.max(...scene.points) >= scene.target) {
+    title = 'HOLD THE LEAD';
+  }
+  text(context, title, center, cardTop + 45 * scale, 43 * scale, colour, 'center', 515 * scale);
+  text(context, subtitle, center, cardTop + 82 * scale, 23 * scale, LABEL, 'center', 550 * scale);
 }
 
 function interp(previous, current, amount, lerp) {
-  const last = new Map(previous.balls.map(ball => [ball.id, ball]));
+  const oldPaddles = new Map(previous.paddles.map(paddle => [paddle.playerId, paddle]));
+  const oldBalls = new Map(previous.balls.map(ball => [ball.id, ball]));
   return {
     ...current,
-    paddles: current.paddles.map((paddle, index) => ({
-      ...paddle, y: lerp(previous.paddles[index].y, paddle.y, amount),
-      length: lerp(previous.paddles[index].length, paddle.length, amount),
-    })),
+    paddles: current.paddles.map(paddle => {
+      const old = oldPaddles.get(paddle.playerId);
+      if (!old) return paddle;
+      return {
+        ...paddle, y: lerp(old.y, paddle.y, amount), length: lerp(old.length, paddle.length, amount),
+        top: lerp(old.top, paddle.top, amount), bottom: lerp(old.bottom, paddle.bottom, amount),
+      };
+    }),
     balls: current.balls.map(ball => {
-      const old = last.get(ball.id);
+      const old = oldBalls.get(ball.id);
       return old ? { ...ball, x: lerp(old.x, ball.x, amount), y: lerp(old.y, ball.y, amount) } : ball;
     }),
   };
 }
 
-function drawPaddle(context, art, paddle, players, lit, scene, reduced, now) {
-  const left = paddle.team === 0;
-  const wall = FIELD_X + (left ? 0 : scene.court.width);
-  const x = wall + (left ? -9 : -5);
-  const y = FIELD_Y + paddle.y;
-  const size = paddle.length;
-  const { look, status } = players.get(paddle.playerId);
-  const hit = lit.get(paddle.playerId) > now;
-  const colour = status ? '#90a5ad' : LOOKS[look].colour;
-  context.fillStyle = colour;
-  context.fillRect(x, Math.round(y - size / 2), 14, Math.round(size));
-  context.fillStyle = hit ? '#ffffff' : TEAMS[paddle.team].light;
-  context.fillRect(wall + (left ? 1 : -5), Math.round(y - size / 2), 4, Math.round(size));
-  const pose = hit ? 2 : (reduced || status ? 0 : Math.floor(now / 540 + look) % 2);
-  art.drone(context, look, paddle.team, pose, wall, y - 14);
+function drawPaddle(context, art, paddle, identity, layout, droneScale, hit, squash) {
+  const { team, top, bottom, y, length } = paddle;
+  const { look, name, away } = identity;
+  const { left, right, flank, sy } = layout;
+  const isLeft = team === 0;
+  const wall = isLeft ? left : right;
+  const slotY = layout.top + top * sy;
+  const slotHeight = (bottom - top) * sy;
+  const center = slotY + slotHeight / 2;
+  const cardX = isLeft ? wall - flank + 10 : wall + 16;
+  const cardWidth = flank - 26;
+  const paddleY = layout.top + y * sy;
+  const paddleHeight = length * sy;
+  const paddleWidth = clamp(flank * 0.125, 10, 28) + squash * 4;
+  const colour = away ? '#9baebd' : LOOKS[look].colour;
+  const palette = TEAMS[team];
+  context.fillStyle = palette.dark;
+  context.fillRect(cardX, slotY + 4, cardWidth, Math.max(0, slotHeight - 8));
+  context.fillStyle = '#ffffff25';
+  context.fillRect(cardX, slotY + 4, cardWidth, 1);
+  context.fillStyle = palette.rail;
+  context.fillRect(wall - 4, slotY + 4, 8, Math.max(0, slotHeight - 8));
+  // Brackets mark the limits of a player's travel; the bright paddle is the hit surface.
+  context.fillStyle = palette.light;
+  context.fillRect(wall - 11, slotY + 1, 22, 2);
+  context.fillRect(wall - 11, slotY + slotHeight - 3, 22, 2);
+  context.fillStyle = hit ? WHITE : colour;
+  context.fillRect(isLeft ? wall - paddleWidth : wall, paddleY - paddleHeight / 2, paddleWidth, paddleHeight);
+  context.fillStyle = hit ? colour : palette.light;
+  context.fillRect(isLeft ? wall - 5 : wall, paddleY - paddleHeight / 2, 5, paddleHeight);
+
+  const nameCenter = isLeft ? cardX + cardWidth * 0.23 : cardX + cardWidth * 0.77;
+  const badgeScale = slotHeight >= 75 && flank > 135 ? 4 : 2;
+  const badgeSize = 9 * badgeScale;
+  const badgeY = center - badgeSize / 2 - (away ? 20 : 12);
+  const badgeX = Math.round(nameCenter - badgeSize / 2);
+  if (slotHeight >= 39) {
+    context.fillStyle = colour;
+    context.fillRect(badgeX, badgeY, badgeSize, badgeSize);
+    art.shared.badge(context, look, badgeX + badgeScale, badgeY + badgeScale, badgeScale);
+  }
+  const labelSize = clamp(slotHeight / 5, 11, 26);
+  text(context, name, nameCenter, center + (badgeScale === 4 ? 26 : 15), labelSize, WHITE, 'center', cardWidth * 0.42);
+  if (away && slotHeight >= 66) text(context, 'AWAY', nameCenter, center + 42, 13, LABEL);
+
+  const droneX = isLeft ? cardX + cardWidth * 0.74 : cardX + cardWidth * 0.26;
+  const halfDrone = 11 * droneScale / 2 + 4;
+  const droneY = clamp(paddleY, slotY + halfDrone, slotY + slotHeight - halfDrone);
+  if (slotHeight >= 156) {
+    context.fillStyle = '#ffffff26';
+    context.fillRect(droneX - 1, slotY + paddleHeight / 2, 2, slotHeight - paddleHeight);
+  }
+  if (hit) {
+    context.fillStyle = '#ffffff35';
+    context.fillRect(wall - 14, paddleY - paddleHeight / 2 - 3, 28, paddleHeight + 6);
+  }
+  context.globalAlpha = away ? 0.5 : 1;
+  art.paddle.drone(context, look, team, droneX, droneY, droneScale);
+  context.globalAlpha = 1;
 }
 
-function drawBall(context, ball, traces, halo, reduced, at) {
-  const x = FIELD_X + ball.x;
-  const y = FIELD_Y + ball.y;
-  const colour = ball.curved ? BOOSTS.curve.colour : TEAMS[ball.team]?.light ?? '#bde1ff';
+function drawBall(context, ball, traces, layout, radius, reduced, now) {
+  const x = layout.left + ball.x * layout.sx;
+  const y = layout.top + ball.y * layout.sy;
+  const colour = ball.curved ? BOOSTS.curve.colour : TEAMS[ball.team]?.light ?? '#c4e8ff';
+  const rx = radius * layout.sx;
+  const ry = radius * layout.sy;
   if (!reduced) {
     const entries = traces.get(ball.id) ?? [];
     const last = entries.at(-1);
-    if (!last || (at - last.at >= 15 && Math.hypot(last.x - x, last.y - y) >= 2)) {
-      entries.push({ x, y, at });
+    if (!last || (now - last.at >= 15 && Math.hypot(last.x - x, last.y - y) >= 2)) {
+      entries.push({ x, y, at: now });
       if (entries.length > TRAIL_LENGTH) entries.shift();
     }
     traces.set(ball.id, entries);
@@ -166,95 +226,139 @@ function drawBall(context, ball, traces, halo, reduced, at) {
     for (let index = 0; index < entries.length; index++) {
       const point = entries[index];
       const next = entries[index + 1] ?? { x, y };
-      const weight = Math.max(0, 1 - (at - point.at) / 190);
-      context.globalAlpha = weight * 0.5;
-      context.lineWidth = weight * 14 + 1;
+      const weight = Math.max(0, 1 - (now - point.at) / 175);
+      context.globalAlpha = weight * 0.42;
+      context.lineWidth = weight * rx + 1;
       context.beginPath();
       context.moveTo(point.x, point.y);
       context.lineTo(next.x, next.y);
       context.stroke();
     }
-    context.globalAlpha = 1;
   }
-  context.drawImage(halo, Math.round(x) - 26, Math.round(y) - 26);
   context.fillStyle = colour;
+  context.globalAlpha = 0.25;
   context.beginPath();
-  context.arc(x, y, 10, 0, Math.PI * 2);
+  context.ellipse(x, y, rx * 1.6, ry * 1.55, 0, 0, 2 * Math.PI);
   context.fill();
-  context.fillStyle = '#f6fdff';
+  context.globalAlpha = 1;
   context.beginPath();
-  context.arc(x - 1, y - 1, 6, 0, Math.PI * 2);
+  context.ellipse(x, y, rx, ry, 0, 0, 2 * Math.PI);
+  context.fill();
+  context.fillStyle = WHITE;
+  context.beginPath();
+  context.ellipse(x, y, rx * 0.6, ry * 0.6, 0, 0, 2 * Math.PI);
   context.fill();
 }
 
-function ballHalo(document) {
-  const canvas = surface(document, 52, 52);
-  const context = canvas.getContext('2d');
-  const gradient = context.createRadialGradient(26, 26, 4, 26, 26, 26);
-  gradient.addColorStop(0, '#c6ecffa0');
-  gradient.addColorStop(1, '#a6dfff00');
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, 52, 52);
-  return canvas;
+function drawPickup(context, art, scene, layout) {
+  if (!scene.pickup) return;
+  const { kind, x, y } = scene.pickup;
+  const boost = BOOSTS[kind];
+  const px = layout.left + x * layout.sx;
+  const py = layout.top + y * layout.sy;
+  const radius = scene.court.pickupRadius * Math.min(layout.sx, layout.sy);
+  context.fillStyle = INK;
+  context.strokeStyle = boost.colour;
+  context.lineWidth = 3;
+  context.beginPath();
+  context.arc(px, py, radius, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+  if (radius >= 19) art.boost(context, kind, px, py);
+  text(context, boost.name, px, py + radius + 26, 22, boost.colour);
 }
 
-function drawPickup(context, art, scene) {
-  if (scene.pickup) {
-    const { x, y, kind } = scene.pickup;
-    const boost = BOOSTS[kind];
-    context.fillStyle = INK;
-    context.strokeStyle = boost.colour;
-    context.lineWidth = 3;
+function drawGoal(context, layout, goal, now, reduced) {
+  if (!goal || now >= goal.until) return;
+  const wall = goal.team === 1 ? layout.left : layout.right;
+  const inward = goal.team === 1 ? 1 : -1;
+  const progress = 1 - (goal.until - now) / GOAL_MS;
+  const y = layout.top + goal.y * layout.sy;
+  const colour = TEAMS[goal.team].light;
+  context.save();
+  context.beginPath();
+  context.rect(layout.left, layout.top, layout.width, layout.height);
+  context.clip();
+  context.fillStyle = colour;
+  context.globalAlpha = reduced ? 0.24 : (1 - progress) * 0.48;
+  context.fillRect(wall, layout.top, inward * 15, layout.height);
+  if (!reduced) {
+    const wave = 30 + progress * layout.height * 0.72;
+    context.strokeStyle = colour;
+    context.lineWidth = 5;
     context.beginPath();
-    context.arc(FIELD_X + x, FIELD_Y + y, scene.court.pickupRadius, 0, Math.PI * 2);
-    context.fill();
+    context.arc(wall, y, wave, 0, 2 * Math.PI);
     context.stroke();
-    art.boost(context, kind, FIELD_X + x, FIELD_Y + y);
-    text(context, boost.name, FIELD_X + x, FIELD_Y + y + 51, 23, boost.colour, 'center');
+    context.globalAlpha *= 0.42;
+    context.fillRect(wall, layout.top, inward * (38 + 72 * (1 - progress)), layout.height);
   }
+  context.restore();
 }
 
 export function mountWallOfPaddlesTv(canvas, { art, sound }) {
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
   const context = canvas.getContext('2d', { alpha: false });
-  const document = canvas.ownerDocument;
-  const backdrop = surface(document, WIDTH, HEIGHT);
+  const backdrop = canvas.ownerDocument.createElement('canvas');
   const stage = canvas.parentElement;
-  const stageBackground = stage?.style.background;
-  if (stage) stage.style.background = INK;
-  const paddleArt = createPaddleArt(document);
-  const halo = ballHalo(document);
+  const background = stage.style.background;
+  stage.style.background = INK;
+  const artwork = { shared: art, paddle: createPaddleArt(canvas.ownerDocument) };
   const timeline = createTimeline();
   const juice = createJuice();
   const play = createSoundHooks(sound, { hit: 'move', goal: 'bank', win: 'win', boost: 'collect' });
   const traces = new Map();
   const lit = new Map();
   let roster = new Map();
+  let playArea;
+  let layout;
+  let court;
   let round;
-  let presence;
   let lastEvent = 0;
-  let goal;
+  const goals = [null, null];
   let phase;
+
+  function restage() {
+    if (!playArea || !court) return;
+    layout = fitCourt(playArea.safe, court);
+    paintField(backdrop.getContext('2d'), layout, playArea.width, playArea.height);
+    traces.clear();
+    juice.clear();
+  }
+
+  function resize(area) {
+    if (area.width === playArea?.width && area.height === playArea.height && area.safe.height === playArea.safe.height) return;
+    playArea = area;
+    canvas.width = backdrop.width = area.width;
+    canvas.height = backdrop.height = area.height;
+    restage();
+  }
 
   const loop = createArcadeLoop((now, reduced) => {
     const scene = timeline.sample(now, interp, reduced);
-    if (!scene) return;
+    if (!scene || !layout) return;
     context.drawImage(backdrop, 0, 0);
-    scoreboard(context, scene, goal, phase === 'results', reduced, now);
+    drawScores(context, scene, layout, phase, goals, now);
+    const teamSizes = [0, 0];
+    for (const paddle of scene.paddles) teamSizes[paddle.team]++;
+    const droneScales = teamSizes.map(count => artwork.paddle.droneScale({
+      width: layout.flank * 0.54, height: layout.height - 10,
+    }, count));
+    for (const paddle of scene.paddles) {
+      const { playerId, team } = paddle;
+      drawPaddle(context, artwork, paddle, roster.get(playerId), layout, droneScales[team],
+        lit.get(playerId) > now, reduced ? 0 : juice.squash(playerId, now));
+    }
+    for (const goal of goals) drawGoal(context, layout, goal, now, reduced);
+    drawPickup(context, artwork.paddle, scene, layout);
+    for (const ball of scene.balls) drawBall(context, ball, traces, layout, scene.court.radius, reduced, now);
+    if (scene.slow) {
+      text(context, 'SLOW MOTION', (layout.left + layout.right) / 2, layout.bottom - 22, 22, BOOSTS.slow.colour);
+    }
     context.save();
     context.beginPath();
-    context.rect(FIELD_X - 10, FIELD_Y, scene.court.width + 20, scene.court.height);
+    context.rect(layout.safe.x, layout.top, layout.safe.width, layout.height);
     context.clip();
-    const [dx, dy] = juice.offset(now);
-    context.translate(dx, dy);
-    if (dx || dy) context.drawImage(backdrop, 0, 0);
-    drawPickup(context, paddleArt, scene);
-    for (const paddle of scene.paddles) drawPaddle(context, paddleArt, paddle, roster, lit, scene, reduced, now);
-    for (const ball of scene.balls) drawBall(context, ball, traces, halo, reduced, now);
     juice.draw(context, now);
     context.restore();
-    if (scene.slow) text(context, 'SLOW MOTION', WIDTH / 2, 802, 22, BOOSTS.slow.colour, 'center');
   }, reduced => {
     juice.setReducedMotion(reduced);
     if (reduced) traces.clear();
@@ -263,47 +367,48 @@ export function mountWallOfPaddlesTv(canvas, { art, sound }) {
   function push(view) {
     const { scene } = view;
     if (!scene) return;
-    const now = performance.now();
-    const newRound = view.round !== round;
-    const connected = new Map(view.players.map(player => [player.id, player.connected]));
-    const status = id => (connected.has(id) ? (connected.get(id) ? '' : 'AWAY') : 'LEFT');
-    const nextPresence = JSON.stringify(view.roster.map(player => status(player.id)));
-    if (newRound || nextPresence !== presence) {
-      roster = new Map(view.roster.map(player => [player.id, { ...player, status: status(player.id) }]));
-      paintField(backdrop.getContext('2d'), scene, roster, art);
-      presence = nextPresence;
+    if (!court) {
+      court = scene.court;
+      restage();
     }
-    if (newRound) {
+    const now = performance.now();
+    const connected = new Map(view.players.map(player => [player.id, player.connected]));
+    roster = new Map(view.roster.map(player => [player.id, { ...player, away: !connected.get(player.id) }]));
+    if (view.round !== round) {
       lastEvent = 0;
-      goal = undefined;
+      goals.fill(null);
       lit.clear();
       traces.clear();
       juice.clear();
     }
     let cue;
+    const goalCounts = [0, 0];
     for (const event of scene.events) {
       if (event.id <= lastEvent) continue;
       lastEvent = event.id;
       const { kind, team, playerId } = event;
-      const colour = TEAMS[team].light;
-      if (kind === 'hit') lit.set(playerId, now + 190);
-      if (kind === 'goal') goal = { team, until: now + 850 };
-      const x = FIELD_X + event.x;
-      const y = FIELD_Y + event.y;
-      juice.impact({ x, y, colour, label: kind === 'boost' ? BOOSTS[event.boost].name.toUpperCase() : undefined,
-        time: now, strong: kind === 'goal' });
-      if (!cue || kind === 'goal' || (cue === 'hit' && kind === 'boost')) cue = kind;
+      const colour = kind === 'leave' ? LOOKS[roster.get(playerId).look].colour : TEAMS[team].light;
+      if (kind === 'hit') lit.set(playerId, now + 210);
+      if (kind === 'leave') lit.delete(playerId);
+      if (kind === 'goal') {
+        goals[team] = { team, until: now + GOAL_MS, y: event.y, count: ++goalCounts[team] };
+      }
+      juice.impact({
+        x: layout.left + event.x * layout.sx, y: layout.top + event.y * layout.sy, colour,
+        label: kind === 'boost' ? BOOSTS[event.boost].name.toUpperCase() : undefined,
+        id: kind === 'hit' ? playerId : undefined, time: now, strong: kind === 'goal',
+      });
+      if (kind !== 'leave' && (!cue || kind === 'goal' || (cue === 'hit' && kind === 'boost'))) cue = kind;
     }
     if (view.phase === 'results' && phase !== 'results') {
-      const difference = scene.points[1] - scene.points[0];
-      const colour = difference === 0 ? WHITE : TEAMS[difference > 0 ? 1 : 0].light;
-      juice.impact({ x: WIDTH / 2, y: FIELD_Y + 74, colour, time: now, strong: true });
+      const colour = winningTeam(scene)?.light ?? WHITE;
+      juice.impact({ x: canvas.width / 2, y: layout.top + 112, colour, time: now, strong: true });
       cue = 'win';
     }
     if (cue) play(cue);
     const ids = new Set(scene.balls.map(ball => ball.id));
     for (const id of traces.keys()) if (!ids.has(id)) traces.delete(id);
-    const label = `Cyan ${scene.points[0]}, Coral ${scene.points[1]}. Guard your wall and send balls past theirs.`;
+    const label = `Cyan ${scene.points[0]}, Coral ${scene.points[1]}. ${INSTRUCTIONS}`;
     if (canvas.getAttribute('aria-label') !== label) canvas.setAttribute('aria-label', label);
     timeline.push(scene, view.round, now);
     round = view.round;
@@ -311,10 +416,10 @@ export function mountWallOfPaddlesTv(canvas, { art, sound }) {
   }
 
   return {
-    push, setReducedMotion: loop.setReducedMotion,
+    push, resize, setReducedMotion: loop.setReducedMotion,
     dispose() {
       loop.dispose();
-      if (stage) stage.style.background = stageBackground;
+      stage.style.background = background;
     },
   };
 }

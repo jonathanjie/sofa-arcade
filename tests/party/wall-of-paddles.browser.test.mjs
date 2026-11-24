@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { launchPartyHarness } from './harness.mjs';
 
-const output = fileURLToPath(new URL('../../work/wall-of-paddles/', import.meta.url));
+const output = fileURLToPath(new URL('../../work/wall-of-paddles/review/', import.meta.url));
 
 function percentiles(values) {
   assert.ok(values.length >= 100, `collected ${values.length} frames`);
@@ -14,7 +14,7 @@ function percentiles(values) {
   return { median: pick(0.5), p95: pick(0.95) };
 }
 
-test('the TV and two touch pages play Wall of Paddles with fourteen socket controllers', { timeout: 115_000 }, async t => {
+test('the TV plays Wall of Paddles with sixteen and two seats and a waiting phone can practice', { timeout: 140_000 }, async t => {
   const fixture = await launchPartyHarness(t, { gameId: 'wall-of-paddles', manual: false });
   const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
   t.after(() => browser.close());
@@ -26,10 +26,21 @@ test('the TV and two touch pages play Wall of Paddles with fourteen socket contr
     await context.addInitScript(() => {
       window.partyCsp = [];
       document.addEventListener('securitypolicyviolation', event => window.partyCsp.push(event.violatedDirective));
+      const drawImage = CanvasRenderingContext2D.prototype.drawImage;
+      CanvasRenderingContext2D.prototype.drawImage = function (source, ...args) {
+        if (source.width === 11 && source.height === 11 && this.canvas.hasAttribute('data-party-canvas')) {
+          const transform = this.getTransform();
+          const [x, y, width, height] = args;
+          const left = Math.min(transform.e + x * transform.a, transform.e + (x + width) * transform.a);
+          window.paddleSprites.push({ left, top: transform.f + y, width, height });
+        }
+        return drawImage.call(this, source, ...args);
+      };
       const animationFrame = window.requestAnimationFrame.bind(window);
       window.requestAnimationFrame = callback => {
         if (callback.name !== 'drawFrame') return animationFrame(callback);
         return animationFrame(at => {
+          window.paddleSprites = [];
           const start = performance.now();
           callback(at);
           if (window.paddleMeasurement) {
@@ -52,9 +63,15 @@ test('the TV and two touch pages play Wall of Paddles with fourteen socket contr
 
   const tv = await page({ viewport: { width: 1920, height: 1080 } }, 'TV');
   let hostView;
+  let startedAt;
+  let finishedAt;
   tv.on('websocket', socket => {
     if (!socket.url().endsWith('/api/realtime/party')) return;
-    socket.on('framereceived', frame => { hostView = JSON.parse(frame.payload).view ?? hostView; });
+    socket.on('framereceived', frame => {
+      hostView = JSON.parse(frame.payload).view ?? hostView;
+      if (hostView?.phase === 'playing') startedAt ??= Date.now();
+      if (hostView?.phase === 'results') finishedAt ??= Date.now();
+    });
   });
   await tv.goto(fixture.origin);
   await tv.getByRole('heading', { name: 'Party', exact: true }).waitFor();
@@ -92,6 +109,22 @@ test('the TV and two touch pages play Wall of Paddles with fourteen socket contr
   await tv.screenshot({ path: output + '02-countdown.png' });
   await phones[0].getByText('Go!', { exact: true }).waitFor();
   await tv.locator('.party-countdown').waitFor({ state: 'hidden' });
+
+  async function checkSprites(count, minHeight) {
+    await tv.waitForFunction(expected => window.paddleSprites?.length === expected, count);
+    const sprites = await tv.evaluate(() => {
+      const stage = document.querySelector('.party-stage').getBoundingClientRect();
+      return window.paddleSprites.map(sprite => ({ ...sprite, top: sprite.top + stage.top }));
+    });
+    for (const { left, top, width, height } of sprites) {
+      assert.ok(height >= minHeight, `character height: ${height} CSS px`);
+      assert.ok(left >= 1920 * 0.03 && left + width <= 1920 * 0.97);
+      assert.ok(top >= 1080 * 0.03 && top + height <= 1080 * 0.97);
+    }
+    return Math.min(...sprites.map(sprite => sprite.height));
+  }
+
+  const crowdHeight = await checkSprites(16, 64);
 
   const frames = tv.evaluate(() => new Promise(resolve => {
     window.paddleMeasurement = { draw: [], timestamps: [] };
@@ -162,38 +195,66 @@ test('the TV and two touch pages play Wall of Paddles with fourteen socket contr
     await checkViewport(phone, names[index]);
     await phone.screenshot({ path: output + `04-phone-${index + 1}.png` });
   }));
-  await tv.getByRole('img', { name: /Cyan [1-7], Coral|Cyan 0, Coral [1-7]/ }).waitFor({ timeout: 12_000 });
+  await tv.getByRole('img', { name: /Cyan [1-9]\d*, Coral|Cyan 0, Coral [1-9]\d*/ }).waitFor({ timeout: 12_000 });
+  await tv.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await tv.screenshot({ path: output + '05-goal.png' });
   const boostDeadline = Date.now() + 8000;
   while (!hostView.scene.pickup && Date.now() < boostDeadline) {
     await new Promise(resolve => setTimeout(resolve, 30));
   }
   assert.ok(hostView.scene.pickup, 'a boost appeared in the live round');
-  await tv.screenshot({ path: output + '03-mid-play.png' });
+  await tv.screenshot({ path: output + '03-mid-play-16.png' });
 
   const measured = await frames;
-  const result = { frames: measured.draw.length, renderMs: percentiles(measured.draw), presentationMs: percentiles(measured.cadence) };
+  const result = { frames: measured.draw.length, renderMs: percentiles(measured.draw), presentationMs: percentiles(measured.cadence), crowdHeight };
   await writeFile(output + 'frame-times.json', JSON.stringify(result, null, 2) + '\n');
   t.diagnostic(JSON.stringify(result));
   assert.ok(result.renderMs.p95 < 16.7, 'TV draw time must fit in one 60 Hz frame');
 
   await tv.getByRole('heading', { name: 'Podium' }).waitFor({ timeout: 92_000 });
   await tv.screenshot({ path: output + '06-podium.png' });
-  assert.equal(Math.max(...hostView.scene.points), 7);
+  assert.ok(finishedAt - startedAt >= 44_800 && finishedAt - startedAt <= 91_000, `round took ${finishedAt - startedAt} ms`);
   assert.ok(hostView.results.every(result => result.score === hostView.scene.points[
     hostView.scene.paddles.find(paddle => paddle.playerId === result.playerId).team
   ]));
   await phones[0].getByText(/Place #/).waitFor();
-  await tv.emulateMedia({ reducedMotion: 'reduce' });
+  await tv.getByRole('button', { name: 'Players', exact: true }).click();
+  for (let index = 3; index <= 16; index++) {
+    await tv.getByRole('button', { name: `Remove Pixel ${String(index).padStart(2, '0')}` }).click();
+  }
+  await tv.getByText('2 of 16 ready').waitFor();
   await tv.getByRole('button', { name: 'Next round', exact: true }).click();
   await tv.getByRole('img', { name: /^Cyan 0, Coral 0\./ }).waitFor();
   await tv.locator('.party-countdown').waitFor({ state: 'hidden' });
   assert.equal(hostView.round, 2);
+  assert.ok(await checkSprites(2, 64) > crowdHeight, 'the duel uses larger characters');
+  await tv.screenshot({ path: output + '07-mid-play-2.png' });
+  await tv.emulateMedia({ reducedMotion: 'reduce' });
   await tv.screenshot({ path: output + '07-reduced-motion.png' });
 
-  for (const [index, tab] of [tv, ...phones].entries()) {
+  const late = await page({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }, 'late phone');
+  const practiceInputs = [];
+  late.on('websocket', socket => {
+    if (socket.url().endsWith('/api/realtime/party')) {
+      socket.on('framesent', frame => {
+        if (JSON.parse(frame.payload).type === 'input') practiceInputs.push(frame);
+      });
+    }
+  });
+  await late.goto(fixture.origin + url);
+  await late.getByLabel('Your name').fill('Late Guest');
+  await late.getByRole('radio').nth(2).check();
+  await late.getByRole('button', { name: 'Ready', exact: true }).tap();
+  await late.getByText('Practice · upper').waitFor({ timeout: 3000 });
+  const pad = await late.getByRole('slider', { name: 'Paddle position' }).boundingBox();
+  await late.touchscreen.tap(pad.x + pad.width / 2, pad.y + pad.height * 0.17);
+  await late.getByText('1 blocked · lower').waitFor();
+  await late.screenshot({ path: output + '08-waiting-practice.png' });
+  assert.deepEqual(practiceInputs, []);
+
+  for (const [index, tab] of [tv, ...phones, late].entries()) {
     assert.deepEqual(await tab.evaluate(() => window.partyCsp), []);
-    await checkViewport(tab, index === 0 ? 'TV' : names[index - 1]);
+    await checkViewport(tab, ['TV', ...names, 'late phone'][index]);
   }
   assert.deepEqual(issues, []);
 });
