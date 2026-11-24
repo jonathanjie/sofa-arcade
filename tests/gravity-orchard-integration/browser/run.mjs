@@ -18,11 +18,36 @@ async function readyBoth(){
 }
 async function releaseAll(){await Promise.all(IDS.map(id=>drivers[id]?.release()));}
 async function chooseTouch(page){await page.locator(phoneSelector('touch-mode')).click();await page.waitForFunction(()=>document.querySelector('[data-go3="phone"]')?.dataset.mode==='touch');}
-async function checkLayout(page,phone=false){
- const layout=await page.evaluate(phone=>{const visible=node=>!!node.getClientRects().length&&!node.closest('[hidden]');const elements=phone?['joystick','brake','pause','recenter','help'].map(name=>document.querySelector(`[data-go3="${name}"]`)):[document.querySelector('[data-go-tv]')];return {width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,bounds:elements.filter(visible).map(node=>{const r=node.getBoundingClientRect();return {name:node.dataset.go3||'tv',x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};})};},phone);
- assert.ok(layout.scrollWidth<=layout.width+1,`No horizontal overflow (${layout.width})`);
- for(const b of layout.bounds){assert.ok(b.x>=-1&&b.x+b.width<=layout.width+1,`${b.name} horizontal bounds`);assert.ok(b.y>=-1&&b.bottom<=layout.height+1,`${b.name} visible without active play scrolling: ${JSON.stringify(b)}`);if(phone)assert.ok(b.width>=47.9&&b.height>=47.9,`${b.name} touch size`);}
+async function checkLayout(page, phone = false) {
+ const targets = phone
+   ? ['joystick', 'brake', 'pause', 'recenter', 'help'].map(name => [name, phoneSelector(name)])
+   : [['tv', '[data-go-tv]'], ['jon-tray', '[data-tray="jon"]'], ['lydia-tray', '[data-tray="lydia"]']];
+ const layout = await page.evaluate(targets => {
+   const bounds = targets.flatMap(([name, selector]) => [...document.querySelectorAll(selector)]
+     .filter(node => node.checkVisibility({ visibilityProperty: true, opacityProperty: true }))
+     .map(node => {
+       const { x, y, width, height, bottom } = node.getBoundingClientRect();
+       return { name, x, y, width, height, bottom };
+     }));
+   return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth, bounds };
+ }, targets);
+ assert.deepEqual(layout.bounds.map(item => item.name), targets.map(([name]) => name),
+   'Each required control or tray is visible exactly once');
+ assert.ok(layout.scrollWidth <= layout.width + 1, `No horizontal overflow (${layout.width})`);
+ for (const box of layout.bounds) {
+   assert.ok(box.width > 0 && box.height > 0, `${box.name} has visible area`);
+   assert.ok(box.x >= -1 && box.x + box.width <= layout.width + 1, `${box.name} horizontal bounds`);
+   assert.ok(box.y >= -1 && box.bottom <= layout.height + 1, `${box.name} visible without scrolling`);
+   if (phone) assert.ok(box.width >= 47.9 && box.height >= 47.9, `${box.name} touch size`);
+ }
  return layout;
+}
+
+async function checkPausedAcrossHostTicks(tick) {
+ await run.waitForHostTicks();
+ const authority = run.diagnostics(code).coordinator;
+ assert.equal(authority.phase, 'paused');
+ assert.equal(authority.tick, tick);
 }
 async function mountPhones(newCode){
  for(const id of IDS){
@@ -84,7 +109,7 @@ try{
  const afterReplay=await view(tv);assert.equal(afterReplay.runEpoch,paused.runEpoch);assert.equal(afterReplay.phase,'paused');
  run.check('Recenter pauses both gardeners; lost ACK replays once; obsolete input cannot cross the epoch',{epoch:paused.runEpoch,rejectedReasons:run.diagnostics(code).coordinator.rejectedInputReasons});
  await tv.locator('[data-go-action="help"]').click();await tv.locator('[data-go-tutorial]').waitFor();await run.screenshot(tv,'help-paused');
- const beforeTutorial=await view(tv);await sleep(300);const duringTutorial=await view(tv);assert.equal(duringTutorial.tick,beforeTutorial.tick);assert.deepEqual(duringTutorial.orders,beforeTutorial.orders);
+ const beforeTutorial=await view(tv);await checkPausedAcrossHostTicks(beforeTutorial.tick);const duringTutorial=await view(tv);assert.equal(duringTutorial.tick,beforeTutorial.tick);assert.deepEqual(duringTutorial.orders,beforeTutorial.orders);
  await tv.locator('[data-tutorial-action="close"]').click();assert.equal((await view(tv)).phase,'paused');
  const oldConnections=await phones.jon.evaluate(()=>window.__go7Probe.stats().connections);await phones.jon.evaluate(()=>window.__go7Probe.disconnect());
  await until(async()=>phones.jon.evaluate(n=>window.__go7Probe.stats().connections>n&&document.querySelector('[data-go3="phone"]')?.dataset.connection==='connected',oldConnections),'Authenticated phone reconnect');
@@ -103,7 +128,7 @@ try{
  assert.ok(['requested','network'].includes(backgroundPause.pauseReason));
  assert.ok(backgroundPause.runEpoch>beforeBackground.runEpoch);
  for(const id of IDS)assert.deepEqual(backgroundPause.players[id].input,{x:0,y:0,brake:true});
- await sleep(350);assert.equal((await view(tv)).tick,backgroundPause.tick,'Shared simulation remains stopped while the phone document is absent');
+ await checkPausedAcrossHostTicks(backgroundPause.tick);assert.equal((await view(tv)).tick,backgroundPause.tick,'Shared simulation remains stopped while the phone document is absent');
  await phones.jon.goBack();await phones.jon.locator(phoneSelector('phone')).waitFor();await roomCredential(run,phones.jon,code,'jon');
  const lifecycle=await phones.jon.evaluate(start=>window.__go7Probe.lifecycle().slice(start),lifecycleStart);
  assert.ok(lifecycle.some(event=>event.type==='pagehide'&&event.trusted),'Chromium delivered an actual pagehide event');
@@ -113,7 +138,7 @@ try{
  await run.screenshot(phones.jon,'360-returned-after-pagehide');
  await phones.jon.locator(phoneSelector('ready')).click();
  await until(async()=>{const current=await view(tv);return current.ready.jon;},'Returned gardener explicitly readies');
- await sleep(300);assert.equal((await view(tv)).phase,'paused','One gardener cannot resume the run alone');
+ await checkPausedAcrossHostTicks(backgroundPause.tick);assert.equal((await view(tv)).phase,'paused','One gardener cannot resume the run alone');
  await readyBoth();
  run.check('Actual pagehide navigation clears held steering; the saved seat returns paused and requires both gardeners ready',{method:'Real navigation to about:blank and browser Back. A test-only sessionStorage key retains trusted pagehide observer records across document replacement; no saved credentials, visibility properties or game state are rewritten. Playwright foreground emulation made CDP freeze ineffective, so this verifies navigation/pagehide and socket loss, not physical phone background/lock behavior.',pauseReason:backgroundPause.pauseReason,fromEpoch:beforeBackground.runEpoch,pausedEpoch:backgroundPause.runEpoch,lifecycle});
 

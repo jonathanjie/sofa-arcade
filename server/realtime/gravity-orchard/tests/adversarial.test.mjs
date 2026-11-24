@@ -1,15 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { once } from 'node:events';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { DatabaseSync } from 'node:sqlite';
 import WebSocket from 'ws';
-import { createRealtimeCoordinator, readCoordinatorDiagnostics, LIMITS } from '../index.mjs';
-import { harness, start, send, input, command, readyPair, until, drain, clone,
-  ROOM, OTHER_ROOM, NEUTRAL, probeSimulation, ManualClock, strictPolicy } from './protocol-support.mjs';
+import { readCoordinatorDiagnostics, LIMITS } from '../index.mjs';
+import { harness, start, send, input, command, until, drain, clone,
+  ROOM, OTHER_ROOM, NEUTRAL, probeSimulation, strictPolicy } from './protocol-support.mjs';
 
 function liveProbe(tick = 0) {
   const result = probeSimulation();
@@ -369,11 +368,17 @@ test('actual SQLite checkpoint hook writes at coarse intervals, never per input'
   }
   assert.ok(writes - baseline <= 2, `Expected coarse persistence; observed ${writes - baseline} writes for 240 samples.`);
   assert.equal(h.coordinator.getPublicView(ROOM, { role: 'public', playerId: null }).phase, 'playing');
-  assert.ok(database.prepare('SELECT value FROM checkpoints').get());
+  const saved = JSON.parse(database.prepare('SELECT value FROM checkpoints WHERE room = ?').get(ROOM).value);
+  assert.equal(saved.matchId, `match-${ROOM}`);
+  assert.equal(saved.runEpoch, 0);
+  assert.equal(saved.engine.state.matchId, saved.matchId);
+  assert.equal(saved.engine.state.runEpoch, saved.runEpoch);
+  // The periodic write at five seconds captures 300 physics ticks (60 Hz).
+  assert.equal(saved.engine.state.tick, 300);
   assert.ok(jon.latest().ack.seq >= 115);
 });
 
-test('diagnostics/public snapshots redact credentials and private engine state; disposal removes scheduled work', async t => {
+test('diagnostics/public snapshots redact credentials and private engine state; disposal removes scheduled work', async () => {
   const h = await harness();
   await start(h);
   const jon = await h.connect();

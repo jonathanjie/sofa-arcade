@@ -28,6 +28,7 @@ async function ready(options, { beta = 0, gamma = 0 } = {}) {
   return setup;
 }
 function checkInputs(values) {
+  assert.ok(values.length > 0, 'expected at least one controller input');
   for (const value of values) {
     assert.deepEqual(Object.keys(value).sort(), ['brake', 'x', 'y']);
     assert.ok(Number.isFinite(value.x) && Math.abs(value.x) <= 1);
@@ -256,11 +257,18 @@ test('calibration itself tolerates an Euler branch crossing without averaging a 
 });
 
 test('even vertical/face-down neutral poses produce finite bounded controls', async () => {
-  for (const pose of [{ beta: 90, gamma: 0 }, { beta: -90, gamma: 0 }, { beta: 180, gamma: 0 }]) {
-    const s = await ready(undefined, pose);
-    s.fake.sample(pose.beta === 180 ? 160 : pose.beta - 20, 20);
+  // A 20-degree backward pitch lowers screen Y at either vertical pole.
+  // Face-down, the same movement steers screen-down instead.
+  for (const [beta, xSign, ySign] of [[90, 1, -1], [-90, -1, -1], [180, 1, 1]]) {
+    const s = await ready(undefined, { beta, gamma: 0 });
+    const before = s.inputs.length;
+    s.fake.sample(beta - 20, 20);
     s.fake.advance(1000);
-    checkInputs(s.inputs);
+    const fresh = s.inputs.slice(before);
+    checkInputs(fresh);
+    assert.equal(Math.sign(s.input.x), xSign, `screen X from neutral beta ${beta}`);
+    assert.equal(Math.sign(s.input.y), ySign, `screen Y from neutral beta ${beta}`);
+    assert.equal(s.input.brake, false);
     s.controller.dispose();
   }
 });

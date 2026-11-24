@@ -2,11 +2,11 @@ import test, { before } from 'node:test';
 import assert from 'node:assert/strict';
 import { request, createServer as createUnsafeFixtureServer } from 'node:https';
 import { createServer as createHttpServer, request as httpRequest } from 'node:http';
+import { X509Certificate } from 'node:crypto';
 import { connect as connectTcp } from 'node:net';
 import { connect as connectTls } from 'node:tls';
 import os from 'node:os';
 import { once } from 'node:events';
-import { setTimeout as delay } from 'node:timers/promises';
 import { WebSocket, WebSocketServer } from 'ws';
 import { createSecureLanServer } from '../index.mjs';
 import { createRequestPolicy } from '../request-policy.mjs';
@@ -99,13 +99,16 @@ test('verified TLS rejects an actually expired test leaf; production factory ref
 });
 
 test('a listener stops advertising ready and stops accepting connections when its leaf expires', async t => {
-  const short = (await createTestMaterial({ notAfter: new Date(Date.now() + 2500) })).tlsMaterial;
-  const value = await listener(t, { tlsMaterial: short });
-  assert.equal((await httpsGet(value.port, { ca: short.ca })).status, 200);
-  await delay(Date.parse(value.status.validUntil) - Date.now() + 50);
+  const expiry = new X509Certificate(good.cert).validToDate.getTime();
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: expiry - 1000 });
+  const value = await listener(t);
+  assert.equal((await httpsGet(value.port)).status, 200);
+  t.mock.timers.tick(999);
+  assert.equal(value.status.status, 'ready');
+  t.mock.timers.tick(1);
   assert.equal(value.status.status, 'certificate-expired');
   assert.deepEqual(value.status.controllerOrigins, []);
-  await assert.rejects(httpsGet(value.port, { ca: short.ca }), { code: 'ECONNREFUSED' });
+  await assert.rejects(httpsGet(value.port), { code: 'ECONNREFUSED' });
 });
 
 test('bad material, mismatched advertised SANs, invalid local hosts and ports fail safely', async () => {
@@ -355,10 +358,11 @@ test('port conflicts fail closed without attaching to or closing the existing li
   assert.equal((await httpsGet(replacement.port)).status, 200);
 });
 
-test('bounded idempotent close stops raw handshakes, active HTTP and upgrades and releases the port', async t => {
+test('bounded idempotent close stops raw handshakes and active HTTP and releases the port', { timeout: 15_000 }, async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
   let handlerEntered;
   const entered = new Promise(resolve => { handlerEntered = resolve; });
-  const value = await listener(t, { requestHandler(_req, _res) { handlerEntered(); } });
+  const value = await listener(t, { requestHandler() { handlerEntered(); } });
   const raw = connectTcp({ host: '127.0.0.1', port: value.port });
   raw.on('error', () => {});
   raw.resume();
@@ -366,15 +370,15 @@ test('bounded idempotent close stops raw handshakes, active HTTP and upgrades an
   t.after(() => raw.destroy());
   const pending = httpsGet(value.port).catch(error => error);
   await entered;
-  const started = performance.now();
+  const rawClosed = new Promise(resolve => raw.once('close', resolve));
   const closing = value.close();
   assert.equal(closing, value.close());
-  await closing;
-  assert.ok(performance.now() - started < 1500);
+  // Advance through the 250 ms grace period with I/O still open.
+  t.mock.timers.tick(250);
+  await Promise.all([closing, rawClosed]);
   assert.equal(value.status.status, 'disabled');
   assert.deepEqual(value.status.controllerOrigins, []);
   assert.ok(await pending instanceof Error);
-  await delay(10);
   assert.equal(raw.destroyed, true);
   const replacement = await listener(t, { port: value.port });
   assert.equal((await httpsGet(replacement.port)).status, 200);

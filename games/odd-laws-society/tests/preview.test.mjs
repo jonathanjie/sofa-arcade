@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { engine } from '../engine.mjs';
-import { BUILDINGS, LAWS } from '../catalog.mjs';
+import { BUILDINGS } from '../catalog.mjs';
 import { buildQuote, streetOutcome, civicAward, scoreBreakdown, incomeBonus, festivalBonus } from '../preview.mjs';
 import { clone, fresh, action, take, council, scenario, cityOf, toSession, frozen, assertRuleError } from './helpers.mjs';
 
@@ -155,18 +155,19 @@ for (const economy of ECONOMY) for (const [civic, expectedAward] of Object.entri
   assert.equal(state.players.jon.score.buildings, 16);
 });
 
-test('each Economy law quotes all 18 designs against independent guild/first-build discounts', () => {
+test('a third build retains guild discounts and cannot reuse a first-build discount', () => {
   const guildLaw = { 'small-shop-supremacy': 'commerce', 'workshop-week': 'craft', 'public-grants': 'civic', 'everything-is-art': 'culture' };
-  for (const economy of ECONOMY) for (const builds of [0, 1, 2]) {
-    const view = scenario({ economy, builds, city: ['button-workshop'], coins: 100 });
+  // The authority-versus-preview matrix in independent-review covers zero and one prior build.
+  for (const economy of ECONOMY) {
+    const view = scenario({ economy, builds: 2, city: ['button-workshop'], coins: 100 });
     for (const design of BUILDINGS) {
-      const eligibleLaw = guildLaw[economy] === design.guild || (economy === 'open-tender' && builds === 0);
-      const amount = eligibleLaw ? 2 : (builds === 0 ? 1 : 0);
+      const eligibleLaw = guildLaw[economy] === design.guild;
+      const amount = eligibleLaw ? 2 : 0;
       const expectedCost = Math.max(1, design.cost - amount);
       const quote = buildQuote(view, 'lydia', design.id);
       assert.equal(quote.cost, expectedCost);
       assert.equal(quote.discount.amount, design.cost - expectedCost);
-      assert.equal(quote.discount.sourceId, eligibleLaw ? economy : builds === 0 ? 'workshop' : null);
+      assert.equal(quote.discount.sourceId, eligibleLaw ? economy : null);
     }
   }
 });
