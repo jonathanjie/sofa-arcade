@@ -1,0 +1,137 @@
+.sumo-controls {
+  --sumo-ink: #29212f;
+  --sumo-paper: #fff0d7;
+  --sumo-wood: #433149;
+  --sumo-look: var(--phone-look, #ffca58);
+  color: var(--sumo-ink);
+}
+
+.sumo-controls [data-sumo-rider],
+.sumo-controls [data-sumo-draught] {
+  display: grid;
+  gap: clamp(9px, 1.6svh, 14px);
+}
+
+.sumo-controls .sumo-mode {
+  min-height: 44px;
+  justify-self: end;
+  color: var(--sumo-ink);
+  background: #fff8e8;
+}
+
+.sumo-steering {
+  --sumo-x: 0%;
+  --sumo-y: 0%;
+  position: relative;
+  border-radius: 17px;
+  isolation: isolate;
+}
+
+.sumo-steering .party-stick,
+.sumo-controls .sumo-swipe {
+  display: block;
+  width: 100%;
+  height: clamp(138px, 35svh, 306px);
+  min-height: 0;
+  border: 2px solid var(--sumo-ink);
+  border-radius: 17px;
+  background: var(--sumo-wood);
+  box-shadow: 0 5px var(--sumo-ink);
+  touch-action: none;
+  user-select: none;
+}
+
+.sumo-steering .party-stick {
+  color: transparent;
+}
+
+.sumo-steering[data-tilt=true] .party-stick:disabled {
+  opacity: 1;
+}
+
+.sumo-guide,
+.sumo-guide i,
+.sumo-guide b,
+.sumo-steer-label {
+  position: absolute;
+  pointer-events: none;
+}
+
+.sumo-guide {
+  height: 76%;
+  aspect-ratio: 1;
+  inset: 47% auto auto 50%;
+  translate: -50% -50%;
+  border: 2px solid #ddc7d099;
+  border-radius: 50%;
+  background: radial-gradient(circle, #d4b7ca36, transparent 54%);
+}
+
+.sumo-guide i {
+  inset: 22%;
+  border: 1px dashed #ddc7d0a8;
+  border-radius: 50%;
+}
+
+.sumo-guide b {
+  width: 31px;
+  height: 31px;
+  left: calc(50% + var(--sumo-x));
+  top: calc(50% + var(--sumo-y));
+  translate: -50% -50%;
+  border: 3px solid #221c28;
+  border-radius: 50%;
+  background: var(--sumo-look);
+  box-shadow: 0 0 0 2px var(--sumo-paper);
+}
+
+.sumo-steer-label {
+  inset: auto 0 10px;
+  color: var(--sumo-paper);
+  text-align: center;
+  font-weight: 800;
+}
+
+.sumo-dash .party-tap {
+  min-height: clamp(72px, 16svh, 136px);
+  background: var(--sumo-look);
+  color: var(--sumo-ink);
+  font-size: clamp(36px, 11vw, 55px) !important;
+}
+
+.sumo-charge {
+  display: block;
+  width: 100%;
+  height: 12px;
+  margin-top: 2px;
+  accent-color: var(--sumo-wood);
+}
+
+.sumo-controls [data-sumo-draught] h2 {
+  color: var(--sumo-ink);
+  font-size: 28px;
+}
+
+.sumo-controls .sumo-swipe {
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  color: var(--sumo-paper);
+}
+
+.sumo-swipe span {
+  color: var(--sumo-look);
+  font: 700 clamp(32px, 10vw, 52px)/1.02 system-ui, sans-serif;
+  letter-spacing: .11em;
+  white-space: nowrap;
+}
+
+.sumo-swipe strong {
+  font-size: clamp(20px, 6vw, 30px);
+}
+
+@media (max-height: 645px) {
+  .sumo-steering .party-stick,
+  .sumo-controls .sumo-swipe { height: 31svh; }
+  .sumo-dash .party-tap { min-height: 13svh; }
+}
