@@ -5478,7 +5478,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     return !!conn && conn.active && conn.authenticated && conn.ws.readyState === import_websocket.default.OPEN && now() - conn.verifiedAt < LIMITS.maxAuthAgeMs;
   }
   function fresh(seat) {
-    return usable(seat.conn) && seat.lastValidAt !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
+    return usable(seat.conn) && seat.latest !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
   }
   function presence(room) {
     return Object.fromEntries(PLAYERS.map((id) => [id, { connected: usable(room.seats[id].conn), inputFresh: fresh(room.seats[id]) }]));
@@ -6017,7 +6017,6 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       seat.conn = conn;
       seat.latest = null;
       seat.lastSeq = -1;
-      seat.lastValidAt = null;
       seat.ack = null;
       if (old && activePhase(room.view)) await queuePause(room, "network");
     }

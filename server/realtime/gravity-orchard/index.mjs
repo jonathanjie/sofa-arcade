@@ -115,7 +115,7 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
       && now() - conn.verifiedAt < LIMITS.maxAuthAgeMs;
   }
   function fresh(seat) {
-    return usable(seat.conn) && seat.lastValidAt !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
+    return usable(seat.conn) && seat.latest !== null && now() - seat.lastValidAt + 1e-7 < LIMITS.staleInputMs;
   }
   function presence(room) {
     return Object.fromEntries(PLAYERS.map((id) => [id, { connected: usable(room.seats[id].conn), inputFresh: fresh(room.seats[id]) }]));
@@ -483,7 +483,7 @@ export function createRealtimeCoordinator({ authorize, validateUpgrade, loadChec
     room.connections.add(conn);
     if (actor.role === 'player') {
       const seat = room.seats[actor.playerId];
-      seat.conn = conn; seat.latest = null; seat.lastSeq = -1; seat.lastValidAt = null; seat.ack = null;
+      seat.conn = conn; seat.latest = null; seat.lastSeq = -1; seat.ack = null;
       // A replacement does not inherit an old controller's held input/readiness.
       if (old && activePhase(room.view)) await queuePause(room, 'network');
     }

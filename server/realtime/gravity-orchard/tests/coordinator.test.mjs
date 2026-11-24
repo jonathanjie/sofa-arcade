@@ -313,3 +313,37 @@ test('disconnect clears Ready even when the Ready checkpoint is still pending', 
   assert.equal((await replacement.command('ready', { value: true })).result.accepted, true);
   assert.equal(h.coordinator.getPublicView('UNIT').phase, 'countdown');
 });
+
+test('reconnect keeps the deadman deadline but requires new control input', async (t) => {
+  const h = await harness({ simulation: orchard });
+  t.after(() => h.close());
+  const { jon, lydia } = await h.players();
+  const view = () => h.coordinator.getPublicView('UNIT');
+  for (let i = 0; i < 32; i++) {
+    jon.input(); lydia.input(); await flush();
+    await h.clock.advance(100);
+  }
+  assert.equal(view().phase, 'playing');
+  jon.input({ x: 1, y: 0, brake: false });
+  await flush();
+  jon.ws.close(); await once(jon.ws, 'close'); await flush();
+  const replacement = await h.connect('jon');
+  assert.equal(replacement.welcome.snapshot.presence.jon.inputFresh, false);
+  await h.clock.advance(50);
+  assert.equal(view().phase, 'playing');
+  assert.deepEqual(view().players.jon.input, { x: 0, y: 0, brake: true });
+  replacement.input({ x: -1, y: 0, brake: false });
+  await flush();
+  await h.clock.advance(50);
+  assert.equal(view().players.jon.input.x, -1);
+  replacement.ws.close(); await once(replacement.ws, 'close'); await flush();
+  await h.connect('jon');
+  for (let i = 0; i < 19; i++) {
+    lydia.input(); await flush();
+    await h.clock.advance(100);
+  }
+  await h.clock.advance(49);
+  assert.equal(view().phase, 'playing');
+  await h.clock.advance(1);
+  assert.equal(view().pauseReason, 'network');
+});
