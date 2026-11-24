@@ -22,14 +22,21 @@ export function fakeClock() {
         const pending = [...timers].filter(([, timer]) => timer.at <= target + 1e-7).sort((a, b) => a[1].at - b[1].at || a[0] - b[0]);
         if (!pending.length) break;
         const [id, timer] = pending[0];
-        at = Math.min(target, timer.at); timers.delete(id); timer.fn(); await flush();
+        at = Math.min(target, timer.at);
+        timers.delete(id);
+        timer.fn();
+        await nextTurn();
       }
       at = target; await flush();
     },
     async jump(ms) {
       at += ms;
       const due = [...timers].filter(([, timer]) => timer.at <= at).sort((a, b) => a[1].at - b[1].at || a[0] - b[0]);
-      for (const [id, timer] of due) if (timers.delete(id)) { timer.fn(); await flush(); }
+      for (const [id, timer] of due) {
+        if (!timers.delete(id)) continue;
+        timer.fn();
+        await nextTurn();
+      }
       await flush();
     },
   };

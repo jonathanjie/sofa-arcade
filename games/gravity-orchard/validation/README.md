@@ -3,7 +3,7 @@
 Run the deterministic software proof from the repository root:
 
 ```sh
-node --test games/gravity-orchard/tests/playability.test.mjs
+npm run test:exhaustive -- gravity-orchard
 node games/gravity-orchard/validation/run-routes.mjs --output=/tmp/gravity-orchard-route-evidence
 ```
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, readFile, readdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +25,7 @@ async function write(root, relative, contents) {
 }
 
 async function fixture(t) {
-  const root = await mkdtemp(path.join(tmpdir(), 'sofa-public-boundary-'));
+  const root = await mkdtemp(path.join(await realpath(tmpdir()), 'sofa-public-boundary-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const relative of declared) await write(root, relative, `Declared bytes: ${relative}\n`);
   return root;
@@ -89,7 +89,7 @@ test('public delivery fails closed on missing or symlinked declared inputs befor
 
 test('public delivery cannot erase another directory through a symlinked staging parent', async t => {
   const root = await fixture(t);
-  const elsewhere = await mkdtemp(path.join(tmpdir(), 'sofa-public-unrelated-'));
+  const elsewhere = await mkdtemp(path.join(await realpath(tmpdir()), 'sofa-public-unrelated-'));
   t.after(() => rm(elsewhere, { recursive: true, force: true }));
   await write(elsewhere, 'sofa-public/keep.txt', 'Must survive a rejected staging operation.\n');
   await symlink(elsewhere, path.join(root, '.sites-runtime'));

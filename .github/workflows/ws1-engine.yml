@@ -5,6 +5,8 @@ on:
     branches: [main, feature/odd-laws-engine]
     paths:
       - 'games/odd-laws-society/**'
+      - 'package*.json'
+      - 'scripts/run-unit-tests.mjs'
       - '.github/workflows/ws1-engine.yml'
       - 'docs/workstreams/odd-laws-engine.md'
       - 'docs/archive/workstreams/odd-laws-engine.md'
@@ -14,6 +16,8 @@ on:
   pull_request:
     paths:
       - 'games/odd-laws-society/**'
+      - 'package*.json'
+      - 'scripts/run-unit-tests.mjs'
       - '.github/workflows/ws1-engine.yml'
       - 'docs/workstreams/odd-laws-engine.md'
       - 'docs/archive/workstreams/odd-laws-engine.md'
@@ -25,20 +29,28 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ws1-engine-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   rules-previews-privacy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     strategy:
       matrix:
         node: ['22', '24']
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node }}
       # All WS1 modules and checks use Node built-ins; no dependency install.
       - name: Engine, public previews, privacy, and contract suites
+        env:
+          SOFA_EXHAUSTIVE: '1'
         run: node --test games/odd-laws-society/tests/*.test.mjs
       - name: Verify canonical projected fixtures
         run: node games/odd-laws-society/tests/generate-fixtures.mjs --check

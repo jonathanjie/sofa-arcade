@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { request as httpsRequest } from 'node:https';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, realpath, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
+import { once } from 'node:events';
 import { WebSocket } from 'ws';
 import { DatabaseSync } from 'node:sqlite';
 import { createCertificateStore, createSecureLanServer } from '../../../server/runtime/gravity-orchard-dependencies.mjs';
@@ -24,7 +25,7 @@ function httpsCall(origin, route, { ca, body, token, servername = 'localhost', h
 }
 
 test('verified HTTPS/WSS and HTTP/WS share the original request, credential authority, run and SQLite store', async t => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'go7-tls-'));
+  const directory = await mkdtemp(path.join(await realpath(tmpdir()), 'go7-tls-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const h = await harness(t);
   const store = createCertificateStore({ appDataDir: directory });
@@ -66,13 +67,45 @@ test('verified HTTPS/WSS and HTTP/WS share the original request, credential auth
   for (const route of ['/api/host/secure-lan', '/server/gravity-orchard-host.mjs', '/server/runtime/gravity-orchard-dependencies.mjs', '/games/gravity-orchard/engine.mjs', '/desktop/secure-lan/fixture.mjs', '/secure-lan-v1/root-key.pem']) {
     assert.equal((await httpsCall(origin, route, { ca: material.ca })).status, 404, route);
   }
-  const rotated = await api(h.host, `/api/rooms/${h.room.code}/join`, { body: { playerId: 'jon', clientId: h.room.clientIds.jon } });
-  assert.equal(rotated.status, 200);
-  await h.clock.advance(1050);
-  assert.equal(jon.ws.readyState, WebSocket.CLOSED);
-  const revoked = await connectPeer(h.host, h.room, 'jon', { origin, ca: material.ca });
-  assert.equal(revoked.welcome, null);
-  revoked.ws.terminate();
+  await t.test('real WSS revokes the old phone after an HTTP seat rejoin', { timeout: 300_000 }, async () => {
+    const oldInput = jon.input({ x: 1, y: 0, brake: false });
+    await flush();
+    const rotated = await api(h.host, `/api/rooms/${h.room.code}/join`, { body: { playerId: 'jon', clientId: h.room.clientIds.jon } });
+    assert.equal(rotated.status, 200);
+    const id = crypto.randomUUID();
+    const { matchId, runEpoch } = jon.snapshot.view;
+    const closed = once(jon.ws, 'close');
+    jon.send({ type: 'command', protocol: 1, matchId, runEpoch, id, kind: 'pause', payload: { reason: 'requested' } });
+    await until(() => jon.ws.readyState === WebSocket.CLOSED ||
+      jon.messages.some(message => message.type === 'command-result' && message.id === id),
+    'A command from the former seat must cause revocation before any result');
+    assert.ok(!jon.messages.some(m => m.type === 'command-result' && m.id === id));
+    const [code] = await closed;
+    assert.equal(code, 4401);
+    assert.equal(jon.ws.readyState, WebSocket.CLOSED);
+    const revoked = await connectPeer(h.host, h.room, 'jon', { origin, ca: material.ca });
+    assert.equal(revoked.welcome, null);
+    revoked.ws.terminate();
+    await h.clock.advance(2200);
+    assert.equal(h.tv.snapshot.view.phase, 'paused');
+    const replacement = await h.connect('jon', { origin, ca: material.ca, token: rotated.value.playerToken });
+    h.players.jon = replacement;
+    assert.equal(replacement.welcome.viewer.playerId, 'jon');
+    assert.notEqual(replacement.welcome.controllerEpoch, jon.welcome.controllerEpoch);
+    replacement.input(); h.lydia.input(); await flush();
+    assert.equal((await replacement.command('ready', { value: true })).result.accepted, true);
+    assert.equal(h.tv.snapshot.view.phase, 'paused');
+    assert.equal((await h.lydia.command('ready', { value: true })).result.accepted, true);
+    await h.pump(3200);
+    assert.equal(h.tv.snapshot.view.phase, 'playing');
+    const before = h.host.realtimeDiagnostics(h.room.code).coordinator;
+    replacement.send(oldInput);
+    await until(() => h.host.realtimeDiagnostics(h.room.code).coordinator.rejectedInputReasons.controller_epoch
+      === (before.rejectedInputReasons.controller_epoch || 0) + 1);
+    await h.clock.advance(100);
+    assert.equal(h.host.realtimeDiagnostics(h.room.code).coordinator.inputsAccepted, before.inputsAccepted);
+    assert.deepEqual(h.tv.snapshot.view.players.jon.input, { x: 0, y: 0, brake: true });
+  });
 });
 
 test('unknown checkpoint schemas fail closed without preventing Sofa Kingdoms room creation', async t => {

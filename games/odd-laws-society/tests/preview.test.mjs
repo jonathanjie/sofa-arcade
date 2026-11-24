@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { engine } from '../engine.mjs';
-import { BUILDINGS, LAWS } from '../catalog.mjs';
+import { BUILDINGS } from '../catalog.mjs';
 import { buildQuote, streetOutcome, civicAward, scoreBreakdown, incomeBonus, festivalBonus } from '../preview.mjs';
 import { clone, fresh, action, take, council, scenario, cityOf, toSession, frozen, assertRuleError } from './helpers.mjs';
 

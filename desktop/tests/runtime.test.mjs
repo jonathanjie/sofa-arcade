@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, mkdir, writeFile, readFile, symlink, chmod } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile, readFile, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { readManifest, validateManifest, stageRuntime, verifyRuntime, repoRoot, desktopRoot, listFiles, sha256 } from '../scripts/runtime-files.mjs';

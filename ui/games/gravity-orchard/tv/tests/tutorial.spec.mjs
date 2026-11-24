@@ -23,7 +23,9 @@ async function heldBrake(page) {
   await button.focus(); await page.keyboard.down('Space');
   await expect(button).toHaveAttribute('aria-pressed', 'true');
   expect(await textContrast(button), 'Held Brake hover contrast').toBeGreaterThanOrEqual(4.5);
-  await page.waitForTimeout(420); await page.keyboard.up('Space');
+  // Advance animation frames through the tutorial’s 300 ms hold threshold.
+  await page.clock.runFor(352);
+  await page.keyboard.up('Space');
   expect(await textContrast(button), 'Brake release preserves hover contrast').toBeGreaterThanOrEqual(4.5);
 }
 
@@ -63,6 +65,9 @@ async function completeStep(page, step) {
 
 for (const viewport of [{ width: 1280, height: 720 }, { width: 1920, height: 1080 }]) {
   test(`optional tutorial completes all eight private lessons at ${viewport.width}×${viewport.height}`, async ({ page }, testInfo) => {
+    // Each of the eight lessons captures a rendered screenshot.
+    test.setTimeout(240_000);
+    await page.clock.install();
     await page.setViewportSize(viewport); await openFixture(page);
     const before = await page.evaluate(() => window.fixture.view());
     await action(page, 'help').click();

@@ -24,7 +24,9 @@ test('four heuristic approaches finish fully audited matches and both commitment
   }
 });
 
-test('mirrored sweep is reproducible with complete pairings and no unbalanced seat/Chair sampling', () => {
+test('mirrored sweep is reproducible with complete pairings and no unbalanced seat/Chair sampling', {
+  skip: process.env.SOFA_EXHAUSTIVE !== '1' && 'Full pairing table runs in test:exhaustive',
+}, () => {
   const first = runSweep({ seeds: 1 });
   const repeated = runSweep({ seeds: 1 });
   assert.deepEqual(first, repeated);

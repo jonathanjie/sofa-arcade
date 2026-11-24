@@ -1,15 +1,11 @@
 /**
- * Discover eligible *.test.mjs files in game, games, server and ui so new
- * unit tests need no registration.
- *
- * Several CI jobs run npm test without installing root dependencies. Keep
- * that regression check working by reporting and skipping tests whose static
- * import graph needs an unavailable npm package, such as ws.
+ * Discover eligible *.test.mjs files in game, games, server and ui.
+ * The default suite uses representative simulations. Run the full game
+ * proofs with npm run test:exhaustive. Only --standalone excludes tests
+ * whose static import graph needs a missing package.
  *
  * Run BROWSER_TESTS with npm run test:browser after installing Chromium.
- * Run NESTED_INSTALL_TESTS in the owning component after its npm ci because
- * those tests read that component's installed dependencies. Installing root
- * packages leaves both suites separate.
+ * Run NESTED_INSTALL_TESTS in the owning component after its npm ci.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -24,7 +20,7 @@ export const BROWSER_TESTS = new Set([
   'server/realtime/gravity-orchard/tests/fixture-browser.test.mjs',
 ]);
 export const NESTED_INSTALL_TESTS = new Set([
-  // Reads the secure-LAN component’s own installed dependency inventory.
+  // Reads server/secure-lan/node_modules, installed by the GO6 workflow.
   'server/secure-lan/tests/inventory.test.mjs',
 ]);
 
@@ -39,14 +35,16 @@ const IMPORT_PATTERNS = [
 
 function unitTestFiles() {
   const files = [];
-  for (const folder of SOURCE_FOLDERS) {
-    for (const entry of readdirSync(path.join(root, folder), { recursive: true, withFileTypes: true })) {
-      if (!entry.isFile() || !entry.name.endsWith('.test.mjs')) continue;
-      const relative = path.relative(root, path.join(entry.parentPath, entry.name)).split(path.sep).join('/');
-      if (relative.split('/').includes('node_modules') || BROWSER_TESTS.has(relative) || NESTED_INSTALL_TESTS.has(relative)) continue;
-      files.push(relative);
+  function visit(folder) {
+    for (const entry of readdirSync(path.join(root, folder), { withFileTypes: true })) {
+      if (entry.name === 'node_modules') continue;
+      const relative = folder + '/' + entry.name;
+      if (entry.isDirectory()) visit(relative);
+      else if (entry.isFile() && entry.name.endsWith('.test.mjs')
+        && !BROWSER_TESTS.has(relative) && !NESTED_INSTALL_TESTS.has(relative)) files.push(relative);
     }
   }
+  for (const folder of SOURCE_FOLDERS) visit(folder);
   return files.sort();
 }
 
@@ -90,16 +88,30 @@ function missingPackage(file, visited = new Set()) {
   return null;
 }
 
+const standalone = process.argv[2] === '--standalone';
+const exhaustive = process.argv[2] === '--exhaustive';
+const proofFiles = {
+  'gravity-orchard': unit => unit.startsWith('games/gravity-orchard/tests/'),
+  'odd-laws-society': unit => unit === 'games/odd-laws-society/tests/simulation.test.mjs',
+};
+const game = process.argv[3];
+if ((process.argv[2] && !standalone && !exhaustive) || (game && (!exhaustive || !Object.hasOwn(proofFiles, game)))) {
+  throw new Error('Usage: run-unit-tests.mjs [--standalone | --exhaustive [game]]');
+}
+const selected = game ? [proofFiles[game]] : Object.values(proofFiles);
 const runnable = [];
-const skipped = [];
 for (const file of unitTestFiles()) {
-  const missing = missingPackage(path.join(root, file));
-  if (missing) skipped.push({ file, missing });
+  if (exhaustive && !selected.some(matches => matches(file))) continue;
+  const missing = standalone && missingPackage(path.join(root, file));
+  if (missing) console.log(`Standalone excludes ${file} (needs ${missing})`);
   else runnable.push(file);
 }
-if (skipped.length) {
-  console.log(`Skipping ${skipped.length} test file(s) whose packages are not installed (run \`npm ci\` to include them):`);
-  for (const { file, missing } of skipped) console.log(`  ${file} (needs ${missing})`);
-}
-const result = spawnSync(process.execPath, ['--test', ...runnable], { cwd: root, stdio: 'inherit' });
+console.log(`Separate browser suite: ${[...BROWSER_TESTS].join(', ')}`);
+console.log(`Separate nested install suite: ${[...NESTED_INSTALL_TESTS].join(', ')}`);
+if (!runnable.length) throw new Error('No unit tests selected');
+console.log(`Running ${runnable.length} test files`);
+const result = spawnSync(process.execPath, ['--test', ...runnable], {
+  cwd: root, stdio: 'inherit',
+  env: exhaustive ? { ...process.env, SOFA_EXHAUSTIVE: '1' } : process.env,
+});
 process.exitCode = result.status ?? 1;

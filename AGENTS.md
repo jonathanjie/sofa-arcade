@@ -24,9 +24,9 @@ Edit interface, styles, audio and motion in `ui/`. Preserve source art and licen
 
 Keep `scripts/runtime-files.mjs` (used by `scripts/prepare-game.mjs` and `scripts/package-lan.mjs`) aligned with the explicit routes in `server/lan.mjs` and staging in `desktop/runtime-manifest.json`. Gravity Orchard shares delivery entries in `server/gravity-orchard-delivery.mjs`. After changes to shipped files, run `npm run package:lan` with Node.js 24.22.3 to regenerate `public/downloads/sofa-arcade-local.zip`. Run `npm run bundle:runtime` when its host inputs change. Exclude credentials, runtime databases, development dependencies and checkout metadata.
 
-`npm test` uses `scripts/run-unit-tests.mjs` to discover `*.test.mjs` recursively in `game/`, `games/`, `server/` and `ui/`. New eligible tests need no registration. Check missing-package skips. Run the listed browser tests with `npm run test:browser` after `npx playwright install chromium`. For the nested secure-LAN suite, run `npm ci --prefix server/secure-lan` then `npm test --prefix server/secure-lan`.
+`npm test` uses `scripts/run-unit-tests.mjs` to discover `*.test.mjs` recursively in `game/`, `games/`, `server/` and `ui/`. New eligible tests need no registration. The default suite requires locked root dependencies. Only `npm run test:standalone` skips tests with missing packages. Use `npm run test:exhaustive` for the full game proofs, `npm run test:realtime:exhaustive` for the full realtime input and checkpoint checks, and `npm run test:cloud` after a build for the local Worker and D1. Run the listed browser tests with `npm run test:browser` after `npx playwright install chromium`. For the nested secure-LAN suite, run `npm ci --prefix server/secure-lan` then `npm test --prefix server/secure-lan`.
 
-Run focused tests and a production build for code changes. Exercise the affected browser flow after UI, music or controller changes. Review the diff and links for documentation changes. Report the source checked, which checks passed and what remains open.
+Run `npm run lint`, focused tests and a production build for code changes. Exercise the affected browser flow after UI, music or controller changes. Review the diff and links for documentation changes. Report the source checked, which checks passed and what remains open.
 
 ## Rules and room authority
 

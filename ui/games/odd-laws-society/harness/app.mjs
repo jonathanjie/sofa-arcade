@@ -42,7 +42,13 @@ if(params.has('table')) {
   snapshot(){return structuredClone(displayed);},
   setScene(scene){select.value=scene;return receive(controller.setScene(scene));},
   update:receive,setConnection(status){view?.setConnection(status);},
-  rejectNext(message){rejectMessage=message;},holdNext(){hold=true;},releaseNext(){release?.();release=null;},
+  rejectNext(message){rejectMessage=message;},holdNext(){hold=true;},async releaseNext(){
+   if (!release) throw new Error('No fixture response is pending.');
+   release();
+   release=null;
+   // The awaiting dispatch and UI update finish in microtasks before the next frame.
+   await new Promise(resolve=>requestAnimationFrame(resolve));
+  },
   dispose(){disposed=true;view?.dispose();},remount,
   actAs(playerId,action){const v=controller.snapshot().state;const next=controller.actAs(playerId,{matchId:v.matchId,phaseId:v.phaseId,...action});receive(next);return next;},
   project(target){return controller.snapshot(target);},

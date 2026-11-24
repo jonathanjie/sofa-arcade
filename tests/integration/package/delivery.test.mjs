@@ -217,16 +217,25 @@ test('isolated ZIP runs its host and serves the complete local browser graph wit
     assert.equal(created.status, 201, 'Extracted host can create real persisted rooms');
     const room = await created.json();
     assert.equal(room.gameId, 'sofa-kingdoms');
-    assert.ok(room.hostToken);
+    assert.ok(/^[A-Za-z0-9_-]{43}$/.test(room.hostToken), 'Host token encodes 32 random bytes');
+    const roomUrl = new URL('/api/rooms/' + room.code, server.origin);
+    const authenticated = await fetch(roomUrl, { headers: { Authorization: 'Bearer ' + room.hostToken } });
+    assert.equal(authenticated.status, 200);
+    assert.equal((await authenticated.json()).code, room.code);
+    const publicRead = await fetch(roomUrl);
+    assert.equal(publicRead.status, 200);
+    const publicRoom = await publicRead.json();
+    assert.equal(publicRoom.code, room.code);
+    assert.equal(Object.hasOwn(publicRoom, 'hostToken'), false);
+    assert.equal(JSON.stringify(publicRoom).includes(room.hostToken), false);
   } finally {
     await server?.close();
     await rm(temp, { recursive: true, force: true });
   }
 });
 
-test('desktop staging manifest stays explicit and contains the combined runtime when handed off', async t => {
+test('desktop staging manifest stays explicit and contains the combined runtime when handed off', async () => {
   const filename = path.join(root, 'desktop/runtime-manifest.json');
-  try { await access(filename); } catch { return t.skip('WS5 desktop has not provided a tested handoff. Native readiness is blocked.'); }
   const manifest = JSON.parse(await readFile(filename, 'utf8'));
   assert.equal(manifest.schemaVersion, 1);
   assert.ok(Array.isArray(manifest.files));

@@ -4,47 +4,60 @@ on:
   pull_request:
     paths:
       - 'games/gravity-orchard/**'
+      - 'package*.json'
+      - 'scripts/run-unit-tests.mjs'
       - '.github/workflows/go1-engine.yml'
       - 'docs/workstreams/gravity-orchard-go1.md'
       - 'docs/archive/workstreams/gravity-orchard-go1.md'
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
       - 'docs/games/gravity-orchard.md'
   push:
-    branches: [feature/gravity-orchard-engine]
+    branches: [main, feature/gravity-orchard-engine]
     paths:
       - 'games/gravity-orchard/**'
+      - 'package*.json'
+      - 'scripts/run-unit-tests.mjs'
       - '.github/workflows/go1-engine.yml'
       - 'docs/workstreams/gravity-orchard-go1.md'
       - 'docs/archive/workstreams/gravity-orchard-go1.md'
+      - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
+      - 'docs/games/gravity-orchard.md'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: go1-engine-${{ github.ref }}
-  cancel-in-progress: true
+  group: go1-engine-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   engine:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # The exhaustive proof alone took 70 minutes under load. Node 24 also generates routes.
+    timeout-minutes: 150
     strategy:
       fail-fast: false
       matrix:
         node: ['22', '24']
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node }}
       - name: Engine, physics, authority, recovery, public fixtures and real input routes
         run: node --test games/gravity-orchard/tests/*.test.mjs
+      - name: Run all campaign seeds and replay assertions
+        if: matrix.node == '24'
+        run: npm run test:exhaustive -- gravity-orchard
       - name: Verify canonical public fixtures
         run: node games/gravity-orchard/tests/generate-fixtures.mjs --check
       - name: Exhaustive inventory proof
         run: node games/gravity-orchard/checks/inventory.mjs --out games/gravity-orchard/.evidence/inventory.json
       - name: Preserve actual input transcripts and path coverage
+        if: matrix.node == '24'
         run: node games/gravity-orchard/validation/run-routes.mjs --output=games/gravity-orchard/.evidence/routes
       - name: Measure bounded eight-fruit engine workload
         run: node games/gravity-orchard/checks/benchmark.mjs --out games/gravity-orchard/.evidence/benchmark.json
@@ -63,6 +76,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
@@ -85,22 +100,3 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
-
-  collection-regression-build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - name: Preserve both existing games and room behavior
-        run: |
-          npm test
-          node --test games/odd-laws-society/tests/*.test.mjs
-      - name: Install existing locked framework dependencies
-        run: npm run install:ci
-      - name: Production build without enabling Gravity Orchard
-        run: npm run build

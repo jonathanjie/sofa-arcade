@@ -43,7 +43,7 @@ try {
     client.connect();
   }
   await waitFor(() => clients.every(client => client.getStats().connected), 'three authenticated connections');
-  const [host, jon, lydia] = clients;
+  const [, jon, lydia] = clients;
   assert.equal((await jon.sendCommand({ id: 'measure-ready-jon', kind: 'ready', payload: { value: true } })).accepted, true);
   assert.equal((await lydia.sendCommand({ id: 'measure-ready-lydia', kind: 'ready', payload: { value: true } })).accepted, true);
   await waitFor(() => Object.values(latest).every(snapshot => snapshot.view.phase === 'playing'), 'playing after the full countdown');

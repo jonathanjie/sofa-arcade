@@ -59,6 +59,8 @@ Start with the [project instructions](AGENTS.md), [source checkpoints and open c
 
 Run `npm run dev` for framework development. For a local Worker/D1 multiplayer preview, apply the checked-in migration under `drizzle/`. Use `npm run db:generate` when the schema changes. The portable host applies its local SQLite migrations at startup.
 
+Run `npm run lint` and `npm test` with locked dependencies. The default suite runs representative simulations. Use `npm run test:exhaustive` for all game proof seeds and replays, `npm run test:standalone` when dependencies are unavailable, and `npm run test:realtime:exhaustive` for the full realtime input and checkpoint checks. After `npm run build`, run `npm run test:cloud` for the local Worker/D1 council test.
+
 ## Multiplayer
 
 Rooms last 24 hours. The TV and each phone keep their own credentials. The hosted turn-based games poll the Worker/D1 API. On the LAN, turn-based games use HTTP actions and authenticated SSE. Odd Laws projects each seat’s private council choices. Gravity Orchard sends continuous controls and snapshots over a local WebSocket.
