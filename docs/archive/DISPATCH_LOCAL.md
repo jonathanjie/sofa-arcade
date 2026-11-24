@@ -2,13 +2,11 @@
 
 # Sofa Arcade: local Tauri dispatch pack
 
-Prepared 20 November 2026. Jon selected Tauri/local play and requested independent, sustained implementation sessions ending in tested GitHub PRs. This is the current dispatch plan for Odd Laws Society and local packaging; its file ownership supersedes conflicting broad assignments in the older [parallel guide](../PARALLEL_DEVELOPMENT.md).
+Jon selected Tauri and local play on 20 November 2026. This dispatch assigned five components and a sixth integration session. The [frozen implementation contract](LOCAL_IMPLEMENTATION_CONTRACT.md) defined their interfaces. The [integration report](workstreams/integration.md) records the outcome.
 
-The complete implementation contracts are in [LOCAL_IMPLEMENTATION_CONTRACT.md](LOCAL_IMPLEMENTATION_CONTRACT.md). The game rules remain [Odd Laws Society v0.2](../games/odd-laws-society.md). None of these documents claims the implementation is already built.
+## Original dispatch order
 
-## Dispatch order
-
-Start **WS1–WS5 in parallel**. WS6 can prepare its harness/checklist immediately and assemble the final build after component PRs are ready. Each prompt is self-contained; copy one into each separate coding session. Ask for up to three subagents where actually available, without assuming a universal subscription limit.
+The plan assigned WS1–WS5 to parallel sessions. WS6 could prepare the harness before assembling the reviewed components. The table and prompts below preserve the original write sets.
 
 | Workstream | Branch | Exclusive parallel write set |
 | --- | --- | --- |

@@ -1,4 +1,4 @@
-> Historical record. This assignment ended on 21 November 2026 at `e0504c1`.
+> Historical record. This assignment ended on 21 November 2026 at `e0504c1`. See the [merged collection](../../HANDOFF.md).
 
 # GO4 — Gravity Orchard TV and tutorial
 

@@ -31,7 +31,7 @@ Preferred review/merge order: WS1, WS2, WS3, WS4, WS5, then WS6. An aggregate WS
 candidate depends on all included component PRs. This session does not merge
 `main`, publish a release, or deploy Sites/Pages.
 
-The merge at `a96fd47` records passing browser and Apple Silicon/Intel native checks at reviewed head `eb8eb79`. The original draft status above applied before those checks. See the [current release guide](../../LOCAL_RELEASE.md).
+The v0.2 design replaced the movement race with six sealed councils and nine-plot cities. Human balance and playtime remained open at merge. The merge at `a96fd47` records passing browser and Apple Silicon/Intel native checks at reviewed head `eb8eb79`. The original draft status above applied before those checks. See the [current release guide](../../LOCAL_RELEASE.md).
 
 ## Ownership and preparation
 
