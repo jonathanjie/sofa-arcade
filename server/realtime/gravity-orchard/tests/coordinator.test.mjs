@@ -337,8 +337,15 @@ test('reconnect keeps the deadman deadline but requires new control input', asyn
   await h.clock.advance(50);
   assert.equal(view().players.jon.input.x, -1);
   replacement.ws.close(); await once(replacement.ws, 'close'); await flush();
-  await h.connect('jon');
+  let reconnect = await h.connect('jon');
   for (let i = 0; i < 19; i++) {
+    if (i === 5 || i === 12) {
+      reconnect.ws.close();
+      await once(reconnect.ws, 'close');
+      await flush();
+      reconnect = await h.connect('jon');
+      assert.equal(reconnect.welcome.snapshot.presence.jon.inputFresh, false);
+    }
     lydia.input(); await flush();
     await h.clock.advance(100);
   }
@@ -385,4 +392,31 @@ test('valid commands rejected by the production engine keep their wire reason', 
   assert.equal(pause.result.accepted, false);
   assert.equal(retry.result.accepted, false);
   assert.deepEqual(h.coordinator.getPublicView('UNIT'), before);
+});
+
+test('losing the first ready controller during the second Ready save prevents countdown', async (t) => {
+  const writing = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  const h = await harness({ simulation: orchard, saveCheckpoint: async (_code, checkpoint) => {
+    if (checkpoint.engine.state.phase === 'countdown') {
+      writing.resolve();
+      await release.promise;
+    }
+  } });
+  t.after(async () => { release.resolve(); await h.close(); });
+  const host = await h.connect('host');
+  const jon = await h.connect('jon'), lydia = await h.connect('lydia');
+  jon.input(); lydia.input(); await flush();
+  assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
+  await jon.command('ready', { value: true });
+  await writing.promise;
+  lydia.ws.close();
+  await once(lydia.ws, 'close');
+  await flush();
+  release.resolve();
+  await flush();
+  const replacement = await h.connect('lydia');
+  assert.equal(replacement.welcome.snapshot.view.phase, 'paused');
+  assert.deepEqual(replacement.welcome.snapshot.view.ready, { jon: false, lydia: false });
+  assert.equal(host.messages.some(packet => packet.view?.phase === 'countdown'), false);
 });

@@ -16,6 +16,8 @@ const result = await build({
   platform: 'node',
   format: 'esm',
   target: 'node22',
+  // Keep lockfile-relative input paths in worktrees that link node_modules.
+  preserveSymlinks: true,
   // ws optional native accelerators are not a startup or packaging dependency.
   external: ['bufferutil', 'utf-8-validate'],
   plugins: [{

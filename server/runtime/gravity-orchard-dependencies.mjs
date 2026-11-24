@@ -5527,7 +5527,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
               if (!room.view.ready[conn.viewer.playerId]) return;
               const result = simulation.applyCommand(room.state, conn.viewer, { kind: "ready", payload: { value: false } });
               if (result.accepted && result.state !== room.state) await commit(room, result.state, room.dedup, "presence");
-            }).catch(() => {
+            }, { system: true }).catch(() => {
             });
           }
         }
@@ -5649,9 +5649,9 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
     room.storeTail = write;
     return withDeadline(write, LIMITS.checkpointTimeoutMs, "storage_unavailable");
   }
-  async function commit(room, state, dedup, kind, metadata = room) {
+  async function commit(room, state, dedup, kind, metadata = room, countdownControllers = null) {
     if (room.closed || room.fault) throw errorWithCode("room_unavailable");
-    const view = checkedView(simulation, state);
+    let view = checkedView(simulation, state);
     const changedEpoch = view.matchId !== room.view.matchId || view.runEpoch !== room.view.runEpoch;
     room.blocked = true;
     if (changedEpoch) clearInputs(room);
@@ -5659,6 +5659,17 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       await persist(room, encodeCheckpoint(room, state, view, dedup, simulation, metadata));
       if (room.closed || closed) return false;
       if (room.fault) throw errorWithCode("storage_unavailable");
+      if (countdownControllers && PLAYERS.some((id) => {
+        const conn = room.seats[id].conn;
+        return conn !== countdownControllers[id] || !usable(conn);
+      })) {
+        state = simulation.pauseForSystem(state, "network");
+        view = checkedView(simulation, state);
+        kind = "network";
+        await persist(room, encodeCheckpoint(room, state, view, dedup, simulation, metadata));
+        if (room.closed || closed) return false;
+        if (room.fault) throw errorWithCode("storage_unavailable");
+      }
       room.state = state;
       room.view = view;
       room.dedup = dedup;
@@ -5678,8 +5689,9 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       throw errorWithCode("storage_unavailable");
     }
   }
-  function enqueue(room, fn) {
+  function enqueue(room, fn, { system = false } = {}) {
     if (room.closed || room.fault) return Promise.reject(errorWithCode("room_unavailable"));
+    if (!system && room.pendingCommands >= LIMITS.maxPendingCommands) return Promise.reject(errorWithCode("command_overload"));
     room.pendingCommands++;
     const promise = room.commandTail.catch(() => {
     }).then(() => {
@@ -5708,7 +5720,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       if (view.phase !== "paused" || view.runEpoch <= room.view.runEpoch) throw errorWithCode("invalid_simulation");
       await commit(room, state, room.dedup, reason);
       return snapshot(room);
-    }).catch((error) => {
+    }, { system: true }).catch((error) => {
       storageFault(room);
       throw error;
     }).finally(() => {
@@ -5774,7 +5786,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
           room.stats.ticks++;
           if (boundary(room.view, view)) {
             room.blocked = true;
-            enqueue(room, () => commit(room, state, room.dedup, view.phase)).catch(() => storageFault(room));
+            enqueue(room, () => commit(room, state, room.dedup, view.phase), { system: true }).catch(() => storageFault(room));
             break;
           }
           room.state = state;
@@ -5906,7 +5918,6 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
       return;
     }
     try {
-      if (room.pendingCommands >= LIMITS.maxPendingCommands) throw errorWithCode("command_overload");
       const result = await enqueue(room, async () => {
         if (!await reauthorize(conn, true) || !conn.active) return null;
         if (conn.viewer.role === "player" && room.seats[conn.viewer.playerId].conn !== conn) return null;
@@ -5921,7 +5932,7 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
         };
         if (value.matchId !== room.view.matchId) return reject("stale_match");
         if (value.runEpoch !== room.view.runEpoch) return reject("stale_epoch");
-        let state, metadata = room;
+        let state, metadata = room, countdownControllers = null;
         if (value.kind === "rematch") {
           if (conn.viewer.role !== "host") return reject("forbidden");
           if (!["paused", "finished"].includes(room.view.phase)) return reject("invalid_phase");
@@ -5938,12 +5949,22 @@ function createRealtimeCoordinator({ authorize, validateUpgrade, loadCheckpoint,
           }
           state = applied.state;
           const view = checkedView(simulation, state);
-          if (view.phase === "countdown" && room.view.phase !== "countdown" && !PLAYERS.every((id) => fresh(room.seats[id]))) {
-            return reject("unavailable_controllers");
+          if (view.phase === "countdown" && room.view.phase !== "countdown") {
+            if (!PLAYERS.every((id) => fresh(room.seats[id]))) return reject("unavailable_controllers");
+            countdownControllers = Object.fromEntries(PLAYERS.map((id) => [id, room.seats[id].conn]));
           }
         }
-        const { dedup, entry } = insertDedup(room, conn.viewer, value);
-        await commit(room, state, dedup, value.kind, metadata);
+        let receipt;
+        try {
+          receipt = insertDedup(room, conn.viewer, value);
+        } catch (error) {
+          if (error.code !== "command_capacity" || state === room.state) throw error;
+          const reset = simulation.pauseForSystem(room.state, "receipt-capacity");
+          await commit(room, reset, room.dedup, "receipt-capacity");
+          throw error;
+        }
+        const { dedup, entry } = receipt;
+        await commit(room, state, dedup, value.kind, metadata, countdownControllers);
         room.stats.commandsAccepted++;
         return entry.result;
       });

@@ -185,6 +185,7 @@ export function createMockSimulation({ countdownTicks = 180, stageTicks = 5400 }
   }
 
   function pauseForSystem(state, reason) {
+    if (reason === 'receipt-capacity') return boundary(clone(state), state.phase, state.pauseReason);
     if (!SYSTEM_REASONS.has(reason)) throw new TypeError('fixture-system-reason-invalid');
     if (state.phase === 'paused' && reason !== 'recovery') return state;
     return boundary(clone(state), 'paused', reason);

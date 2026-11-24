@@ -186,6 +186,13 @@ export function applyCommand(state, actor, command) {
 }
 
 export function pauseForSystem(state, reason) {
+  // This internal boundary releases receipts without advancing the stage or
+  // changing the visible phase. It is never a wire pause reason.
+  if (reason === 'receipt-capacity') {
+    const next = copy(state);
+    boundary(next, state.phase, state.pauseReason);
+    return next;
+  }
   if (!['network', 'host-stall', 'recovery'].includes(reason)) fail('INVALID_PAUSE_REASON', 'A trusted network, host-stall or recovery reason is required.');
   if (reason !== 'recovery' && !['countdown', 'playing'].includes(state.phase)) return state;
   const next = copy(state);
