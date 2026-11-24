@@ -10,7 +10,10 @@ test('Final images decode, inventory hashes close, atlas frames are distinct and
   const inventory = JSON.parse(await readFile(new URL('./runtime-files.json', import.meta.url), 'utf8'));
   const images = inventory.files.map(file => file.path).filter(file => /\.(svg|webp)$/.test(file));
   assert.deepEqual(report.assets.map(asset => 'public' + asset.src).sort(), images.sort());
-  assert.equal(report.assetCount, 49);
+  assert.equal(report.assetCount, 52);
+  for (const key of ['character-jon-phone', 'character-lydia-phone', 'cover-compact']) {
+    assert.ok(report.assets.some(asset => asset.key === key), `Delivered variant missing: ${key}`);
+  }
   assert.deepEqual(Object.fromEntries(report.assets.filter(asset => asset.frames)
     .map(asset => [asset.key, asset.frames.length])), {
     'character-jon': 8, 'character-lydia': 8, 'character-lala': 8,
