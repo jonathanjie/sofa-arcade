@@ -1,6 +1,7 @@
 {
   "corner-shop": {
     "src": "buildings/corner-shop.webp",
+    "compact": {"src": "buildings/corner-shop-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Amber-awning corner shop with cream walls, a sage roof, and fruit baskets.",
@@ -14,6 +15,7 @@
   },
   "tea-stall": {
     "src": "buildings/tea-stall.webp",
+    "compact": {"src": "buildings/tea-stall-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Amber-awning tea stall with a jade teapot and curling steam.",
@@ -27,6 +29,7 @@
   },
   "button-workshop": {
     "src": "buildings/button-workshop.webp",
+    "compact": {"src": "buildings/button-workshop-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Coral-roofed button workshop with a large button and sewing wheel.",
@@ -40,6 +43,7 @@
   },
   "petition-kiosk": {
     "src": "buildings/petition-kiosk.webp",
+    "compact": {"src": "buildings/petition-kiosk-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Teal civic petition kiosk with a quill, scroll, and blank notice board.",
@@ -53,6 +57,7 @@
   },
   "pocket-theatre": {
     "src": "buildings/pocket-theatre.webp",
+    "compact": {"src": "buildings/pocket-theatre-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Plum-curtained pocket theatre with a small stage and mask crest.",
@@ -66,6 +71,7 @@
   },
   "community-garden": {
     "src": "buildings/community-garden.webp",
+    "compact": {"src": "buildings/community-garden-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Community garden with raised beds, flowering trellis, and a watering can.",
@@ -79,6 +85,7 @@
   },
   "night-market": {
     "src": "buildings/night-market.webp",
+    "compact": {"src": "buildings/night-market-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Three lantern-lit market stalls with amber roofs and sage awnings.",
@@ -92,6 +99,7 @@
   },
   "clockwork-studio": {
     "src": "buildings/clockwork-studio.webp",
+    "compact": {"src": "buildings/clockwork-studio-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Clockwork studio with coral roof and interlocking brass gears.",
@@ -105,6 +113,7 @@
   },
   "public-library": {
     "src": "buildings/public-library.webp",
+    "compact": {"src": "buildings/public-library-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Teal-roofed library with an open-book crest and two entrance lamps.",
@@ -118,6 +127,7 @@
   },
   "debate-hall": {
     "src": "buildings/debate-hall.webp",
+    "compact": {"src": "buildings/debate-hall-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Teal civic debate hall with two lecterns and a tiny cat statue.",
@@ -131,6 +141,7 @@
   },
   "concert-pavilion": {
     "src": "buildings/concert-pavilion.webp",
+    "compact": {"src": "buildings/concert-pavilion-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Open plum-roofed concert pavilion with a cello and music stand.",
@@ -144,6 +155,7 @@
   },
   "quilt-bridge": {
     "src": "buildings/quilt-bridge.webp",
+    "compact": {"src": "buildings/quilt-bridge-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Coral-railed arched bridge draped with a patchwork quilt and a carved cat finial.",
@@ -157,6 +169,7 @@
   },
   "grand-bazaar": {
     "src": "buildings/grand-bazaar.webp",
+    "compact": {"src": "buildings/grand-bazaar-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Grand amber-domed bazaar with cream colonnades and striped awnings.",
@@ -170,6 +183,7 @@
   },
   "grand-clock": {
     "src": "buildings/grand-clock.webp",
+    "compact": {"src": "buildings/grand-clock-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Tall coral-capped clock tower with brass hands, tick marks, and pendulum.",
@@ -183,6 +197,7 @@
   },
   "high-court": {
     "src": "buildings/high-court.webp",
+    "compact": {"src": "buildings/high-court-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Teal-pediment courthouse with four columns and balanced brass scales.",
@@ -196,6 +211,7 @@
   },
   "observatory": {
     "src": "buildings/observatory.webp",
+    "compact": {"src": "buildings/observatory-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Round teal-domed observatory with a projecting brass telescope.",
@@ -209,6 +225,7 @@
   },
   "opera-house": {
     "src": "buildings/opera-house.webp",
+    "compact": {"src": "buildings/opera-house-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Grand plum-roofed opera house with gilded lyre and curtained entrances.",
@@ -222,6 +239,7 @@
   },
   "lala-monument": {
     "src": "buildings/lala-monument.webp",
+    "compact": {"src": "buildings/lala-monument-256.webp", "width": 256, "height": 256},
     "width": 512,
     "height": 512,
     "alt": "Golden-orange statue of Lala the tabby cat on a cream civic plinth.",

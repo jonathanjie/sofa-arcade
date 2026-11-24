@@ -11,6 +11,7 @@
     "states": {
       "idle": {
         "src": "characters/jon-idle.webp",
+        "compact": {"src": "characters/jon-idle-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Jon mouse stands at ease with a blank civic folio, navy rectangular glasses, teal scarf and gold seal pin.",
@@ -31,6 +32,7 @@
       },
       "thinking": {
         "src": "characters/jon-thinking.webp",
+        "compact": {"src": "characters/jon-thinking-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Jon mouse rests a paw thoughtfully at his chin while holding a civic folio, in navy glasses and a teal scarf.",
@@ -51,6 +53,7 @@
       },
       "acting": {
         "src": "characters/jon-acting.webp",
+        "compact": {"src": "characters/jon-acting-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Jon mouse presents a blank rolled plan with an open-paw gesture and an enthusiastic smile.",
@@ -71,6 +74,7 @@
       },
       "celebrate": {
         "src": "characters/jon-celebrate.webp",
+        "compact": {"src": "characters/jon-celebrate-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Jon mouse celebrates with lifted paws and a happy closed-eye smile, wearing his teal scarf and civic pin.",
@@ -91,6 +95,7 @@
       },
       "disappointed": {
         "src": "characters/jon-disappointed.webp",
+        "compact": {"src": "characters/jon-disappointed-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Jon mouse lowers his gaze and holds his folio with both paws in mild, good-natured disappointment.",
@@ -123,6 +128,7 @@
     "states": {
       "idle": {
         "src": "characters/lydia-idle.webp",
+        "compact": {"src": "characters/lydia-idle-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lydia mouse stands attentively with a civic folio, round glasses, chestnut ponytail, coral scarf and gold leaf pin.",
@@ -143,6 +149,7 @@
       },
       "thinking": {
         "src": "characters/lydia-thinking.webp",
+        "compact": {"src": "characters/lydia-thinking-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lydia mouse looks upward with a paw to her chin, considering her civic folio thoughtfully.",
@@ -163,6 +170,7 @@
       },
       "acting": {
         "src": "characters/lydia-acting.webp",
+        "compact": {"src": "characters/lydia-acting-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lydia mouse presents an open blank civic folio with a welcoming open-paw gesture.",
@@ -183,6 +191,7 @@
       },
       "celebrate": {
         "src": "characters/lydia-celebrate.webp",
+        "compact": {"src": "characters/lydia-celebrate-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lydia mouse claps happily with a closed-eye smile, keeping her round glasses and coral scarf.",
@@ -203,6 +212,7 @@
       },
       "disappointed": {
         "src": "characters/lydia-disappointed.webp",
+        "compact": {"src": "characters/lydia-disappointed-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lydia mouse gives a small resigned shrug while holding her civic folio, with a gently lowered gaze.",
@@ -235,6 +245,7 @@
     "states": {
       "idle": {
         "src": "characters/lala-idle.webp",
+        "compact": {"src": "characters/lala-idle-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lala the orange tabby sits proudly as council Chair, wearing a teal and plum sash with a brass medallion.",
@@ -255,6 +266,7 @@
       },
       "thinking": {
         "src": "characters/lala-thinking.webp",
+        "compact": {"src": "characters/lala-thinking-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lala the orange tabby Chair considers a decision with one paw beneath her chin and curious upturned eyes.",
@@ -275,6 +287,7 @@
       },
       "stamp": {
         "src": "characters/lala-stamp.webp",
+        "compact": {"src": "characters/lala-stamp-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lala the orange tabby Chair presses a wooden council stamp onto a blank cream sheet with a proud smile.",
@@ -299,6 +312,7 @@
       },
       "celebrate": {
         "src": "characters/lala-celebrate.webp",
+        "compact": {"src": "characters/lala-celebrate-256.webp", "width": 256, "height": 256},
         "width": 512,
         "height": 512,
         "alt": "Lala the orange tabby Chair raises her front paws and smiles with joy, her striped tail curled beside her.",

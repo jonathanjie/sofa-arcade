@@ -3,7 +3,7 @@
 .motion-rig{position:absolute;inset:0;display:none;transform-origin:50% 82%;pointer-events:none;animation:sofa-breathe 4.7s ease-in-out infinite;animation-delay:var(--motion-phase,0ms)}
 .generated-art .motion-character>.character-sprite{display:none}
 .generated-art .motion-rig{display:block}
-.motion-cutout{position:absolute;inset:0;background-image:url('/assets/characters.png');background-size:300% 100%;background-position:var(--motion-atlas-x,0%) 50%;background-repeat:no-repeat;pointer-events:none;backface-visibility:hidden}
+.motion-cutout{position:absolute;inset:0;background-image:var(--sofa-character-atlas);background-size:300% 100%;background-position:var(--motion-atlas-x,0%) 50%;background-repeat:no-repeat;pointer-events:none;backface-visibility:hidden}
 .motion-body{clip-path:inset(53% 0 0 0);transform-origin:50% 90%}
 .motion-head{clip-path:inset(0 0 44% 0);transform-origin:50% 55%;animation:sofa-head-look 6.3s ease-in-out infinite;animation-delay:var(--motion-head-phase,0ms)}
 .motion-rig-lala .motion-head{clip-path:polygon(0 0,68% 0,68% 72%,55% 88%,0 88%);transform-origin:44% 76%;animation-name:sofa-cat-look}

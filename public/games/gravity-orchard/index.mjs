@@ -114,13 +114,18 @@ export function mountGravityOrchard(root, {
     const nextCountdownId = view.phase === 'countdown' ? `countdown:${view.matchId}:${view.runEpoch}:${Math.max(1,Math.ceil(view.countdownTicks/60))}` : null;
     if (receivedLive && nextCountdownId && nextCountdownId !== countdownId) cues.effect('countdown', {id: nextCountdownId});
     countdownId = nextCountdownId;
-    presentation.setConnection({...status, ...(presence ? {presence} : {})});
-    presentation.update(view);
+    const connection = {...status, ...(presence ? {presence} : {})};
+    if (viewer.role === 'player') {
+      presentation.update(view, connection);
+    } else {
+      presentation.setConnection(connection);
+      presentation.update(view);
+    }
     latest = view;
-    root.dataset.matchId = view.matchId;
-    root.dataset.runEpoch = String(view.runEpoch);
-    root.dataset.tick = String(view.tick);
-    root.dataset.phase = view.phase;
+    for (const key of ['matchId', 'runEpoch', 'tick', 'phase']) {
+      const value = String(view[key]);
+      if (root.dataset[key] !== value) root.dataset[key] = value;
+    }
     onView(view);
     return true;
   }
@@ -146,12 +151,12 @@ export function mountGravityOrchard(root, {
     presentation = mount(root, {...common, geometry, sound: cues, now: clock});
   } else {
     sound.setContext?.({role: 'player', view: 'game'});
-    presentation = mount(root, {...common, playerId: viewer.playerId, input: {setInput: value => !disposed && client.setInput(value)}});
-    // GO3 accepts an image source; crop the final atlas to its authored idle frame.
-    const state = MANIFEST.characterStates[viewer.playerId].idle;
-    const atlas = MANIFEST.assets[state.asset], frame = atlas.frames[state.reducedMotionFrame];
-    const portrait = root.querySelector?.('[data-go3="portrait"] img');
-    if (portrait) Object.assign(portrait.style, {width: `${atlas.width / frame.width * 100}%`, height: `${atlas.height / frame.height * 100}%`, maxWidth: 'none', objectFit: 'fill', transform: `translate(${-frame.x / atlas.width * 100}%, ${-frame.y / atlas.height * 100}%)`});
+    presentation = mount(root, {
+      ...common,
+      playerId: viewer.playerId,
+      portrait: assets.resolve(`character-${viewer.playerId}-phone`),
+      input: {setInput: value => !disposed && client.setInput(value)},
+    });
   }
   if (initialRoom?.state) accept(initialRoom.state);
   client.connect();

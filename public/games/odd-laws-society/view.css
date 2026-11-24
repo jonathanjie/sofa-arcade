@@ -82,3 +82,6 @@
  .ols .ols-city-guild-counts .ols-guild{font-size:11px}
  .ols .ols-city-guild-counts>span{padding-right:8px}
 }
+
+/* Building art is square. Keep the image box at its painted width inside wide cards. */
+.ols .ols-building-art > img.ols-sprite { width: auto; max-width: 100%; margin-inline: auto; }

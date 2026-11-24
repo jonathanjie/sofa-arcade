@@ -7,8 +7,16 @@ export const lawName=(id,rules)=>id==='keep'?'Keep current law':rules.laws.find(
 export const lawDescription=(id,rules)=>rules.laws.find(item=>item.id===id)?.description || (id==='economy-neutral'?'No construction or Work modifier.':id==='civic-neutral'?'No Civic prestige at session end.':'Keep the current law in this category.');
 export const scoreCurrent=p=>['buildings','streets','festivals','civic'].reduce((n,k)=>n+(Number(p?.score?.[k])||0),0);
 export function guildLabel(id,rules) {const g=rules.guilds.find(x=>x.id===id);return `<span class="ols-guild ols-guild-${escapeHtml(id)}" data-guild="${escapeHtml(id)}">${icon(g?.iconKey||id)}<span>${escapeHtml(g?.name||id)}</span></span>`;}
-export function buildingArt(design,ctx) {return mediaPicture(ctx.media?.manifest?.buildings?.[design?.id],fallbackBuilding(design),ctx.media?.manifestUrl,'ols-building-art');}
-export function character(id,state,ctx) {return `<span class="ols-character ols-character-${escapeHtml(id)}" data-character="${escapeHtml(id)}" data-character-state="${escapeHtml(state)}">${mediaPicture(ctx.media?.manifest?.characters?.[id]?.states?.[state],fallbackCharacter(id,state),ctx.media?.manifestUrl,'',NAMES[id]||id)}</span>`;}
+export function buildingArt(design, ctx, {fullSize = false, lazy = false} = {}) {
+  const entry = ctx.media?.manifest?.buildings?.[design?.id];
+  const sizes = fullSize ? undefined : '(max-width: 760px) 75px, 115px';
+  return mediaPicture(entry, fallbackBuilding(design), ctx.media?.manifestUrl, 'ols-building-art', '', {sizes, lazy});
+}
+export function character(id, state, ctx, sizes) {
+  const entry = ctx.media?.manifest?.characters?.[id]?.states?.[state];
+  const portrait = mediaPicture(entry, fallbackCharacter(id, state), ctx.media?.manifestUrl, '', NAMES[id] || id, {sizes});
+  return `<span class="ols-character ols-character-${escapeHtml(id)}" data-character="${escapeHtml(id)}" data-character-state="${escapeHtml(state)}">${portrait}</span>`;
+}
 export function resourceStrip(player) {return `<div class="ols-resources" aria-label="Resources"><span class="ols-resource ols-coins" data-resource="coins">${icon('coin')}<strong class="ols-resource-value">${player.coins}</strong><span class="ols-resource-label">coins</span></span><span class="ols-resource ols-influence" data-resource="influence">${icon('influence')}<strong class="ols-resource-value">${player.influence}</strong><span class="ols-resource-label">influence</span></span><span class="ols-resource ols-prestige" data-resource="prestige">${icon('prestige')}<strong class="ols-resource-value">${scoreCurrent(player)}</strong><span class="ols-resource-label">prestige</span></span></div>`;}
 export function cityGrid(view,playerId,ctx,{interactive=false}={}) {
  const city=view.players[playerId].city;

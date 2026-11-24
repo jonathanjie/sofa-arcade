@@ -4,6 +4,13 @@
   "buildings": {
     "corner-shop": {
       "src": "buildings/corner-shop.webp",
+      "compact": {
+        "src": "buildings/corner-shop-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Amber-awning corner shop with cream walls, a sage roof, and fruit baskets.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Amber-awning corner shop with cream walls, a sage roof, and fruit baskets.",
@@ -17,6 +24,13 @@
     },
     "tea-stall": {
       "src": "buildings/tea-stall.webp",
+      "compact": {
+        "src": "buildings/tea-stall-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Amber-awning tea stall with a jade teapot and curling steam.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Amber-awning tea stall with a jade teapot and curling steam.",
@@ -30,6 +44,13 @@
     },
     "button-workshop": {
       "src": "buildings/button-workshop.webp",
+      "compact": {
+        "src": "buildings/button-workshop-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Coral-roofed button workshop with a large button and sewing wheel.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Coral-roofed button workshop with a large button and sewing wheel.",
@@ -43,6 +64,13 @@
     },
     "petition-kiosk": {
       "src": "buildings/petition-kiosk.webp",
+      "compact": {
+        "src": "buildings/petition-kiosk-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Teal civic petition kiosk with a quill, scroll, and blank notice board.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Teal civic petition kiosk with a quill, scroll, and blank notice board.",
@@ -56,6 +84,13 @@
     },
     "pocket-theatre": {
       "src": "buildings/pocket-theatre.webp",
+      "compact": {
+        "src": "buildings/pocket-theatre-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Plum-curtained pocket theatre with a small stage and mask crest.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Plum-curtained pocket theatre with a small stage and mask crest.",
@@ -69,6 +104,13 @@
     },
     "community-garden": {
       "src": "buildings/community-garden.webp",
+      "compact": {
+        "src": "buildings/community-garden-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Community garden with raised beds, flowering trellis, and a watering can.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Community garden with raised beds, flowering trellis, and a watering can.",
@@ -82,6 +124,13 @@
     },
     "night-market": {
       "src": "buildings/night-market.webp",
+      "compact": {
+        "src": "buildings/night-market-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Three lantern-lit market stalls with amber roofs and sage awnings.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Three lantern-lit market stalls with amber roofs and sage awnings.",
@@ -95,6 +144,13 @@
     },
     "clockwork-studio": {
       "src": "buildings/clockwork-studio.webp",
+      "compact": {
+        "src": "buildings/clockwork-studio-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Clockwork studio with coral roof and interlocking brass gears.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Clockwork studio with coral roof and interlocking brass gears.",
@@ -108,6 +164,13 @@
     },
     "public-library": {
       "src": "buildings/public-library.webp",
+      "compact": {
+        "src": "buildings/public-library-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Teal-roofed library with an open-book crest and two entrance lamps.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Teal-roofed library with an open-book crest and two entrance lamps.",
@@ -121,6 +184,13 @@
     },
     "debate-hall": {
       "src": "buildings/debate-hall.webp",
+      "compact": {
+        "src": "buildings/debate-hall-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Teal civic debate hall with two lecterns and a tiny cat statue.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Teal civic debate hall with two lecterns and a tiny cat statue.",
@@ -134,6 +204,13 @@
     },
     "concert-pavilion": {
       "src": "buildings/concert-pavilion.webp",
+      "compact": {
+        "src": "buildings/concert-pavilion-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Open plum-roofed concert pavilion with a cello and music stand.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Open plum-roofed concert pavilion with a cello and music stand.",
@@ -147,6 +224,13 @@
     },
     "quilt-bridge": {
       "src": "buildings/quilt-bridge.webp",
+      "compact": {
+        "src": "buildings/quilt-bridge-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Coral-railed arched bridge draped with a patchwork quilt and a carved cat finial.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Coral-railed arched bridge draped with a patchwork quilt and a carved cat finial.",
@@ -160,6 +244,13 @@
     },
     "grand-bazaar": {
       "src": "buildings/grand-bazaar.webp",
+      "compact": {
+        "src": "buildings/grand-bazaar-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Grand amber-domed bazaar with cream colonnades and striped awnings.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Grand amber-domed bazaar with cream colonnades and striped awnings.",
@@ -173,6 +264,13 @@
     },
     "grand-clock": {
       "src": "buildings/grand-clock.webp",
+      "compact": {
+        "src": "buildings/grand-clock-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Tall coral-capped clock tower with brass hands, tick marks, and pendulum.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Tall coral-capped clock tower with brass hands, tick marks, and pendulum.",
@@ -186,6 +284,13 @@
     },
     "high-court": {
       "src": "buildings/high-court.webp",
+      "compact": {
+        "src": "buildings/high-court-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Teal-pediment courthouse with four columns and balanced brass scales.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Teal-pediment courthouse with four columns and balanced brass scales.",
@@ -199,6 +304,13 @@
     },
     "observatory": {
       "src": "buildings/observatory.webp",
+      "compact": {
+        "src": "buildings/observatory-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Round teal-domed observatory with a projecting brass telescope.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Round teal-domed observatory with a projecting brass telescope.",
@@ -212,6 +324,13 @@
     },
     "opera-house": {
       "src": "buildings/opera-house.webp",
+      "compact": {
+        "src": "buildings/opera-house-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Grand plum-roofed opera house with gilded lyre and curtained entrances.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Grand plum-roofed opera house with gilded lyre and curtained entrances.",
@@ -225,6 +344,13 @@
     },
     "lala-monument": {
       "src": "buildings/lala-monument.webp",
+      "compact": {
+        "src": "buildings/lala-monument-256.webp",
+        "width": 256,
+        "height": 256,
+        "alt": "Golden-orange statue of Lala the tabby cat on a cream civic plinth.",
+        "status": "final"
+      },
       "width": 512,
       "height": 512,
       "alt": "Golden-orange statue of Lala the tabby cat on a cream civic plinth.",
@@ -390,6 +516,13 @@
       "states": {
         "idle": {
           "src": "characters/jon-idle.webp",
+          "compact": {
+            "src": "characters/jon-idle-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Jon mouse stands at ease with a blank civic folio, navy rectangular glasses, teal scarf and gold seal pin.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Jon mouse stands at ease with a blank civic folio, navy rectangular glasses, teal scarf and gold seal pin.",
@@ -410,6 +543,13 @@
         },
         "thinking": {
           "src": "characters/jon-thinking.webp",
+          "compact": {
+            "src": "characters/jon-thinking-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Jon mouse rests a paw thoughtfully at his chin while holding a civic folio, in navy glasses and a teal scarf.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Jon mouse rests a paw thoughtfully at his chin while holding a civic folio, in navy glasses and a teal scarf.",
@@ -430,6 +570,13 @@
         },
         "acting": {
           "src": "characters/jon-acting.webp",
+          "compact": {
+            "src": "characters/jon-acting-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Jon mouse presents a blank rolled plan with an open-paw gesture and an enthusiastic smile.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Jon mouse presents a blank rolled plan with an open-paw gesture and an enthusiastic smile.",
@@ -450,6 +597,13 @@
         },
         "celebrate": {
           "src": "characters/jon-celebrate.webp",
+          "compact": {
+            "src": "characters/jon-celebrate-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Jon mouse celebrates with lifted paws and a happy closed-eye smile, wearing his teal scarf and civic pin.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Jon mouse celebrates with lifted paws and a happy closed-eye smile, wearing his teal scarf and civic pin.",
@@ -470,6 +624,13 @@
         },
         "disappointed": {
           "src": "characters/jon-disappointed.webp",
+          "compact": {
+            "src": "characters/jon-disappointed-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Jon mouse lowers his gaze and holds his folio with both paws in mild, good-natured disappointment.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Jon mouse lowers his gaze and holds his folio with both paws in mild, good-natured disappointment.",
@@ -502,6 +663,13 @@
       "states": {
         "idle": {
           "src": "characters/lydia-idle.webp",
+          "compact": {
+            "src": "characters/lydia-idle-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lydia mouse stands attentively with a civic folio, round glasses, chestnut ponytail, coral scarf and gold leaf pin.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lydia mouse stands attentively with a civic folio, round glasses, chestnut ponytail, coral scarf and gold leaf pin.",
@@ -522,6 +690,13 @@
         },
         "thinking": {
           "src": "characters/lydia-thinking.webp",
+          "compact": {
+            "src": "characters/lydia-thinking-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lydia mouse looks upward with a paw to her chin, considering her civic folio thoughtfully.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lydia mouse looks upward with a paw to her chin, considering her civic folio thoughtfully.",
@@ -542,6 +717,13 @@
         },
         "acting": {
           "src": "characters/lydia-acting.webp",
+          "compact": {
+            "src": "characters/lydia-acting-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lydia mouse presents an open blank civic folio with a welcoming open-paw gesture.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lydia mouse presents an open blank civic folio with a welcoming open-paw gesture.",
@@ -562,6 +744,13 @@
         },
         "celebrate": {
           "src": "characters/lydia-celebrate.webp",
+          "compact": {
+            "src": "characters/lydia-celebrate-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lydia mouse claps happily with a closed-eye smile, keeping her round glasses and coral scarf.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lydia mouse claps happily with a closed-eye smile, keeping her round glasses and coral scarf.",
@@ -582,6 +771,13 @@
         },
         "disappointed": {
           "src": "characters/lydia-disappointed.webp",
+          "compact": {
+            "src": "characters/lydia-disappointed-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lydia mouse gives a small resigned shrug while holding her civic folio, with a gently lowered gaze.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lydia mouse gives a small resigned shrug while holding her civic folio, with a gently lowered gaze.",
@@ -614,6 +810,13 @@
       "states": {
         "idle": {
           "src": "characters/lala-idle.webp",
+          "compact": {
+            "src": "characters/lala-idle-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lala the orange tabby sits proudly as council Chair, wearing a teal and plum sash with a brass medallion.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lala the orange tabby sits proudly as council Chair, wearing a teal and plum sash with a brass medallion.",
@@ -634,6 +837,13 @@
         },
         "thinking": {
           "src": "characters/lala-thinking.webp",
+          "compact": {
+            "src": "characters/lala-thinking-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lala the orange tabby Chair considers a decision with one paw beneath her chin and curious upturned eyes.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lala the orange tabby Chair considers a decision with one paw beneath her chin and curious upturned eyes.",
@@ -654,6 +864,13 @@
         },
         "stamp": {
           "src": "characters/lala-stamp.webp",
+          "compact": {
+            "src": "characters/lala-stamp-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lala the orange tabby Chair presses a wooden council stamp onto a blank cream sheet with a proud smile.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lala the orange tabby Chair presses a wooden council stamp onto a blank cream sheet with a proud smile.",
@@ -678,6 +895,13 @@
         },
         "celebrate": {
           "src": "characters/lala-celebrate.webp",
+          "compact": {
+            "src": "characters/lala-celebrate-256.webp",
+            "width": 256,
+            "height": 256,
+            "alt": "Lala the orange tabby Chair raises her front paws and smiles with joy, her striped tail curled beside her.",
+            "status": "final"
+          },
           "width": 512,
           "height": 512,
           "alt": "Lala the orange tabby Chair raises her front paws and smiles with joy, her striped tail curled beside her.",

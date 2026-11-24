@@ -3,9 +3,19 @@
   "gameId": "odd-laws-society",
   "files": [
     {
+      "path": "public/assets/odd-laws-society/buildings/button-workshop-256.webp",
+      "bytes": 21086,
+      "sha256": "ab2f525c34c4565f9729c7de8c7eae1ab9cec8552125cf278eecf88d27272ba8"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/button-workshop.webp",
       "bytes": 66834,
       "sha256": "e47cac54fe77a66bd8cb8d819f4166bc28c2fa7fb9101ab95d270e610bf48011"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/clockwork-studio-256.webp",
+      "bytes": 22270,
+      "sha256": "3d3eb8f149d73f6735a19fc9f8f483057f0fd7742942a197c695915e3a45e97b"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/clockwork-studio.webp",
@@ -13,9 +23,19 @@
       "sha256": "416811564c6f9bf05c2eb21f2e0a1779c0166a19c6c439b46869cc3be73149c8"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/community-garden-256.webp",
+      "bytes": 25938,
+      "sha256": "a54eb42f23ec83e0bc17807fc085419c7a9f91723aeae745f6af9ea64793dc11"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/community-garden.webp",
       "bytes": 81818,
       "sha256": "ed83cd5971dd6bde8a28f35604bc42f1ce18c42271b56bf1c20a49fb19d2213b"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/concert-pavilion-256.webp",
+      "bytes": 25714,
+      "sha256": "0c748260cd58ba3cbc8f983b80286c62f594c63dfedede0b9216e938f8b6cb61"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/concert-pavilion.webp",
@@ -23,9 +43,19 @@
       "sha256": "f47c3eb6608aaa4d9fe37787b1671c47a34d687e92cb7fccc60f89164abd3cd0"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/corner-shop-256.webp",
+      "bytes": 21990,
+      "sha256": "768618ba5694d6e0275e540e3d19e80fd7d9cac6d558abb3ba7eae7bcecd5fec"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/corner-shop.webp",
       "bytes": 70702,
       "sha256": "f48fc05e69d77524beeeb4c88d8b04934353ca912c4def1975ed2105c7a91790"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/debate-hall-256.webp",
+      "bytes": 21062,
+      "sha256": "f76d07ed8ee3ffed38c126c4633cb91d9740b90f034a35c90d344ed3989e4056"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/debate-hall.webp",
@@ -33,9 +63,19 @@
       "sha256": "e7a4e8657eb12fb1ec3e14cd3cedb917633eed72e200cb9095c80f44d30b7380"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/grand-bazaar-256.webp",
+      "bytes": 23698,
+      "sha256": "a8432c23cc54b0f60e14233c860a7d316a1920d7d26e1051623a862e818e17e5"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/grand-bazaar.webp",
       "bytes": 76144,
       "sha256": "fd8e1ec6dc5b6205f656d19d275c10fe67c98840d9a0da0961c6a46810015add"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/grand-clock-256.webp",
+      "bytes": 17288,
+      "sha256": "5c6e98520748101166888a92ed8bc7e9a3d8161ae0c65431df9a7d703853993d"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/grand-clock.webp",
@@ -43,9 +83,19 @@
       "sha256": "d79644870645fce2af2c7d59a62a097b0649f9c88e11dc72e7c75372ebea759f"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/high-court-256.webp",
+      "bytes": 21926,
+      "sha256": "8c64a896bc503fc1af4eec8ad82bb994f0911e6e328da96f952bc01a587fb293"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/high-court.webp",
       "bytes": 69686,
       "sha256": "e7d94cb4d0327c800b2a5cb4cc8a2105bfc3842e2ab51c4ad0955c7cca806ed0"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/lala-monument-256.webp",
+      "bytes": 16540,
+      "sha256": "d5be94017600253669a9387145d9db225a04d28339a806d143ed6f3503704e62"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/lala-monument.webp",
@@ -53,9 +103,19 @@
       "sha256": "41297375e1c08a479ee74f979e6030f91f021858e6cad7bf252c702b0480fa3f"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/night-market-256.webp",
+      "bytes": 26104,
+      "sha256": "e021df603f45ad4d899406f1a694aaa760abaed322abf0e61840c696a03e8129"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/night-market.webp",
       "bytes": 81262,
       "sha256": "323ec33291c726b592ae32a7a141430c7ff2c18eda16673002392d561a1d68ae"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/observatory-256.webp",
+      "bytes": 18590,
+      "sha256": "673d52a64897957c7dc497bc26a6945cfa710acd838c2a0600257ea42bba635e"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/observatory.webp",
@@ -63,9 +123,19 @@
       "sha256": "9dfdd80b26a66bb0d8a6437d36fa1c49d7225f833d7194dd941b9728883bd787"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/opera-house-256.webp",
+      "bytes": 22656,
+      "sha256": "4b2bcbeec57cb4bc2764fb9e8fbefb9fd524ce2ac59e22125f983e2b45ed58f4"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/opera-house.webp",
       "bytes": 73276,
       "sha256": "1206a1b60049e341f69042f44f8603600e9fbb3e8e63e2ec442a7d72d24ca883"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/petition-kiosk-256.webp",
+      "bytes": 18728,
+      "sha256": "7085d37d823f4456438d84da66d617c920b5fa4c41a79ce0fed57b62d7ec5461"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/petition-kiosk.webp",
@@ -73,9 +143,19 @@
       "sha256": "5e93efec678a20995c271bc9dbc4afc57164a5f153edd2b0f4877d6d0bb9694e"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/pocket-theatre-256.webp",
+      "bytes": 19014,
+      "sha256": "38b97f92192a3a4f66f84d2baf2cb29cebb7e01b1c7fc3365970f74ccb274890"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/pocket-theatre.webp",
       "bytes": 58408,
       "sha256": "52254893f8e6de0ca0e45660d97e97043a4aae0613fe37b7accdd852e65ea93a"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/public-library-256.webp",
+      "bytes": 20928,
+      "sha256": "2d2e4cc2ac6b1a42ebf9a34599ad966c353acd03289f6cad6f37208b797492d6"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/public-library.webp",
@@ -83,9 +163,19 @@
       "sha256": "acb7a89b9051f479e5cc1c6e4f7bd5045bbdc17d7ba736b3f2dd7e32ed40d8f1"
     },
     {
+      "path": "public/assets/odd-laws-society/buildings/quilt-bridge-256.webp",
+      "bytes": 16938,
+      "sha256": "9df37e075c9a67d4b69e70e4224c63045eee1c76f0930d81d5413abaa033621e"
+    },
+    {
       "path": "public/assets/odd-laws-society/buildings/quilt-bridge.webp",
       "bytes": 52342,
       "sha256": "43e7b7b97fc9aeae3731ced9af2314d8b14c0dd3308effb84ec6bcc02402f1d2"
+    },
+    {
+      "path": "public/assets/odd-laws-society/buildings/tea-stall-256.webp",
+      "bytes": 19258,
+      "sha256": "513787abd1dc614fd2ff3b68b538fce7d8b4f10a97f66765bd0f423032343fd8"
     },
     {
       "path": "public/assets/odd-laws-society/buildings/tea-stall.webp",
@@ -93,9 +183,19 @@
       "sha256": "ab437cc56fa84b1481c1f350543e14f4c0202568e1e6bd251ba51c353e149e8d"
     },
     {
+      "path": "public/assets/odd-laws-society/characters/jon-acting-256.webp",
+      "bytes": 17306,
+      "sha256": "4384a3a6313c8d1f51d5dff528a5b995d809d45ec2aec171802edfc47f18fffa"
+    },
+    {
       "path": "public/assets/odd-laws-society/characters/jon-acting.webp",
       "bytes": 53440,
       "sha256": "c4c89e37cc4f4874f12273f27ae932dd23280d5d39f4873c9c97a54092ac2796"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/jon-celebrate-256.webp",
+      "bytes": 15414,
+      "sha256": "c6f7dc7824a83e8234593649e3509ad9816c76fc56d3019b6bfa1eddfbfeef53"
     },
     {
       "path": "public/assets/odd-laws-society/characters/jon-celebrate.webp",
@@ -103,9 +203,19 @@
       "sha256": "ccff78475da816c2109b8a887755c1f8ba79596afc976684f03b86fd54f00722"
     },
     {
+      "path": "public/assets/odd-laws-society/characters/jon-disappointed-256.webp",
+      "bytes": 14056,
+      "sha256": "94ea9f887ed9b8030ef9645084c39aac19d5cdbc32b0b4583ab2697192d0760f"
+    },
+    {
       "path": "public/assets/odd-laws-society/characters/jon-disappointed.webp",
       "bytes": 41926,
       "sha256": "f5820757416b686892c142f2c06b03c8b3734cadb7173f0c28939043b7d5a18b"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/jon-idle-256.webp",
+      "bytes": 15800,
+      "sha256": "1b2c4ba027a9451ec4aaf18fa2b0e7cde9d0fc3a92228e708c399c9104cd540f"
     },
     {
       "path": "public/assets/odd-laws-society/characters/jon-idle.webp",
@@ -113,9 +223,19 @@
       "sha256": "e444de2e8b4ef6381777b2c719b44ec31e1016b57192531a1922317a7bf3d733"
     },
     {
+      "path": "public/assets/odd-laws-society/characters/jon-thinking-256.webp",
+      "bytes": 17264,
+      "sha256": "3bd5961965546130068a80b4cce5049a9d2ae55d7df86755e035f7b5d6dcc4a6"
+    },
+    {
       "path": "public/assets/odd-laws-society/characters/jon-thinking.webp",
       "bytes": 53646,
       "sha256": "f334893a5d13a771eb9a241682a049f24099aa18be1a77c785948ee11aabcfcc"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/lala-celebrate-256.webp",
+      "bytes": 18168,
+      "sha256": "07a499e5bf22769d5100b1093cbcbe3c503492fbe6bf110a69834b15ca8b9b8d"
     },
     {
       "path": "public/assets/odd-laws-society/characters/lala-celebrate.webp",
@@ -123,9 +243,19 @@
       "sha256": "7386272e132026a66502fcebbfe50c69d114d5bc3a303bf065a7502b61a3365c"
     },
     {
+      "path": "public/assets/odd-laws-society/characters/lala-idle-256.webp",
+      "bytes": 17978,
+      "sha256": "b2e6b67896d8744ce14a20a17f4c671d2d5488e0573c36169901a53abac5cb00"
+    },
+    {
       "path": "public/assets/odd-laws-society/characters/lala-idle.webp",
       "bytes": 56784,
       "sha256": "ba4ddd2f699c06ee5550fa13444de15e920de3bcec87e6567809aa5fe210e753"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/lala-stamp-256.webp",
+      "bytes": 18660,
+      "sha256": "27dfa80a6972483f7105e37c777bb77be83ff2d42a9a45d7b739796c48fa736f"
     },
     {
       "path": "public/assets/odd-laws-society/characters/lala-stamp.webp",
@@ -133,9 +263,19 @@
       "sha256": "b200909f202e15254297a6576c17be4d60c44a385599e39fbec80e2674884978"
     },
     {
+      "path": "public/assets/odd-laws-society/characters/lala-thinking-256.webp",
+      "bytes": 16302,
+      "sha256": "22f590cf29bad5bd8fe1b036a9a96b2476af41315ef9e64f1acd44902c767bb1"
+    },
+    {
       "path": "public/assets/odd-laws-society/characters/lala-thinking.webp",
       "bytes": 51130,
       "sha256": "729dc2b2c4c10391a936a6fc080fa54d7d8a897462177c9ad2b67c7a0083b5f0"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/lydia-acting-256.webp",
+      "bytes": 19340,
+      "sha256": "760c483dc8266332785e55db410ea1538b6669bc8af9c9ecabc6645ced71093e"
     },
     {
       "path": "public/assets/odd-laws-society/characters/lydia-acting.webp",
@@ -143,9 +283,19 @@
       "sha256": "751b672f1c4b0bf4b63feba777a49afba4e47759fcae724bfd042177530b4cb5"
     },
     {
+      "path": "public/assets/odd-laws-society/characters/lydia-celebrate-256.webp",
+      "bytes": 18172,
+      "sha256": "64e525b156879105e43f36e76eb58364b5053c5e8f7d594034a67a094c187f27"
+    },
+    {
       "path": "public/assets/odd-laws-society/characters/lydia-celebrate.webp",
       "bytes": 55318,
       "sha256": "f46d3354293fc75d82424f33c0177c335b94bc4e330109f0612ffdc6e4b94912"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/lydia-disappointed-256.webp",
+      "bytes": 18650,
+      "sha256": "bb7b7b267c44c9b23db5ba8b6ebb767f8b052daaed3d4f2bdb531b5b98dc84a4"
     },
     {
       "path": "public/assets/odd-laws-society/characters/lydia-disappointed.webp",
@@ -153,9 +303,19 @@
       "sha256": "4d9822f14cdfed18f15f51e826f07a76bb971e0da06d654f25ca73f4e086cfd7"
     },
     {
+      "path": "public/assets/odd-laws-society/characters/lydia-idle-256.webp",
+      "bytes": 19704,
+      "sha256": "dafe69fc71871c3c22195a209bb436513033d814d7089d6596e4404ff048c8b7"
+    },
+    {
       "path": "public/assets/odd-laws-society/characters/lydia-idle.webp",
       "bytes": 60878,
       "sha256": "7882bf16b2b99cd1e7603039f336c84520bb893bcc128739f19e17c9e480a6ff"
+    },
+    {
+      "path": "public/assets/odd-laws-society/characters/lydia-thinking-256.webp",
+      "bytes": 18006,
+      "sha256": "2a07e23bc3c16277002cc510de89cb6b217440e85ac904f703c27a21ba1015c3"
     },
     {
       "path": "public/assets/odd-laws-society/characters/lydia-thinking.webp",
@@ -244,8 +404,8 @@
     },
     {
       "path": "public/assets/odd-laws-society/manifest.json",
-      "bytes": 23500,
-      "sha256": "c8d6a4a3bca8fd9d230bb610bfbf04878a0b2a9d62aa1a809fe6485b4cb0e86b"
+      "bytes": 31925,
+      "sha256": "9c72281a986d64378daa88844bc0f92219762aba55df58a886391095b78ff5b4"
     },
     {
       "path": "public/assets/odd-laws-society/props/coin.svg",
