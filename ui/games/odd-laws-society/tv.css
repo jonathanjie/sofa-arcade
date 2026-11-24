@@ -60,7 +60,7 @@
 .ols .ols-tv-card-top { display: flex; align-items: center; justify-content: space-between; gap: 4px; font-size: clamp(10px, .65vw, 12px); }
 .ols .ols-tv-card-top .ols-guild, .ols .ols-tv-card-top .ols-guild-label { gap: 3px; font-size: inherit; }
 .ols .ols-tv-card-top svg { width: 15px; height: 15px; }
-.ols .ols-tv-stock { color: #5f6858; font-size: clamp(10px, .65vw, 12px); white-space: nowrap; }
+.ols .ols-tv-stock { color: var(--tv-ink); font-size: clamp(10px, .65vw, 12px); white-space: nowrap; }
 .ols .ols-tv-building-art { display: block; height: clamp(55px, 6.2vw, 115px); margin: 4px -4px 2px; }
 .ols .ols-tv-building-art > *, .ols .ols-tv-building-art img, .ols .ols-tv-building-art svg { width: 100%; height: 100%; object-fit: contain; }
 .ols .ols-tv-building-name { font: 600 clamp(14px, 1.03vw, 20px)/1.1 Georgia, serif; min-height: 2.2em; display: flex; align-items: center; }
@@ -103,7 +103,7 @@
 .ols .ols-tv-envelope-lock { position: absolute; bottom: -3px; right: -1px; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: #e2e7d3; }
 .ols .ols-tv-envelope-lock svg { width: 15px; height: 15px; }
 .ols .ols-tv-ballot strong { font-size: clamp(14px, 1vw, 19px); }
-.ols .ols-tv-ballot > span:last-child { font-size: clamp(11px, .72vw, 14px); color: #65735c; }
+.ols .ols-tv-ballot > span:last-child { font-size: clamp(11px, .72vw, 14px); color: var(--tv-ink); }
 .ols .ols-tv-ballot.is-sealed { border-style: solid; border-color: #8d9b79; background: #e2e7d3; }
 .ols .ols-tv-ballot.is-sealed .ols-tv-envelope { color: #6d8057; }
 .ols .ols-tv-council-note { margin-top: 12px !important; font-size: clamp(12px, .83vw, 16px); text-align: center; color: #626f5c; }
@@ -293,11 +293,9 @@
 
 @media (min-width: 1000px) {
   .ols .ols-tv-ballot > span:last-child,
-  .ols .ols-tv-card-top .ols-tv-stock {
-    color: var(--tv-ink);
-    font-size: var(--tv-type-label, 18px);
-  }
+  .ols .ols-tv-card-top .ols-tv-stock { font-size: var(--tv-type-label, 18px); }
   .ols .ols-tv-borough-foot > span:first-child {
+    color: var(--tv-ink);
     font-size: var(--tv-type-emphasis, 20px);
   }
 }
