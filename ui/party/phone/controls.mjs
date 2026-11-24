@@ -52,7 +52,7 @@ export function mountStick(root, { label = 'Direction', onInput }) {
   let pointer = null;
   const stop = () => {
     pointer = null;
-    sampler.offer({ x: 0, y: 0 });
+    if (!pad.disabled) sampler.offer({ x: 0, y: 0 });
   };
   function steer(event) {
     if (event.pointerId !== pointer) return;
@@ -62,7 +62,7 @@ export function mountStick(root, { label = 'Direction', onInput }) {
     sampler.offer({ x, y });
   }
   pad.addEventListener('pointerdown', event => {
-    if (pointer !== null || event.button !== 0) return;
+    if (pad.disabled || pointer !== null || event.button !== 0) return;
     pointer = event.pointerId;
     pad.setPointerCapture(pointer);
     steer(event);
@@ -70,7 +70,7 @@ export function mountStick(root, { label = 'Direction', onInput }) {
   pad.addEventListener('pointermove', steer);
   pad.addEventListener('lostpointercapture', event => { if (event.pointerId === pointer) stop(); });
   pad.addEventListener('keydown', event => {
-    if (!Object.hasOwn(keys, event.key)) return;
+    if (pad.disabled || !Object.hasOwn(keys, event.key)) return;
     event.preventDefault();
     sampler.offer(keys[event.key]);
   });
@@ -79,12 +79,12 @@ export function mountStick(root, { label = 'Direction', onInput }) {
   return {
     setEnabled(value) {
       if (pad.disabled === !value) return;
+      pad.disabled = !value;
       if (!value) {
         if (pointer !== null && pad.hasPointerCapture(pointer)) pad.releasePointerCapture(pointer);
         pointer = null;
         sampler.clear();
       }
-      pad.disabled = !value;
     },
     dispose() { pad.remove(); sampler.clear(); },
   };
@@ -120,6 +120,7 @@ export function mountTilt(root, { onInput }) {
   let disposed = false;
   let enabled = true;
   let listening = false;
+  let asking = false;
   let neutral;
   function updateMode(label) {
     mode.textContent = label;
@@ -139,23 +140,28 @@ export function mountTilt(root, { onInput }) {
     });
   }
   function stop() {
+    const wasTilting = Boolean(neutral);
     view.removeEventListener('deviceorientation', motion);
     sampler.clear();
     listening = false;
     neutral = undefined;
     touch.setEnabled(enabled);
+    if (wasTilting && enabled && !disposed) onInput({ x: 0, y: 0 });
   }
   mode.addEventListener('click', async () => {
+    if (asking || !enabled || !sensor || mode.hidden) return;
     if (listening) {
       stop();
       updateMode('Enable tilt');
       return;
     }
+    asking = true;
     mode.disabled = true;
     let granted = true;
     try {
       if (typeof sensor.requestPermission === 'function') granted = await sensor.requestPermission() === 'granted';
     } catch { granted = false; }
+    asking = false;
     if (disposed) return;
     if (granted) {
       listening = true;
@@ -168,8 +174,12 @@ export function mountTilt(root, { onInput }) {
     setEnabled(value) {
       enabled = value;
       touch.setEnabled(value && !neutral);
-      mode.disabled = !value;
-      if (!value) sampler.clear();
+      mode.disabled = !value || asking;
+      if (!value) {
+        sampler.clear();
+        neutral = undefined;
+        if (listening) updateMode('Cancel tilt');
+      }
     },
     dispose() {
       disposed = true;

@@ -112,13 +112,13 @@ test('input validation rejects spoofed, duplicate, stale and over-budget message
   assert.equal(enqueue(0, { playerId: second.id }), false);
   assert.equal(enqueue(0, { round: 0 }), false);
   assert.equal(enqueue(0, { input: { kind: 'tap', power: 999 } }), false);
-  for (let seq = 0; seq < 7; seq++) assert.equal(enqueue(seq), true);
-  assert.equal(enqueue(6), false);
+  for (let seq = 0; seq < 4; seq++) assert.equal(enqueue(seq), true);
+  assert.equal(enqueue(3), false);
   assert.equal(enqueue(7), false);
   at(3050);
   rooms.tick(3050);
   assert.equal(enqueue(7), true);
-  assert.equal(rooms.project(room, first).state.distance, 7);
+  assert.equal(rooms.project(room, first).state.distance, 4);
   assert.equal(rooms.project(room, second).state.distance, 0);
   at(3680);
   rooms.tick(3680);
@@ -174,4 +174,89 @@ test('a fenced connection cannot submit input after replacement', () => {
   const input = { type: 'input', round: 1, seq: 0, input: { kind: 'tap' } };
   assert.equal(rooms.acceptInput(room, first, input, original), false);
   assert.equal(rooms.acceptInput(room, first, input, replacement), true);
+});
+
+test('an explicit host end releases seats, credentials, and the room slot', () => {
+  const { rooms, host, room, join } = fixture();
+  const tv = rooms.authorize(room, host.token);
+  const phone = rooms.authorize(room, join(0).token);
+  const closed = [];
+  rooms.attach(tv, { terminate: code => closed.push(code) });
+  rooms.attach(phone, { terminate: code => closed.push(code) });
+  assert.throws(() => rooms.command(room, phone, { type: 'end' }), { code: 'forbidden' });
+  assert.throws(() => rooms.command(room, tv, { type: 'end', extra: true }), { code: 'invalid_command' });
+  rooms.command(room, tv, { type: 'end' });
+  assert.deepEqual(closed, [4403, 4403]);
+  assert.equal(room.seats.size, 0);
+  assert.equal(rooms.find(host.code), undefined);
+  assert.equal(rooms.authorize(room, host.token), null);
+});
+
+test('idle rooms release the create receipt and seat holds', () => {
+  const { rooms, host, room, join, at } = fixture();
+  const credential = join(0);
+  at(1_800_000);
+  rooms.tick(1_800_000);
+  assert.equal(rooms.find(host.code), undefined);
+  assert.equal(room.seats.size, 0);
+  assert.equal(rooms.authorize(room, credential.token), null);
+  assert.equal(rooms.authorize(room, host.token), null);
+  const next = rooms.create({ gameId: 'tap-race', requestId: 'host'.repeat(8) });
+  assert.notEqual(next.token, host.token);
+});
+
+test('one network peer cannot occupy the party room or seat capacity', () => {
+  const { rooms, room } = fixture();
+  const peer = '192.0.2.1';
+  const create = (id, address) => rooms.create({ gameId: 'tap-race', requestId: id.repeat(32) }, address);
+  const first = create('a', peer);
+  create('b', peer);
+  assert.deepEqual(create('a', peer), first);
+  assert.throws(() => create('c', peer), { code: 'party_peer_capacity' });
+  assert.ok(create('d', '192.0.2.2'));
+
+  const join = (look, requestId, address = peer) => rooms.join(room, { look, name: 'Mouse', requestId: requestId.repeat(32) }, address);
+  const seat = join(0, 'a');
+  assert.deepEqual(join(0, 'a'), seat);
+  join(1, 'b');
+  assert.throws(() => join(2, 'c'), { code: 'party_peer_capacity' });
+  assert.ok(join(2, 'd', '192.0.2.2'));
+});
+
+test('accepted input survives an ordinary disconnect before the next tick', () => {
+  const { rooms, host, room, join, at } = fixture();
+  const tv = rooms.authorize(room, host.token);
+  const phone = rooms.authorize(room, join(0).token);
+  const connection = { lastSeq: -1 };
+  rooms.attach(phone, connection);
+  const other = rooms.authorize(room, join(1).token);
+  rooms.attach(other, {});
+  for (const seat of [phone, other]) rooms.command(room, seat, { type: 'ready', value: true });
+  rooms.command(room, tv, { type: 'start', round: 0 });
+  for (let time = 50; time <= 3000; time += 50) {
+    at(time);
+    rooms.tick(time);
+  }
+  assert.ok(rooms.acceptInput(room, phone, { type: 'input', round: 1, seq: 0, input: { kind: 'tap' } }, connection));
+  rooms.detach(phone, connection, room);
+  at(3050);
+  rooms.tick(3050);
+  assert.equal(rooms.project(room, phone).state.distance, 1);
+});
+
+test('a short gap across the countdown applies only ticks after the start', () => {
+  const { rooms, host, room, join, at } = fixture();
+  for (const look of [0, 1]) {
+    const seat = rooms.authorize(room, join(look).token);
+    rooms.attach(seat, {});
+    rooms.command(room, seat, { type: 'ready', value: true });
+  }
+  rooms.command(room, rooms.authorize(room, host.token), { type: 'start', round: 0 });
+  for (const time of [900, 1800, 2700, 3175]) {
+    at(time);
+    rooms.tick(time);
+  }
+  assert.equal(room.phase, 'playing');
+  assert.equal(room.activeRound.state.elapsedMs, 150);
+  assert.equal(room.activeRound.remainder, 25);
 });

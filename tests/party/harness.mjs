@@ -2,7 +2,9 @@ import { randomBytes } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { setImmediate as settle } from 'node:timers/promises';
 import { WebSocket } from 'ws';
+import { getPartyGame } from '../../games/party/registry.mjs';
 import { startLanServer } from '../../server/lan.mjs';
+import { PARTY_TICK_MS } from '../../server/realtime/party/round.mjs';
 
 export function createManualClock() {
   let time = 0;
@@ -55,27 +57,35 @@ export async function launchPartyHarness(t, { gameId, manual = true, ...hostOpti
     return value;
   }
 
-  function connect(credential) {
+  function connect(credential, options = {}) {
     const url = new URL('/api/realtime/party', host.origin);
     url.protocol = 'ws:';
-    const socket = new WebSocket(url, { origin: host.origin });
+    const socket = new WebSocket(url, { ...options, origin: host.origin });
     clients.add(socket);
     const packets = [];
     let view;
     let seq = 0;
+    let welcomed = false;
     const send = value => socket.send(JSON.stringify(value));
     const welcome = new Promise((resolve, reject) => {
       socket.once('error', reject);
       socket.once('open', () => send({ type: 'auth', protocol: 1, code: credential.code, token: credential.token }));
       socket.on('message', bytes => {
         const packet = JSON.parse(bytes);
+        if (!welcomed && packet.type !== 'welcome') {
+          reject(new Error(`Expected welcome first, received ${packet.type}`));
+          socket.terminate();
+          return;
+        }
         if (clock) {
           // Server frames are unmasked. Count the WebSocket header and text payload.
           const header = bytes.length < 126 ? 2 : 4;
           packets.push({ at: clock.now(), type: packet.type, bytes: bytes.length + header, phase: packet.view?.phase });
         }
         if (packet.view) view = packet.view;
-        if (packet.type === 'welcome') resolve({
+        if (packet.type !== 'welcome') return;
+        welcomed = true;
+        resolve({
           credential, playerId: credential.playerId, packets, send,
           get view() { return view; },
           input(input) { send({ type: 'input', round: view.round, seq: seq++, input }); },
@@ -90,7 +100,7 @@ export async function launchPartyHarness(t, { gameId, manual = true, ...hostOpti
     return Promise.race([welcome, disconnected.then(code => { throw new Error(`Socket closed before welcome: ${code}`); })]);
   }
 
-  async function advance(ms = 50) {
+  async function advance(ms = PARTY_TICK_MS) {
     assert.ok(clock, 'manual clock is required');
     await settle();
     clock.advance(ms);
@@ -101,7 +111,7 @@ export async function launchPartyHarness(t, { gameId, manual = true, ...hostOpti
   async function until(predicate, { ticks = 500, drive } = {}) {
     for (let tick = 0; tick < ticks; tick++) {
       if (predicate()) return;
-      drive?.(tick);
+      await drive?.(tick);
       await advance();
     }
     assert.ok(predicate(), 'party did not reach expected state within the tick budget');
@@ -115,25 +125,28 @@ export async function launchPartyHarness(t, { gameId, manual = true, ...hostOpti
 }
 
 /** Drives the platform boundaries. Each game supplies a legal input driver for one tick. */
-export async function runPartyRounds(t, { gameId, drive, assertResults }) {
+export async function runPartyRounds(t, { gameId, drive, assertResults, playerCount = 16 }) {
+  const game = getPartyGame(gameId);
+  assert.ok(game && Number.isInteger(playerCount) && playerCount >= game.minPlayers && playerCount <= game.maxPlayers);
+  const playTicks = Math.ceil(game.durationMs / PARTY_TICK_MS) + 10;
   const fixture = await launchPartyHarness(t, { gameId });
   const host = await fixture.create();
   let tv = await fixture.connect(host);
-  const phones = await Promise.all(Array.from({ length: 16 }, async (_, look) => {
+  const phones = await Promise.all(Array.from({ length: playerCount }, async (_, look) => {
     const phone = await fixture.connect(await fixture.join(host.code, look));
     phone.send({ type: 'ready', value: true });
     return phone;
   }));
   const ready = () => tv.view.players.filter(player => player.ready && player.connected).length;
-  await fixture.until(() => ready() === 16, { ticks: 12 });
+  await fixture.until(() => ready() === playerCount, { ticks: 12 });
   const originals = [tv, ...phones];
   const [newTv, ...newPhones] = await Promise.all(originals.map(client => fixture.connect(client.credential)));
-  assert.deepEqual(await Promise.all(originals.map(client => client.disconnected)), Array(17).fill(4409));
+  assert.deepEqual(await Promise.all(originals.map(client => client.disconnected)), Array(playerCount + 1).fill(4409));
   tv = newTv;
   phones.splice(0, phones.length, ...newPhones);
   tv.send({ type: 'start', round: 0 });
   await fixture.until(() => phones.every(phone => phone.view.phase === 'playing'), { ticks: 80 });
-  assert.equal(tv.view.roster.length, 16);
+  assert.equal(tv.view.roster.length, playerCount);
 
   const original = phones[1];
   await original.disconnect();
@@ -145,24 +158,24 @@ export async function runPartyRounds(t, { gameId, drive, assertResults }) {
   const removed = phones.pop();
   tv.send({ type: 'kick', playerId: removed.playerId });
   assert.equal(await removed.disconnected, 4403);
-  const late = await fixture.connect(await fixture.join(host.code, 15, 'Late Guest'));
+  const late = await fixture.connect(await fixture.join(host.code, playerCount - 1, 'Late Guest'));
   late.send({ type: 'ready', value: true });
   assert.equal(late.view.waiting, true);
   assert.equal(late.view.state, null);
-  assert.equal(tv.view.roster.length, 16);
+  assert.equal(tv.view.roster.length, playerCount);
 
   await fixture.until(() => tv.view.phase === 'results', {
-    drive: tick => drive(phones, tick),
+    ticks: playTicks, drive: tick => drive(phones, tick, 1),
   });
   assertResults?.(tv.view, phones, 1);
-  await fixture.until(() => ready() === 16 && late.view.phase === 'results', { ticks: 12 });
+  await fixture.until(() => ready() === playerCount && late.view.phase === 'results', { ticks: 12 });
   phones.push(late);
   tv.send({ type: 'start', round: 1 });
   await fixture.until(() => late.view.round === 2 && late.view.phase === 'playing', { ticks: 80 });
   assert.equal(late.view.waiting, false);
-  assert.equal(tv.view.roster.length, 16);
+  assert.equal(tv.view.roster.length, playerCount);
   await fixture.until(() => tv.view.round === 2 && tv.view.phase === 'results', {
-    drive: tick => drive(phones, tick),
+    ticks: playTicks, drive: tick => drive(phones, tick, 2),
   });
   assertResults?.(tv.view, phones, 2);
   return { ...fixture, tv, phones };

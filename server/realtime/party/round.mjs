@@ -53,23 +53,23 @@ function finishRound(room, notice) {
 export function tickRound(room, now) {
   if (!isActive(room.phase)) return;
   const round = room.activeRound;
-  const { ticks, remainder, interrupted } = advancePartyClock(now - round.previousAt, round.remainder);
+  const elapsed = now - round.previousAt;
   round.previousAt = now;
-  round.remainder = remainder;
-  if (interrupted) {
+  if (elapsed > INTERRUPT_MS) {
     round.inputs.length = 0;
     room.activeRound = null;
     room.phase = 'lobby';
     room.notice = 'host_stall';
     return;
   }
+  let elapsedPlaying = elapsed;
   if (room.phase === 'countdown') {
-    if (now >= round.startsAt) {
-      room.phase = 'playing';
-      round.remainder = 0;
-    }
-    return;
+    if (now < round.startsAt) return;
+    room.phase = 'playing';
+    elapsedPlaying = now - round.startsAt;
   }
+  const { ticks, remainder } = advancePartyClock(elapsedPlaying, round.remainder);
+  round.remainder = remainder;
   for (let tick = 0; tick < ticks; tick++) {
     const inputs = round.inputs.splice(0);
     round.state = room.game.step(round.state, inputs, PARTY_TICK_MS);

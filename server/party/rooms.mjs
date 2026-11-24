@@ -10,6 +10,9 @@ export const PARTY_ROOM_LIMITS = Object.freeze({
   idleRoomMs: 30 * 60_000,
   nameLength: 12,
   bodyBytes: 1024,
+  roomsPerPeer: 2,
+  seatsPerPeer: 2,
+  joinsPerPeer: 16,
 });
 
 const CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
@@ -36,19 +39,20 @@ function cleanName(value) {
 function newSeat(id, token, time, extra = {}) {
   return {
     id, tokenHash: digest(token), connection: null, expiresAt: time + PARTY_ROOM_LIMITS.seatHoldMs,
-    ready: false, inputBudget: { at: time, tokens: PARTY_LIMITS.inputBurst },
+    ready: false, nextError: time, inputBudget: { at: time, tokens: PARTY_LIMITS.inputBurst },
     messageBudget: { at: time, tokens: PARTY_LIMITS.messageBurst }, ...extra,
   };
 }
 
 /** Process-local authority. No party records use the two-seat database. */
-export function createPartyRooms({ now, seed = () => randomBytes(16).toString('hex') }) {
+export function createPartyRooms({ now, seed = () => randomBytes(16).toString('hex'), onRoomCountChange = () => {} }) {
   const rooms = new Map();
   const createReceipts = new Map();
   const secret = randomBytes(32);
+  let closed = false;
   // Derive retry tokens so the store only keeps digests and cannot broadcast a bearer.
-  const tokenFor = (purpose, code, key) => createHmac('sha256', secret)
-    .update(`${purpose}:${code}:${key}`).digest('base64url');
+  const tokenFor = (purpose, room, key) => createHmac('sha256', secret)
+    .update(`${purpose}:${room.nonce}:${key}`).digest('base64url');
 
   function removeSeat(room, seat) {
     room.seats.delete(seat.id);
@@ -62,18 +66,33 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     }
   }
 
+  function endRoom(room) {
+    rooms.delete(room.code);
+    createReceipts.delete(room.createKey);
+    for (const seat of [room.host, ...room.seats.values()]) {
+      const connection = seat.connection;
+      seat.connection = null;
+      connection?.terminate?.(4403);
+    }
+    room.seats.clear();
+    room.revoked.clear();
+    room.peerJoins.clear();
+    room.activeRound = null;
+    onRoomCountChange(rooms.size);
+  }
+
   function sweep(time) {
     for (const room of rooms.values()) {
       sweepRoom(room, time);
       if (!room.host.connection && ![...room.seats.values()].some(seat => seat.connection)
         && time - room.touchedAt >= PARTY_ROOM_LIMITS.idleRoomMs) {
-        rooms.delete(room.code);
-        createReceipts.delete(room.createKey);
+        endRoom(room);
       }
     }
   }
 
-  function create(body) {
+  function create(body, peer) {
+    if (closed) fail(503, 'party_closed', 'The local host is closing.');
     const game = getPartyGame(body?.gameId);
     if (!exactFields(body, 'gameId', 'requestId') || !game || !retryKey(body.requestId)) {
       fail(400, 'invalid_create', 'Choose an available party game.');
@@ -84,18 +103,24 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     const previous = createReceipts.get(key);
     if (previous) {
       if (previous.initialGameId !== game.id) fail(409, 'retry_mismatch', 'This request has already been used.');
-      return { code: previous.code, token: tokenFor('host', previous.code, key) };
+      return { code: previous.code, token: tokenFor('host', previous, key) };
+    }
+    if (peer && [...rooms.values()].filter(room => room.creatorPeer === peer).length >= PARTY_ROOM_LIMITS.roomsPerPeer) {
+      fail(429, 'party_peer_capacity', 'This device has too many open parties.');
     }
     if (rooms.size >= PARTY_ROOM_LIMITS.rooms) fail(503, 'party_capacity', 'The host has too many open parties.');
     let code;
     do { code = generateCode(); } while (rooms.has(code));
-    const token = tokenFor('host', code, key);
     const room = {
-      code, game, initialGameId: game.id, createKey: key, host: newSeat('host', token, time),
-      seats: new Map(), revoked: new Set(), nextPlayer: 1, phase: 'lobby', round: 0, activeRound: null, notice: null, touchedAt: time,
+      code, game, nonce: randomBytes(16).toString('hex'), initialGameId: game.id, createKey: key, creatorPeer: peer,
+      seats: new Map(), revoked: new Set(), peerJoins: new Map(),
+      nextPlayer: 1, phase: 'lobby', round: 0, activeRound: null, notice: null, touchedAt: time,
     };
+    const token = tokenFor('host', room, key);
+    room.host = newSeat('host', token, time);
     createReceipts.set(key, room);
     rooms.set(code, room);
+    onRoomCountChange(rooms.size);
     return { code, token };
   }
 
@@ -106,7 +131,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
   }
 
   function authorize(room, token) {
-    if (!room || typeof token !== 'string' || !CREDENTIAL.test(token)) return null;
+    if (!room || rooms.get(room.code) !== room || typeof token !== 'string' || !CREDENTIAL.test(token)) return null;
     sweepRoom(room, now());
     const hash = digest(token);
     for (const seat of [room.host, ...room.seats.values()]) {
@@ -115,7 +140,8 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     return null;
   }
 
-  function join(room, body) {
+  function join(room, body, peer) {
+    if (rooms.get(room.code) !== room) fail(404, 'party_not_found', 'That party is not available.');
     const name = cleanName(body?.name);
     if (!exactFields(body, 'name', 'look', 'requestId') || !name || [...name].length > PARTY_ROOM_LIMITS.nameLength
       || !isLook(body.look) || !retryKey(body.requestId)) {
@@ -124,7 +150,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     const time = now();
     sweepRoom(room, time);
     const key = digest(body.requestId).toString('hex');
-    const token = tokenFor('player', room.code, key);
+    const token = tokenFor('player', room, key);
     const previous = authorize(room, token);
     if (previous) {
       if (previous.name !== name || previous.look !== body.look) fail(409, 'retry_mismatch', 'This request has already been used.');
@@ -132,11 +158,17 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     }
     // Keep bounded tombstones so a kicked or expired join cannot revive by replay.
     if (room.revoked.has(key)) fail(410, 'seat_lost', 'That seat has expired. Join again.');
+    const previousJoins = room.peerJoins.get(peer) ?? 0;
+    if (peer && (previousJoins >= PARTY_ROOM_LIMITS.joinsPerPeer
+      || [...room.seats.values()].filter(seat => seat.peer === peer).length >= PARTY_ROOM_LIMITS.seatsPerPeer)) {
+      fail(429, 'party_peer_capacity', 'This device has reached its seat limit for this party.');
+    }
     if (room.nextPlayer > PARTY_ROOM_LIMITS.joinsPerRoom) fail(409, 'party_retired', 'Start a new party for more guests.');
     if (room.seats.size >= MAX_PLAYERS) fail(409, 'party_full', 'This party is full.');
     if ([...room.seats.values()].some(seat => seat.look === body.look)) fail(409, 'look_taken', 'That look is taken. Choose another.');
     const id = `p${room.nextPlayer++}`;
-    room.seats.set(id, newSeat(id, token, time, { name, look: body.look, retryKey: key }));
+    room.seats.set(id, newSeat(id, token, time, { name, look: body.look, retryKey: key, peer }));
+    if (peer) room.peerJoins.set(peer, previousJoins + 1);
     room.touchedAt = time;
     return { code: room.code, token, playerId: id };
   }
@@ -160,10 +192,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     if (seat.connection !== connection) return;
     seat.connection = null;
     seat.expiresAt = now() + PARTY_ROOM_LIMITS.seatHoldMs;
-    if (room) {
-      discardInputs(room, seat);
-      room.touchedAt = now();
-    }
+    if (room) room.touchedAt = now();
   }
 
   function command(room, seat, message) {
@@ -176,7 +205,12 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
       seat.ready = message.value;
       return;
     }
-    if (message?.type === 'kick' && exactFields(message, 'type', 'playerId') && typeof message.playerId === 'string') {
+    if (message?.type === 'end' && exactFields(message, 'type')) {
+      endRoom(room);
+      return;
+    }
+    if (message?.type === 'kick' && exactFields(message, 'type', 'playerId')
+      && typeof message.playerId === 'string' && /^p[1-9][0-9]{0,2}$/.test(message.playerId)) {
       const player = room.seats.get(message.playerId);
       if (player) forgetSeat(room, player);
       return;
@@ -199,12 +233,14 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
 
   function acceptInput(room, seat, message, connection) {
     const time = now();
-    if (seat.connection !== connection || !exactFields(message, 'type', 'round', 'seq', 'input') || !validSequence(message.seq)
-      || message.seq <= connection.lastSeq || seat === room.host || room.phase !== 'playing'
-      || message.round !== room.round || time >= room.activeRound.endsAt || !room.activeRound.players.has(seat.id) || !room.seats.has(seat.id)) return false;
+    if (seat.connection !== connection || seat === room.host) return false;
     if (!takeBudget(seat.inputBudget, time, PARTY_LIMITS.inputsPerSecond, PARTY_LIMITS.inputBurst)) return false;
+    if (!exactFields(message, 'type', 'round', 'seq', 'input') || message.type !== 'input' || !validSequence(message.seq)
+      || message.seq <= connection.lastSeq || room.phase !== 'playing'
+      || message.round !== room.round || time >= room.activeRound.endsAt || !room.activeRound.players.has(seat.id) || !room.seats.has(seat.id)) return false;
     const input = room.game.normalizeInput(message.input);
     if (input == null) return false;
+    if (room.activeRound.inputs.length >= PARTY_LIMITS.queuedInputs) return false;
     connection.lastSeq = message.seq;
     room.activeRound.inputs.push({ playerId: seat.id, input });
     return true;
@@ -213,7 +249,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
   function project(room, seat) {
     const round = room.activeRound;
     const common = {
-      phase: room.phase, round: room.round, ms: remainingMs(room, now()), notice: room.notice, gameId: room.game.id,
+      phase: room.phase, round: room.round, ms: Math.ceil(remainingMs(room, now())), notice: room.notice, gameId: room.game.id,
     };
     if (seat === room.host) {
       const players = [...room.seats.values()].map(player => ({ ...publicSeat(player), connected: Boolean(player.connection) }));
@@ -239,6 +275,10 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     tick(time) {
       sweep(time);
       for (const room of rooms.values()) tickRound(room, time);
+    },
+    close() {
+      closed = true;
+      for (const room of rooms.values()) endRoom(room);
     },
   };
 }

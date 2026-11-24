@@ -56,22 +56,28 @@ export function connectParty({ credential, onView, onStatus, onError }) {
     const active = new WebSocket(url);
     socket = active;
     active.addEventListener('open', () => {
+      if (stopped || socket !== active) return;
       active.send(JSON.stringify({ type: 'auth', protocol: 1, code: credential.code, token: credential.token }));
     });
     active.addEventListener('message', ({ data }) => {
       if (stopped || socket !== active) return;
       let packet;
       try { packet = JSON.parse(data); } catch { return; }
-      if (packet.type === 'error') onError(packet.message);
-      if (packet.type !== 'welcome' && packet.type !== 'snapshot') return;
-      round = packet.view.round;
+      if (!packet || typeof packet !== 'object') return;
       if (packet.type === 'welcome') {
+        if (ready || !Number.isSafeInteger(packet.view?.round)) return;
+        round = packet.view.round;
         ready = true;
         seq = 0;
         delay = RETRY_MIN_MS;
+        onView(packet.view);
         onStatus('connected');
+      } else if (ready && packet.type === 'snapshot' && Number.isSafeInteger(packet.view?.round) && packet.view.round >= round) {
+        round = packet.view.round;
+        onView(packet.view);
+      } else if (ready && packet.type === 'error') {
+        onError(packet.message);
       }
-      onView(packet.view);
     });
     active.addEventListener('close', ({ code }) => {
       if (stopped || socket !== active) return;

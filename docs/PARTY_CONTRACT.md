@@ -72,7 +72,7 @@ Close code 4403 means the credential or seat is gone. Close code 4409 means a ne
 | Transport admission | Uses the existing HTTP cap of 64 sockets with 8 reserved for loopback. The HTTPS listener has a 64-socket cap. A second shared admission gate allows 40 party upgrades across HTTP and HTTPS, with 4 reserved for loopback. It covers 17 active connections, 17 replacements, and 6 spare slots. There is one current connection per credential. |
 | HTTP writes | 1,024 bytes for create and join. No game inputs over HTTP. |
 | Socket messages | 512 bytes per incoming message, at most 8 fragments and 16 buffered chunks. No compression. Authentication must arrive within 5 seconds. |
-| Rate | Each credential gets 30 messages/s with a burst of 12, including malformed application messages. A phone gets at most 20 input frames/s with a burst of 8. Budgets survive replacement. Command errors are limited to one reply per connection per second. |
+| Rate | Each credential gets 30 messages/s with a burst of 12, including authentication and malformed application messages. A phone gets at most 20 input frames/s with a burst of 8. Budgets survive replacement. Command errors are limited to one reply per credential per second. |
 | Presence | The host pings every 5 seconds and disconnects after 10 seconds without a pong. After disconnect or initial unclaimed join, reserve that seat for 30 seconds. Replaced or closing sockets get 150 ms for the close frame before termination. |
 | Send bounds | TV snapshots at up to 20 Hz. Phone snapshots at up to 5 Hz and 320 JSON bytes each. Close a sender with more than 16 KiB queued. The integration harness measures rolling 1-second phone traffic and asserts below 2,000 B/s during racing. |
 | Simulation | One fixed 50 ms tick. For scheduler gaps through 1 second, run at most 5 catch-up ticks and discard any extra whole ticks. The round still uses its wall-clock deadline. A gap above 1 second returns active rounds to the lobby with `host_stall`. Clear queued input on that boundary. |
@@ -109,5 +109,18 @@ Register one object in [the server registry](../games/party/registry.mjs). Use a
 2. Add a `category: 'party'`, `status: 'local-only'` card to [the collection catalog](../games/catalog.mjs). Keep the legacy engine registry independent.
 3. Register `mountTv(canvas,{art,sound})` and `mountPhone(root,{input})` in [the UI registry](../ui/party/games/registry.mjs). The TV returns `push(view)`, `setReducedMotion(value)`, and `dispose()`. The phone returns `update(state,enabled)` and `dispose()`. Shared frames handle join, countdown, results, and navigation.
 4. Add the TV, phone, and server files to [party-delivery.mjs](../server/party-delivery.mjs) and [the desktop manifest](../desktop/runtime-manifest.json). Run `node scripts/prepare-game.mjs` and `npm run package:lan` using the pinned release toolchain. Verify the static and portable closures.
-5. Call `runPartyRounds(t,{gameId,drive,assertResults})` from [the shared harness](../tests/party/harness.mjs) for games that take 16 players. Provide a legal per-tick driver and scoring assertions. Use `launchPartyHarness` directly for a different player range or game flow. Exercise 2, 8, and the game's maximum supported seats with the injected clock.
+5. Call `runPartyRounds(t,{gameId,drive,assertResults})` from [the shared harness](../tests/party/harness.mjs). Provide a legal per-tick driver and scoring assertions. Exercise 2, 8, and the game's maximum supported seats where applicable. Use `launchPartyHarness` directly if the game needs a different round flow.
 6. Verify that phone packets exclude every other player's private fields and remain below the bandwidth cap. Run Chromium at 1920×1080 for the TV and 390×844 for the phone. Inspect countdown, play and podium screenshots. Check reduced motion, console output, CSP, route responses, and frame time.
+
+### Use the shared round harness
+
+`runPartyRounds` uses real LAN sockets and an injected clock. It connects and replaces every seat, disconnects and restores a phone, then kicks the last phone and adds a late guest. It checks that the late guest waits for round two. The optional `playerCount` defaults to 16. Supply a value in your game's supported range. `drive(phones, tick, round)` runs before each 50 ms tick of play. Use `phone.input(gameInput)` to send a game input with the correct round and sequence. `assertResults(tvView, phones, round)` runs after each round. Use each phone's `view` and `packets` to check projections and downstream size.
+
+See [the Tap Race test](../tests/integration/party/tap-race.test.mjs) for both the driver's input pattern and the rolling one-second traffic check.
+
+## Contract changes after review
+
+- The TV can send the optional command `{"type":"end"}` in any phase. The host immediately releases the room and closes its authenticated sockets with 4403. This command has no fields other than `type`.
+- Party admission also caps non-loopback peers at four simultaneous upgrades (including unauthenticated and closing sockets), two open room creations, two held phone seats per room, and 16 seat assignments per room. Join attempts are limited to 24 per peer per 60 seconds. A capacity response has HTTP status 429. Budgets apply across HTTP and HTTPS. Reconnect still uses the existing bearer and no IP binding.
+- Authentication counts toward the credential's message budget. Administrative error replies share their one-per-second budget across replacements. Snapshots keep the same layout and send limits.
+- The round harness accepts optional `playerCount` and supplies `round` as the third driver argument. Existing harness calls, game modules and UI kit calls use their original signatures.
