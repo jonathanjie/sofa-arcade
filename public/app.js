@@ -921,8 +921,14 @@ async function findRoom(code,preferredSeat=null,recovering=false) {
   if(seat&&creds.playerTokens[seat]){state.playerToken=creds.playerTokens[seat];state.playerId=seat;}
   history.replaceState({},'', '/?join='+encodeURIComponent(code)+(state.preferredSeat?'&seat='+state.preferredSeat:''));render();
   try {
-    const room=await api('/api/rooms/'+encodeURIComponent(code));
+    const path='/api/rooms/'+encodeURIComponent(code);
+    const room=await api(recovering ? path : path+'?lookup=1');
     if(!current())return;
+    if(room===null){
+      if(stored(LAST_SESSION_KEY)?.code===code)persist(LAST_SESSION_KEY,null);
+      state.error='That room could not be found. Check the six-character code.';
+      return;
+    }
     state.busy=false;applyRoom(room,true);if(state.playerToken)saveCredentials();startPolling();
   }
   catch(err){
