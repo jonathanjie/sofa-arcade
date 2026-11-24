@@ -11,6 +11,19 @@ test('real browser-client seam interoperates with fixture authority for two simu
   const fixture = await createFixtureServer({ clock, simulation: createMockSimulation({ countdownTicks: 2 }) });
   const clients = [];
   t.after(async () => { clients.forEach((peer) => peer.client.dispose()); await fixture.close(); });
+  // Issue credentials before mocking browser timers. Each one-shot request
+  // closes its socket so the next seat cannot inherit an expired keep-alive.
+  const credentials = new Map();
+  for (const viewer of ['host', 'jon', 'lydia']) {
+    const response = await fetch(`${fixture.origin}/fixture/session`, {
+      method: 'POST',
+      headers: { Origin: fixture.origin, 'Content-Type': 'application/json', Connection: 'close' },
+      body: JSON.stringify({ viewer }),
+    });
+    assert.equal(response.status, 200);
+    credentials.set(viewer, await response.json());
+  }
+
   // Use real sockets, but advance the scheduler and client input pumps together.
   // OS descheduling must not simulate a host stall or make a player's input stale.
   t.mock.timers.enable({ apis: ['setTimeout'] });
@@ -30,10 +43,7 @@ test('real browser-client seam interoperates with fixture authority for two simu
     constructor(url) { super(url, { origin: fixture.origin }); }
   }
   async function connect(viewer) {
-    const response = await fetch(`${fixture.origin}/fixture/session`, {
-      method: 'POST', headers: { Origin: fixture.origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ viewer }),
-    });
-    const credential = await response.json();
+    const credential = credentials.get(viewer);
     const peer = { client: null, snapshot: null, status: null };
     const connected = Promise.withResolvers();
     peer.client = createRealtimeClient({
