@@ -130,7 +130,7 @@ async function cueFromGesture(page, name, gesture) {
   const near = (actual, expectedValue, label) => assert.ok(Math.abs(actual - expectedValue) < 1e-6, `${name} ${label}: ${actual} ≠ ${expectedValue}`);
   for (let index = 0; index < notes.length; index++) {
     near(notes[index].frequency, expected[index].frequency, 'pitch');
-    near(notes[index].at - onset, expected[index].beat * 60 / MENU.bpm, '92 BPM onset');
+    near(notes[index].at - onset, expected[index].beat * 60 / MENU.bpm, 'onset at menu tempo');
     near(notes[index].stops[0] - notes[index].at, expected[index].duration, 'duration');
   }
   const after = await record(page, name);
@@ -177,7 +177,7 @@ try {
   await cueFromGesture(tv, 'menu-select', () => tv.locator('.game-card[data-game="sofa-kingdoms"]').click());
   assert.equal((await snapshot(tv)).settings.trackTitle, SOFA.title);
   await cueFromGesture(tv, 'menu-back', () => exitToMenu(tv));
-  run.check('All three menu cues execute through UI gestures at 92 BPM, including selecting a differently timed game; planned details retain the menu theme');
+  run.check(`All three menu cues play at ${MENU.bpm} BPM through UI gestures, including selection of a game with a different tempo. Planned details retain the menu theme.`);
 
   await tv.locator('[data-action="audio"]').click();
   await tv.getByRole('switch', { name: 'Sound effects', exact: true }).uncheck();

@@ -1,4 +1,4 @@
-/** Original menu gestures; beat and duration units use the menu score's 92 BPM. */
+/** Original menu gestures; beat and duration units use the menu score's tempo. */
 const cue = rows => Object.freeze(rows.map(([instrument, pitch, beat, duration, level]) => Object.freeze({ instrument, pitch, beat, duration, level })));
 const CUES = Object.freeze({
   'menu-select': cue([['pizzicato', 67, 0, .3, .043], ['bell', 71, .17, .26, .022]]),
