@@ -1,166 +1,86 @@
-# Make Yourself at Home
+# Room for One More
 
-The original main-menu theme for **Sofa Arcade**, composed for the collection
-screen rather than an individual game. It is a welcoming, unhurried chamber
-waltz for the existing rounded woodwind, bass and pizzicato voices, with three
-very quiet tonic bell arrivals.
+**Main menu · G major · 2/4 · quarter note = 96 · 48 bars · 60 seconds.** This two-step replaces the 32-bar waltz *Make Yourself at Home*. [Listen to one loop](audio-evidence/room-for-one-more.mp3).
 
-**G major · 3/4 · quarter note = 92 · AABA · 32 bars · 62.6087 seconds per loop.**
-The B section visits E minor. The composition is distinct from both the existing
-Sofa Kingdoms **Lala’s Little Waltz** and Odd Laws **Lala Calls the House**. It
-introduces its own D–G–B–A–G hook, melodic phrasing, bass movement and dominant
-harmony; it does not switch back to either game’s tune while browsing the menu.
+The invitation is **G4–B4–A4 | G4–D4–E4**. Sing the first G for a dotted eighth, flick up to B on the sixteenth and land on A on beat two. In the next bar, leave a sixteenth of silence after G before dropping a fourth to D. The step back up to E makes the low note feel like a springboard. The old waltz put a bass note on one and plucks on two and three. Here the two quarter-note pulses give the bass a walking pace. The short note *before* the second pulse gives the room a little bounce.
 
-## Form and phrasing
+## Form
 
-| Bars, one-based | Time | Material | Harmonic path |
+| Bars | Starts | Strain | Question and answer |
 | --- | --- | --- | --- |
-| 1–8 | 0:00–0:15.65 | A — invitation and answer | G – D/F# – C/E – D7 / G – Em7 – D7 – G |
-| 9–16 | 0:15.65–0:31.30 | A — the complete familiar theme again | Exact melody and breath recurrence |
-| 17–24 | 0:31.30–0:46.96 | B — a brief reflective detour | Em – B7/D# – Em/G – Am / C – Am/C – D7 – D7 |
-| 25–32 | 0:46.96–1:02.61 | A — return home | Original invitation, then a resolved tonic cadence |
+| 1–8 | 0:00 | A · Invitation | Four bars ask a question on D. The next four repeat the call and settle on G. |
+| 9–16 | 0:10 | A′ · Higher answer | A diatonic sequence starts on B. An applied dominant opens the question wider. The answer comes down from D5. |
+| 17–32 | 0:20 | B · Middle strain in C | Two eight-bar periods. A low bell joins the conversation. The first period establishes C. The second delays its cadence and reaches the summit. |
+| 33–40 | 0:40 | A″ · Homecoming | The call returns over C/E. F♯ restores G major. At bar 37 just the reed and bass play the call. |
+| 41–48 | 0:50 | Tag · One more turn | The three-note head takes two bars. A borrowed minor chord leads to a cadence in bar 46. A two-bar pickup hands the phrase back to bar 1. |
 
-The opening five-note **D–G–B–A–G** figure rises from a low pickup through the
-major chord, then relaxes down by step. It repeats inside each eight-bar A
-section. A descending G–F#–E–D bass line supports the first question without
-adding a competing tune. Two-note pizzicato voicings suggest a small ensemble;
-the melody remains the only continuous lead.
+## Harmonic score
 
-B begins with a sustained E in a higher register, moves through B7’s D-sharp
-leading tone, and sings in longer average note values. Its upper G is the
-melodic high point. A descending answer and a G-to-F# suspension return the
-music to D7 before A comes back. This is a written contrasting melody and
-harmonic section, not a mode switch that merely changes accompaniment.
+Bar numbers start at one. Each chord symbol names the harmony at the opening of the bar. The bass can move to another chord tone before the bar line. Roman numerals use the local key in the third column. Scale figures show the bass inversion. A perfect authentic cadence has root-position V and I, with the tonic in the tune at arrival.
 
-Each bar contains explicit rests. Authentic D7-to-G cadences leave the melody
-silent for 1.25 beats; the accompaniment also leaves the last beat clear. The
-B turnaround leaves a full beat of space. These breaths make the loop settle
-and give menu interactions room to be heard. No random pitches, free-running
-arpeggiator, or per-frame sound generation is used.
+| Bar | Chord | Key and function | What to hear |
+| ---: | --- | --- | --- |
+| 1 | G | G · I | G in reed and bass frames a single B3 pluck. On the repeat, that pluck answers C4. |
+| 2 | G/B | G · I⁶ | Bass B2 rises to D3 as the tune drops G4–D4. E4 anticipates the predominant. |
+| 3 | Am7/C | G · ii⁶₅ | E–A–G puts the chordal seventh at the top. The bass releases C for A. |
+| 4 | D | G · V | G4 falls to F♯4. The held third and a breath make the first half cadence. |
+| 5 | G | G · I | The opening skip returns. A late B2 leads the bass into C3. |
+| 6 | C | G · IV | The bass rises C–E under a falling G–E–D. D anticipates the dominant. |
+| 7 | D7 | G · V⁷ | D–E–F♯ climbs to the leading tone as the pluck supplies C4. |
+| 8 | G | G · I | F♯4–G4 and C4–B3 close the period with a perfect authentic cadence. |
+| 9 | Em | G · vi | The skip moves to B–D–C. D–C continues to B in bar 10 while the bass starts low on E2. |
+| 10 | G/B | G · I⁶ | B–G–A answers the sequence. The bass D3 slips down to C♯3. |
+| 11 | A7/C♯ | G · V⁶₅/V | The altered bass C♯ rises to D. The upper seventh G falls to F♯. |
+| 12 | D | G · V | Both lines reach the applied dominant's target. The half cadence leaves the question open. |
+| 13 | G/B | G · I⁶ | The reed now opens the whole G triad upwards while the bass falls B–G. |
+| 14 | Am/C | G · ii⁶ | C–B–A reverses the upward sweep of bar 13. |
+| 15 | D7 | G · V⁷ | Two longer notes, A and F♯, slow the answer. The plucks give the seventh C. |
+| 16 | G | G · I | Perfect authentic cadence. The last half beat is clear in every part. |
+| 17 | Em | G · vi / C · iii | E minor belongs to both keys. The reed stretches its first G while the bell enters below. |
+| 18 | Am7 | G · ii⁷ / C · vi⁷ | A second common chord. The reed's G4 descends to F♮4. |
+| 19 | Dm7/F | C · ii⁶₅ | F natural in the bass makes the new predominant audible. Bell C4 descends to B3. |
+| 20 | G | C · V | A–G leans on the ninth and releases it. B4 ends the question on the new leading tone. |
+| 21 | C | C · I | B4 rises to C5. The bell takes E–D during the reed's long C and short G. |
+| 22 | F/A | C · IV⁶ | The skip now starts on F natural. The counterline answers with C–A. |
+| 23 | G7 | C · V⁷ | D5 descends through C5 to B4. The lower F3 pluck identifies G7. |
+| 24 | C | C · I | B4–C5 above F3–E3 confirms C with a perfect authentic cadence. |
+| 25 | C/E | C · I⁶ | The opening cell rises again, now C5–E5–D5. The lower parts make room for the reed. |
+| 26 | Dm7 | C · ii⁷ | The bass walks D3–A2. B4 approaches the seventh C5 from below. |
+| 27 | G | C · V | C5 falls to a long B4. The bell moves D–A–G beneath the held leading tone. |
+| 28 | Am | C · vi | B4 resolves to C5 while the bass goes G–A. The deceptive cadence buys four more bars. |
+| 29 | F | C · IV | The bass holds F3. C5–A4–C5 winds up for the last ascent. |
+| 30 | Dm/F | C · ii⁶ | The bass begins on the previous F. D5–E5–F5 rises against the bell's D4–C4–B3–A3. |
+| 31 | G7 | C · V⁷ | E5 continues the descent by step from F5 to D5. B4 and the plucked F3 prepare the cadence. |
+| 32 | C | C · I / G · IV | A perfect authentic cadence in C. Its tonic is also the home key's subdominant. The bell takes its last C4. |
+| 33 | C/E | C · I⁶ / G · IV⁶ | The opening tune returns over the pivot harmony. The familiar G4 sounds like the fifth of C. |
+| 34 | D7 | G · V⁷ | The accented G4 passes down to F♯4. That semitone reintroduces the home key's leading tone. |
+| 35 | G | G · I | The bass falls D–G. F♯–G and C–B in the upper parts confirm the return. |
+| 36 | D | G · V | A4 falls to F♯4. The short release leaves the antecedent on a half cadence. |
+| 37 | G | G · I | The bare reed and bass restate the opening skip. |
+| 38 | C | G · IV | The complete second half of the motif fits over C3. The bass stays put under D4–E4. |
+| 39 | D7 | G · V⁷ | D–E–F♯ borrows the dotted rhythm of the call. The pluck places C under F♯. |
+| 40 | G | G · I | A perfect authentic cadence ends the reprise. |
+| 41 | G/B | G · I⁶ | The opening G now lasts a dotted quarter. B arrives on the last eighth. |
+| 42 | C/E | G · IV⁶ | A lands on the next downbeat to complete the augmented G–B–A. G remains for the change of colour. |
+| 43 | Cm/E♭ | G · iv⁶ | Borrowed from G minor. G4 stays still while the bass E♮–E♭ darkens the chord. |
+| 44 | G/D | G · cadential I⁶₄ | The bass settles on D. Reed G4 and plucked B3 prepare the 4–3 and 6–5 over that bass. |
+| 45 | D7 | G · V⁷ | G–F♯ and B–A resolve the cadential six-four. A second plucked note supplies C4. |
+| 46 | G | G · I | Perfect authentic cadence and breath. This is the tag's point of repose. |
+| 47 | Am7/C | G · ii⁶₅ | A two-bar pickup recalls bar 3. G4 again falls to F♯4 over the dominant. |
+| 48 | D7 | G · V⁷ | After a short A, the last F♯4 enters a sixteenth after beat two. F♯–G in the reed and C–B in the pluck resolve across the repeat. |
 
-## Runtime API and integration
+## Register, pulse and space
 
-Runtime files:
+The woodwind covers **D4–F5**, a minor tenth. Seventy of its 116 successive intervals, counting the wrap, are steps. The fall to D4 in bar 2 recovers to E4. At bar 23 the rising fifth to D5 turns back through C5 and B4. The single F5 lands in bar 30, one sixteenth after beat two, at **37.03125 seconds (61.72%)**. The preceding deceptive cadence gives the climb somewhere to go. The descent starts immediately in bar 31. At the cut between periods in bars 32–33, the reed takes a breath and starts the familiar call in its original register.
 
-- `ui/media/sofa-menu/score.mjs`
-- `ui/media/sofa-menu/effects.mjs`
+The bass covers E2–F3. A strong downbeat gives the TV an audible pulse. Short bass answers change direction under the tune. Across 118 successive sounding pairs of outer voices, 71 moves are oblique, 32 contrary and 15 similar. The tests compare simultaneous attacks, attacks against a held note, pitches on either side of a breath and successive downbeats, including the wrap. They also trace the local leading tones and chordal sevenths in the parts that play them. [Score tests](score.test.mjs).
 
-The score module exports `SCORE`, `eventsForBar(index, mode='play')`, and a
-re-export of `eventsForEffect(name)`, so the existing engine can consume a
-single module namespace:
+The pizzicato voice plays short notes or dyads between E3 and E4. Sometimes it waits until the cadence to add the chord's seventh. The low bell has a separate G3–F4 line only in bars 17–32. At the summit it falls in four notes against the reed's three rising notes. Its quick decay gives each counter-note a clear attack and leaves room for the tune. At the tonic closes in bars 8, 16 and 40, all parts leave at least the last half beat free. The G–B–D notes of the select, back and confirm cues belong to the same home triad. [Cue preview](audio-evidence/menu-effects.mp3).
 
-```js
-import * as menuMusic from './media/sofa-menu/score.mjs';
+## Review and playback
 
-audio.setScore('sofa-menu', menuMusic);
-audio.setScene('lobby');
-```
+The first draft put A4/D3 and C5/F3 in parallel fifths in bar 26. I rewrote the turn as D5–B4–C5 against a falling bass. At bars 38–39, E4/E3 moved down to D4/D3 in parallel octaves. Holding C3 under bar 38 lets the two parts approach the dominant in contrary motion. I also broke up successive downbeat octaves in the C-major period, removed the bell's doubled leading tone in bar 27, and gave the final plucked seventh its B3 resolution in bar 1. The revised outer voices pass both the onset and the downbeat checks.
 
-`play`, `menu`, `lobby`, and unknown mode values all produce the same complete
-menu arrangement. There is no scene-dependent melody replacement. The shared
-engine’s existing `lobby` scene is sufficient; it does not need a new scene enum
-for this composition.
+The score uses the four existing Web Audio voices. The engine schedules fresh beat-based events from `eventsForBar(index, mode)` and takes tempo, metre and loop length from `SCORE`. The shelf and lobby share the arrangement. The three `eventsForEffect(name)` cues use the menu tempo even when navigation changes the active score. [Score](score.mjs) · [Engine](../../audio.js).
 
-All events have the existing `{instrument,pitch,beat,duration,level}` shape.
-Pitches are MIDI values; **both `beat` and `duration` are beats at 92 BPM**.
-`SCORE` is deeply frozen; events are fresh mutable objects. Finite numeric bar
-indices are floored and wrapped, including negative indices. Non-numeric and
-non-finite indices start at bar zero. Unknown cue names return a fresh `[]`.
-
-The shared engine continues to own the only `AudioContext`, timing, volume,
-preferences, gesture unlock, phone policy and visibility lifecycle. The
-collection screen needs to be eligible for host music, and entering a game
-selects that game’s soundtrack. Menu navigation should not restart the tune.
-Do not add a second scheduler or use the review MP3 as a competing live track.
-
-### Restrained menu gestures
-
-| Cue | Material | Duration at 92 BPM |
-| --- | --- | ---: |
-| `menu-select` | Soft G pizzicato followed by a quiet B bell | About 0.28 s |
-| `menu-back` | Descending B-to-G pizzicato | About 0.49 s |
-| `menu-confirm` | Short G–B–D woodwind rise with a low pluck | About 0.98 s |
-
-These pitches echo the main hook. Trigger them on accepted deliberate
-navigation, not hover or every render. The shared effects preference still
-controls them. Unknown or unrelated names remain silent while this score is
-active. The runtime data contains no event listeners or navigation logic.
-
-## Preview and signal evidence
-
-- [Complete theme MP3](audio-evidence/make-yourself-at-home.mp3)
-- [Menu effects MP3](audio-evidence/menu-effects.mp3)
-- [Numerical measurements and exact source/file hashes](audio-evidence/render-report.json)
-
-The complete preview contains the full 62.6087-second form and a 0.6-second
-release tail. It is mono, 32 kHz, 80 kbps MP3. It corresponds to **100% user
-volume** through the existing music bus gain of 0.7. It has not been loudness
-normalized. The report separately gives levels at the current 45% shared
-volume default.
-
-The theme has **262 events per loop**. Its uncompressed source peak is
-**−14.24 dBFS**; preview RMS is **−26.83 dBFS** at 100% user volume. All samples
-are finite and no samples clip. All three effects also pass the level and DC
-offset checks. Retained MP3s were decoded and measured again after encoding.
-The complete figures are in the report, including the separated effect-cue
-timestamps.
-
-`offline-render.mjs` is a parameterized, development-only synthesis utility
-adapted from this repository’s inspected audio-preview mathematics. It mirrors
-the woodwind harmonic wave, triangle bass/pizzicato, bell partial, note
-envelopes, lowpass cutoffs and quiet room reflection used by `ui/audio.js`.
-It adds no I/O, device access or live audio lifecycle. `audio-preview.mjs` is
-the separate CLI wrapper for writing previews and evidence.
-
-The offline render omits the shared compressor so headroom is checked before
-compression. Browser oscillator normalization and filter details can differ,
-so this is an approximation rather than a bit-exact Web Audio capture.
-
-**No human auditory evaluation is claimed.** Written musical review, exact
-structural tests, numerical rendering, decoded-file verification and browser
-playback checks are separate from listening on Jon’s Mac, TV or speakers.
-
-## Verification and regeneration
-
-From the repository root, with Node 22.13 or newer:
-
-```sh
-node --test ui/media/sofa-menu/score.test.mjs
-node ui/media/sofa-menu/audio-preview.mjs --verify
-```
-
-The ten tests cover the complete AABA form, recurring hook, distinction from
-the two game scores, exact beat accounting, E-minor contrast, leading-tone
-harmony, breath/cadence space, event timing/pitch/levels, mode/index fallbacks,
-immutability, menu cue vocabulary, runtime independence from browser/clock or
-randomness, deterministic tempo-aware offline synthesis, WAV layout, and
-correspondence between the exact sources and retained preview evidence.
-
-Regenerate PCM evidence with Node alone, or include compact MP3s with ffmpeg:
-
-```sh
-node ui/media/sofa-menu/audio-preview.mjs --write
-node ui/media/sofa-menu/audio-preview.mjs --write --encode
-```
-
-The final committed evidence uses `--write --encode` because tests verify the
-MP3 hashes as well as the source hashes. ffmpeg with `libmp3lame` is required
-only for encoding; verification does not invoke it. Reproducible WAVs are
-ignored by Git. No new package or root dependency is required.
-
-Only `score.mjs` and `effects.mjs` belong in browser/LAN/ZIP/desktop runtime
-allowlists. The renderer, CLI, tests, notes and MP3 review evidence are
-non-runtime development material.
-
-## Provenance
-
-The melody, harmonies, rhythm, rests, dynamics and three menu cues were newly
-authored as note data for Sofa Arcade. No stock track, external composition,
-recording, sound font or sampled instrument was imported. The renderer uses
-this project’s own previously inspected synth vocabulary and math, with tempo
-parameterization; it does not borrow an outside performance.
-
-Base revision for this menu task:
-`a96fd477d2a3239d715421ed711682648e16eccc`, current `main` at branch creation.
-The editable source is the score itself. This work introduces no third-party
-music attribution requirement and does not change repository-wide licensing.
+Run `node ui/media/sofa-menu/audio-preview.mjs --write --encode` to recreate the evidence. The offline renderer approximates the engine's oscillators, envelopes, filters and quiet room reflection. The listening file contains the second lap of a continuous render. Its first 75 ms match the next lap sample for sample. The MP3 decodes to 1,920,000 mono samples at 32 kHz, with zero clipped samples and a −96.8 dBFS last-to-first sample step. It measures −27.6 LUFS integrated, within 0.3 LU of the previous theme. Physical speaker balance remains a listening check. [Render report](audio-evidence/render-report.json).

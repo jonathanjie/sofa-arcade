@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "title": "Make Yourself at Home",
+  "title": "Room for One More",
   "key": "G major",
-  "bpm": 92,
-  "beatsPerBar": 3,
-  "scoreSeconds": 62.608695652173914,
+  "bpm": 96,
+  "beatsPerBar": 2,
+  "scoreSeconds": 60,
   "releaseTailSeconds": 0.6,
   "sampleRate": 32000,
   "channels": 1,
@@ -13,45 +13,50 @@
   "defaultSharedVolume": 0.45,
   "musicBusGain": 0.7,
   "effectsBusGain": 0.75,
-  "methodology": "Deterministic oscillator, envelope, lowpass and room-reflection approximation of ui/audio.js. No compressor, limiter or normalization. The one menu arrangement is rendered once; its lobby/menu/unknown aliases are checked event-for-event.",
+  "methodology": "Deterministic oscillator, envelope, lowpass and room-reflection approximation of ui/audio.js. Unity-volume previews include the shared bus gain. The music file contains the second lap of a continuous render to keep the previous release tail at the repeat. The first 75 ms are compared with the following lap. Gapless MP3 decoding verifies sample count and the step between the last and first samples.",
   "sourceSha256": {
-    "score.mjs": "1b7cab86dc7be5fb77d8511ca97e53d2a7488a4ad999909ff5b4eebe9b72a6ea",
-    "effects.mjs": "226973566e897ad8a6f505fa46963f772ceb85782e155f43bc0241a21df7e101",
+    "score.mjs": "f39da684649ed4bb2b6a99f7b808dd6ef37de4ba46fc92e246771bb1637333a1",
+    "effects.mjs": "54e7c91d6e7ee51868309ec8d3fca1e10380eedb1cd16422d32acae2942fc579",
     "offline-render.mjs": "9602e7ba297ad9333185e351734629a66a3859ad893a698de924629a8cfd479e",
-    "audio-preview.mjs": "e45720c96c2c0f2fb386641909c3996e92cfad43b66dea843d26b27a8c9ec8e9"
+    "audio-preview.mjs": "813a64775ff8136bc65313c08bcfbb28b4cdad0783490ecd47e2fa13f0558b68"
   },
   "music": {
-    "eventCount": 262,
+    "eventCount": 275,
     "verifiedModeAliases": [
       "play",
       "menu",
       "lobby",
       "unknown"
     ],
+    "loop": {
+      "frames": 1920000,
+      "boundaryStep": 0.000004147799394011733,
+      "maxOpeningError": 0
+    },
     "sourceMix": {
-      "peak": 0.19400528,
-      "peakDbFS": -14.24372879,
-      "rms": 0.06503917,
-      "rmsDbFS": -23.73649963,
-      "dcOffset": 0.00002174,
+      "peak": 0.19097838,
+      "peakDbFS": -14.38031608,
+      "rms": 0.06668627,
+      "rmsDbFS": -23.51927127,
+      "dcOffset": -0.0000012,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     },
     "volume100": {
-      "peak": 0.1358037,
-      "peakDbFS": -17.34176799,
-      "rms": 0.04552742,
-      "rmsDbFS": -26.83453883,
-      "dcOffset": 0.00001522,
+      "peak": 0.13368486,
+      "peakDbFS": -17.47835528,
+      "rms": 0.04668039,
+      "rmsDbFS": -26.61731047,
+      "dcOffset": -8.4e-7,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     },
     "defaultVolume45": {
-      "peak": 0.06111166,
-      "peakDbFS": -24.27751772,
-      "rms": 0.02048734,
-      "rmsDbFS": -33.77028856,
-      "dcOffset": 0.00000685,
+      "peak": 0.06015819,
+      "peakDbFS": -24.414105,
+      "rms": 0.02100618,
+      "rmsDbFS": -33.55306019,
+      "dcOffset": -3.8e-7,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     }
@@ -61,91 +66,91 @@
       "atSecondsInPreview": 0.5,
       "eventCount": 2,
       "sourceMix": {
-        "peak": 0.04067285,
-        "peakDbFS": -27.81390868,
-        "rms": 0.00404478,
-        "rmsDbFS": -47.86210546,
-        "dcOffset": -1.5e-7,
+        "peak": 0.04062304,
+        "peakDbFS": -27.82455211,
+        "rms": 0.00398519,
+        "rmsDbFS": -47.99101974,
+        "dcOffset": -1.3e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       },
       "volume100": {
-        "peak": 0.03050463,
-        "peakDbFS": -30.31268341,
-        "rms": 0.00303358,
-        "rmsDbFS": -50.36088019,
-        "dcOffset": -1.2e-7,
+        "peak": 0.03046728,
+        "peakDbFS": -30.32332684,
+        "rms": 0.00298889,
+        "rmsDbFS": -50.48979447,
+        "dcOffset": -1e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       },
       "defaultVolume45": {
-        "peak": 0.01372709,
-        "peakDbFS": -37.24843313,
-        "rms": 0.00136511,
-        "rmsDbFS": -57.29662992,
-        "dcOffset": -5e-8,
+        "peak": 0.01371028,
+        "peakDbFS": -37.25907656,
+        "rms": 0.001345,
+        "rmsDbFS": -57.42554419,
+        "dcOffset": -4e-8,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       }
     },
     "menu-back": {
-      "atSecondsInPreview": 1.8804347826086958,
+      "atSecondsInPreview": 1.8687500000000001,
       "eventCount": 2,
       "sourceMix": {
-        "peak": 0.0428351,
-        "peakDbFS": -27.36400362,
-        "rms": 0.00483272,
-        "rmsDbFS": -46.31615972,
-        "dcOffset": -5.7e-7,
+        "peak": 0.04286364,
+        "peakDbFS": -27.35821912,
+        "rms": 0.00477578,
+        "rmsDbFS": -46.41911273,
+        "dcOffset": -6.4e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       },
       "volume100": {
-        "peak": 0.03212633,
-        "peakDbFS": -29.86277835,
-        "rms": 0.00362454,
-        "rmsDbFS": -48.81493445,
-        "dcOffset": -4.3e-7,
+        "peak": 0.03214773,
+        "peakDbFS": -29.85699385,
+        "rms": 0.00358184,
+        "rmsDbFS": -48.91788747,
+        "dcOffset": -4.8e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       },
       "defaultVolume45": {
-        "peak": 0.01445685,
-        "peakDbFS": -36.79852808,
-        "rms": 0.00163104,
-        "rmsDbFS": -55.75068418,
-        "dcOffset": -1.9e-7,
+        "peak": 0.01446648,
+        "peakDbFS": -36.79274357,
+        "rms": 0.00161183,
+        "rmsDbFS": -55.85363719,
+        "dcOffset": -2.1e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       }
     },
     "menu-confirm": {
-      "atSecondsInPreview": 3.4695652173913043,
+      "atSecondsInPreview": 3.4375,
       "eventCount": 4,
       "sourceMix": {
-        "peak": 0.07284922,
-        "peakDbFS": -22.75150138,
-        "rms": 0.02496487,
-        "rmsDbFS": -32.05341337,
-        "dcOffset": -0.00000161,
+        "peak": 0.07266306,
+        "peakDbFS": -22.77372585,
+        "rms": 0.02452132,
+        "rmsDbFS": -32.20912418,
+        "dcOffset": -0.00000213,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       },
       "volume100": {
-        "peak": 0.05463692,
-        "peakDbFS": -25.25027611,
-        "rms": 0.01872365,
-        "rmsDbFS": -34.5521881,
-        "dcOffset": -0.00000121,
+        "peak": 0.0544973,
+        "peakDbFS": -25.27250058,
+        "rms": 0.01839099,
+        "rmsDbFS": -34.70789891,
+        "dcOffset": -0.0000016,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       },
       "defaultVolume45": {
-        "peak": 0.02458661,
-        "peakDbFS": -32.18602583,
-        "rms": 0.00842564,
-        "rmsDbFS": -41.48793783,
-        "dcOffset": -5.4e-7,
+        "peak": 0.02452378,
+        "peakDbFS": -32.20825031,
+        "rms": 0.00827594,
+        "rmsDbFS": -41.64364864,
+        "dcOffset": -7.2e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       }
@@ -153,68 +158,69 @@
   },
   "auditoryEvaluation": "No human audition performed. Numeric signal checks, encoded-file decoding and browser playback tests do not establish listening quality on physical speakers.",
   "effectsPreview": {
-    "durationSeconds": 6.14784375,
+    "durationSeconds": 6.075,
     "sourceMix": {
-      "peak": 0.07284922,
-      "peakDbFS": -22.75150138,
-      "rms": 0.01290274,
-      "rmsDbFS": -37.7863615,
-      "dcOffset": -5.4e-7,
+      "peak": 0.07266306,
+      "peakDbFS": -22.77372585,
+      "rms": 0.01258822,
+      "rmsDbFS": -38.00071355,
+      "dcOffset": -6.7e-7,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     },
     "volume100": {
-      "peak": 0.05463692,
-      "peakDbFS": -25.25027611,
-      "rms": 0.00967705,
-      "rmsDbFS": -40.28513623,
-      "dcOffset": -4e-7,
+      "peak": 0.0544973,
+      "peakDbFS": -25.27250058,
+      "rms": 0.00944116,
+      "rmsDbFS": -40.49948828,
+      "dcOffset": -5e-7,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     },
     "defaultVolume45": {
-      "peak": 0.02458661,
-      "peakDbFS": -32.18602583,
-      "rms": 0.00435467,
-      "rmsDbFS": -47.22088595,
-      "dcOffset": -1.8e-7,
+      "peak": 0.02452378,
+      "peakDbFS": -32.20825031,
+      "rms": 0.00424852,
+      "rmsDbFS": -47.435238,
+      "dcOffset": -2.3e-7,
       "clippedSamples": 0,
       "nonFiniteSamples": 0
     }
   },
   "previews": {
-    "make-yourself-at-home": {
-      "pcmWavSha256": "eb4ff765b6a3904a8c7a2b6b8e33e234878b009d28d9b9473b6fe8e582f3a871",
-      "decodedSeconds": 63.20871875,
-      "file": "make-yourself-at-home.mp3",
-      "bytes": 632924,
-      "sha256": "7191abddb3330ce9f88da894f3098eed949174ba6f0cd8776fe701281ce3de88",
+    "room-for-one-more": {
+      "pcmWavSha256": "3256c5a2fed34c8b099e8538082876bf773d3476aa0afa3d7d0ed75ecd9d90d3",
+      "decodedSeconds": 60,
+      "file": "room-for-one-more.mp3",
+      "bytes": 600884,
+      "sha256": "e486bdc080d43bf193fe7758552ae7e8db500cf6670ecbf952ae8a1e3253fc8a",
       "decodedMeasurements": {
-        "peak": 0.12895352,
-        "peakDbFS": -17.79133621,
-        "rms": 0.04324983,
-        "rmsDbFS": -27.28031106,
-        "dcOffset": 0.00001443,
+        "peak": 0.12696993,
+        "peakDbFS": -17.92598216,
+        "rms": 0.04434564,
+        "rmsDbFS": -27.06298122,
+        "dcOffset": -6.8e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
-      }
+      },
+      "decodedBoundaryStep": 0.000014472680049948394
     },
     "menu-effects": {
-      "pcmWavSha256": "f65373c17d9084982b27cb9608bb495edd5ed48a9b058994736efe912fa9c55e",
-      "decodedSeconds": 6.14784375,
+      "pcmWavSha256": "caa799aac96e0d55fbe95c6502ebee2ae9b8bb75b914b1c914f83b03dc2d45ee",
+      "decodedSeconds": 6.075,
       "file": "menu-effects.mp3",
-      "bytes": 62324,
-      "sha256": "0c328b2b112512745f1d1ddfaf62d19478035b972c9f547b90ab3031025d3f07",
+      "bytes": 61604,
+      "sha256": "54b83d1bf47c26597c058a315b872f63ec03f27794b8685c44584ea33ad9e644",
       "decodedMeasurements": {
-        "peak": 0.05187389,
-        "peakDbFS": -25.70102324,
-        "rms": 0.00919385,
-        "rmsDbFS": -40.73005536,
-        "dcOffset": -3.8e-7,
+        "peak": 0.05172389,
+        "peakDbFS": -25.72617578,
+        "rms": 0.00896928,
+        "rmsDbFS": -40.94484394,
+        "dcOffset": -4.5e-7,
         "clippedSamples": 0,
         "nonFiniteSamples": 0
       }
     }
   },
-  "encoder": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers"
+  "encoder": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
 }

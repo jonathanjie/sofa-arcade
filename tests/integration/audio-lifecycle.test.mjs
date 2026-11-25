@@ -263,10 +263,10 @@ test('the built-in menu score unlocks once, keeps its full composed loop, and sw
   const oddScore = await import('../../ui/media/odd-laws-society/score.mjs');
   const oddEffects = await import('../../ui/media/odd-laws-society/effects.mjs');
   const odd = { ...oddScore, ...oddEffects };
-  assert.equal(menu.SCORE.title, 'Make Yourself at Home');
-  assert.equal(menu.SCORE.bpm, 92);
-  assert.equal(menu.SCORE.beatsPerBar, 3);
-  assert.equal(menu.SCORE.bars.length, 32);
+  assert.equal(menu.SCORE.title, 'Room for One More');
+  assert.equal(menu.SCORE.bpm, 96);
+  assert.equal(menu.SCORE.beatsPerBar, 2);
+  assert.equal(menu.SCORE.bars.length, 48);
 
   const env = audioEnvironment(t);
   let clockStarts = 0;
@@ -328,9 +328,9 @@ test('the built-in menu score unlocks once, keeps its full composed loop, and sw
     const at = .045 + bar * barSeconds;
     context.currentTime = at - .1;
     firstClock.fn();
-    checkVoices(context.oscillators.slice(before), menu.eventsForBar(bar % 32), at, menu.SCORE.bpm);
+    checkVoices(context.oscillators.slice(before), menu.eventsForBar(bar % menu.SCORE.bars.length), at, menu.SCORE.bpm);
   }
-  assert.equal(clockStarts, 1, 'a complete AABA loop and its return keep the same clock');
+  assert.equal(clockStarts, 1, 'a complete menu loop and its return keep the same clock');
 
   const route = (id, module, view, expectedTitle) => {
     const old = [...context.oscillators];
