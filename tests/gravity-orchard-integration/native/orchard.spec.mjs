@@ -330,7 +330,7 @@ describe(`Gravity Orchard actual native Mac (${phase})`, () => {
     await visible('.arcade-home');
     const initialSecure = await secureCall('getStatus');
     assert.equal(initialSecure.status, 'needs-setup');
-    await $('[data-action="open-game"][data-game="gravity-orchard"]').click();
+    await $('.game-card[data-game="gravity-orchard"]').click();
     const setupButton = await $('[data-action="secure-setup"]');
     await setupButton.scrollIntoView({ block: 'center' }); await setupButton.click();
     await visible('.go6-setup[data-state="needs-setup"]');

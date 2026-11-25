@@ -118,7 +118,8 @@ test('Dust Bunny Sumo plays in Chromium with a TV, two phones and fourteen socke
     });
   });
   await tv.goto(fixture.origin);
-  await tv.getByRole('button', { name: /Dust Bunny Sumo/ }).click();
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="dust-bunny-sumo"]').click();
   await tv.getByRole('link', { name: 'Host on the TV' }).click();
   await tv.locator('[data-party-qr] svg').waitFor();
   const code = await tv.locator('[data-party-code]').textContent();
@@ -294,7 +295,8 @@ test('the two-player TV shows a strong hit and a late guest can practise immedia
   const errors = [];
   tv.on('pageerror', error => errors.push(error.message));
   await tv.goto(fixture.origin);
-  await tv.getByRole('button', { name: /Dust Bunny Sumo/ }).click();
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="dust-bunny-sumo"]').click();
   await tv.getByRole('link', { name: 'Host on the TV' }).click();
   await tv.locator('[data-party-qr] svg').waitFor();
   const code = await tv.locator('[data-party-code]').textContent();

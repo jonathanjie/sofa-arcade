@@ -177,7 +177,8 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
     });
   });
   await tv.goto(fixture.origin);
-  await tv.getByRole('button', { name: /Snack Stack/ }).click();
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="snack-stack"]').click();
   await tv.getByRole('link', { name: 'Host on the TV' }).click();
   const code = await tv.locator('[data-party-code]').textContent();
   assert.match(code, /^[A-Z0-9]{6}$/);

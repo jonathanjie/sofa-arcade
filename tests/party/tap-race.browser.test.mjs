@@ -59,8 +59,8 @@ test('TV and three phone browsers play Tap Race with thirteen socket controllers
 
   const tv = await page({ viewport: { width: 1920, height: 1080 } }, 'TV');
   await tv.goto(fixture.origin);
-  await tv.getByRole('heading', { name: 'Party', exact: true }).waitFor({ timeout: 4000 });
-  await tv.getByRole('button', { name: /Tap Race/ }).click();
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="tap-race"]').click();
   await tv.getByRole('link', { name: 'Host on the TV' }).click();
   await tv.getByRole('button', { name: 'Start', exact: true }).waitFor();
   const code = await tv.locator('[data-party-code]').textContent();

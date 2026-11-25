@@ -110,54 +110,190 @@
   }
 }
 
-/* Keep the cover grid and the concept list on the same shelf at TV distance. */
+/* Each collection section has the full shelf width. Cards share the same
+   column widths and cover proportion, whether played locally or on the Site. */
+.collection-shelves .game-shelf { grid-auto-rows: 1fr; }
+.collection-shelves :is(.game-cover, .concept-art) { height: auto; aspect-ratio: 16 / 9; }
+.collection-shelves .concept-art::before { top: calc(50% - 23px); }
+.collection-shelves .concept-art::after { top: calc(50% + 15px); }
+.collection-shelves .drawing-board { margin-top: 32px; }
+.arcade-home:focus { outline: none; }
+@media (min-width: 761px) and (max-width: 900px) {
+  .collection-shelves .game-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.shelf-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 18px;
+  margin-block: 4px 20px;
+}
+.shelf-intro > div:first-child { grid-column: 1 / -1; }
+.shelf-intro > .button { grid-row: 2; grid-column: 2; margin: 0; }
+.shelf-intro h1 { font-size: clamp(38px, 4vw, 54px); }
+.shelf-tabs {
+  grid-row: 2;
+  grid-column: 1;
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #e6d8bf70;
+}
+.shelf-tab {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 8px 22px;
+  min-height: var(--touch-target);
+  background: transparent;
+  color: var(--muted);
+  font-weight: 650;
+}
+.shelf-tab:hover { background: #fffaf080; color: var(--ink); }
+.shelf-tab[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--card);
+  box-shadow: 0 2px 0 #2f211e;
+}
+@media (min-width: 901px) {
+  .shelf-intro h1 br { display: none; }
+}
+
+/* Overlay all slides in one grid cell to keep the tallest slide's height
+   while a slide changes. The faded-out slides stay in layout but cannot
+   receive pointer or keyboard input. */
+.featured-slides {
+  display: grid;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1.5px solid #cdb996;
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  touch-action: pan-y;
+}
+.featured-slides .featured-game {
+  grid-area: 1 / 1;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+  visibility: visible;
+  z-index: 1;
+  transition: opacity .65s ease, visibility 0s;
+}
+.featured-slides .featured-game[aria-hidden="true"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity .65s ease, visibility 0s linear .65s;
+}
+.featured-image {
+  min-height: 0;
+}
+.featured-image::before {
+  content: '';
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.featured-image > :is(.game-cover, .concept-art) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.featured-copy { min-width: 0; }
 @media (min-width: 1051px) {
   .featured-copy { padding-block: 24px; }
-  .collection-shelves .game-cover { aspect-ratio: 2.5; }
-  .collection-shelves {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 19px;
-  }
-  .collection-shelves .drawing-board:first-child { grid-column: span 2; }
-  .collection-shelves .game-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .collection-shelves .drawing-board:last-child .game-shelf { grid-template-columns: 1fr; gap: 12px; }
-  .collection-shelves .drawing-board:last-child .game-card {
-    display: grid;
-    grid-template-columns: 64px 1fr;
-    align-items: center;
-    column-gap: 16px;
-    padding: 12px;
-  }
-  .collection-shelves .drawing-board:last-child :is(.concept-art, .game-cover) {
-    grid-row: span 2;
-    height: 64px;
-    margin: 0;
-  }
-  .collection-shelves .drawing-board:last-child :is(h3, p) { margin: 0; }
-  .collection-shelves .drawing-board:last-child :is(.concept-status, .concept-meta) { display: none; }
-  .collection-shelves:has(.game-card:only-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .collection-shelves:has(.game-card:only-child) .drawing-board { grid-column: auto; }
-  .collection-shelves .game-card:only-child { grid-column: 1 / -1; }
 }
-@media (min-width: 761px) and (max-width: 1050px) {
-  .collection-shelves .game-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.carousel-dot, .carousel-rotation {
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  color: var(--muted);
+}
+.carousel-dot {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.carousel-dot::before {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  background: #8f8067;
+}
+.carousel-dot:hover::before { background: var(--muted); }
+.carousel-dot[aria-current="true"]::before {
+  width: 22px;
+  background: var(--ink);
+}
+.carousel-rotation {
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.carousel-rotation:hover { background: #e9dccb80; }
+.carousel-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 @media (max-width: 760px) {
   .view-collection .topbar { margin-bottom: 8px; }
   .arcade-home { margin-top: 0; }
-  .shelf-intro h1 { text-wrap: balance; }
-  .featured-copy .game-meta { margin-block: 12px; }
-  .featured-copy > .button { margin-bottom: 0; }
+  .shelf-intro h1 { font-size: clamp(30px, 8.5vw, 40px); text-wrap: balance; }
+  .shelf-intro { gap: 12px 8px; }
+  .shelf-intro > .button { padding: 10px 12px; gap: 6px; }
+  .shelf-intro > .button svg { width: 18px; height: 18px; }
+  .shelf-tab { font-size: 14px; padding-inline: 12px; }
+  .featured-slides { border-radius: 19px; }
+  .featured-slides .featured-game { grid-template-rows: auto 1fr; }
+  .featured-image { aspect-ratio: auto; }
+  .featured-copy { justify-content: start; }
+  .featured-copy h2 { font-size: 30px; margin-block: 6px 10px; }
+  .featured-copy > p { font-size: 14px; line-height: 1.5; }
+  .featured-copy .game-meta { margin-block: 10px; }
+  .featured-copy > .button { min-height: 44px; margin-bottom: 0; padding-block: 10px; }
   .featured-copy > .text-button { min-height: var(--touch-target); margin-block: 0; }
 }
 @media (max-width: 760px) and (max-height: 650px) {
-  .shelf-intro { margin-block: 4px 12px; gap: 8px; }
+  .shelf-intro { margin-block: 4px 12px; gap: 6px; }
   .shelf-intro .eyebrow, .featured-copy > .eyebrow { display: none; }
   .shelf-intro h1 { margin: 0; font-size: var(--tv-type-emphasis); letter-spacing: normal; }
+  .shelf-intro h1 br { display: none; }
+  .shelf-intro > .button { font-size: 13px; padding: 8px 9px; }
+  .shelf-tab { font-size: 13px; padding-inline: 10px; }
   .featured-copy > p { line-height: 1.45; }
   .featured-copy .game-meta { margin-block: 8px; }
-  .featured-image { aspect-ratio: 2.5; }
+  .featured-image::before { aspect-ratio: 2.5; }
   .featured-copy { padding: 12px var(--mobile-shelf-space); }
   .featured-copy h2 { margin-block: 0 8px; }
 }

@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createServer, request as httpRequest } from 'node:http';
+import { getGame } from '../games/catalog.mjs';
 import { startLanServer } from './lan.mjs';
 import { createPrivateApi, createPrivateEngine, openRoom, assertNoAuthoritySecrets } from './room-platform-fixture.mjs';
 
@@ -273,4 +274,238 @@ test('an unavailable room returns to code entry and room history restores the co
   await page.goForward();
   await page.locator('.arcade-home').waitFor();
   assert.equal(await page.title(), 'Sofa Arcade — Games for two');
+});
+
+async function openShelf(t, options = {}) {
+  const { chromium } = await import(process.env.SOFA_PLAYWRIGHT_MODULE || 'playwright');
+  const host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath: ':memory:' });
+  t.after(() => host.close());
+  const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
+  t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1480, height: 1000 }, ...options });
+  page.setDefaultTimeout(10_000);
+  return { page, origin: host.origin };
+}
+
+function shelfTab(page, name) {
+  return page.getByRole('tab', { name, exact: true });
+}
+
+const twoPlayerGames = ['sofa-kingdoms', 'gravity-orchard', 'odd-laws-society'];
+const partyGames = ['tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack'];
+
+async function assertShelfTab(page, name, otherName) {
+  const selected = shelfTab(page, name);
+  const other = shelfTab(page, otherName);
+  await page.waitForFunction(tabName => [...document.querySelectorAll('[role="tab"]')].some(
+    tab => tab.textContent.trim().includes(tabName) && tab.getAttribute('aria-selected') === 'true'), name);
+  assert.equal(await selected.getAttribute('aria-selected'), 'true');
+  assert.equal(await selected.getAttribute('tabindex'), '0');
+  assert.equal(await other.getAttribute('aria-selected'), 'false');
+  assert.equal(await other.getAttribute('tabindex'), '-1');
+  const panel = page.getByRole('tabpanel', { name, exact: true });
+  assert.equal(await panel.count(), 1);
+  assert.equal(await panel.getAttribute('id'), await selected.getAttribute('aria-controls'));
+  assert.equal(await panel.getAttribute('aria-labelledby'), await selected.getAttribute('id'));
+  assert.equal(await page.getByRole('tabpanel').count(), 1, 'Only the selected panel is exposed');
+  return panel;
+}
+
+async function assertSlide(page, gameId) {
+  const slide = page.locator('.featured-game[aria-hidden="false"]');
+  assert.equal(await slide.count(), 1, 'Exactly one slide is exposed');
+  assert.equal(await slide.getAttribute('aria-roledescription'), 'slide');
+  assert.ok(await slide.getAttribute('aria-label') || await slide.getAttribute('aria-labelledby'));
+  assert.equal(await slide.locator('h2').textContent(), getGame(gameId).title);
+  assert.equal(await slide.locator('.featured-copy > p').textContent(), getGame(gameId).description);
+  assert.equal(await slide.locator('[data-action="open-game"]').getAttribute('data-game'), gameId, 'Feature copy and action agree');
+  for (const inactive of await page.locator('.featured-game[aria-hidden="true"]').all()) {
+    assert.equal(await inactive.evaluate(element => element.inert), true, 'Inactive slide actions are not keyboard targets');
+  }
+  return slide;
+}
+
+test('shelf mode tabs use roving focus, filter cards and preserve browser history', async t => {
+  const { page, origin } = await openShelf(t, { reducedMotion: 'reduce' });
+  await page.goto(origin);
+  await page.getByRole('tablist').waitFor();
+  const twoPlayer = await assertShelfTab(page, '2 player', 'Party');
+  assert.deepEqual(await twoPlayer.locator('.game-card').evaluateAll(cards => cards.map(card => card.dataset.game)),
+    [...twoPlayerGames, 'borrowed-minutes', 'afterglow-market', 'last-ninety-seconds', 'footprints-at-midnight']);
+  await assertSlide(page, 'sofa-kingdoms');
+  assert.ok(await page.getByRole('button', { name: 'Join a room', exact: true }).isVisible());
+
+  await shelfTab(page, '2 player').focus();
+  await page.keyboard.press('ArrowRight');
+  const party = await assertShelfTab(page, 'Party', '2 player');
+  assert.equal(await shelfTab(page, 'Party').evaluate(tab => tab === document.activeElement), true);
+  assert.equal(new URL(page.url()).hash, '#party');
+  assert.deepEqual(await party.locator('.game-card').evaluateAll(cards => cards.map(card => card.dataset.game)), partyGames);
+  await assertSlide(page, 'tap-race');
+  const join = page.locator('.shelf-intro').getByRole('link', { name: 'Join a party', exact: true });
+  assert.equal(await join.getAttribute('href'), '/?party=join');
+  assert.equal(await page.getByRole('button', { name: 'Join a room', exact: true }).count(), 0);
+
+  await page.keyboard.press('Home');
+  await assertShelfTab(page, '2 player', 'Party');
+  await page.keyboard.press('End');
+  await assertShelfTab(page, 'Party', '2 player');
+  await page.keyboard.press('ArrowLeft');
+  await assertShelfTab(page, '2 player', 'Party');
+  await page.goBack();
+  await assertShelfTab(page, 'Party', '2 player');
+  await page.reload();
+  await assertShelfTab(page, 'Party', '2 player');
+  await page.goForward();
+  await assertShelfTab(page, '2 player', 'Party');
+  await page.goto(origin + '/#unknown-mode');
+  await assertShelfTab(page, '2 player', 'Party');
+  await page.goto(origin + '/#party');
+  await join.click();
+  await page.getByRole('button', { name: 'Find party', exact: true }).waitFor();
+  await page.getByRole('link', { name: /Game shelf/ }).click();
+  await assertShelfTab(page, 'Party', '2 player');
+  for (const gameId of partyGames) {
+    await page.locator(`.game-card[data-game="${gameId}"]`).click();
+    assert.equal(await page.locator('.concept-detail h1').textContent(), getGame(gameId).title);
+    const host = page.getByRole('link', { name: 'Host on the TV', exact: true });
+    assert.equal(await host.getAttribute('href'), `/?party=host&game=${gameId}`);
+    await page.getByRole('button', { name: 'All games', exact: true }).click();
+    await assertShelfTab(page, 'Party', '2 player');
+  }
+});
+
+test('featured slideshow pauses for hover, focus, page visibility and reduced motion', async t => {
+  const { page, origin } = await openShelf(t);
+  await page.clock.install();
+  await page.goto(origin);
+  const carousel = page.getByRole('region', { name: 'Featured games', exact: true });
+  await carousel.waitFor();
+  assert.equal(await carousel.getAttribute('aria-roledescription'), 'carousel');
+  const announcement = carousel.locator('[aria-live]');
+  const dots = carousel.locator('.carousel-dot');
+  assert.deepEqual(await dots.evaluateAll(elements => elements.map(dot => dot.getAttribute('aria-label'))),
+    ['Show Sofa Kingdoms', 'Show Gravity Orchard', 'Show The Odd Laws Society']);
+  assert.deepEqual(await carousel.locator('.featured-image > img').evaluateAll(images => images.map(
+    image => [image.getAttribute('loading') ?? 'eager', image.hasAttribute('alt') && image.alt.length > 0])), [
+    ['eager', true], ['lazy', true], ['lazy', true],
+  ]);
+  await assertSlide(page, 'sofa-kingdoms');
+  const heroHeight = (await carousel.locator('.featured-slides').boundingBox()).height;
+  assert.equal(await announcement.getAttribute('aria-live'), 'off');
+  await page.clock.fastForward(7300);
+  await assertSlide(page, 'gravity-orchard');
+  assert.equal(await announcement.getAttribute('aria-live'), 'off', 'Autoplay does not announce slides');
+  assert.equal((await carousel.locator('.featured-slides').boundingBox()).height, heroHeight);
+
+  await page.locator('.featured-game[aria-hidden="false"] .featured-image').hover();
+  await page.clock.fastForward(8000);
+  await assertSlide(page, 'gravity-orchard');
+  await page.mouse.move(1, 1);
+  await page.clock.fastForward(8000);
+  await assertSlide(page, 'odd-laws-society');
+  assert.equal((await carousel.locator('.featured-slides').boundingBox()).height, heroHeight);
+
+  const sofa = carousel.getByRole('button', { name: 'Show Sofa Kingdoms', exact: true });
+  await sofa.focus();
+  await page.clock.fastForward(8000);
+  await assertSlide(page, 'odd-laws-society');
+  await sofa.press('Enter');
+  await assertSlide(page, 'sofa-kingdoms');
+  assert.equal(await sofa.getAttribute('aria-current'), 'true');
+  assert.equal(await announcement.getAttribute('aria-live'), 'polite');
+  assert.match(await announcement.textContent(), /Sofa Kingdoms/);
+  await shelfTab(page, '2 player').focus();
+
+  // Headless Chromium does not reliably background tabs. Change the visibility
+  // properties and dispatch the same event as a real tab switch.
+  await page.evaluate(() => {
+    Object.defineProperties(document, {
+      hidden: { value: true, configurable: true },
+      visibilityState: { value: 'hidden', configurable: true },
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.clock.fastForward(8000);
+  await assertSlide(page, 'sofa-kingdoms');
+  await page.evaluate(() => {
+    delete document.hidden;
+    delete document.visibilityState;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.clock.fastForward(8000);
+  await assertSlide(page, 'gravity-orchard');
+  assert.equal(await announcement.getAttribute('aria-live'), 'off');
+
+  await carousel.getByRole('button', { name: 'Pause slideshow', exact: true }).click();
+  await page.mouse.move(1, 1);
+  await shelfTab(page, '2 player').focus();
+  await page.clock.fastForward(8000);
+  await assertSlide(page, 'gravity-orchard');
+  await carousel.getByRole('button', { name: 'Start slideshow', exact: true }).click();
+  await page.mouse.move(1, 1);
+  await shelfTab(page, '2 player').focus();
+  await page.clock.fastForward(8000);
+  await assertSlide(page, 'odd-laws-society');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await carousel.locator('.carousel-rotation').waitFor({ state: 'hidden' });
+  await page.clock.fastForward(15_000);
+  await assertSlide(page, 'odd-laws-society');
+  await sofa.click();
+  const still = await assertSlide(page, 'sofa-kingdoms');
+  const durations = await still.evaluate(element => getComputedStyle(element).transitionDuration.split(',').map(parseFloat));
+  assert.ok(durations.every(duration => duration === 0), 'Reduced motion disables the crossfade');
+  await page.mouse.move(1, 1);
+  await shelfTab(page, '2 player').focus();
+  await page.clock.fastForward(15_000);
+  await assertSlide(page, 'sofa-kingdoms');
+});
+
+test('a phone can swipe a party hero and select its matching game', async t => {
+  const { page, origin } = await openShelf(t, {
+    viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce',
+  });
+  await page.goto(origin + '/#party');
+  await shelfTab(page, 'Party').waitFor();
+  await assertSlide(page, 'tap-race');
+  const art = page.locator('.featured-game[aria-hidden="false"] .featured-image');
+  await art.scrollIntoViewIfNeeded();
+  const bounds = await art.boundingBox();
+  const y = bounds.y + bounds.height / 2;
+  const left = bounds.x + bounds.width * 0.2;
+  const right = bounds.x + bounds.width * 0.8;
+  const touch = await page.context().newCDPSession(page);
+  await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: right, y }] });
+  for (let step = 1; step <= 6; step++) {
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: right + (left - right) * step / 6, y }] });
+  }
+  await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  const second = await assertSlide(page, 'dont-wake-lala');
+  await second.locator('[data-action="open-game"]').tap();
+  assert.ok(await page.getByRole('heading', { name: "Don't Wake Lala", exact: true }).isVisible());
+  assert.ok(await page.getByRole('link', { name: 'Host on the TV' }).isVisible());
+});
+
+test('hosted shelf retains party games as local-only without exposing party creation', async t => {
+  const { page, origin } = await openShelf(t, { reducedMotion: 'reduce' });
+  // Serve the same collection document without capability metadata injected by
+  // the local host. This exercises the hosted UI path without starting a Worker.
+  await page.route(url => url.origin === origin && url.pathname === '/', async route => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(/<meta name="sofa-(?:transport|party|join-origin|gravity-orchard)" content="[^"]*">/g, '');
+    await route.fulfill({ response, body });
+  });
+  await page.goto(origin + '/#party');
+  const panel = await assertShelfTab(page, 'Party', '2 player');
+  assert.equal(await panel.locator('.game-card').count(), 6);
+  for (const card of await panel.locator('.game-card').all()) {
+    assert.match(await card.textContent(), /Local host only/);
+  }
+  const slide = await assertSlide(page, 'tap-race');
+  assert.match(await slide.textContent(), /Local host only/);
+  assert.equal(await page.getByRole('button', { name: 'Join a party', exact: true }).isDisabled(), true);
+  await slide.locator('[data-action="open-game"]').click();
+  assert.equal(await page.getByRole('link', { name: 'Host on the TV' }).count(), 0);
+  assert.match(await page.locator('.concept-detail').textContent(), /Local host only/);
 });

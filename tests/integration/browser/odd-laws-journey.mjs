@@ -169,11 +169,11 @@ export async function openOddLaws(run, { candidate = false } = {}) {
     await tv.evaluate(({ code, token }) => localStorage.setItem('sofa-room:' + code, JSON.stringify({ hostToken: token, playerTokens: {} })), { code, token: room.hostToken });
     await tv.goto(`${run.origin}/?room=${code}`);
   } else {
-    const shelfCover = tv.locator('[data-action="open-game"][data-game="odd-laws-society"] .game-cover img');
+    const shelfCover = tv.locator('.game-card[data-game="odd-laws-society"] .game-cover img');
     await shelfCover.scrollIntoViewIfNeeded();
     await assertResponsiveCover(shelfCover);
     await run.screenshot(tv, 'odd-laws-collection-cover', { fullPage: true });
-    await tv.locator('[data-action="open-game"][data-game="odd-laws-society"]').click();
+    await tv.locator('.game-card[data-game="odd-laws-society"]').click();
     const detailCover = tv.locator('.odd-laws-detail .game-cover img');
     await detailCover.waitFor();
     await assertResponsiveCover(detailCover);
@@ -692,7 +692,7 @@ export async function finishOddJourney(run, live) {
   await live.tv.locator('.arcade-home').waitFor();
   assert.equal(new URL(live.tv.url()).search, '');
   assert.equal(await live.tv.locator('.ols').count(), 0);
-  await live.tv.locator('[data-action="open-game"][data-game="sofa-kingdoms"]').first().click();
+  await live.tv.locator('.game-card[data-game="sofa-kingdoms"]').click();
   await live.tv.locator('.game-detail [data-action="create"]').waitFor();
   assert.equal(await live.tv.locator('link[data-odd-laws-style]').count(), 0, 'Leaving disposes Odd Laws view styles');
   run.check('Component exit returns to the collection, bare-root relaunch stays there, and Sofa Kingdoms remains available');

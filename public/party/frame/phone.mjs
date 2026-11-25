@@ -14,7 +14,7 @@ function setText(node, value) {
 
 export function mountPhoneJoin(root, initialCode, onJoin) {
   root.innerHTML = `<main class="party party-phone">
-    <header class="party-bar"><a class="party-back" href="/?shelf=1">‹ Game shelf</a></header>
+    <header class="party-bar"><a class="party-back" href="/?shelf=1#party">‹ Game shelf</a></header>
     <section class="party-phone-card">
       <h1>Join the party</h1>
       <p class="party-error" role="alert" hidden></p>
@@ -202,7 +202,7 @@ function screenWakeLock(document) {
 
 export function mountPartyPhone(root, { credential, actions }) {
   root.innerHTML = `<main class="party party-phone">
-    <header class="party-bar"><a class="party-back" href="/?shelf=1">‹ Game shelf</a><span data-room></span></header>
+    <header class="party-bar"><a class="party-back" href="/?shelf=1#party">‹ Game shelf</a><span data-room></span></header>
     <section class="party-phone-card party-handset">
       <div class="party-phone-identity"><canvas width="64" height="64" aria-hidden="true"></canvas>
         <div><h1 data-game>Party</h1><p data-you></p></div>

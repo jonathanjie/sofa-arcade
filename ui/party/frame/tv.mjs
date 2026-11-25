@@ -122,7 +122,7 @@ function showPodium(container, view, art) {
 export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPreference }) {
   root.innerHTML = `<main class="party party-tv">
     <header class="party-bar">
-      <a class="party-back" href="/?shelf=1">‹ Game shelf</a>
+      <a class="party-back" href="/?shelf=1#party">‹ Game shelf</a>
       <div class="party-tools">
         <span data-party-connection role="status"></span>
         <button type="button" class="party-secondary" data-end disabled>End party</button>

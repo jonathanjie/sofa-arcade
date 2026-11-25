@@ -55,18 +55,24 @@ test('a rejected room leaves the attempted code selected and offers no seats', {
   assert.deepEqual(missingStatuses, [200]);
 });
 
-test('collection shows both hero actions on phones and a planned title on TV', async t => {
+test('collection shows both hero actions on phones and keeps planned games on the two-player shelf', async t => {
   const { origin, phone } = await openArcade(t);
+  await phone.emulateMedia({ reducedMotion: 'reduce' });
   await phone.goto(origin);
   for (const [width, height] of [[390, 844], [320, 568]]) {
     await phone.setViewportSize({ width, height });
-    const play = await phone.getByRole('button', { name: 'Play Sofa Kingdoms' }).boundingBox();
-    const learn = await phone.getByRole('button', { name: 'Learn with Lala' }).boundingBox();
-    assert.ok(play.y >= 0 && play.y + play.height <= learn.y && learn.y + learn.height <= height);
+    const play = phone.getByRole('button', { name: 'Play Sofa Kingdoms', exact: true });
+    const learn = phone.locator('.featured-game[aria-hidden="false"]').getByRole('button', { name: 'Learn with Lala', exact: true });
+    for (const bounds of [await play.boundingBox(), await learn.boundingBox()]) {
+      assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width);
+      assert.ok(bounds.y >= 0 && bounds.y + bounds.height <= height);
+    }
   }
   await phone.setViewportSize({ width: 1920, height: 1080 });
-  const plan = await phone.getByRole('heading', { name: 'Borrowed Minutes' }).boundingBox();
-  assert.ok(plan.y >= 0 && plan.y + plan.height <= 1080);
+  const plan = phone.getByRole('tabpanel', { name: '2 player', exact: true }).getByRole('heading', { name: 'Borrowed Minutes' });
+  await plan.scrollIntoViewIfNeeded();
+  const bounds = await plan.boundingBox();
+  assert.ok(bounds.y >= 0 && bounds.y + bounds.height <= 1080);
 });
 
 async function press(page, action) {

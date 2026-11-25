@@ -93,6 +93,7 @@ const ROOM_CODE = '[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}';
 const SOURCES = new Map([
   ...[...GRAVITY_BROWSER_FILES, ...PARTY_BROWSER_FILES].map(({ url, source }) => [url, source]),
   ['/app.js', 'ui/app.js'], ['/styles.css', 'ui/styles.css'],
+  ['/shelf.mjs', 'ui/shelf.mjs'],
   ['/audio.js', 'ui/audio.js'], ['/score.mjs', 'ui/score.mjs'],
   ['/motion.js', 'ui/motion.js'], ['/motion.css', 'ui/motion.css'],
   ['/board-view.mjs', 'ui/board-view.mjs'], ['/board-view.css', 'ui/board-view.css'],

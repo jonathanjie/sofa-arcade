@@ -74,8 +74,8 @@ test('the TV plays Wall of Paddles with sixteen and two seats and a waiting phon
     });
   });
   await tv.goto(fixture.origin);
-  await tv.getByRole('heading', { name: 'Party', exact: true }).waitFor();
-  await tv.getByRole('button', { name: /Wall of Paddles/ }).click();
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="wall-of-paddles"]').click();
   await tv.getByRole('link', { name: 'Host on the TV' }).click();
   await tv.locator('[data-party-qr] svg').waitFor({ state: 'visible' });
   const code = await tv.locator('[data-party-code]').textContent();

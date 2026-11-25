@@ -100,7 +100,9 @@ async function playing(page, title) {
 }
 
 async function exitToMenu(page) {
-  await page.locator('[data-action="home"]').first().click();
+  const componentExit = page.locator('.ols-toolbar [data-action="exit"]');
+  if (await componentExit.count()) await componentExit.click();
+  else await page.locator('[data-action="home"]').first().click();
   const leave = page.locator('[data-action="leave"]');
   if (await leave.count()) await leave.click();
   await page.locator('.arcade-home').waitFor();
@@ -167,12 +169,12 @@ try {
   await tv.locator('[data-action="audio"]').click();
   await tv.getByRole('switch', { name: 'Background music', exact: true }).uncheck();
   await cueFromGesture(tv, 'menu-confirm', () => closeDialog(tv));
-  const planned = GAME_CATALOG.find(game => game.status !== 'playable');
+  const planned = GAME_CATALOG.find(game => game.status === 'planned');
   assert.ok(planned, 'The catalog has a planned detail page to verify');
-  await cueFromGesture(tv, 'menu-select', () => tv.locator(`[data-action="open-game"][data-game="${planned.id}"]`).click());
+  await cueFromGesture(tv, 'menu-select', () => tv.locator(`.game-card[data-game="${planned.id}"]`).click());
   assert.equal((await snapshot(tv)).settings.trackTitle, MENU.title, 'a planned game keeps the collection composition');
   await cueFromGesture(tv, 'menu-back', () => exitToMenu(tv));
-  await cueFromGesture(tv, 'menu-select', () => tv.locator('[data-action="open-game"][data-game="sofa-kingdoms"]').first().click());
+  await cueFromGesture(tv, 'menu-select', () => tv.locator('.game-card[data-game="sofa-kingdoms"]').click());
   assert.equal((await snapshot(tv)).settings.trackTitle, SOFA.title);
   await cueFromGesture(tv, 'menu-back', () => exitToMenu(tv));
   run.check('All three menu cues execute through UI gestures at 92 BPM, including selecting a differently timed game; planned details retain the menu theme');
@@ -181,7 +183,7 @@ try {
   await tv.getByRole('switch', { name: 'Sound effects', exact: true }).uncheck();
   const bothOff = await snapshot(tv);
   await closeDialog(tv);
-  await tv.locator(`[data-action="open-game"][data-game="${planned.id}"]`).click();
+  await tv.locator(`.game-card[data-game="${planned.id}"]`).click();
   await exitToMenu(tv);
   const mutedNavigation = await record(tv, 'muted-menu-navigation');
   assert.equal(mutedNavigation.native.noteCount, bothOff.native.noteCount, 'muted navigation schedules no effects');
@@ -213,7 +215,7 @@ try {
   await closeDialog(tv);
   run.check('A keyboard gesture unlocks the menu after reload; independent preferences and volume persist');
 
-  await tv.locator('[data-action="open-game"][data-game="sofa-kingdoms"]').first().click();
+  await tv.locator('.game-card[data-game="sofa-kingdoms"]').click();
   await playing(tv, SOFA.title);
   await tv.locator('[data-action="practice"]').click();
   await tv.locator('.game-layout').waitFor();
@@ -245,10 +247,11 @@ try {
   assert.equal(quietMenu.settings.canPlayMusic, false);
   assert.equal(quietMenu.native.clocks, 0);
   assert.equal(quietMenu.native.noteCount, joinedIntent.native.noteCount);
-  await lydia.locator(`[data-action="open-game"][data-game="${planned.id}"]`).click();
+  await lydia.locator(`.game-card[data-game="${planned.id}"]`).click();
   assert.equal((await snapshot(lydia)).native.noteCount, joinedIntent.native.noteCount);
   await exitToMenu(lydia);
-  await lydia.locator('.featured-copy [data-action="tutorial"]').click();
+  await lydia.getByRole('button', { name: 'Show Sofa Kingdoms', exact: true }).click();
+  await lydia.locator('.featured-game[aria-hidden="false"] [data-action="tutorial"]').click();
   await lydia.locator('.tutorial-layout').waitFor();
   const quietTutorial = await record(lydia, 'quiet-menu-tutorial');
   assert.equal(quietTutorial.settings.canPlayMusic, false, 'tutorial host role preserves the originating quiet phone intent');
@@ -265,7 +268,7 @@ try {
   run.check('Choosing Join stops an already playing menu; collection, planned detail and the shelf tutorial retain quiet phone intent, including the tutorial return');
 
   await tv.bringToFront();
-  await tv.locator('[data-action="open-game"][data-game="odd-laws-society"]').click();
+  await tv.locator('.game-card[data-game="odd-laws-society"]').click();
   await playing(tv, ODD.title);
   await tv.locator('.odd-laws-detail [data-action="create"]').click();
   await tv.locator('.room-code').waitFor();

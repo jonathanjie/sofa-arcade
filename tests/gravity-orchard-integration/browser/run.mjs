@@ -66,7 +66,7 @@ try{
  phones.jon=await run.page('jon',{width:360,height:800},{phone:true,permission:'denied'});
  phones.lydia=await run.page('lydia',{width:390,height:844},{phone:true,permission:'granted'});
  await tv.goto(run.origin);
- await tv.locator('[data-action="open-game"][data-game="gravity-orchard"]').click();
+ await tv.locator('.game-card[data-game="gravity-orchard"]').click();
  await tv.locator('[data-action="orchard-tutorial"]').click();
  await tv.locator('[data-go-tutorial]').waitFor();
  await run.screenshot(tv,'isolated-tutorial');
@@ -201,7 +201,7 @@ try{
  await phones.jon.locator(phoneSelector('pause')).click();await waitPhase(tv,'paused');
  run.check('A saved phone reload restores the mounted authenticated controller and resumes through both-ready');
  await tv.locator('[data-go-action="exit"]').click();await tv.locator('.arcade-home').waitFor();
- await tv.locator('[data-action="open-game"][data-game="gravity-orchard"]').click();await tv.locator('[data-action="orchard-practice"]').click();await tv.waitForURL(/\?room=/);const practiceCode=new URL(tv.url()).searchParams.get('room');assert.notEqual(practiceCode,code);code=practiceCode;hostToken=await roomCredential(run,tv,code,'host');await mountPhones(code);
+ await tv.locator('.game-card[data-game="gravity-orchard"]').click();await tv.locator('[data-action="orchard-practice"]').click();await tv.waitForURL(/\?room=/);const practiceCode=new URL(tv.url()).searchParams.get('room');assert.notEqual(practiceCode,code);code=practiceCode;hostToken=await roomCredential(run,tv,code,'host');await mountPhones(code);
  await chooseTouch(phones.jon);
  await phones.lydia.locator(phoneSelector('enable-tilt')).click();
  await phones.lydia.evaluate(async()=>{for(let i=0;i<50;i++){window.__go7Probe.orientation(35,0);await new Promise(resolve=>setTimeout(resolve,16));}});

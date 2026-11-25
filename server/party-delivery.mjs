@@ -35,7 +35,16 @@ export const PARTY_BROWSER_FILES = Object.freeze([
   'kit/animation.mjs',
   'kit/sprites.mjs',
   'phone/controls.mjs',
-].map(file => Object.freeze({ url: `/party/${file}`, source: `ui/party/${file}` })));
+].map(file => Object.freeze({ url: `/party/${file}`, source: `ui/party/${file}` })).concat(
+  // Serve the optimized, authored covers directly on LAN. Preparation copies
+  // the same files to public/ for the hosted collection.
+  [
+    'tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack',
+  ].flatMap(game => ['cover.webp', 'cover-560.webp'].map(file => Object.freeze({
+    url: `/assets/party/${game}/${file}`,
+    source: `ui/media/party/covers/${game}/${file}`,
+  }))),
+));
 
 export const PARTY_HOST_FILES = Object.freeze([
   'games/party/registry.mjs',

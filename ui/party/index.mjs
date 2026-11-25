@@ -44,11 +44,11 @@ export function mountParty(root, { params, joinOrigin, getSecureOrigin, sound, m
   const game = GAME_CATALOG.find(entry => entry.category === 'party' && entry.id === requestedGame);
   if (!game) {
     root.innerHTML = `<main class="party party-phone"><section class="party-phone-card">
-      <a class="party-back" href="/?shelf=1">‹ Game shelf</a><h1>Choose a party game</h1></section></main>`;
+      <a class="party-back" href="/?shelf=1#party">‹ Game shelf</a><h1>Choose a party game</h1></section></main>`;
     return;
   }
   root.innerHTML = `<main class="party party-phone"><section class="party-phone-card">
-    <a class="party-back" href="/?shelf=1">‹ Game shelf</a><h1>Opening the party…</h1>
+    <a class="party-back" href="/?shelf=1#party">‹ Game shelf</a><h1>Opening the party…</h1>
     <p class="party-error" role="alert" hidden></p>
     <button type="button" class="party-primary" hidden>Try again</button></section></main>`;
   const retry = root.querySelector('button');

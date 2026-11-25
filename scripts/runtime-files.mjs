@@ -9,6 +9,7 @@ export const BROWSER_FILES = Object.freeze([
   ...GRAVITY_BROWSER_FILES,
   ...PARTY_BROWSER_FILES,
   { url: '/app.js', source: 'ui/app.js' },
+  { url: '/shelf.mjs', source: 'ui/shelf.mjs' },
   { url: '/styles.css', source: 'ui/styles.css' },
   { url: '/audio.js', source: 'ui/audio.js' },
   { url: '/score.mjs', source: 'ui/score.mjs' },

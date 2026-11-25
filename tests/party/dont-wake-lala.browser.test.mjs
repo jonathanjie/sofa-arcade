@@ -86,7 +86,8 @@ test('Lala plays on a 1080p TV, two touch phones and fourteen socket phones', { 
   const mobileOptions = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
   const [pepper, juniper] = await Promise.all([page(mobileOptions, 'Pepper'), page(mobileOptions, 'Juniper')]);
   await tv.goto(fixture.origin);
-  await tv.getByRole('button', { name: /Don't Wake Lala/ }).click();
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="dont-wake-lala"]').click();
   await tv.getByRole('link', { name: 'Host on the TV' }).click();
   await tv.locator('[data-party-qr] svg').waitFor();
   const code = await tv.locator('[data-party-code]').textContent();

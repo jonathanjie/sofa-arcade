@@ -124,7 +124,8 @@ test('two touch browsers and fourteen harness phones pull yarn on a 1080p TV', {
     });
   });
   await tv.goto(fixture.origin);
-  await tv.getByRole('button', { name: /Tug of Yarn/ }).click();
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="tug-of-yarn"]').click();
   await tv.getByRole('link', { name: 'Host on the TV' }).click();
   await tv.getByRole('button', { name: 'Start', exact: true }).waitFor();
   const code = await tv.locator('[data-party-code]').textContent();
