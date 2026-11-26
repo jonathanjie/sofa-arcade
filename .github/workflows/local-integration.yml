@@ -36,6 +36,8 @@ jobs:
         run: |
           node --test ui/media/sofa-menu/score.test.mjs
           node ui/media/sofa-menu/audio-preview.mjs --verify
+      - name: Install locked root dependencies for the integration suites
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Integrated protocol, lifecycle and package checks
         run: npm run test:integration
         env:

@@ -484,7 +484,18 @@ test('a phone can swipe a party hero and select its matching game', async t => {
   const second = await assertSlide(page, 'dont-wake-lala');
   await second.locator('[data-action="open-game"]').tap();
   // Wait for the detail page: before it opens, the hero and the shelf card both show this title.
-  await page.getByRole('heading', { level: 1, name: "Don't Wake Lala", exact: true }).waitFor();
+  try {
+    await page.getByRole('heading', { level: 1, name: "Don't Wake Lala", exact: true }).waitFor();
+  } catch (error) {
+    // Record what the phone shows so a CI-only failure can be diagnosed.
+    const shown = await page.evaluate(() => ({
+      url: location.href,
+      headings: [...document.querySelectorAll('h1, h2')].map(h => `${h.tagName} ${h.textContent} hidden=${Boolean(h.closest('[aria-hidden="true"], [inert]'))}`),
+      active: document.activeElement?.outerHTML.slice(0, 160),
+    }));
+    error.message += '\n' + JSON.stringify(shown, null, 2);
+    throw error;
+  }
   await page.getByRole('link', { name: 'Host on the TV' }).waitFor();
 });
 
