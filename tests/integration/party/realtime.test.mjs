@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { once } from 'node:events';
+import { createServer } from 'node:http';
+import { WebSocket } from 'ws';
+import { createPartyRealtime } from '../../../server/realtime/party/index.mjs';
 import { WebSocketServer } from '../../../server/runtime/gravity-orchard-dependencies.mjs';
 import { PARTY_LIMITS } from '../../../server/realtime/party/protocol.mjs';
 import { launchPartyHarness } from '../../party/harness.mjs';
@@ -97,4 +101,33 @@ test('only authenticated phones can request a bounded clock sample', { timeout: 
     { type: 'clock-pong', id: 3, serverAt: 50 },
   ]);
   assert.ok(!tv.packets.some(packet => packet.type === 'clock-pong'));
+});
+
+test('the host socket selects an available mode and receives invalid_mode for an unknown one', { timeout: 5000 }, async t => {
+  const realtime = createPartyRealtime({ validateUpgrade: () => true, admitSocket: () => true });
+  const server = createServer();
+  server.on('upgrade', realtime.handleUpgrade);
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => {
+    realtime.close();
+    return new Promise(resolve => server.close(resolve));
+  });
+  const host = realtime.rooms.create({ gameId: 'tap-race', requestId: 'host'.repeat(8) });
+  const room = realtime.rooms.find(host.code);
+  room.game = { ...room.game, modes: [{ id: 'relay', label: 'Relay' }] };
+  const socket = new WebSocket(`ws://127.0.0.1:${server.address().port}/api/realtime/party`);
+  t.after(() => socket.terminate());
+  await once(socket, 'open');
+  const send = message => socket.send(JSON.stringify(message));
+  const receive = async () => JSON.parse((await once(socket, 'message'))[0]);
+  send({ type: 'auth', protocol: 1, ...host });
+  assert.equal((await receive()).type, 'welcome');
+  send({ type: 'mode', round: 0, mode: 'relay' });
+  let packet;
+  do { packet = await receive(); } while (packet.type === 'snapshot' && packet.view.mode === null);
+  assert.equal(packet.view.mode, 'relay');
+  send({ type: 'mode', round: 0, mode: 'missing' });
+  do { packet = await receive(); } while (packet.type === 'snapshot');
+  assert.deepEqual(packet, { type: 'error', code: 'invalid_mode', message: 'Choose an available mode.' });
 });

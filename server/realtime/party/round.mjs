@@ -25,6 +25,7 @@ export function startRound(room, now, seed) {
   const match = {
     roomRound: room.round,
     gameId: room.game.id,
+    mode: room.mode ?? null,
     startsAt,
     previousResults: room.previousResults.map(result => ({ ...result })),
   };
