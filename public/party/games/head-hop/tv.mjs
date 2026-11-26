@@ -11,7 +11,7 @@ function placeTag(p, placed) {
   for (const offset of [0, -82, 82, -164, 164]) {
     const x = Math.max(3, Math.min(917, anchor + offset));
     for (const dy of [6, 26, -79, 46, -99, 66, -119]) {
-      const y = Math.max(3, Math.min(505, p.y + dy));
+      const y = Math.max(48, Math.min(505, p.y + dy));
       if (placed.every(r => Math.abs(r.x - x) >= 81 || Math.abs(r.y - y) >= 18))
         return { x, y, width: 80, height: 17 };
     }
@@ -39,6 +39,7 @@ export function mountTv(canvas) {
   drawGround(background, 0, 1000, 528);
   const effects = createInkEffects();
   let safe;
+  let streak;
   let view, prior, reduced = false, frame, freezeUntil = 0;
   function drawFrame(now) {
     frame = requestAnimationFrame(drawFrame);
@@ -64,19 +65,6 @@ export function mountTv(canvas) {
     }
     for (const g of s.goons) {
       const size = g.brim ? .27 : .42;
-      if (!g.brim) {
-        // The taller walkers cross the spike pit on pencil-thin stilts.
-        const foot = g.y + 120 * size;
-        const stride = reduced ? 3 : 6 * Math.sin(s.elapsedMs / 200 + g.x / 18);
-        c.beginPath();
-        for (const side of [-1, 1]) {
-          c.moveTo(g.x + side * 2, foot);
-          c.lineTo(g.x + side * (4 + stride), 515);
-        }
-        c.strokeStyle = palette.far;
-        c.lineWidth = 2;
-        c.stroke();
-      }
       drawFigure(c, P.ready, g.x, g.y + 128 * size, { scale: size, goon: true, flip: g.dir < 0 });
       if (g.brim) {
         c.beginPath();
@@ -117,6 +105,8 @@ export function mountTv(canvas) {
       const phase = reduced ? .5 : (now % 1200) / 1200;
       drawFigure(c, P.leap, 159, 69 - 13 * Math.sin(Math.PI * phase), { scale: .29, look: 0 });
       drawPopup(c, instruction, 525, 66, area);
+    } else if (streak && now < streak.until) {
+      drawPopup(c, streak.text, 500, 42, area);
     }
   }
   frame = requestAnimationFrame(drawFrame);
@@ -124,12 +114,16 @@ export function mountTv(canvas) {
     push(next) {
       prior = view;
       view = next;
-      if (prior?.round !== next.round) effects.clear();
-      else for (const p of next.scene?.players ?? []) {
+      if (prior?.round !== next.round) {
+        effects.clear();
+        streak = undefined;
+      } else for (const p of next.scene?.players ?? []) {
         const last = prior.scene?.players.find(q => q.id === p.id);
         if (last && p.hits > last.hits) {
           const now = performance.now();
-          effects.impact({ x: p.x, y: p.y, time: now, label: p.chain % 3 === 0 ? p.chain + ' hops' : '', strong: p.chain % 3 === 0 });
+          const milestone = p.chain % 3 === 0;
+          effects.impact({ x: p.x, y: p.y, time: now, strong: milestone });
+          if (milestone) streak = { text: (p.name ?? p.id) + ' · ' + p.chain + ' hops', until: now + 700 };
           freezeUntil = now + 30;
         }
       }

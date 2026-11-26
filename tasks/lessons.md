@@ -11,3 +11,9 @@
 - **Trigger:** Stacked cars and city walls looked flat at normal TV scale.
 - **Rule:** Review a full 1920 × 1080 frame with 16 players. Check the wall faces, roof edge and player silhouettes before inspecting enlarged crops.
 - **Why:** A crop can make a small height difference look larger than it appears during play.
+
+### Keep controls and player names readable during motion
+
+- **Date:** 2026-11-26
+- **Trigger:** A teaching hand touched the Hold label, and a streak popup moved above one jumper covered another player's name.
+- **Rule:** Check the full teaching gesture against the phone label bounds. On a 16-player TV board, check adjacent rows and give shared streak messages their own space.

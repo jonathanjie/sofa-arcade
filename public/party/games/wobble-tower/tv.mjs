@@ -96,7 +96,7 @@ export function mountTv(canvas) {
       const slot = members.indexOf(p);
       const width = 565 / Math.min(4, members.length);
       const x = 62 + 593 * p.side + width * (slot % 4 + .5);
-      const y = 509 + Math.floor(slot / 4) * 104;
+      const y = 509 + Math.floor(slot / 4) * 121;
       const pose = p.id === s.active ? P.cheer : i % 3 === 1 ? P.ready : P.stand;
       drawFigure(ctx, pose, x, y, { look: p.look, flip: !!p.side, scale: .58, reducedMotion: reduced });
       drawNameTag(ctx, p.name, p.look, { x: x - 64, y: y - 1, width: 128, height: 29 });

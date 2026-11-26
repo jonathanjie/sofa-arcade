@@ -292,7 +292,7 @@ function shelfTab(page, name) {
 }
 
 const twoPlayerGames = ['sofa-kingdoms', 'gravity-orchard', 'odd-laws-society'];
-const partyGames = ['tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack', 'whiteout-drift'];
+const partyGames = ['tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack', 'whiteout-drift', 'balloon-bop', 'wobble-tower', 'timber-rush', 'head-hop'];
 
 async function assertShelfTab(page, name, otherName) {
   const selected = shelfTab(page, name);
