@@ -292,7 +292,7 @@ function shelfTab(page, name) {
 }
 
 const twoPlayerGames = ['sofa-kingdoms', 'gravity-orchard', 'odd-laws-society'];
-const partyGames = ['tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack'];
+const partyGames = ['tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack', 'whiteout-drift'];
 
 async function assertShelfTab(page, name, otherName) {
   const selected = shelfTab(page, name);
@@ -512,7 +512,7 @@ test('hosted shelf retains party games as local-only without exposing party crea
   });
   await page.goto(origin + '/#party');
   const panel = await assertShelfTab(page, 'Party', '2 player');
-  assert.equal(await panel.locator('.game-card').count(), 6);
+  assert.equal(await panel.locator('.game-card').count(), partyGames.length);
   for (const card of await panel.locator('.game-card').all()) {
     assert.match(await card.textContent(), /Local host only/);
   }
