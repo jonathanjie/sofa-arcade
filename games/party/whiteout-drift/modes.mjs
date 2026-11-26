@@ -65,6 +65,7 @@ function bust(s, victim, cop) {
   victim.pinMs = victim.button = victim.boostMs = victim.boostCharge = 0;
   victim.drift = false; victim.vx = victim.vy = victim.stickX = victim.stickY = 0;
   if (s.mode === 'freeze-tag') {
+    if (!s.cars.some(c => c !== victim && driver(c))) s.lastDriver = victim.id;
     victim.role = 1; victim.hp = 3; victim.spinMs = 400; cop.score += 120;
   } else {
     victim.role = 2; victim.hp = victim.cd = victim.spinMs = 0;

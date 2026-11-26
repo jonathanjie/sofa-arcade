@@ -94,7 +94,7 @@ function scores(s) {
   const entries = s.roster.map(p => {
     const car = s.cars.find(c => c.id === p.id);
     return { playerId: p.id, score: Math.round(car?.score ?? p.score),
-      winner: s.team?.winner === p.side || (s.over && s.mode === 'freeze-tag' && car && driver(car)) };
+      winner: s.team?.winner === p.side || (s.over && s.mode === 'freeze-tag' && car && (driver(car) || car.id === s.lastDriver)) };
   });
   const bonus = 1 + Math.max(0, ...entries.filter(e => !e.winner).map(e => e.score));
   return entries.map(({ playerId, score, winner }) => ({ playerId, score: score + (winner ? bonus : 0) }))
