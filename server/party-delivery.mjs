@@ -38,6 +38,10 @@ export const PARTY_BROWSER_FILES = Object.freeze([
   'games/whiteout-drift/tv.mjs',
   'kit/animation.mjs',
   'kit/sprites.mjs',
+  'kit/ink.mjs',
+  'kit/ink-poses.mjs',
+  'kit/ink-paper.mjs',
+  'kit/stack.mjs',
   'phone/controls.mjs',
 ].map(file => Object.freeze({ url: `/party/${file}`, source: `ui/party/${file}` })).concat(
   // Serve the optimized, authored covers directly on LAN. Preparation copies

@@ -163,7 +163,7 @@ export const ASSET_FILES = Object.freeze([
 /** No directory walk: adding a source/test beside a runtime file never ships it. */
 export async function runtimeFiles(root) {
   const files = [...new Set([
-    'start-sofa.command', 'scripts/lan-server.mjs', 'ui/index.html', 'docs/LAN.md', 'docs/PARTY_CONTRACT.md',
+    'start-sofa.command', 'scripts/lan-server.mjs', 'ui/index.html', 'docs/LAN.md', 'docs/PARTY_CONTRACT.md', 'docs/third-party/goofyfish-LICENSE.txt',
     ...SERVER_FILES, ...BROWSER_FILES.map(entry => entry.source), ...ASSET_FILES,
   ])].sort();
   for (const file of files) await checkedRuntimePath(root, file);
