@@ -25,7 +25,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm run install:ci
-      - run: npm run lint -- --no-cache
+      - run: npx eslint .
       - run: npm exec --offline -- tsc --noEmit --incremental false
       - name: Test rules, room API, controllers, local transport, and music
         run: npm test

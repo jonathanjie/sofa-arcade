@@ -483,8 +483,9 @@ test('a phone can swipe a party hero and select its matching game', async t => {
   await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   const second = await assertSlide(page, 'dont-wake-lala');
   await second.locator('[data-action="open-game"]').tap();
-  assert.ok(await page.getByRole('heading', { name: "Don't Wake Lala", exact: true }).isVisible());
-  assert.ok(await page.getByRole('link', { name: 'Host on the TV' }).isVisible());
+  // Wait for the detail page: before it opens, the hero and the shelf card both show this title.
+  await page.getByRole('heading', { level: 1, name: "Don't Wake Lala", exact: true }).waitFor();
+  await page.getByRole('link', { name: 'Host on the TV' }).waitFor();
 });
 
 test('hosted shelf retains party games as local-only without exposing party creation', async t => {
