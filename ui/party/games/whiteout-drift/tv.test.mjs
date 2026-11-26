@@ -69,6 +69,7 @@ function harness(t) {
       ctx[op] = (...args) => calls.push([op, ...args]);
     }
     const canvas = { ownerDocument: doc, calls, getContext: () => ctx, setAttribute() {} };
+    ctx.canvas = canvas;
     surfaces.push(canvas);
     return canvas;
   }

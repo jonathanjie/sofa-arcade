@@ -1,3 +1,5 @@
+import { compileStack, drawStack } from '../../kit/stack.mjs';
+
 // World units are pixels. Cars face east before the caller applies their heading.
 const TAU = 2 * Math.PI;
 export function noise(n) {
@@ -24,7 +26,11 @@ export function glow(c, x, y, r, colour) {
 export function drawBuildingBlock(c, x, y, w, h, seed) {
   rect(c, '#778493', x - 5, y - 5, w + 10, h + 10);
   rect(c, '#b3c4ce', x - 5, y - 5, w + 10, 2);
-  rect(c, '#1c2538', x, y, w, h);
+  // Static, axis-aligned wall slices are baked into the city canvas.
+  for (const [level, colour] of ['#172336', '#263246', '#39495d', '#506178'].entries()) {
+    rect(c, colour, x, y - level * 2, w, h);
+  }
+  y -= 6;
   rect(c, '#adc5d2', x, y, w, h - 11);
   rect(c, '#53657b', x + 2, y + 3, w - 4, h - 16);
   rect(c, '#34435a', x + 5, y + 6, w - 10, h - 21);
@@ -53,40 +59,64 @@ export function drawBuildingBlock(c, x, y, w, h, seed) {
     if (tint > 0.72) glow(c, x + i + 2, y + h - 5, 10, '#ffb04c42');
   }
 }
-export function drawCarSprite(c, { colour, role, ai, sirenPhase, boost, hp }) {
+// Mirror each half across the longitudinal centreline. The nose faces east.
+function footprint(...rows) {
+  return [...rows, ...rows.toReversed()];
+}
+const wheels = footprint('..WW......WW....', '..WW......WW....', '.KKKKKKKKKKKKK..', '.KKKKKKKKKKKKKK.');
+const sill = footprint('..WW......WW....', '.KDDDDDDDDDDDDK.', 'KDDDDDDDDDDDDDDK', 'KDDDDDDDDDDDDDDK');
+const deck = footprint('................', '.TBBBBBBBBBBBBH.', 'TBBBBBBBBBBBBBBH', 'TBBSSSSSSSSSSBBH');
+const glass = footprint('................', '................', '...gGGGGGIIg....', '...gGGGGGGIIg...');
+const roof = footprint('................', '................', '....RRRRg.......', '....RRRRRg......');
+const bar = footprint('................', '................', '......rr........', '......rr........');
+const lightBar = [...bar.slice(0, 4), ...bar.slice(4).map(row => row.replaceAll('r', 'b'))];
+const coupe = [wheels, wheels, sill, deck, deck, glass, glass, roof];
+const cruiser = [...coupe, lightBar];
+const palette = { W: '#141a28', K: '#263343', D: '#435568', G: '#243c52', g: '#496c7e',
+  I: '#abdce4', S: '#fff1cb', T: '#fa675d', H: '#fff3b8' };
+
+const hydrantFoot = ['.dddd.', 'dddddd', 'dddddd', '.dddd.'];
+const barrel = ['..hh..', '.hHHh.', '.hHHh.', '..hh..'];
+const outlets = ['..hh..', 'hhHHhh', 'hhHHhh', '..hh..'];
+const cap = ['..hh..', '.hLLh.', '.hHHh.', '..hh..'];
+const hydrant = [hydrantFoot, barrel, barrel, outlets, outlets, barrel, cap];
+const base = ['ddddd', 'ddddd', 'ddddd', 'ddddd', 'ddddd'];
+const orange = ['.....', '.ooo.', '.ooo.', '.ooo.', '.....'];
+const stripe = ['.....', '..w..', '.www.', '..w..', '.....'];
+const tip = ['.....', '.....', '..o..', '.....', '.....'];
+const cone = [base, orange, orange, stripe, tip, tip];
+const propColours = { d: '#583b46', h: '#c64044', H: '#f56d52', L: '#ffcb97', o: '#ff843c', w: '#fff1ca' };
+
+// The TV has sixteen seat colours, two patrol phases and two street props.
+const models = new WeakMap();
+function model(c, key, layers, colours) {
+  const doc = c.canvas.ownerDocument;
+  if (!models.has(doc)) models.set(doc, new Map());
+  const cache = models.get(doc);
+  if (!cache.has(key)) cache.set(key, compileStack(doc, layers, colours));
+  return cache.get(key);
+}
+export function drawCarSprite(c, { colour, role, ai, sirenPhase, boost, hp, a = 0 }) {
   const cop = ai === 1 || role === 1;
   if (role === 3) glow(c, 0, 0, 22, '#ffc94388');
-  if (boost)
-    polygon(c, '#85efff', [
-      [-10, -3],
-      [-21, 0],
-      [-10, 3],
-    ]);
-  rect(c, '#101825', -9, -7, 16, 14);
-  rect(c, '#101825', -12, -4, 25, 9);
-  rect(c, cop ? '#324b72' : colour, -11, -5, 23, 10);
-  rect(c, cop ? '#aec2d7' : '#fff2b7', -8, -6, 16, 2);
-  rect(c, '#172e44', -6, -4, 12, 8);
-  rect(c, '#78abba', 3, -3, 2, 5);
-  rect(c, cop ? '#dadee0' : colour, -4, -4, 6, 8);
-  if (cop) {
-    rect(c, sirenPhase ? '#ff4054' : '#ae334a', -2, -5, 3, 4);
-    rect(c, sirenPhase ? '#376bcc' : '#83cbff', -2, 1, 3, 4);
-  } else rect(c, '#fff3ca', -3, -1, 14, 2);
-  for (const y of [-4, 2]) {
-    rect(c, '#fff4b5', 10, y, 3, 2);
-    rect(c, '#ff6156', -12, y, 2, 2);
+  if (boost) {
+    c.save();
+    c.rotate(a);
+    polygon(c, '#85efff', [[-12, -3], [-23, 0], [-12, 3]]);
+    c.restore();
   }
-  if (hp === 0) rect(c, '#686375', 6, -2, 3, 2);
+  const car = cop
+    ? model(c, 'patrol-' + sirenPhase, cruiser, { ...palette, B: '#385178', R: '#e6e7de',
+      r: sirenPhase ? '#ff4757' : '#ac3040', b: sirenPhase ? '#376bcc' : '#83cbff' })
+    : model(c, colour, coupe, { ...palette, B: colour, R: colour });
+  drawStack(c, car, 0, 0, { angle: a, scale: 2, sliceGap: 0.5 });
+  if (hp === 0) rect(c, '#686375', 9 * Math.cos(a), 9 * Math.sin(a) - 4, 3, 2);
 }
 export function drawHydrant(c, x, y, cd, scale = 1) {
   c.save();
   c.translate(x, y);
   c.scale(scale, scale);
-  rect(c, '#352637', -4, 1, 9, 4);
-  rect(c, '#af3643', -3, -4, 6, 8);
-  rect(c, '#ff6b55', -5, -2, 10, 3);
-  rect(c, '#ffb291', -2, -4, 2, 7);
+  drawStack(c, model(c, 'hydrant', hydrant, propColours), 0, 0);
   if (cd > 0) {
     polygon(c, '#a5d9e6', [
       [-2, -3],
@@ -97,9 +127,6 @@ export function drawHydrant(c, x, y, cd, scale = 1) {
       [6, -15],
       [2, -3],
     ]);
-  } else {
-    rect(c, '#ef4d45', -3, -7, 6, 3);
-    rect(c, '#ffd9ac', -2, -7, 3, 1);
   }
   c.restore();
 }
@@ -147,10 +174,7 @@ export function drawCone(c, x, y, hit, scale = 1) {
     c.rotate(1.1);
     c.translate(2, -2);
   }
-  rect(c, '#463544', -3, 1, 7, 3);
-  rect(c, '#ff803e', -2, -2, 5, 5);
-  rect(c, '#fff0be', -1, -3, 3, 2);
-  rect(c, '#ff8c44', 0, -5, 2, 2);
+  drawStack(c, model(c, 'cone', cone, propColours), 0, 0);
   c.restore();
 }
 export function headlights(c, cop, phase) {

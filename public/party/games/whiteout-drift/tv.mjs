@@ -153,7 +153,6 @@ function drawWorld(c, s, roster, time, reduced) {
   for (const car of cars) {
     c.save();
     c.translate(car.x, car.y);
-    c.rotate(car.a);
     drawCarSprite(c, { ...car, colour: tint(car), sirenPhase: phase });
     c.restore();
     if (car.pin > 0) {
@@ -169,7 +168,7 @@ function drawWorld(c, s, roster, time, reduced) {
       c.textAlign = 'center';
       const w = Math.min(76, c.measureText(name).width + 8),
         x = Math.max(w / 2, Math.min(s.w - w / 2, car.x)),
-        y = car.y < 27 ? car.y + 23 : car.y - 12;
+        y = car.y < 37 ? car.y + 27 : car.y - 23;
       rect(c, '#122030db', x - w / 2, y - 10, w, 13);
       c.fillStyle = '#f2f5ef';
       c.fillText(name, x, y, w - 5);
@@ -193,7 +192,7 @@ function drawWorld(c, s, roster, time, reduced) {
   if (s.crown) {
     const holder = cars.find((car) => car.id === s.crown.holder),
       p = holder ?? s.crown;
-    crown(c, p.x, holder ? (p.y < 32 ? p.y + 32 : p.y - 29) : p.y);
+    crown(c, p.x, holder ? (p.y < 37 ? p.y + 38 : p.y - 40) : p.y);
     indicator(c, p, s, gold);
   }
 }
