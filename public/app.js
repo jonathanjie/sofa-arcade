@@ -214,6 +214,10 @@ const GAME_COVERS = {
     src: '/assets/party/wobble-tower/cover.webp', compact: '/assets/party/wobble-tower/cover-560.webp', width: 1280, height: 720,
     alt: 'Headband crews balance on crooked towers as a plank swings overhead.',
   },
+  'timber-rush': {
+    src: '/assets/party/timber-rush/cover.webp', compact: '/assets/party/timber-rush/cover-560.webp', width: 1280, height: 720,
+    alt: 'Headband-clad woodcutters swing their axes among flying chips and crooked branches.',
+  },
   'whiteout-drift': {
     src: '/assets/party/whiteout-drift/cover.webp', compact: '/assets/party/whiteout-drift/cover-560.webp', width: 1280, height: 720,
     alt: 'A getaway mouse drifts through midnight snow, smashing a fire hydrant into an ice trap for pursuing patrol cars.',
