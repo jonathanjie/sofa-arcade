@@ -137,3 +137,14 @@
   .snack-trace canvas { width: min(100%, 210px); }
   .snack-level { height: 75px; }
 }
+.snack-control { position: relative; }
+.snack-control[hidden], .snack-ghost[hidden] { display: none; }
+.snack-ghost {
+  position: absolute;
+  translate: -95% -40%;
+  pointer-events: none;
+  color: #7b2744;
+  text-shadow: 0 1px 3px white;
+  font: bold 68px/1 Georgia, serif;
+}
+.snack-brief { font-size: clamp(20px, 5.8vw, 26px); }

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runPartyRounds } from '../../party/harness.mjs';
 import { inputsForCard } from '../../party/snack-stack-driver.mjs';
-import { CARDS } from '../../../ui/party/games/snack-stack/cards.mjs';
+import { CARDS, PREVIEW_MS, SHORT_MS } from '../../../ui/party/games/snack-stack/cards.mjs';
 
 function checkTraffic(phones) {
   let peak = 0;
@@ -31,6 +31,7 @@ for (const playerCount of [2, 8, 16]) {
       playerCount,
       drive(phones, tick, round, view) {
         const { scene } = view;
+        assert.equal(scene.tutorialMs, round === 1 ? PREVIEW_MS : SHORT_MS);
         const key = [round, scene.index, scene.elapsed].join('/');
         if (key === previousTick) return;
         previousTick = key;

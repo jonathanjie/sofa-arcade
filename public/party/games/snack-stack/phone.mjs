@@ -1,6 +1,6 @@
 import { mountButton, mountTilt } from '../../phone/controls.mjs';
 import {
-  CARDS, EXACT_TAP_TARGET, GREEN_CENTRE, LALA_TAPS, PEPPER_TAPS, PICTURE_ANGLE, PLAY_MS, QUICK_TAP_TARGET,
+  CARDS, INTRO, PREVIEW_MS, SHORT_MS, exampleGesture, EXACT_TAP_TARGET, GREEN_CENTRE, LALA_TAPS, PEPPER_TAPS, PICTURE_ANGLE, PLAY_MS, QUICK_TAP_TARGET,
   cheeseAngle, cheeseHalfWidth, greenHalfWidth, greenPosition, lalaLooks, slotPhase,
 } from './cards.mjs';
 import { createCardClock } from './clock.mjs';
@@ -87,6 +87,7 @@ function mountPicture(root, variant, send) {
   mode.classList.add('snack-mode');
   paint();
   return {
+    demonstrate(angle = lean * .34) { picture.style.transform = 'rotate(' + angle + 'deg)'; },
     setEnabled(value, preparing) {
       widget.setEnabled(value);
       if (preparing) mode.disabled = false;
@@ -121,14 +122,14 @@ function mountTimingCue(root, visual, variant, difficulty) {
     const halfWidth = greenHalfWidth(difficulty);
     green.style.left = (GREEN_CENTRE - halfWidth) + '%';
     green.style.width = (2 * halfWidth) + '%';
-    return at => { marker.style.left = greenPosition(at, variant) + '%'; };
+    return (at, _held, teaching) => { marker.style.left = greenPosition(at, teaching ? 0 : variant) + '%'; };
   }
   if (visual === 'wheel') {
     note.classList.add('snack-wheel');
     note.style.setProperty('--cheese-half', cheeseHalfWidth(difficulty) + 'deg');
     note.innerHTML = '<div class="snack-needle"><i></i></div><div class="snack-pin"></div><div class="snack-cheese">🧀</div>';
     const needle = note.firstElementChild;
-    return at => { needle.style.transform = 'rotate(' + cheeseAngle(at, variant) + 'deg)'; };
+    return (at, _held, teaching) => { needle.style.transform = 'rotate(' + cheeseAngle(at, teaching ? 0 : variant) + 'deg)'; };
   }
   note.classList.add('snack-stopwatch');
   return (_at, heldFor) => {
@@ -155,7 +156,13 @@ export function mountSnackStackPhone(root, { input, serverNow }) {
     practice.textContent = 'Warm up · ' + practiceTaps + (practiceTaps === 1 ? ' tap' : ' taps');
   });
   practice.hidden = true;
+  const ghost = document.createElement('span');
+  ghost.className = 'snack-ghost';
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.textContent = '☞';
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   let current;
+  let signalled;
   let widget;
   let cue;
   let tapPad;
@@ -168,7 +175,7 @@ export function mountSnackStackPhone(root, { input, serverNow }) {
   let enabled;
   let preparing;
 
-  function refreshFeedback(at = clock.at(current?.a)) {
+  function refreshFeedback(at = clock.at(current?.a), example = '', intro = false) {
     const visual = current && CARDS[current.c].visual;
     const count = current ? Math.max(localTaps, current.n) : 0;
     const reachedExactTarget = visual === 'seven' && count >= EXACT_TAP_TARGET;
@@ -179,13 +186,16 @@ export function mountSnackStackPhone(root, { input, serverNow }) {
     let text = '';
     if (current.g !== undefined) text = '+' + current.g + ' · ' + current.s + ' total';
     else if (allowed && at === null) text = 'Syncing clock…';
-    else if (at < 0 && allowed) text = 'Get ready';
+    else if (at < 0 && allowed) text = -at <= 3000 ? 'Ready… ' + Math.ceil(-at / 1000) : 'Watch first';
+    else if (allowed && at !== null && at < 500 && !locked) text = 'Go!';
     else if (pendingAt !== undefined || current.d) text = 'Locked in';
     else if (at >= PLAY_MS) text = 'Time!';
     else if (target) {
       text = count + ' / ' + target;
       if (visual === 'seven' && count === EXACT_TAP_TARGET) text += ' · Stop';
     }
+    if (intro) text = 'Snack Stack';
+    else if (example) text = example + ' · ' + text;
     if (feedback.textContent !== text) feedback.textContent = text;
   }
 
@@ -236,16 +246,37 @@ export function mountSnackStackPhone(root, { input, serverNow }) {
     const at = clock.at(current.a);
     const live = allowed && at !== null && at >= 0 && at < PLAY_MS;
     const acceptsInput = live && pendingAt === undefined && !current.d;
-    const isPreparing = allowed && at < 0;
+    const isPreparing = allowed && at !== null && at < 0;
+    const duration = current.h ? SHORT_MS : PREVIEW_MS;
+    const intro = current.t < PREVIEW_MS - duration;
+    const card = CARDS[current.c];
+    controls.hidden = intro;
+    controls.inert = intro || isPreparing;
+    const instruction = intro ? INTRO : card.instruction;
+    if (brief.textContent !== instruction) brief.textContent = instruction;
+    ghost.hidden = !isPreparing || intro || Boolean(current.h);
+    const demo = !ghost.hidden && exampleGesture(card.visual, duration + at, reduced.matches);
+    if (demo) {
+      widget.demonstrate?.(demo.angle);
+      ghost.style.left = demo.x + '%';
+      ghost.style.top = demo.y + '%';
+      ghost.style.rotate = demo.angle + 'deg';
+    }
+    if (live && !signalled) {
+      widget.demonstrate?.();
+      signalled = true;
+      if (at < 500) window.navigator.vibrate?.(35);
+    }
     if (enabled !== acceptsInput || preparing !== isPreparing) {
       enabled = acceptsInput;
       preparing = isPreparing;
       widget.setEnabled(enabled, preparing);
     }
     const displayAt = Math.max(0, Math.min(PLAY_MS, pendingAt ?? at ?? 0));
-    cue?.(displayAt, holdingAt === undefined ? 0 : displayAt - holdingAt);
+    const held = holdingAt === undefined ? 0 : displayAt - holdingAt;
+    cue?.(demo ? demo.time : displayAt, demo ? demo.time : held, Boolean(demo));
     if (tapPad) {
-      const looking = !live || lalaLooks(displayAt, current.v, current.b);
+      const looking = demo ? demo.caption === 'Wait' : !live || lalaLooks(displayAt, current.v, current.b);
       const label = looking ? 'Wait' : 'Tap!';
       if (tapPad.textContent !== label) {
         tapPad.textContent = label;
@@ -253,7 +284,7 @@ export function mountSnackStackPhone(root, { input, serverNow }) {
       }
       tapPad.classList.toggle('snack-wait', looking);
     }
-    refreshFeedback(at);
+    refreshFeedback(at, demo?.caption || (isPreparing && current.h ? card.name : ''), intro);
     if (allowed && current.a !== undefined && (at === null || at < PLAY_MS)) frame = requestAnimationFrame(paintClock);
   }
 
@@ -276,7 +307,9 @@ export function mountSnackStackPhone(root, { input, serverNow }) {
         pendingAt = holdingAt = undefined;
         localTaps = practiceTaps = 0;
         practice.textContent = 'Warm up · 0 taps';
+        signalled = false;
         rebuild(CARDS[state.c], state);
+        controls.append(ghost);
       } else if (!enabled && !state.d) pendingAt = holdingAt = undefined;
       current = state;
       root.dataset.phase = slotPhase(state.t);
