@@ -6,7 +6,9 @@ import { tugOfYarn } from './tug-of-yarn/game.mjs';
 import { wallOfPaddles } from './wall-of-paddles/round.mjs';
 import { whiteoutDrift } from './whiteout-drift/rules.mjs';
 
-export const PARTY_GAMES = Object.freeze([tapRace, dontWakeLala, dustBunnySumo, wallOfPaddles, tugOfYarn, snackStack, whiteoutDrift]);
+import { timberRush } from './timber-rush/rules.mjs';
+
+export const PARTY_GAMES = Object.freeze([tapRace, dontWakeLala, dustBunnySumo, wallOfPaddles, tugOfYarn, snackStack, whiteoutDrift, timberRush]);
 
 export function getPartyGame(id) {
   return PARTY_GAMES.find(game => game.id === id) ?? null;

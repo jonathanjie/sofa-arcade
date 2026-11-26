@@ -14,7 +14,11 @@ import { mountSnackStackPhone } from './snack-stack/phone.mjs';
 import { mountWhiteoutTv, whiteoutPlayHintForMode, whiteoutResultSummary } from './whiteout-drift/tv.mjs';
 import { mountWhiteoutPhone } from './whiteout-drift/phone.mjs';
 
+import { mountTimberTv } from './timber-rush/tv.mjs';
+import { mountTimberPhone } from './timber-rush/phone.mjs';
+
 const views = new Map([
+  ['timber-rush', { mountTv: mountTimberTv, mountPhone: mountTimberPhone, playHint: 'Tap the side clear of the lowest branch.' }],
   ['dont-wake-lala', { mountTv: mountDontWakeLalaTv, mountPhone: mountDontWakeLalaPhone }],
   ['dust-bunny-sumo', { mountTv: mountDustBunnyTv, mountPhone: mountDustBunnyPhone }],
   ['tap-race', { mountTv: mountTapRaceTv, mountPhone: mountTapRacePhone }],
