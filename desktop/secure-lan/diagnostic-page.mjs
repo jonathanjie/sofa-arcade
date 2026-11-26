@@ -3,24 +3,24 @@ import { createSensorDiagnostic } from './diagnostic.mjs';
 const $ = (id) => document.getElementById(id);
 const labels = {
   idle: 'Ready to check this phone.',
-  insecure: 'This page is not a secure context. Use touch, or finish trusted HTTPS setup.',
+  insecure: 'This phone can’t use tilt yet. Use touch, or finish the tilt setup on your Mac.',
   unsupported: 'This browser does not expose the required orientation API. Use touch controls.',
   'awaiting-permission': 'Choose whether to allow motion in the browser prompt.',
-  waiting: 'Permission checked. Waiting for finite motion readings…',
-  'samples-received': 'Finite browser readings received on this page.',
-  'no-samples': 'No finite readings arrived. Touch controls are available.',
+  waiting: 'Allowed. Now tilt the phone a little…',
+  'samples-received': 'Tilt readings arrived. Tilt works on this phone.',
+  'no-samples': 'No tilt readings arrived. You can play with touch.',
   denied: 'Motion access was not granted. You can play with touch.',
   paused: 'Check paused. Tap again when this page is visible.',
   error: 'Motion access could not be requested. Try again, or use touch.',
 };
-const permissionLabels = { unrequested: 'Not requested', unavailable: 'Unavailable here', 'not-required': 'No explicit prompt API', granted: 'Granted', denied: 'Not granted', error: 'Request failed' };
+const permissionLabels = { unrequested: 'Not requested', unavailable: 'Not available here', 'not-required': 'Not needed on this phone', granted: 'Granted', denied: 'Not granted', error: 'Request failed' };
 function onStatus(state) {
   $('probe-status').textContent = labels[state.status] || 'Check stopped.';
-  $('https-state').textContent = state.httpsLoaded ? 'Yes' : 'No — HTTP';
-  $('context-state').textContent = state.secureContext ? 'Confirmed' : 'Not secure';
+  $('https-state').textContent = state.httpsLoaded ? 'Yes' : 'No';
+  $('context-state').textContent = state.secureContext ? 'Yes' : 'Not ready';
   $('permission-state').textContent = permissionLabels[state.permission];
-  $('sample-state').textContent = state.sampleCount ? `${state.sampleCount} browser sample${state.sampleCount === 1 ? '' : 's'}` : 'None yet';
-  $('evidence').textContent = state.evidence === 'synthetic' ? 'Synthetic event detected — not phone sensor evidence' : 'Browser check · no simulated readings';
+  $('sample-state').textContent = state.sampleCount ? `${state.sampleCount} reading${state.sampleCount === 1 ? '' : 's'}` : 'None yet';
+  $('evidence').textContent = state.evidence === 'synthetic' ? 'Test signal detected — this is not a real phone' : 'Real phone readings only';
   $('start-probe').disabled = state.status === 'awaiting-permission';
   $('start-probe').textContent = ['idle', 'insecure'].includes(state.status) ? 'Check motion on this phone' : 'Check again';
   $('stop-probe').hidden = !['waiting', 'samples-received', 'awaiting-permission'].includes(state.status);

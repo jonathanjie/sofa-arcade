@@ -338,3 +338,34 @@ test('an exit gesture during a pending pause cannot linger and exit after a reje
   expect(await page.evaluate(() => window.fixture.exits)).toEqual([]);
   await expect(tv(page)).toHaveAttribute('data-go-phase', 'paused');
 });
+
+test('an internally inconsistent stage result does not replace the last good TV score', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openFixture(page, 'finished');
+  const good = await page.evaluate(() => window.fixture.view());
+  const totals = page.locator('.go-tv-totals strong');
+  const rows = page.locator('.go-tv-result-row span[aria-label]');
+  await expect(totals).toHaveText(['9/12', '6/9', '3']);
+  const labels = () => rows.evaluateAll(elements => elements.map(el => el.getAttribute('aria-label')));
+  const originalRows = await labels();
+  const bad = structuredClone(good);
+  bad.tick++;
+  bad.results[0].ordersCompleted = 0; // Three stars require a four-order stage.
+  bad.events = [{ id: 'invalid-stage', kind: 'stage-complete', tick: bad.tick }];
+  await page.evaluate(view => window.fixture.update(view), bad);
+  const rejectedRows = await labels();
+  const rejectedTotals = await totals.allTextContents();
+  const effects = await page.evaluate(() => window.fixture.sounds.filter(entry => entry.name === 'finish'));
+
+  // A later authoritative correction must still reach the scoreboard.
+  good.tick = bad.tick + 1;
+  Object.assign(good.results[2], { ordersCompleted: 3, stars: 2 });
+  await page.evaluate(view => window.fixture.update(view), good);
+  await expect(totals).toHaveText(['10/12', '7/9', '3']);
+  expect(await labels()).toEqual([
+    '4 of 4 orders, 3 of 3 stars', '3 of 4 orders, 2 of 3 stars', '3 of 4 orders, 2 of 3 stars',
+  ]);
+  expect({ rows: rejectedRows, totals: rejectedTotals, effects }).toEqual({
+    rows: originalRows, totals: ['9/12', '6/9', '3'], effects: [],
+  });
+});

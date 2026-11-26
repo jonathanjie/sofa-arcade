@@ -1,7 +1,7 @@
 /** Native-owned secure listener. This module never registers a phone HTTP API. */
 import path from 'node:path';
 import { constants } from 'node:fs';
-import { lstat, open, readFile, rename, rm } from 'node:fs/promises';
+import { lstat, open, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { createSecureLanHost, createCertificateStore } from '../../server/runtime/gravity-orchard-dependencies.mjs';
 import { validateSecureControllerStatus } from './lifecycle.mjs';
@@ -38,11 +38,27 @@ async function writeSettings(directory, enabled) {
   finally { await handle?.close().catch(() => {}); if (temporaryOwned) await rm(temporary, { force: true }).catch(() => {}); }
 }
 
+/**
+ * Keeps the most recent tilt-setup failure code in the app data folder, so a
+ * failed setup can be diagnosed (the host's stderr is not kept). The code comes
+ * from a fixed vocabulary such as PROVISION_FAILED:EADDRINUSE; no message,
+ * path or certificate detail is written. Diagnostics never affect play.
+ */
+const DIAGNOSTIC_CODE = /^[A-Z][A-Z0-9_:]{2,80}$/;
+async function recordDiagnostic(appDataDir, code) {
+  if (typeof code !== 'string' || !DIAGNOSTIC_CODE.test(code)) return;
+  try {
+    await writeFile(path.join(appDataDir, 'secure-lan-last-error.json'),
+      `${JSON.stringify({ schemaVersion: 1, code, at: new Date().toISOString() })}\n`, { mode: 0o600 });
+  } catch { /* diagnostics are best effort */ }
+}
+
 /** Wrap exactly one LAN host. The unforgeable context never crosses a pipe or URL. */
 export async function attachNativeSecureLan(lan, { appDataDir, host = '0.0.0.0', createHost = createSecureLanHost, createStore = createCertificateStore } = {}) {
   const context = Object.freeze({});
   let closed = false;
   let settings;
+  let pendingRefresh;
   let safeStatus = { enabled: false, status: 'needs-setup', controllerOrigins: [], requiresPhoneTrust: false };
   const getIdentities = () => [...new Set(['127.0.0.1', 'localhost', ...lan.urls.map(raw => new URL(raw).hostname)])];
   const publish = value => {
@@ -50,13 +66,25 @@ export async function attachNativeSecureLan(lan, { appDataDir, host = '0.0.0.0',
     lan.setSecureControllerStatus(safeStatus);
     return safeStatus;
   };
+  function refreshStatus() {
+    if (!pendingRefresh) {
+      pendingRefresh = secure.getStatus()
+        .then(value => closed ? safeStatus : publish(value))
+        .finally(() => { pendingRefresh = undefined; });
+    }
+    return pendingRefresh;
+  }
   const secure = createHost({
     certificateStore: createStore({ appDataDir }), getIdentities,
     authorizeHost: caller => caller === context && !closed,
     host, requestHandler: lan.requestHandler, onUpgrade: lan.handleUpgrade,
     // Listener expiry/error is reflected in HTTP metadata without emitting an
     // unsolicited native readiness record or silently renewing the root.
-    onError: () => { if (!closed) void secure.getStatus().then(publish).catch(() => {}); },
+    onError: ({ code } = {}) => {
+      if (closed || code === 'tls_client_rejected' || code === 'request_rejected') return;
+      void recordDiagnostic(appDataDir, code);
+      if (code === 'listener_failed' || code === 'certificate_expired') void refreshStatus().catch(() => {});
+    },
   });
   try {
     settings = await readSettings(appDataDir);
@@ -70,7 +98,7 @@ export async function attachNativeSecureLan(lan, { appDataDir, host = '0.0.0.0',
     get secureControllerStatus() { return safeStatus; },
     async secureCommand(operation, options = {}) {
       if (closed) throw safeFailure();
-      if (operation === 'getStatus') return { status: publish(await secure.getStatus()) };
+      if (operation === 'getStatus') return { status: await refreshStatus() };
       if (operation === 'exportPublicTrust') return { publicTrust: await secure.exportPublicTrust(context, options) };
       if (operation === 'provision') {
         const status = await secure.provision(context, options);

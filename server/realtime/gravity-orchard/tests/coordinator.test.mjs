@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import WebSocket from 'ws';
+import * as orchard from '../../../../games/gravity-orchard/engine.mjs';
+import { createRealtimeClient } from '../../../../ui/realtime/gravity-orchard/index.mjs';
 import { createRealtimeCoordinator, readCoordinatorDiagnostics } from '../index.mjs';
-import { migrateCheckpoint } from '../lib/checkpoint.mjs';
+import { decodeCheckpoint, migrateCheckpoint } from '../lib/checkpoint.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
 import { fakeClock, flush, harness } from './unit-support/harness.mjs';
 
@@ -94,26 +97,96 @@ test('host stall pauses rather than fast-forwarding; smaller catch-up never exce
   await h.clock.jump(100);
   assert.equal(h.coordinator.getPublicView('UNIT').tick - before.tick, 5);
   assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').tickOverruns, 1);
-  const tickBeforeStall = h.coordinator.getPublicView('UNIT').tick;
+  await h.clock.jump(350);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing', 'A 350 ms stall stays playable');
   await h.clock.jump(1000);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing', 'One second is still playable');
+  assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').hostStalls, 0);
+  const tickBeforeStall = h.coordinator.getPublicView('UNIT').tick;
+  await h.clock.jump(1001);
   const after = h.coordinator.getPublicView('UNIT');
   assert.equal(after.phase, 'paused');
   assert.equal(after.pauseReason, 'host-stall');
   assert.equal(after.tick, tickBeforeStall);
   assert.equal(readCoordinatorDiagnostics(h.coordinator, 'UNIT').hostStalls, 1);
+  jon.input(); lydia.input(); await flush();
+  assert.equal((await jon.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'paused');
+  assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'countdown');
+  await h.clock.advance(1000 / 60);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing');
 });
 
-test('600 controller samples produce only bounded five-second checkpoints', async (t) => {
+test('a short stall replays as five fixed Orchard ticks with stale controls braked', async t => {
+  async function playThroughGap(stalled) {
+    const h = await harness({ simulation: orchard });
+    t.after(() => h.close());
+    const { jon, lydia } = await h.players();
+    // Advance through countdown and spawn fruit with fresh, non-neutral steering.
+    for (let turn = 0; turn < 65; turn++) {
+      jon.input({ x: 1, y: 0, brake: false });
+      lydia.input({ x: 0, y: 1, brake: false });
+      await flush();
+      await h.clock.advance(50);
+    }
+    const before = h.coordinator.getPublicView('UNIT');
+    assert.equal(before.phase, 'playing');
+    assert.ok(before.fruits.length > 0);
+    if (stalled) {
+      await h.clock.jump(350);
+    } else {
+      jon.input(orchard.SAFE_INPUT); lydia.input(orchard.SAFE_INPUT); await flush();
+      await h.clock.advance(5 * 1000 / 60);
+    }
+    await h.clock.advance(1000 / 60); // The next turn must have no catch-up debt.
+    const after = h.coordinator.getPublicView('UNIT');
+    assert.equal(after.tick, before.tick + 6);
+    return after;
+  }
+  assert.deepEqual(await playThroughGap(true), await playThroughGap(false));
+});
+
+const exhaustiveInputs = process.env.SOFA_EXHAUSTIVE === '1';
+test(exhaustiveInputs
+  ? '600 controller samples produce only bounded five-second checkpoints'
+  : 'two active controllers receive ACKs and persist one five-second checkpoint', async (t) => {
   const h = await harness(); t.after(() => h.close());
   const { jon, lydia } = await h.players();
   const baseline = h.writes.length;
-  for (let index = 0; index < 300; index++) {
-    jon.input({ x: index % 2 ? 0.25 : -0.25, y: 0, brake: false }); lydia.input();
-    await flush(); await h.clock.advance(50);
+  if (exhaustiveInputs) {
+    for (let index = 0; index < 300; index++) {
+      jon.input({ x: index % 2 ? 0.25 : -0.25, y: 0, brake: false }); lydia.input();
+      await flush(); await h.clock.advance(50);
+    }
+    assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing');
+    assert.ok(h.writes.length - baseline >= 2 && h.writes.length - baseline <= 3);
+    assert.ok(readCoordinatorDiagnostics(h.coordinator, 'UNIT').inputsAccepted >= 600);
+    return;
   }
-  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'playing');
-  assert.ok(h.writes.length - baseline >= 2 && h.writes.length - baseline <= 3);
-  assert.ok(readCoordinatorDiagnostics(h.coordinator, 'UNIT').inputsAccepted >= 600);
+
+  const initial = h.coordinator.getPublicView('UNIT');
+  const writesBeforePeriodic = h.writes.at(-1);
+  for (let second = 0; second < 5; second++) {
+    const jonSample = jon.input({ x: 0.25, y: 0, brake: false });
+    const lydiaSample = lydia.input({ x: 0, y: 0.25, brake: false });
+    await flush();
+    // Each 62.5 ms wake runs at most four ticks, within the five-tick catch-up limit.
+    for (let wake = 0; wake < 16; wake++) {
+      assert.equal(h.writes.at(-1), writesBeforePeriodic);
+      await h.clock.jump(62.5);
+    }
+    for (const [peer, sample] of [[jon, jonSample], [lydia, lydiaSample]]) {
+      assert.ok(peer.messages.some(message => message.ack?.seq === sample.seq
+        && message.ack.controllerEpoch === peer.welcome.controllerEpoch));
+    }
+  }
+  assert.equal(h.writes.length, baseline + 1);
+  const saved = h.writes.at(-1);
+  assert.equal(saved.matchId, initial.matchId);
+  assert.equal(saved.runEpoch, initial.runEpoch);
+  assert.equal(saved.engine.state.phase, 'playing');
+  assert.equal(saved.engine.state.tick, initial.tick + 300);
 });
 
 test('durable epoch is saved before publication; a failed boundary freezes the room', async (t) => {
@@ -168,6 +241,44 @@ test('recovery validates checkpoint, increments the engine epoch once, and durab
   assert.throws(() => migrateCheckpoint({ ...legacy, commands: [] }), { code: 'invalid_checkpoint' });
 });
 
+test('recovery rejects a corrupt dedup ledger before restoring the simulation', async (t) => {
+  const simulation = createMockSimulation();
+  const h = await harness({ simulation });
+  t.after(() => h.close());
+  const jon = await h.connect('jon');
+  jon.input();
+  await flush();
+  const { command, result } = await jon.command('ready', { value: true }, 'one-ready');
+  assert.equal(result.accepted, true);
+  const checkpoint = h.store.get('UNIT');
+  const restore = t.mock.fn(simulation.restoreCheckpoint);
+  const recovery = { ...simulation, restoreCheckpoint: restore };
+
+  const differentCommand = { ...command, payload: { value: false } };
+  for (const corrupt of [
+    commands => commands.push(structuredClone(commands[0])),
+    commands => { commands[0].fingerprint = JSON.stringify(differentCommand); },
+    commands => { commands[0].result.id = 'different-id'; },
+  ]) {
+    const damaged = structuredClone(checkpoint);
+    corrupt(damaged.commands);
+    const before = structuredClone(damaged);
+    assert.throws(() => decodeCheckpoint(damaged, 'UNIT', recovery), { code: 'invalid_checkpoint' });
+    assert.deepEqual(damaged, before);
+    assert.equal(restore.mock.callCount(), 0);
+  }
+
+  const before = structuredClone(checkpoint);
+  const { dedup } = decodeCheckpoint(checkpoint, 'UNIT', recovery);
+  assert.equal(restore.mock.callCount(), 1);
+  assert.deepEqual([...dedup.keys()], ['player:jon:one-ready']);
+  const entry = dedup.get('player:jon:one-ready');
+  assert.equal(entry.actor, 'player:jon');
+  assert.deepEqual(entry.command, command);
+  assert.deepEqual(entry.result, result);
+  assert.deepEqual(checkpoint, before);
+});
+
 test('rejected command identities remain rejected after conditions improve', async (t) => {
   const h = await harness(); t.after(() => h.close());
   const jon = await h.connect('jon');
@@ -193,7 +304,7 @@ test('a command awaiting authorization cannot be overwritten by a captured stage
   t.after(() => h.close());
   await h.players(); const host = await h.connect('host');
   held = true;
-  const { command } = await host.command('pause', { reason: 'requested' }, 'held-pause');
+  const { command } = await host.command('pause', { reason: 'requested' }, 'held-pause', { waitForResult: false });
   const before = h.coordinator.getPublicView('UNIT');
   await h.clock.advance(100);
   assert.equal(h.coordinator.getPublicView('UNIT').tick, before.tick);
@@ -214,7 +325,7 @@ test('a trusted pause queued behind a wire pause is a safe no-op, not a storage 
   await h.players(); const host = await h.connect('host');
   const previousEpoch = h.coordinator.getPublicView('UNIT').runEpoch;
   held = true;
-  await host.command('pause', { reason: 'requested' }, 'wire-pause');
+  await host.command('pause', { reason: 'requested' }, 'wire-pause', { waitForResult: false });
   const systemPause = h.coordinator.pauseRoom('UNIT', 'network');
   held = false; resume(); await flush(); await systemPause;
   assert.equal(h.coordinator.getPublicView('UNIT').phase, 'paused');
@@ -252,4 +363,168 @@ test('explicit room closure remains terminal rather than repeatedly reconnecting
   const [code] = await closed;
   assert.equal(code, 4410);
   assert.equal(h.coordinator.getPublicView('UNIT'), null);
+});
+
+test('an active seat replacement receives Welcome before the network pause snapshot', async (t) => {
+  const h = await harness({ simulation: orchard });
+  const { jon } = await h.players();
+  const closed = once(jon.ws, 'close');
+  const firstMessages = [];
+  class ReplacementSocket extends WebSocket {
+    constructor(url) {
+      super(url, { origin: h.origin });
+      this.on('message', data => firstMessages.push(JSON.parse(data).type));
+    }
+  }
+  const snapshots = [];
+  const replacement = createRealtimeClient({
+    url: h.origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
+    roomCode: 'UNIT', token: 'unit-jon', WebSocketImpl: ReplacementSocket,
+    now: h.clock.now, onSnapshot: packet => snapshots.push(packet),
+  });
+  t.after(async () => { replacement.dispose(); await h.close(); });
+  replacement.connect();
+  assert.equal((await closed)[0], 4409);
+  await flush();
+  assert.equal(firstMessages[0], 'welcome');
+  assert.equal(snapshots[0].view.pauseReason, 'network');
+  const result = await replacement.sendCommand({ id: 'fresh-ready', kind: 'ready', payload: { value: true } });
+  assert.equal(result.accepted, true);
+});
+
+test('disconnect clears Ready even when the Ready checkpoint is still pending', async (t) => {
+  const writing = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  let hold = true;
+  const h = await harness({ simulation: orchard, saveCheckpoint: async (_code, checkpoint) => {
+    if (hold && checkpoint.commands.some(entry => entry.command.id === 'departing-ready')) {
+      hold = false;
+      writing.resolve();
+      await release.promise;
+    }
+  } });
+  t.after(async () => { release.resolve(); await h.close(); });
+  const jon = await h.connect('jon'), lydia = await h.connect('lydia');
+  jon.input();
+  await jon.command('ready', { value: true }, 'departing-ready', { waitForResult: false });
+  await writing.promise;
+  jon.ws.close();
+  await once(jon.ws, 'close');
+  await flush();
+  release.resolve();
+  await flush();
+  const replacement = await h.connect('jon');
+  replacement.input(); lydia.input(); await flush();
+  assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'waiting');
+  assert.deepEqual(h.coordinator.getPublicView('UNIT').ready, { jon: false, lydia: true });
+  assert.equal((await replacement.command('ready', { value: true })).result.accepted, true);
+  assert.equal(h.coordinator.getPublicView('UNIT').phase, 'countdown');
+});
+
+test('reconnect keeps the deadman deadline but requires new control input', async (t) => {
+  const h = await harness({ simulation: orchard });
+  t.after(() => h.close());
+  const { jon, lydia } = await h.players();
+  const view = () => h.coordinator.getPublicView('UNIT');
+  for (let i = 0; i < 32; i++) {
+    jon.input(); lydia.input(); await flush();
+    await h.clock.advance(100);
+  }
+  assert.equal(view().phase, 'playing');
+  jon.input({ x: 1, y: 0, brake: false });
+  await flush();
+  jon.ws.close(); await once(jon.ws, 'close'); await flush();
+  const replacement = await h.connect('jon');
+  assert.equal(replacement.welcome.snapshot.presence.jon.inputFresh, false);
+  await h.clock.advance(50);
+  assert.equal(view().phase, 'playing');
+  assert.deepEqual(view().players.jon.input, { x: 0, y: 0, brake: true });
+  replacement.input({ x: -1, y: 0, brake: false });
+  await flush();
+  await h.clock.advance(50);
+  assert.equal(view().players.jon.input.x, -1);
+  replacement.ws.close(); await once(replacement.ws, 'close'); await flush();
+  let reconnect = await h.connect('jon');
+  for (let i = 0; i < 19; i++) {
+    if (i === 5 || i === 12) {
+      reconnect.ws.close();
+      await once(reconnect.ws, 'close');
+      await flush();
+      reconnect = await h.connect('jon');
+      assert.equal(reconnect.welcome.snapshot.presence.jon.inputFresh, false);
+    }
+    lydia.input(); await flush();
+    await h.clock.advance(100);
+  }
+  await h.clock.advance(49);
+  assert.equal(view().phase, 'playing');
+  await h.clock.advance(1);
+  assert.equal(view().pauseReason, 'network');
+});
+
+test('countdown input is first acknowledged on a playing tick', async (t) => {
+  const h = await harness({ simulation: orchard });
+  t.after(() => h.close());
+  const { jon, lydia } = await h.players();
+  const view = () => h.coordinator.getPublicView('UNIT');
+  const tilt = { x: 0.75, y: 0, brake: false };
+  jon.input(tilt); await flush();
+  await h.clock.advance(50);
+  assert.equal(view().phase, 'countdown');
+  assert.equal(jon.messages.findLast(packet => packet.type === 'snapshot').ack, null);
+  while (view().countdownTicks > 12) {
+    jon.input(); lydia.input(); await flush();
+    await h.clock.advance(200);
+  }
+  const last = jon.input(tilt);
+  lydia.input(); await flush();
+  await h.clock.advance(view().countdownTicks * (1000 / 60));
+  assert.equal(view().phase, 'playing');
+  const firstPlayingTick = view().tick + 1;
+  await h.clock.advance(50);
+  const packet = jon.messages.findLast(message => message.type === 'snapshot');
+  assert.equal(packet.ack.seq, last.seq);
+  assert.equal(packet.ack.appliedTick, firstPlayingTick);
+  assert.deepEqual(packet.view.players.jon.input, tilt);
+});
+
+test('valid commands rejected by the production engine keep their wire reason', async (t) => {
+  const h = await harness({ simulation: orchard });
+  t.after(() => h.close());
+  const host = await h.connect('host'), jon = await h.connect('jon');
+  const before = h.coordinator.getPublicView('UNIT');
+  const pause = await host.command('pause', { reason: 'requested' });
+  const retry = await jon.command('retry-stage', {});
+  assert.deepEqual([pause.result.code, retry.result.code], ['invalid_phase', 'forbidden']);
+  assert.equal(pause.result.accepted, false);
+  assert.equal(retry.result.accepted, false);
+  assert.deepEqual(h.coordinator.getPublicView('UNIT'), before);
+});
+
+test('losing the first ready controller during the second Ready save prevents countdown', async (t) => {
+  const writing = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  const h = await harness({ simulation: orchard, saveCheckpoint: async (_code, checkpoint) => {
+    if (checkpoint.engine.state.phase === 'countdown') {
+      writing.resolve();
+      await release.promise;
+    }
+  } });
+  t.after(async () => { release.resolve(); await h.close(); });
+  const host = await h.connect('host');
+  const jon = await h.connect('jon'), lydia = await h.connect('lydia');
+  jon.input(); lydia.input(); await flush();
+  assert.equal((await lydia.command('ready', { value: true })).result.accepted, true);
+  await jon.command('ready', { value: true }, 'pending-ready', { waitForResult: false });
+  await writing.promise;
+  lydia.ws.close();
+  await once(lydia.ws, 'close');
+  await flush();
+  release.resolve();
+  await flush();
+  const replacement = await h.connect('lydia');
+  assert.equal(replacement.welcome.snapshot.view.phase, 'paused');
+  assert.deepEqual(replacement.welcome.snapshot.view.ready, { jon: false, lydia: false });
+  assert.equal(host.messages.some(packet => packet.view?.phase === 'countdown'), false);
 });

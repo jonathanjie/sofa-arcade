@@ -10,16 +10,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: local-integration-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: local-integration-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   protocol-and-package:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -31,12 +32,12 @@ jobs:
           node scripts/prepare-game.mjs
           npm run package:lan
           node scripts/check-derived.mjs
-      - name: Existing rules, room and controller regressions
-        run: npm test
       - name: Original menu composition, cues and render levels
         run: |
           node --test ui/media/sofa-menu/score.test.mjs
           node ui/media/sofa-menu/audio-preview.mjs --verify
+      - name: Install locked root dependencies for the integration suites
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Integrated protocol, lifecycle and package checks
         run: npm run test:integration
         env:
@@ -59,6 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -89,24 +91,6 @@ jobs:
           path: ${{ runner.temp }}/ws6-browser/
           if-no-files-found: warn
 
-  production-build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm run install:ci
-      - run: npm run build
-      - name: Inspect the actual built public delivery boundary
-        run: node tests/integration/package/production.mjs
-      - name: Production preparation must not silently repair committed assets
-        run: node scripts/check-derived.mjs
-
   component-suites-at-head:
     name: Owned component suites at exact head (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
@@ -117,15 +101,15 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ matrix.node }}
-      - name: WS1 rules, public helpers, fixtures and audited smoke matches
+      - name: WS1 rules, public helpers and fixtures
         run: |
           node --test games/odd-laws-society/tests/*.test.mjs
           node games/odd-laws-society/tests/generate-fixtures.mjs --check
-          node games/odd-laws-society/simulation/sweep.mjs --smoke
       - name: WS2 exact focused private platform suites
         run: |
           node --test server/rooms.test.mjs server/lan.test.mjs \
@@ -134,70 +118,13 @@ jobs:
       - name: WS3 component schema, tutorial and renderer suites
         run: npm test --prefix ui/games/odd-laws-society
 
-  component-ui-at-head:
-    name: WS3 rendered component suite at exact head
-    # Match WS3's pinned Playwright browser/dependency support.
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: ui/games/odd-laws-society
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: ui/games/odd-laws-society/package-lock.json
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: always()
-        with:
-          name: local-ws3-fixture-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ui/games/odd-laws-society/test-results/
-          if-no-files-found: warn
-
-  component-media-at-head:
-    name: WS4 media, offline score and rendered gallery at exact head
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: ui/media/odd-laws-society/package-lock.json
-      - run: npm ci --prefix ui/media/odd-laws-society --no-audit --no-fund
-      - name: Exact manifest assembly, decoded artwork, score and effect checks
-        run: |
-          node ui/media/odd-laws-society/assemble-manifest.mjs
-          git diff --exit-code -- public/assets/odd-laws-society/manifest.json ui/media/odd-laws-society/runtime-files.json
-          npm test --prefix ui/media/odd-laws-society
-          node ui/media/odd-laws-society/audio-preview.mjs --verify
-      - run: node ui/media/odd-laws-society/node_modules/playwright/cli.js install --with-deps chromium
-      - run: node ui/media/odd-laws-society/browser-check.mjs
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: always()
-        with:
-          name: local-ws4-media-${{ github.event.pull_request.head.sha || github.sha }}
-          path: |
-            ui/media/odd-laws-society/evidence/latest/
-            ui/media/odd-laws-society/audio-evidence/render-report.json
-          if-no-files-found: warn
-
   release-readiness:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:

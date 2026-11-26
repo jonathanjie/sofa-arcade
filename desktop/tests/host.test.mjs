@@ -1,11 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, readFile, stat, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { createServer } from 'node:net';
 import path from 'node:path';
 import { launchHost, api, makeRoom, subscribe, stagedRoot } from './host-helpers.mjs';
 import { readManifest } from '../scripts/runtime-files.mjs';
+import { PARTY_BROWSER_FILES } from '../../server/party-delivery.mjs';
+
+// Some files are served at an explicit URL that differs from their source path.
+const explicitRoutes = new Map(PARTY_BROWSER_FILES.map(({ url, source }) => [source, url]));
 
 async function temporary(t) { const folder = await mkdtemp(path.join(tmpdir(), 'sofa-desktop-host-')); t.after(() => rm(folder, { recursive: true, force: true })); return folder; }
 
@@ -29,6 +33,7 @@ test('staged bundled runtime starts with no Node on PATH, serves all collection 
     if (entry.path.startsWith('public/')) route = '/' + entry.path.slice(7);
     if (entry.path === 'game/engine.mjs') route = '/engine.mjs';
     if (entry.path === 'games/catalog.mjs') route = '/games/catalog.mjs';
+    if (explicitRoutes.has(entry.path)) route = explicitRoutes.get(entry.path);
     if (route) { const response = await fetch(origin + route); assert.equal(response.status, 200, route); assert.ok((await response.arrayBuffer()).byteLength > 0, route); }
   }
   for (const route of ['/server/rooms.mjs', '/desktop/host/entry.mjs', '/drizzle/0000_green_thunderbolts.sql', '/.git/config', '/node_modules']) assert.equal((await fetch(origin + route)).status, 404, route);

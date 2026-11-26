@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, symlink, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stagePublicDelivery } from '../../../scripts/vite/collection-public.mjs';
 import { ASSET_FILES, BROWSER_FILES } from '../../../scripts/runtime-files.mjs';
+import { GAME_CATALOG } from '../../../games/catalog.mjs';
 import { startLanServer } from '../../../server/lan.mjs';
 import { request } from './harness.mjs';
 import { verifyProductionDelivery } from '../package/production.mjs';
@@ -25,7 +26,7 @@ async function write(root, relative, contents) {
 }
 
 async function fixture(t) {
-  const root = await mkdtemp(path.join(tmpdir(), 'sofa-public-boundary-'));
+  const root = await mkdtemp(path.join(await realpath(tmpdir()), 'sofa-public-boundary-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const relative of declared) await write(root, relative, `Declared bytes: ${relative}\n`);
   return root;
@@ -89,7 +90,7 @@ test('public delivery fails closed on missing or symlinked declared inputs befor
 
 test('public delivery cannot erase another directory through a symlinked staging parent', async t => {
   const root = await fixture(t);
-  const elsewhere = await mkdtemp(path.join(tmpdir(), 'sofa-public-unrelated-'));
+  const elsewhere = await mkdtemp(path.join(await realpath(tmpdir()), 'sofa-public-unrelated-'));
   t.after(() => rm(elsewhere, { recursive: true, force: true }));
   await write(elsewhere, 'sofa-public/keep.txt', 'Must survive a rejected staging operation.\n');
   await symlink(elsewhere, path.join(root, '.sites-runtime'));
@@ -153,5 +154,25 @@ test('checkout LAN serves declared Odd Laws media but denies actual media source
     const response = await request(host, url);
     assert.equal(response.status, 404, `Checkout LAN must not serve ${url}`);
     assert.deepEqual(response.value, { error: 'File not found.' });
+  }
+});
+
+test('checkout LAN serves both cover sizes for each party game but not the retained originals', async t => {
+  const host = await startLanServer({ root: checkout, databasePath: ':memory:', host: '127.0.0.1', port: 0 });
+  t.after(() => host.close());
+  for (const game of GAME_CATALOG.filter(game => game.category === 'party')) {
+    for (const file of ['cover.webp', 'cover-560.webp']) {
+      const url = `/assets/party/${game.id}/${file}`;
+      const source = `ui/media/party/covers/${game.id}/${file}`;
+      assert.ok(BROWSER_FILES.some(entry => entry.url === url && entry.source === source), url);
+      const response = await fetch(host.origin + url);
+      assert.equal(response.status, 200, url);
+      assert.equal(response.headers.get('content-type'), 'image/webp');
+      assert.deepEqual(Buffer.from(await response.arrayBuffer()), await readFile(path.join(checkout, source)));
+    }
+    const original = `media/party/sources/raw/${game.id}.webp`;
+    assert.ok((await readFile(path.join(checkout, 'ui', original))).length > 0);
+    const denied = await request(host, '/' + original);
+    assert.equal(denied.status, 404);
   }
 });

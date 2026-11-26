@@ -1,32 +1,21 @@
 # Sofa Arcade — parallel game development
 
-**Status: proposed implementation plan, updated 20 November 2026.** The six linked games are design drafts, not implemented features or promises of established balance. Sofa Kingdoms remains the only playable game. Odd Laws Society is now the selected deeper city-building design; its former public-only movement prototype is superseded. Use this document to divide work between coding sessions without splitting the collection into separate products.
-
-Canonical project: **https://github.com/jonathanjie/sofa-arcade**. Read the current `AGENTS.md`, `README.md`, and `docs/HANDOFF.md` before editing. The existing ChatGPT Site remains the deployment destination unless Jon explicitly changes hosting.
-
-**Current local-release assignment:** Jon has selected Tauri/local play. Use [DISPATCH_LOCAL.md](DISPATCH_LOCAL.md) for six self-contained session prompts and exact disjoint ownership, together with [LOCAL_IMPLEMENTATION_CONTRACT.md](LOCAL_IMPLEMENTATION_CONTRACT.md). That more specific assignment supersedes this document's broad shared-platform/game ownership for WS1–WS6. The general rules and other game PRDs below remain useful; no cloud deployment is included in the local assignments.
+Use this guide for parallel feature work. See the [README](../README.md#the-collection) for playable games, the [design index](games/README.md) for the four planned games and [AGENTS.md](../AGENTS.md) for shared project rules.
 
 ## Pick a workstream
 
 | Workstream | PRD | Suggested branch | Main dependency |
 | --- | --- | --- | --- |
 | Shared platform | This guide, especially the integration contract | `feature/game-platform` | None; coordinate with every game owner |
-| Gravity Orchard | [PRD](games/gravity-orchard.md) | `feature/gravity-orchard` | Public-game module registration |
-| The Odd Laws Society | [Full strategy specification](games/odd-laws-society.md) | `feature/odd-laws-society` | Private sealed bids and simultaneous commitments, Gates A/B/C |
 | Borrowed Minutes | [PRD](games/borrowed-minutes.md) | `feature/borrowed-minutes` | Simultaneous commitment contract |
 | Afterglow Market | [PRD](games/afterglow-market.md) | `feature/afterglow-market` | Private submissions and simultaneous resolution |
 | The Last Ninety Seconds | [PRD](games/last-ninety-seconds.md) | `feature/last-ninety-seconds` | Private clues and server-only case answers |
 | Footprints at Midnight | [PRD](games/footprints-at-midnight.md) | `feature/footprints-at-midnight` | Private movement and role-specific projections |
 
-**Current priority:** Odd Laws Society's rules prototype and the shared private-state/commitment platform can proceed in parallel, with a frontend working against agreed fixtures. Gravity Orchard remains a simpler public-game integration when useful for Gate A. All six engines and isolated views can proceed in their owned areas. An isolated prototype is not permission to enable its catalog entry.
+## Design constraints for planned games
 
-## Product constraints for every game
+Follow the [product rules](../AGENTS.md#product-and-host-roles). Use comfortable touch targets and a board legible from the sofa. Give each game a composed motif with restrained variations.
 
-- One collection, one repository, one existing Site. Reuse room creation/joining, Jon/Lydia seats, reconnection, settings, and the Mac local-play option.
-- The TV is the shared board; phones carry controls and any genuinely private information. Give phone controls comfortable touch targets and keep the regular board legible from the sofa.
-- Rules belong in optional guided tutorials and Help. Use short status labels, contextual choices, and a visible next step during play. Do not leave the PRD's explanatory prose on the board.
-- Keep the warm illustrated direction. Jon and Lydia can change roles or costumes; Lala remains a playful presence. Animate purposeful movement and reactions, with reduced-motion alternatives.
-- Music plays on the TV by default; phones start quiet. Give each game a written musical motif and restrained variations. Do not replace the existing composed music with random-note generators.
 - No external AI calls are needed during a match. Outcomes, generated layouts, and replays must be reproducible from authoritative inputs.
 - Both players must have an intelligible path to victory or useful cooperative contribution. Randomize initial initiative where relevant, use role-swapped matches for strongly asymmetric games, and treat balance numbers below as hypotheses to test.
 
@@ -55,7 +44,7 @@ Keep a session's changes on its branch/worktree. Before integrating, refresh the
 
 ## Proposed engine and view contract
 
-The current registry offers `playerIds`, `create`, and `apply`. The current UI and room action validator still contain Sofa Kingdoms assumptions. Extend them deliberately before registering another engine.
+The [registry](../games/registry.mjs) has a legacy public Sofa Kingdoms adapter, a private turn-based Odd Laws adapter and a realtime marker for Gravity Orchard. Follow the Odd Laws adapter for private commitments and the [Gravity contract](GRAVITY_ORCHARD_CONTRACT.md) for realtime play. Preserve existing Sofa rooms.
 
 Proposed shared engine capabilities:
 
@@ -77,7 +66,7 @@ Each game's public renderer consumes `ViewerState`, not `FullState`. A proposed 
 1. Route normalization and action validation through the selected game engine, with bounded payloads and no unknown enum values.
 2. Include every semantically meaningful field in retry identity. Keep stable action IDs on retries; reusing an ID for another command must fail.
 3. Generalize active-player, status, result, and tutorial handling. Do not assume all games have a 5×5 board, two actions, a crumb bag, or Lala forecasts.
-4. Update production preparation, LAN static serving, and local ZIP allowlists together. Add the game's assets and license notices once.
+4. Follow the [delivery inventory](LOCAL_RELEASE.md#delivery-inventory-and-publicprivate-boundary) for new modules, assets and notices.
 5. Maintain existing Sofa Kingdoms room/rules compatibility and the collection's `planned` gate until end-to-end acceptance passes.
 
 ### Gate B: private information
@@ -92,7 +81,7 @@ Each private game needs tests that inspect the serialized response, not merely t
 
 Use an explicit `phaseId`/round/beat identity and one server-authoritative commitment per seat. Phone drafting can be immediate and local; reveal/resolution waits for both valid commitments. The waiting player sees a ready indicator, never the other submission. A commitment is immutable in the MVP unless a particular PRD explicitly requires a jointly cancelled phase.
 
-The current global-revision compare-and-swap may reject the second of two submissions sent from the same revision. Do not remove concurrency checks globally. Add a bounded, game-aware retry/acceptance policy that checks the same match/phase, unchanged own submission, legal resources, and stable action ID before retrying the write against the new revision. A stale action from a resolved phase must never become an action for the next phase. Reconnect restores the player's own committed choice without submitting it twice.
+The current global-revision compare-and-swap may reject the second of two submissions sent from the same revision. Do not remove concurrency checks globally. Use the bounded retry in `server/rooms.mjs` with an engine-approved same-phase rebase, as Odd Laws does. Check the match, phase, seat’s commitment, action identity and legality before retrying against the new revision. A stale action from a resolved phase must never become an action for the next phase. Reconnect restores the player's own committed choice without submitting it twice.
 
 The current optimistic action queue runs the full rules engine in the browser. Use it only when the browser legitimately has every necessary input. Private games may optimistically animate the selected button or show a pending plan, but cannot simulate an authoritative hidden outcome by receiving secrets. Shared pending-state UX should not block the other player's independent submission.
 
@@ -107,25 +96,13 @@ Every game PR should include:
 5. An integration checklist for online rooms, LAN push, module packaging, existing matches, music/settings, and return to collection.
 6. A short playtest note: what two people actually tried, what remains untested, and which numerical balance choices still need tuning. Bot sweeps are regression checks, not proof of equal human win rates.
 
-Keep new games `planned` until all relevant platform gates and their PRD's MVP criteria pass. Use a feature branch or an internal fixture route while incomplete; do not expose a catalog button that starts a nonfunctional game. Preserve old saved states with explicit rules-version handling rather than silently changing an in-progress match.
+Apply the [enablement and compatibility rules](../AGENTS.md#rules-and-room-authority) when integrating the game.
 
 ## Copy-pastable session prompts
 
 Use one prompt per session. Replace `BASE_COMMIT` with the actual GitHub commit agreed by the integration owner. These prompts authorize a bounded implementation branch, not an independent production deployment.
 
-### Shared platform session
-
-> Continue `jonathanjie/sofa-arcade` from BASE_COMMIT on `feature/game-platform`. Read AGENTS.md, docs/HANDOFF.md, and docs/PARALLEL_DEVELOPMENT.md. Implement the shared engine/view registration, authenticated per-role state projection for all API and LAN stream paths, and safe simultaneous commitments. Preserve Sofa Kingdoms and existing room versions. Coordinate the exact contract with the six game sessions. You own shared registry, shell, room, transport, and packaging changes; avoid editing individual game-owned modules except agreed integration adapters. Add meaningful compatibility/security/concurrency tests. Open a reviewable PR with contract examples and integration instructions. Do not mark unfinished games playable or publish independently.
-
-### Gravity Orchard session
-
-> Continue `jonathanjie/sofa-arcade` from BASE_COMMIT on `feature/gravity-orchard`. Read AGENTS.md, docs/PARALLEL_DEVELOPMENT.md, and docs/games/gravity-orchard.md. Implement the provisional public-information orchard MVP in its owned game/UI subtree. Prioritize deterministic settling, an accurate landing preview, and distinct placement/tilt decisions. Coordinate the proposed module contract with the platform owner. Do not rewrite shared shell/room/catalog files or publish independently. Include complete seeded tests, an isolated tutorial, TV/phone views, and explicit remaining integration/balance risks in a PR.
-
-### The Odd Laws Society session
-
-> Continue `jonathanjie/sofa-arcade` from BASE_COMMIT on `feature/odd-laws-society`. Read AGENTS.md, docs/PARALLEL_DEVELOPMENT.md, and the full v0.2 specification in docs/games/odd-laws-society.md. Implement the six-session city-building rules prototype in its owned subtree: 18 building designs, 12 laws, Build/Work/Lobby/Festival, 3×3 streets, and sealed all-pay council bids. The earlier 5×5 movement game is superseded. Reproduce the worked accounting fixture; test pre-action discounts, the A-B/B-A/A-B Chair schedule, scoring caps, private projections, both commitment orders, and idempotent reveals. Coordinate Gates A/B/C with the platform owner; do not expose bids or deduct them publicly before reveal. Keep the catalog planned until full tutorial, TV/two-phone, online/LAN, and actual playtest gates pass. Do not publish independently. Open a PR with precise implemented scope and remaining balance questions.
-
-For separate sessions on this game's engine and frontend, agree ownership before starting: the engine owner uses `games/odd-laws-society/`; the frontend owner uses `ui/games/odd-laws-society/` and consumes projected fixtures; the platform owner retains the shared files listed above. The PRD's milestones name the corresponding exit criteria. Hosting/WebSocket work and Tauri packaging are separate workstreams described in [DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md).
+The [early platform, Gravity Orchard and Odd Laws prompts](archive/early-session-prompts.md) are historical.
 
 ### Borrowed Minutes session
 

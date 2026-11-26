@@ -1,6 +1,6 @@
 import { createRun, normalizeInput, step, applyCommand, pauseForSystem, project } from '../engine.mjs';
 import { getLevel } from '../geometry.mjs';
-import { FRUIT_TYPES, STAGES, RULES } from '../catalog.mjs';
+import { FRUIT_TYPES, STAGES } from '../catalog.mjs';
 import { bridgeWeights, forceAt, summarizeResults } from '../public.mjs';
 import { terrainColliders } from '../physics.mjs';
 import { createPilot } from '../validation/pilot.mjs';
@@ -121,7 +121,14 @@ function symbol(type, x, y, radius, color = fruitColor(type)) {
   ctx.save(); ctx.translate(x, y); ctx.fillStyle = color; ctx.strokeStyle = '#263b2c'; ctx.lineWidth = 1.6;
   ctx.beginPath();
   if (type === 'starfruit') {
-    for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 - Math.PI / 2; const r = i % 2 ? radius * .5 : radius; i ? ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r) : ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+    for (let i = 0; i < 10; i++) {
+      const angle = i * Math.PI / 5 - Math.PI / 2;
+      const r = i % 2 ? radius * .5 : radius;
+      const x = Math.cos(angle) * r;
+      const y = Math.sin(angle) * r;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
     ctx.closePath();
   } else if (type === 'pear') {
     ctx.moveTo(0, -radius); ctx.bezierCurveTo(radius * .65, -radius, radius * .45, -radius * .35, radius * .7, 0);

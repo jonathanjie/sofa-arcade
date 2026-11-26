@@ -262,7 +262,7 @@ describe(`WS6 integrated real WKWebView (${phase})`, () => {
     }
     assert.equal(phase, 'first');
     await waitRendered('.arcade-home');
-    await $('[data-action="open-game"][data-game="odd-laws-society"]').click();
+    await $('.game-card[data-game="odd-laws-society"]').click();
     await waitRendered('.odd-laws-detail [data-action="create"]', { scrollIntoView: true });
     await $('.odd-laws-detail [data-action="create"]').click();
     await waitRendered('.room-code');

@@ -189,9 +189,12 @@ export function createCollectionGame({
       if (disposed || !next || typeof next !== 'object' ||
           Object.keys(next).every(key => viewPreferences[key] === next[key])) return false;
       viewPreferences = Object.freeze({ ...viewPreferences, ...next });
-      // The component's preferences are mount inputs. Keep the authenticated
-      // client, uncertain request, and acknowledged board across this remount;
-      // only unsubmitted view drafts/drawers reset with its presentation.
+      if (view?.setReducedMotion && Object.keys(next).every(key => key === 'reducedMotion')) {
+        view.setReducedMotion(viewPreferences.reducedMotion);
+        return true;
+      }
+      // Other preferences are mount inputs. Keep the authenticated client and
+      // acknowledged board if the adapter needs a new view.
       viewEpoch++;
       view?.dispose();
       view = null;

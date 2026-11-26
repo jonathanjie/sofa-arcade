@@ -37,12 +37,12 @@ function safeStatus(input) {
 }
 
 const COPY = {
-  'needs-setup': ['One-time setup', 'Give your phones a trusted way in.', 'Prepare a certificate unique to this Mac, then trust its public certificate on each phone.', 'Set up trusted access'],
-  disabled: ['Trusted access off', 'Touch play is ready when you are.', 'Your saved certificate stays on this Mac. Turn trusted access on again to use phone tilt.', 'Enable trusted access'],
-  ready: ['Host ready', 'Your Mac is ready. Now, each phone.', 'HTTPS is available. Each phone still needs to trust this installation and pass its own motion check.', 'Refresh certificate'],
-  'certificate-expired': ['Certificate expired', 'Let’s refresh your local certificate.', 'Keep using touch while the host renews the certificate. Existing phone trust stays valid when the same root is retained.', 'Renew certificate'],
-  'address-mismatch': ['Address changed', 'Your Mac has a new local address.', 'Refresh the certificate for the current network, then use the new secure join address. The existing root is retained.', 'Refresh local address'],
-  failed: ['Setup needs attention', 'We couldn’t prepare trusted access.', 'Check the Mac’s local connection and retry. Touch play remains available.', 'Retry setup'],
+  'needs-setup': ['One-time setup', 'Let your phones use tilt.', 'Phones only share their tilt sensor with a Mac they recognise. Set up this Mac once, then add it to each phone.', 'Set up tilt'],
+  disabled: ['Tilt is off', 'Touch play is ready when you are.', 'Your setup is saved on this Mac. Turn tilt on again when you want it.', 'Turn tilt on'],
+  ready: ['Mac ready', 'Your Mac is ready. Now, each phone.', 'Now add this Mac to each phone, then test tilt on that phone.', 'Refresh setup'],
+  'certificate-expired': ['Setup expired', 'Let’s refresh the tilt setup.', 'You can keep playing with touch. Your phones stay set up after a refresh.', 'Refresh setup'],
+  'address-mismatch': ['Wi-Fi changed', 'Your Wi-Fi gave this Mac a new address.', 'Refresh the setup, then use the new phone link. Your phones stay set up.', 'Refresh setup'],
+  failed: ['Setup needs attention', 'We couldn’t set up tilt.', 'Check that this Mac is on Wi-Fi, then try again. Touch controls still work.', 'Retry setup'],
 };
 
 function element(doc, tag, className, text) {
@@ -72,7 +72,7 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
   const doc = root.ownerDocument;
   const view = doc.defaultView;
   const section = element(doc, 'section', 'go6-setup');
-  section.setAttribute('aria-label', 'Trusted local access setup');
+  section.setAttribute('aria-label', 'Tilt controls setup');
   let disposed = false;
   let epoch = 0;
   let busy = false;
@@ -86,7 +86,7 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
   const logo = element(doc, 'span', 'go6-leaf', '✦');
   logo.setAttribute('aria-hidden', 'true');
   const identity = element(doc, 'div');
-  identity.append(element(doc, 'p', 'go6-eyebrow', 'Sofa Arcade / Gravity Orchard'), element(doc, 'p', 'go6-brand-title', 'Trusted local access'));
+  identity.append(element(doc, 'p', 'go6-eyebrow', 'Sofa Arcade / Gravity Orchard'), element(doc, 'p', 'go6-brand-title', 'Tilt controls'));
   brand.append(logo, identity);
   const close = button('Close setup', 'go6-icon-close', () => closeView('close'));
   close.setAttribute('aria-label', 'Close setup');
@@ -100,7 +100,7 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
   const description = element(doc, 'p', 'go6-description');
   hero.append(badge, heading, description);
   const diagram = element(doc, 'div', 'go6-diagram');
-  diagram.setAttribute('aria-label', 'One Mac and TV, with separate trust setup on Jon’s and Lydia’s phones');
+  diagram.setAttribute('aria-label', 'One Mac and TV, with tilt set up on Jon’s and Lydia’s phones');
   const mac = element(doc, 'div', 'go6-mac');
   const screen = element(doc, 'div', 'go6-mac-screen');
   screen.innerHTML = orchardGraphic(); // Static authored geometry only, never callback content.
@@ -113,16 +113,16 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
     const phone = element(doc, 'div', `go6-phone ${tone}`);
     phone.append(element(doc, 'span', 'go6-phone-speaker'));
     const ring = element(doc, 'span', 'go6-phone-ring', '↗'); ring.setAttribute('aria-hidden', 'true');
-    phone.append(ring, element(doc, 'strong', '', `${name}’s phone`), element(doc, 'span', 'go6-phone-state', 'Trust not checked'));
+    phone.append(ring, element(doc, 'strong', '', `${name}’s phone`), element(doc, 'span', 'go6-phone-state', 'Not set up yet'));
     phones.append(phone);
   }
   diagram.append(mac, element(doc, 'div', 'go6-connection-lines'), phones);
-  const phoneNote = element(doc, 'p', 'go6-diagram-note', 'Host readiness does not confirm phone trust, a secure context, or motion readings. Check each phone separately.');
+  const phoneNote = element(doc, 'p', 'go6-diagram-note', 'This Mac being ready does not mean each phone is ready. Test tilt on each phone.');
   const steps = element(doc, 'ol', 'go6-steps');
   const stepParts = [
-    ['Prepare this Mac', 'Create a unique local certificate. No trust settings change automatically.'],
-    ['Trust each phone', 'Transfer only the public certificate. Compare its fingerprint before installing.'],
-    ['Join & check motion', 'Open the secure address on each phone, then run the motion check.'],
+    ['Prepare this Mac', 'Create a safety key that only this Mac has. Nothing on your phones changes yet.'],
+    ['Add this Mac to each phone', 'Send the Sofa Arcade file to each phone. Check that its code matches before you add it.'],
+    ['Test tilt', 'Open the phone link on each phone, then try the tilt test.'],
   ];
   for (let i = 0; i < stepParts.length; i++) {
     const li = element(doc, 'li');
@@ -133,22 +133,22 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
   main.append(hero, diagram, phoneNote, steps);
   const aside = element(doc, 'aside', 'go6-controls');
   const actions = element(doc, 'div', 'go6-action-card');
-  actions.append(element(doc, 'p', 'go6-eyebrow', 'This installation'));
+  actions.append(element(doc, 'p', 'go6-eyebrow', 'This Mac'));
   const actionTitle = element(doc, 'h2', '', 'Choose how to play');
-  const actionDescription = element(doc, 'p', 'go6-small', 'Touch controls work now. Set up trust once to try comfortable phone tilt.');
-  const prepare = button('Set up trusted access', 'go6-button go6-primary', () => operate(() => provision({ replaceRoot: false }), 'Trusted access updated. Check each phone before enabling tilt.'));
+  const actionDescription = element(doc, 'p', 'go6-small', 'Touch controls work now. Set up once to try tilt.');
+  const prepare = button('Set up tilt', 'go6-button go6-primary', () => operate(() => provision({ replaceRoot: false }), 'Setup updated. Test each phone before you use tilt.'));
   prepare.dataset.action = 'provision';
   const touch = button('Play with touch for now', 'go6-button go6-secondary', () => closeView('touch'));
   touch.dataset.action = 'touch';
   const alert = element(doc, 'p', 'go6-notice'); alert.setAttribute('role', 'status'); alert.setAttribute('aria-live', 'polite');
   const certificate = element(doc, 'div', 'go6-certificate');
-  certificate.append(element(doc, 'h3', '', 'Public certificate fingerprint'), element(doc, 'p', 'go6-small', 'Compare this SHA-256 fingerprint with the public certificate transferred from this Mac.'));
+  certificate.append(element(doc, 'h3', '', 'Matching code'), element(doc, 'p', 'go6-small', 'On each phone, check that the Sofa Arcade file shows this same code.'));
   const fingerprint = element(doc, 'code', 'go6-fingerprint'); fingerprint.dataset.testid = 'fingerprint';
   const validity = element(doc, 'p', 'go6-validity');
   certificate.append(fingerprint, validity);
   const exports = element(doc, 'div', 'go6-export-actions');
-  const appleExport = button('Export for iPhone', 'go6-button go6-outline', () => exportTrust('mobileconfig'));
-  const androidExport = button('Export certificate', 'go6-button go6-outline', () => exportTrust('pem'));
+  const appleExport = button('Save file for iPhone', 'go6-button go6-outline', () => exportTrust('mobileconfig'));
+  const androidExport = button('Save file for Android', 'go6-button go6-outline', () => exportTrust('pem'));
   appleExport.dataset.action = 'export-apple'; androidExport.dataset.action = 'export-pem';
   exports.append(appleExport, androidExport);
   const joins = element(doc, 'div', 'go6-join');
@@ -156,45 +156,45 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
   const instructions = element(doc, 'div', 'go6-guide');
   instructions.append(element(doc, 'h2', '', 'A quick guide for each phone'));
   instructions.append(guide('iPhone / iPad', [
-    'Export the iPhone profile and transfer it from this Mac using a method you trust, such as AirDrop or a cable.',
-    'Open the profile on the phone. In Settings → General → VPN & Device Management, inspect and install the Sofa Arcade certificate profile.',
-    'Then open Settings → General → About → Certificate Trust Settings and explicitly enable full trust for this installation’s root.',
-    'Open the HTTPS address in Safari. Stop if there is a certificate warning; check the fingerprint and host status. Run the motion check and allow access when asked.',
-  ], 'https://support.apple.com/en-us/102390', 'Apple’s trust instructions'));
+    'Save the iPhone file, then send it to the iPhone with AirDrop or a cable.',
+    'Open the file on the iPhone. Then go to Settings → General → VPN & Device Management, tap Sofa Arcade and tap Install.',
+    'Go to Settings → General → About → “Certificate Trust Settings” (the iPhone’s own name for this screen) and turn on Sofa Arcade.',
+    'Open the phone link in Safari. If Safari shows a warning page, stop and check the setup again. Try the tilt test and tap Allow when asked.',
+  ], 'https://support.apple.com/en-us/102390', 'Apple’s help page'));
   instructions.append(guide('Android / Chrome', [
-    'Export the public certificate and transfer it from this Mac. Compare its fingerprint before adding it to the phone.',
-    'In Settings, search for “Install a certificate” or “Encryption & credentials”. Choose CA certificate for local website trust. Menu names and availability vary by device; do not change Wi-Fi validation settings.',
-    'Review the phone’s trust warning and install only this installation’s certificate. Managed phones may disallow user certificates.',
-    'Open the HTTPS address in Chrome, without bypassing warnings, and run the motion check. Browser support must be checked on the actual phone.',
-  ], 'https://support.google.com/pixelphone/answer/2844832?hl=en', 'Google’s certificate settings guide'));
-  const removalGuide = guide('Trust scope & removal', [
-    'A trusted root can authenticate certificates signed by this Mac’s installation key. Treat it as a real trust decision, not a permission just for one game. Keep the Mac and its private app data secure.',
-    'Turning trusted access off stops HTTPS and keeps the installation material. Removing it deletes this installation’s local material; neither action removes trust from a phone.',
-    'On iPhone/iPad, remove this installation’s Sofa Arcade profile in Settings → General → VPN & Device Management. On Android, find this installation under trusted/user credentials and remove only that certificate.',
-    'After replacing the installation root, remove the old profile from both phones, transfer the new public certificate, verify its fingerprint, and set up trust again.',
+    'Save the Android file and send it to the phone. Check that the code matches before you add it.',
+    'In Settings, search for “Install a certificate”. Choose “CA certificate” (Android’s name for this option) and pick the Sofa Arcade file. Menu names differ between phones. Do not change any Wi-Fi settings.',
+    'The phone shows a warning. Add only the Sofa Arcade file. Work phones may not allow this.',
+    'Open the phone link in Chrome. If Chrome shows a warning page, stop. Try the tilt test on the phone.',
+  ], 'https://support.google.com/pixelphone/answer/2844832?hl=en', 'Google’s help page'));
+  const removalGuide = guide('What this allows, and how to undo it', [
+    'Adding this Mac lets your phone trust websites that this Mac vouches for, not only this game. Only add a Mac you own, and keep it secure.',
+    'Turning tilt off keeps the setup on this Mac. Removing the setup deletes it from this Mac. Neither one changes your phones.',
+    'To undo it on an iPhone or iPad, remove Sofa Arcade in Settings → General → VPN & Device Management. On Android, search Settings for “User credentials” and remove only Sofa Arcade.',
+    'If you start over with a new setup, remove the old Sofa Arcade file from both phones and add the new one.',
   ]);
   const management = element(doc, 'div', 'go6-manage');
-  const disable = button('Turn trusted access off', 'go6-text-button', () => operate(() => remove({ mode: 'disable' }), 'Trusted access is off. Touch play is still available.'));
-  const removeButton = button('Remove this installation’s certificates', 'go6-text-button go6-danger', () => showConfirmation('remove'));
-  const replaceButton = button('Replace the installation root…', 'go6-text-button go6-danger', () => showConfirmation('replace'));
+  const disable = button('Turn tilt off', 'go6-text-button', () => operate(() => remove({ mode: 'disable' }), 'Tilt is off. Touch controls still work.'));
+  const removeButton = button('Remove the setup from this Mac', 'go6-text-button go6-danger', () => showConfirmation('remove'));
+  const replaceButton = button('Start over with a new setup…', 'go6-text-button go6-danger', () => showConfirmation('replace'));
   management.append(disable, removeButton, replaceButton);
   removalGuide.append(management);
   instructions.append(removalGuide);
   aside.append(actions, instructions);
   content.append(main, aside);
   const footer = element(doc, 'footer', 'go6-footer');
-  footer.append(element(doc, 'span', '', 'One local game · Two phones · Touch always available'));
-  const refreshButton = button('Refresh host status', 'go6-text-button', () => refresh());
+  footer.append(element(doc, 'span', '', 'One game · Two phones · Touch always works'));
+  const refreshButton = button('Check again', 'go6-text-button', () => refresh());
   footer.append(refreshButton);
   const confirmation = element(doc, 'div', 'go6-confirmation'); confirmation.hidden = true;
   const confirmationHeading = element(doc, 'h2');
   const confirmationCopy = element(doc, 'p');
   const confirmationActions = element(doc, 'div', 'go6-confirmation-actions');
   const cancel = button('Keep current setup', 'go6-button go6-secondary', hideConfirmation);
-  const confirm = button('Remove certificates', 'go6-button go6-danger-button', async () => {
+  const confirm = button('Remove setup', 'go6-button go6-danger-button', async () => {
     const choice = pendingConfirmation; hideConfirmation();
-    if (choice === 'remove') await operate(() => remove({ mode: 'remove' }), 'Local certificates removed. Remove this installation’s profile from each phone separately.');
-    if (choice === 'replace') await operate(() => provision({ replaceRoot: true }), 'New root created. Remove old phone trust, compare the new fingerprint, and set up both phones again.');
+    if (choice === 'remove') await operate(() => remove({ mode: 'remove' }), 'Setup removed from this Mac. Remove Sofa Arcade from each phone too.');
+    if (choice === 'replace') await operate(() => provision({ replaceRoot: true }), 'New setup created. Remove the old Sofa Arcade file from both phones, then add the new one.');
   });
   confirmationActions.append(cancel, confirm); confirmation.append(confirmationHeading, confirmationCopy, confirmationActions);
   section.append(header, content, confirmation, footer);
@@ -232,15 +232,15 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
     section.dataset.state = status.status; section.setAttribute('aria-busy', String(busy));
     badge.textContent = copy[0]; heading.textContent = copy[1]; description.textContent = copy[2];
     prepare.textContent = busy ? 'Working on this Mac…' : copy[3];
-    hostLabel.textContent = status.status === 'ready' ? 'Mac / TV · HTTPS ready' : 'Mac / TV · Setup required';
-    if (status.status === 'disabled') hostLabel.textContent = 'Mac / TV · HTTPS off';
+    hostLabel.textContent = status.status === 'ready' ? 'Mac / TV · Ready for tilt' : 'Mac / TV · Not set up';
+    if (status.status === 'disabled') hostLabel.textContent = 'Mac / TV · Tilt off';
     steps.children[0].classList.toggle('is-complete', status.status === 'ready');
     alert.textContent = notice; alert.hidden = !notice;
     const hasCertificate = Boolean(status.certificateFingerprint);
     certificate.hidden = !hasCertificate;
     exports.hidden = !hasCertificate;
     fingerprint.textContent = status.certificateFingerprint || '';
-    validity.textContent = status.validUntil ? `Host certificate valid until ${new Date(status.validUntil).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })} (UTC).` : '';
+    validity.textContent = status.validUntil ? `Tilt setup works until ${new Date(status.validUntil).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}.` : '';
     for (const btn of [prepare, appleExport, androidExport, disable, removeButton, replaceButton, refreshButton]) btn.disabled = busy;
     disable.hidden = !status.enabled;
     removeButton.hidden = !hasCertificate && status.status === 'needs-setup';
@@ -250,21 +250,21 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
       for (const origin of status.controllerOrigins) {
         const link = element(doc, 'a', 'go6-origin', origin); link.href = `${origin}/`; link.target = '_blank'; link.rel = 'noopener noreferrer'; joins.append(link);
       }
-      const diagnostic = element(doc, 'a', 'go6-diagnostic-link', 'Open the phone motion check ↗');
+      const diagnostic = element(doc, 'a', 'go6-diagnostic-link', 'Open the tilt test ↗');
       diagnostic.href = `${status.controllerOrigins[0]}/secure-lan/diagnostic`; diagnostic.target = '_blank'; diagnostic.rel = 'noopener noreferrer'; joins.append(diagnostic);
-      joins.append(element(doc, 'p', 'go6-small', 'Send this address to the phone. A successful check here on the Mac does not test either phone.'));
+      joins.append(element(doc, 'p', 'go6-small', 'Open this link on each phone. Testing it on the Mac does not test the phones.'));
     }
   }
   function showConfirmation(choice) {
     pendingConfirmation = choice;
     confirmation.hidden = false;
     confirmation.setAttribute('role', 'dialog'); confirmation.setAttribute('aria-modal', 'true');
-    confirmation.setAttribute('aria-label', choice === 'remove' ? 'Remove local certificates?' : 'Replace installation root?');
-    confirmationHeading.textContent = choice === 'remove' ? 'Remove local certificates?' : 'Replace this installation’s root?';
+    confirmation.setAttribute('aria-label', choice === 'remove' ? 'Remove the setup from this Mac?' : 'Start over?');
+    confirmationHeading.textContent = choice === 'remove' ? 'Remove the setup from this Mac?' : 'Start over with a new setup?';
     confirmationCopy.textContent = choice === 'remove'
-      ? 'This stops trusted access and removes only this installation’s certificate material. Touch play stays available. You must remove its profile from each phone yourself.'
-      : 'Both phones will need trust setup again. Existing certificates stop working. Use this only when the root itself needs replacement; normal renewal keeps your current root.';
-    confirm.textContent = choice === 'remove' ? 'Remove certificates' : 'Replace root & set up again';
+      ? 'This turns tilt off and deletes the setup from this Mac. Touch controls still work. Remove Sofa Arcade from each phone yourself.'
+      : 'Both phones will need to be set up again. Use this only if refreshing does not help.';
+    confirm.textContent = choice === 'remove' ? 'Remove setup' : 'Yes, start over';
     content.inert = true; header.inert = true; footer.inert = true;
     cancel.focus();
   }
@@ -292,7 +292,7 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
       status = safeStatus(result); notice = success;
     } catch (error) {
       if (disposed || current !== epoch) return;
-      notice = error?.code === 'CANCELLED' ? 'Cancelled. Your current setup is unchanged.' : 'This operation could not finish. Retry, or continue with touch. No automatic trust changes were made.';
+      notice = error?.code === 'CANCELLED' ? 'Cancelled. Your current setup is unchanged.' : 'That did not work. Try again, or keep playing with touch. Nothing on your phones changed.';
     } finally { if (!disposed && current === epoch) { busy = false; render(); } }
   }
   async function refresh() {
@@ -305,7 +305,7 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
     } catch {
       if (disposed || current !== epoch) return;
       status = { enabled: false, status: 'failed', controllerOrigins: [], requiresPhoneTrust: true };
-      notice = 'Host status is unavailable. Retry the check, or continue with touch.'; render();
+      notice = 'We couldn’t check this Mac. Try again, or keep playing with touch.'; render();
     }
   }
   async function exportTrust(format) {
@@ -318,10 +318,10 @@ export function mountSecureLanSetup(root, { getStatus, provision, exportPublicTr
       if (downloadURL) view.URL.revokeObjectURL(downloadURL);
       downloadURL = view.URL.createObjectURL(new Blob([exported.contents], { type: exported.mediaType }));
       const a = element(doc, 'a'); a.href = downloadURL; a.download = exported.filename; section.append(a); a.click(); a.remove();
-      notice = 'Public certificate exported. Transfer it to each phone and compare the fingerprint before trusting it.';
+      notice = 'File saved. Send it to each phone and check the code before you add it.';
     } catch (error) {
       if (disposed || current !== epoch) return;
-      notice = error?.code === 'CANCELLED' ? 'Export cancelled. No trust settings changed.' : 'The public certificate could not be exported. Retry from this Mac. No trust settings changed.';
+      notice = error?.code === 'CANCELLED' ? 'Cancelled. Nothing changed.' : 'The file could not be saved. Try again. Nothing changed.';
     } finally { if (!disposed && current === epoch) { busy = false; render(); } }
   }
   function dispose() {

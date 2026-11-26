@@ -9,7 +9,8 @@ export function readTransportConfig({ document: doc = globalThis.document, origi
     } catch {}
   }
   const orchard = mode === 'lan' && ['candidate', 'enabled'].includes(doc?.querySelector('meta[name="sofa-gravity-orchard"]')?.getAttribute('content'));
-  return Object.freeze({ mode, joinOrigin, realtime: mode === 'lan', ...(orchard ? {gravityOrchard: true} : {}) });
+  const party = mode === 'lan' && doc?.querySelector('meta[name="sofa-party"]')?.getAttribute('content') === 'enabled';
+  return Object.freeze({ mode, joinOrigin, realtime: mode === 'lan', ...(orchard ? { gravityOrchard: true } : {}), ...(party ? { party: true } : {}) });
 }
 
 /** Keep native listener identities intact; phones receive only usable LAN links. */
@@ -143,7 +144,7 @@ export function subscribeRoom({ code, token, onRoom, onConnection = () => {}, on
         status('offline', terminal
           ? { state: 'error', message: 'This room session ended. Rejoin from the game page.' }
           : { state: 'offline', message: 'Live updates disconnected. Reconnecting…' });
-        if (!terminal) {
+        if (!terminal && !stopped) {
           const delay = Math.min(5000, retryMs * 2 ** Math.min(failures++, 4));
           retryTimer = setTimeout(connect, delay);
         }

@@ -3,9 +3,13 @@ import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { GRAVITY_BROWSER_FILES, GRAVITY_ASSET_FILES, GRAVITY_HOST_FILES } from '../server/gravity-orchard-delivery.mjs';
 
+import { PARTY_BROWSER_FILES, PARTY_HOST_FILES } from '../server/party-delivery.mjs';
+
 export const BROWSER_FILES = Object.freeze([
   ...GRAVITY_BROWSER_FILES,
+  ...PARTY_BROWSER_FILES,
   { url: '/app.js', source: 'ui/app.js' },
+  { url: '/shelf.mjs', source: 'ui/shelf.mjs' },
   { url: '/styles.css', source: 'ui/styles.css' },
   { url: '/audio.js', source: 'ui/audio.js' },
   { url: '/score.mjs', source: 'ui/score.mjs' },
@@ -39,6 +43,7 @@ export const BROWSER_FILES = Object.freeze([
 
 export const SERVER_FILES = Object.freeze([
   ...GRAVITY_HOST_FILES,
+  ...PARTY_HOST_FILES,
   'server/lan.mjs',
   'server/rooms.mjs',
   'game/engine.mjs',
@@ -56,6 +61,12 @@ export const ASSET_FILES = Object.freeze([
   'public/assets/characters.png',
   'public/assets/qrcode.js',
   'public/assets/qrcode-LICENSE.txt',
+  'public/assets/characters-1536.webp',
+  'public/assets/characters.webp',
+  'public/assets/odd-laws-cover-560.webp',
+  'public/assets/sofa-room-1200.webp',
+  'public/assets/sofa-room-1536.webp',
+  'public/assets/sofa-room-640.webp',
   'public/favicon.svg',
   'public/manifest.webmanifest',
   // Exact WS4 runtime image closure, plus its retained distribution notice.
@@ -77,6 +88,24 @@ export const ASSET_FILES = Object.freeze([
   'public/assets/odd-laws-society/buildings/public-library.webp',
   'public/assets/odd-laws-society/buildings/quilt-bridge.webp',
   'public/assets/odd-laws-society/buildings/tea-stall.webp',
+  'public/assets/odd-laws-society/buildings/button-workshop-256.webp',
+  'public/assets/odd-laws-society/buildings/clockwork-studio-256.webp',
+  'public/assets/odd-laws-society/buildings/community-garden-256.webp',
+  'public/assets/odd-laws-society/buildings/concert-pavilion-256.webp',
+  'public/assets/odd-laws-society/buildings/corner-shop-256.webp',
+  'public/assets/odd-laws-society/buildings/debate-hall-256.webp',
+  'public/assets/odd-laws-society/buildings/grand-bazaar-256.webp',
+  'public/assets/odd-laws-society/buildings/grand-clock-256.webp',
+  'public/assets/odd-laws-society/buildings/high-court-256.webp',
+  'public/assets/odd-laws-society/buildings/lala-monument-256.webp',
+  'public/assets/odd-laws-society/buildings/night-market-256.webp',
+  'public/assets/odd-laws-society/buildings/observatory-256.webp',
+  'public/assets/odd-laws-society/buildings/opera-house-256.webp',
+  'public/assets/odd-laws-society/buildings/petition-kiosk-256.webp',
+  'public/assets/odd-laws-society/buildings/pocket-theatre-256.webp',
+  'public/assets/odd-laws-society/buildings/public-library-256.webp',
+  'public/assets/odd-laws-society/buildings/quilt-bridge-256.webp',
+  'public/assets/odd-laws-society/buildings/tea-stall-256.webp',
   'public/assets/odd-laws-society/characters/jon-acting.webp',
   'public/assets/odd-laws-society/characters/jon-celebrate.webp',
   'public/assets/odd-laws-society/characters/jon-disappointed.webp',
@@ -91,6 +120,20 @@ export const ASSET_FILES = Object.freeze([
   'public/assets/odd-laws-society/characters/lydia-disappointed.webp',
   'public/assets/odd-laws-society/characters/lydia-idle.webp',
   'public/assets/odd-laws-society/characters/lydia-thinking.webp',
+  'public/assets/odd-laws-society/characters/jon-acting-256.webp',
+  'public/assets/odd-laws-society/characters/jon-celebrate-256.webp',
+  'public/assets/odd-laws-society/characters/jon-disappointed-256.webp',
+  'public/assets/odd-laws-society/characters/jon-idle-256.webp',
+  'public/assets/odd-laws-society/characters/jon-thinking-256.webp',
+  'public/assets/odd-laws-society/characters/lala-celebrate-256.webp',
+  'public/assets/odd-laws-society/characters/lala-idle-256.webp',
+  'public/assets/odd-laws-society/characters/lala-stamp-256.webp',
+  'public/assets/odd-laws-society/characters/lala-thinking-256.webp',
+  'public/assets/odd-laws-society/characters/lydia-acting-256.webp',
+  'public/assets/odd-laws-society/characters/lydia-celebrate-256.webp',
+  'public/assets/odd-laws-society/characters/lydia-disappointed-256.webp',
+  'public/assets/odd-laws-society/characters/lydia-idle-256.webp',
+  'public/assets/odd-laws-society/characters/lydia-thinking-256.webp',
   'public/assets/odd-laws-society/guilds/civic.svg',
   'public/assets/odd-laws-society/guilds/commerce.svg',
   'public/assets/odd-laws-society/guilds/craft.svg',
@@ -120,7 +163,7 @@ export const ASSET_FILES = Object.freeze([
 /** No directory walk: adding a source/test beside a runtime file never ships it. */
 export async function runtimeFiles(root) {
   const files = [...new Set([
-    'start-sofa.command', 'scripts/lan-server.mjs', 'ui/index.html', 'docs/LAN.md',
+    'start-sofa.command', 'scripts/lan-server.mjs', 'ui/index.html', 'docs/LAN.md', 'docs/PARTY_CONTRACT.md',
     ...SERVER_FILES, ...BROWSER_FILES.map(entry => entry.source), ...ASSET_FILES,
   ])].sort();
   for (const file of files) await checkedRuntimePath(root, file);

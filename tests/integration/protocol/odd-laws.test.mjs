@@ -216,7 +216,15 @@ async function playMatch(t, components, { chair, policy = 'rich' }) {
   assert.equal(rematch.value.state.stage, 'council');
   assert.deepEqual(rematch.value.state.council.ready, { jon: false, lydia: false });
   await expectRevision(streams, rematch.value.revision);
-  const oldMatch = await submit(host, live, winnerActor, { ...winnerRequest, revision: rematch.value.revision, actionId: crypto.randomUUID() });
+  const lateRetry = await submit(host, live, winnerActor, winnerRequest);
+  assert.equal(lateRetry.status, 200);
+  assert.equal(lateRetry.value.revision, rematch.value.revision);
+  assert.deepEqual(lateRetry.value.state.council.ready, { jon: false, lydia: false });
+  const { type, phaseId, matchId } = winnerRequest.action;
+  const changedAction = { type: type === 'work' ? 'lobby' : 'work', phaseId, matchId };
+  const conflict = await submit(host, live, winnerActor, { ...winnerRequest, action: changedAction });
+  assert.equal(conflict.value.code, 'action_id_reused');
+  const oldMatch = await submit(host, live, winnerActor, { ...winnerRequest, revision: rematch.value.revision });
   assert.equal(oldMatch.status, 409, 'fresh revision cannot make an old-match command valid');
   assert.equal(oldMatch.value.code, 'stale_match');
   const evidence = await writeLatencyEvidence({ name: `odd-laws-${chair}-${policy}`, gameId: ODD_GAME_ID, chair, policy, samples: delays, sourceBefore });

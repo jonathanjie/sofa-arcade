@@ -1,12 +1,10 @@
 # Gravity Orchard — v0.2 product and game design
 
-**Status:** implementation brief; not implemented or enabled by this document. **Catalog ID:** `gravity-orchard`. **Mode:** real-time cooperation for two players. **Target session:** 6–10 minutes, plus optional practice. **Design version:** `0.2`.
+**Status:** implemented and enabled on the local host. Physical-device and human acceptance remain open. **Catalog ID:** `gravity-orchard`. **Mode:** real-time cooperation for two players. **Target session:** 6–10 minutes, plus optional practice. **Design version:** `0.2`.
 
-This version supersedes the [archived v0.1 turn-based rivalry](archive/gravity-orchard-v0.1.md). Do not combine that draft's planting turns, ownership scoring or discrete 5×5 settling rules with this game. Jon asked for a less turn-based game that uses phone motion. Both players now steer at the same time toward a shared result.
+This version supersedes the [archived v0.1 turn-based rivalry](../archive/games/gravity-orchard-v0.1.md). Do not combine that draft's planting turns, ownership scoring or discrete 5×5 settling rules with this game. Jon asked for a less turn-based game that uses phone motion. Both players now steer at the same time toward a shared result.
 
-Read [the implementation contract](../GRAVITY_ORCHARD_CONTRACT.md) and [the seven-stream dispatch plan](../DISPATCH_GRAVITY_ORCHARD.md) before writing code. The contract owns exact API signatures, wire schemas, file ownership and compatibility rules. This PRD owns the player experience and starting rules. Resolve an inconsistency explicitly instead of implementing a private interpretation.
-
-All durations, rates and difficulty values below are initial engineering/design hypotheses. No physical-phone playtest, human balance result or measured home-network latency is claimed.
+The [technical contract](../GRAVITY_ORCHARD_CONTRACT.md) defines runtime interfaces and compatibility. This brief describes the player experience.
 
 ## 1. The game in one paragraph
 
@@ -35,7 +33,7 @@ Keep ordinary TV and phone screens spacious. Explanations belong in setup, the o
 
 ## 3. Board, baskets and control regions
 
-Use a fixed **1280×720 logical world**, scaled to the available TV play area without changing physical coordinates. The world contains a left garden tray for Jon and a right garden tray for Lydia, joined by a central bridge. GO1 owns the exact authored collision geometry and its public representation. Decorative images are not collision maps.
+Use a fixed **1280×720 logical world**, scaled to the available TV play area without changing physical coordinates. The world contains a left garden tray for Jon and a right garden tray for Lydia, joined by a central bridge. The engine and renderer share the authored collision geometry. Decorative images are not collision maps.
 
 Each tray responds to that player's two-dimensional normalized input. The frame and labels remain visually stable. Small decorative rocking, leaning characters and force arrows may communicate tilt, but do not spin the entire TV interface or silently rotate the coordinate system.
 
@@ -98,7 +96,7 @@ The six bags supply six of every type against a demand of three of every type. T
 
 With no capacity deferral, fruit 12 appears at **38.5 seconds**, leaving **51.5 seconds** before the deadline; fruit 24 appears at **80.5 seconds**, leaving **9.5 seconds**. A delivery into a basket removes a fruit from the active count even before a recipe consumes it. To spawn the first twelve on schedule under the eight-fruit limit, at least one fruit must have left the active world by the ninth spawn at 28 seconds, and at least four by the twelfth spawn. A deliberately held backlog can therefore reduce the remaining supply window.
 
-An independent inventory check during design enumerated all 24 orders within each of the first three bags against all 24 recipe permutations: **331,776 combinations**. Assuming immediate successful delivery of each entry, every combination completes all four recipes and needs no per-type buffer larger than three. This establishes inventory consistency, not physical route solvability, simultaneous-control difficulty or a human playtest. GO1 must retain a reproducible check and demonstrate reachable baskets and full-stage completion through real normalized inputs on its authored geometry. GO7 must assess difficulty with the integrated controls; the 9.5-second final reserve is not a guarantee that a late replacement fruit is recoverable.
+An independent inventory check during design enumerated all 24 orders within each of the first three bags against all 24 recipe permutations: **331,776 combinations**. Assuming immediate successful delivery of each entry, every combination completes all four recipes and needs no per-type buffer larger than three. This establishes inventory consistency, not physical route solvability, simultaneous-control difficulty or a human playtest. The [engine validation](../../games/gravity-orchard/validation/README.md) covers route and stage feasibility. Human difficulty still needs playtesting.
 
 ## 6. Run structure and results
 
@@ -117,7 +115,7 @@ Players are never eliminated. A timeout still advances to the stage result and t
 
 The final screen shows completed orders out of twelve, stars out of nine and composted fruit. A **Perfect Picnic** badge requires all twelve recipes and no compost. Treat time remaining as a secondary descriptive result, not an incentive to delay an otherwise completed recipe for farming points.
 
-During interlude or finished, the host may retry the **most recently completed stage**. Discard its result, retain earlier stage results, restore that stage's deterministic seed/recipe sequence, and return to waiting for both players. Reset its clock, queue, buffers and live fruit; fence obsolete presentation/input work with a new run epoch. Never reuse event IDs within the same match. A same-seed whole-run rematch or fresh-seed run is available to the host when paused or finished; GO2 allocates a new match identity and calls the engine constructor even when the seed is reused. There is no persistent currency, unlock system or leaderboard in v1.
+During interlude or finished, the host may retry the **most recently completed stage**. Discard its result, retain earlier stage results, restore that stage's deterministic seed/recipe sequence, and return to waiting for both players. Reset its clock, queue, buffers and live fruit; fence obsolete presentation/input work with a new run epoch. Never reuse event IDs within the same match. A same-seed whole-run rematch or fresh-seed run is available to the host when paused or finished; the coordinator allocates a new match identity and calls the engine constructor even when the seed is reused. There is no persistent currency, unlock system or leaderboard in v1.
 
 Provide **untimed practice** using the same core controls and physics, with the deadline and Lala gusts disabled. Use the contract's `mode: 'practice'`; do not introduce independent stage-unlock or hazard-option APIs. The host can restart through the normal rematch path. Practice cannot write normal-run records or secretly modify a live match; the tutorial's separate scripted fixture is not a campaign checkpoint.
 
@@ -131,7 +129,7 @@ Use broad routes, soft bumpers and a generous bridge. There are no compost openi
 
 Introduce hedges and two meaningful routes: a longer safe path and a shorter path beside clearly marked compost openings. Add one forecast bridge gate. Starting schedule: six seconds scheduled open, three seconds scheduled closed, repeating in active simulation time.
 
-A gate must defer closure while any fruit overlaps its collision region. It closes when the region clears and the schedule still requests closure. Never crush, teleport or forcefully eject fruit to match the timer. Show an about-to-close/blocked cue. Exact route and gate geometry are authored and tested by GO1, then consumed by the renderer.
+A gate must defer closure while any fruit overlaps its collision region. It closes when the region clears and the schedule still requests closure. Never crush, teleport or forcefully eject fruit to match the timer. Show an about-to-close/blocked cue. Exact route and gate geometry are defined in the shared geometry module.
 
 ### Lala's Moonlight Picnic — `moonlight-picnic`
 
@@ -145,7 +143,7 @@ This stage may combine already learned routing and gate ideas, but must retain a
 
 Use a small deterministic two-dimensional model: circular fruit against authored static walls, bumpers, basket mouths, compost openings and the bridge gate. Fruit-to-fruit pile collisions are outside v1. Overlapping fruit may separate visually with a small cosmetic offset; that visual must not alter authoritative coordinates or scoring.
 
-The initial simulation budget is a fixed **60 Hz**, at most eight active fruit, and **220 logical units/second** maximum fruit speed. The contract fixes position/velocity and normalized-input rounding at 1/10000 after its specified validation steps. GO1 chooses and records acceleration, damping, restitution, radius, collision substeps and event-order constants within those requirements. Keep tuning in one versioned public record so controller previews and TV effects describe the same behavior.
+The initial simulation budget is a fixed **60 Hz**, at most eight active fruit, and **220 logical units/second** maximum fruit speed. The contract fixes position/velocity and normalized-input rounding at 1/10000 after its specified validation steps. The engine defines acceleration, damping, restitution, radius, collision substeps and event-order constants within those requirements. Keep tuning in one versioned public record so controller previews and TV effects describe the same behavior.
 
 The host advances exactly one engine tick at a time during countdown or playing. Only playing consumes stage time; waiting, paused, interlude and finished do not advance ticks. The tick remains monotonic within a match across stages and resumes. Do not accept a client-provided delta time, collision result, fruit position, score or stage time. No wall clock or `Math.random()` belongs in pure game logic. Seed all stochastic choices and make collision/entity iteration order stable.
 
@@ -153,29 +151,13 @@ Define how corners, repeated contacts, overlapping starting fixtures and a gate 
 
 ## 9. Real-time control and recovery
 
-The exact protocol is owned by the implementation contract. Its input frame includes `type: 'input'`, the current match and run/controller epochs, an increasing sequence number, the last host tick observed by the controller, finite normalized `x`/`y` values and a boolean `brake`.
-
-Initial rates are **20 input updates/second** and **20 public snapshots/second**, with 60 Hz simulation and display-frame interpolation. These are starting values to measure, not a claim of a particular phone-to-TV latency. Keep only the latest unsent input; do not build a queue of obsolete tilt commands. Authority validates freshness, sequence, epochs and payload size before updating its accepted input.
-
-The observed-host-tick field prevents a delayed network backlog from being treated as fresh simply because it has just arrived. Reject future host ticks and stale input according to the contract. Client timestamps are diagnostics, not trusted freshness authority.
-
-Initial connection behavior:
-
-- After 250 ms without a valid accepted input, use neutral tilt plus Brake for that player.
-- After two seconds of sustained controller loss, pause the shared run.
-- A hidden/locked phone stops sensor capture and attempts an immediate neutral/Brake update and pause request; host expiry remains necessary because page shutdown delivery is not guaranteed.
-- Pause, resume, stage changes, restoration and restart clear input latches and fence earlier input with the contract's epoch mechanism.
-- Resume requires both players to be ready and a fresh countdown. An old socket or delayed pre-pause frame cannot move fruit after resume.
-
-Keep continuous input and periodic simulation snapshots separate from the existing durable turn-action/CAS path. The discrete command kinds are `ready`, `pause`, `retry-stage` and `rematch`; resume is both players becoming ready, not a separate wire command. Host and player capabilities follow the contract. System network/stall/recovery pauses use the trusted `pauseForSystem` engine seam, never a client-forged system command. Preserve the authority and credential rules of the two existing games.
-
-GO2 owns checkpoint mechanics; GO1 supplies serializable deterministic state. Document the checkpoint interval and recovery boundary. After a host restart, restore paused from the last durable safe checkpoint, require controller reconnect/readiness and do not simulate all elapsed sleep time. Do not promise zero rollback of every ephemeral tick unless the implementation actually establishes it.
+Each phone steers its own tray. If input goes stale, the host applies neutral tilt and Brake. Sustained controller loss pauses the shared run. After a host restart, a valid checkpoint restores the run paused. Reconnect both phones and confirm readiness to start a new countdown. See the [wire and recovery contract](../GRAVITY_ORCHARD_CONTRACT.md#5-realtime-wire-contract).
 
 ## 10. Secure motion setup
 
 Ordinary `http://<Mac LAN address>` must remain a supported touch-control route. It is not a reliable phone-motion origin. Motion/orientation delivery requires a secure context and working sensor permissions; a phone's localhost exception does not make a remote Mac's private IP a secure origin. Some browsers require a permission request made directly from a user gesture. Receiving a granted permission does not prove that usable readings arrive.
 
-The planned local motion route is an **optional trusted HTTPS/WSS gateway**. Its one-time phone certificate-trust onboarding is explicit, and certificates/keys are generated per installation rather than committed or shared across users. Keep private keys and credentials out of public routes, QR codes, logs, screenshots and artifacts. The optional gateway must not break the existing HTTP host or games.
+The local motion route is an **optional trusted HTTPS/WSS gateway**. Its one-time phone certificate-trust onboarding is explicit, and certificates/keys are generated per installation rather than committed or shared across users. Keep private keys and credentials out of public routes, QR codes, logs, screenshots and artifacts. The optional gateway must not break the existing HTTP host or games.
 
 No cloud relay, Internet-dependent controller page, browser security flag, wildcard trust bypass or ignored certificate error qualifies as the default offline-motion implementation. If real phone trust/permissions/readings cannot be checked in the available environment, state that limit and preserve the complete touch experience. Do not mark a synthetic browser sensor test as a physical-phone pass.
 
@@ -202,7 +184,7 @@ Show setup states for insecure origin, permission needed, permission denied, una
 
 ### Tutorial and Help
 
-Provide a short optional guided practice covering: natural grip/recenter; steer your own tray; Brake; pass fruit across the bridge; match a basket; fill a recipe; recognize compost/gate/gust cues; pause and reconnect. Controller sensor permission/calibration belongs to GO3. GO4 owns TV/tutorial presentation and isolated practice fixtures. GO7 wires the shared entry point.
+Provide a short optional guided practice covering: natural grip/recenter; steer your own tray; Brake; pass fruit across the bridge; match a basket; fill a recipe; recognize compost/gate/gust cues; pause and reconnect. The phone handles motion permission and calibration.
 
 Tutorial fixtures cannot mutate a live room or silently change a normal seed. Opening Help or recentering during an active match requests a shared pause; resumption follows the normal readiness/countdown path.
 
@@ -247,20 +229,6 @@ Deliver music through the existing shared scheduler contract, not a second Audio
 - Sofa Kingdoms and Odd Laws regression journeys continue to pass.
 - Final acceptance distinguishes browser fixtures, two real rendered controller contexts, matching-architecture macOS CI and physical phone/Wi-Fi/TV/speaker checks. No one substitutes one category for another.
 
-The seven streams deliver tested PRs. GO7 integrates exact reviewed component heads, runs combined browser/native/package acceptance and opens the final PR. Do not enable the game from a partial scaffold or claim fully validated phone tilt from touch-only/emulated evidence. No stream self-merges or deploys unless separately authorized.
+Local software acceptance is recorded in the [integration report](../archive/workstreams/gravity-orchard-go7.md). Physical tilt, trust and latency checks remain open.
 
-## Appendix: public presentation data and ownership
-
-This game has no secret player information. Public presentation needs the current phase/stage, match/epoch/tick identity, active time, both tray forces and Brake states, authored geometry, fruit IDs/types/positions, basket capacities/buffers, active/preview recipes, forecast hazards, player connection/readiness, stable event IDs and results. Do not include credentials, private certificate material, raw sensor recordings or internal socket handles.
-
-The exact public-view object and mount arguments are defined in `docs/GRAVITY_ORCHARD_CONTRACT.md`; this semantic list is not an alternate schema. The exact phases are `waiting`, `countdown`, `playing`, `paused`, `interlude` and `finished`. Presence belongs to the coordinator's snapshot envelope; calibration/permission details belong to the phone component. Public events use the contract's stable IDs and bounded recent ring, never a private state or full future supply dump.
-
-| Owner | Core runtime exports/files |
-| --- | --- |
-| GO1 | `games/gravity-orchard/engine.mjs`; browser-safe `catalog.mjs`, `geometry.mjs`, `public.mjs`; safe projected fixtures |
-| GO2 | `server/realtime/gravity-orchard/**` and `ui/realtime/gravity-orchard/**`; transport/session/checkpoint factories |
-| GO3 | `ui/games/gravity-orchard/phone/**`; phone view, motion permission/calibration, touch fallback |
-| GO4 | `ui/games/gravity-orchard/tv/index.mjs` exporting `mountTV`; `tutorial/index.mjs` exporting `mountTutorial` |
-| GO5 | `public/assets/gravity-orchard/**`; `ui/media/gravity-orchard/manifest.mjs`, `score.mjs`, `events.mjs` |
-| GO6 | Additive `server/secure-lan/**` and `desktop/secure-lan/**` factories and enrollment support |
-| GO7 | Shared registry/catalog/shell/native wiring, `ui/games/gravity-orchard/index.mjs`, root configuration, allowlists, generated delivery and final acceptance |
+See the [public view and command contract](../GRAVITY_ORCHARD_CONTRACT.md#4-public-view-and-command-contract) for presentation data and the [integration report](../archive/workstreams/gravity-orchard-go7.md) for the assembled runtime.

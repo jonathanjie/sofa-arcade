@@ -3,8 +3,7 @@
 This is an explicitly injected, loopback-only diagnostic surface. It mounts the
 real TV and tutorial components with public snapshots and public geometry. It
 does not import the game engine, connect to a room, simulate fruit, request phone
-sensors, or create audio contexts. The scene geometry here is diagnostic; GO7
-must inject GO1's reviewed authored geometry in the integrated game.
+sensors, or create audio contexts. This fixture uses diagnostic geometry. The integrated game uses the authored level geometry.
 
 From `ui/games/gravity-orchard/tv`:
 

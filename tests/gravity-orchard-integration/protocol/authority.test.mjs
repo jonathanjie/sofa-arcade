@@ -30,6 +30,7 @@ test('planned game requires explicit local candidate capability and valid practi
 });
 
 test('two real authenticated sockets drive GO1 with bounded SQLite writes and recipient-only applied ACKs', async t => {
+  const startedAt = Date.now();
   const h = await harness(t);
   assert.deepEqual(h.jon.welcome.viewer, { role: 'player', playerId: 'jon' });
   assert.deepEqual(h.lydia.welcome.viewer, { role: 'player', playerId: 'lydia' });
@@ -37,7 +38,14 @@ test('two real authenticated sockets drive GO1 with bounded SQLite writes and re
   await h.ready(); await h.pump(3100);
   assert.equal(h.tv.snapshot.view.phase, 'playing');
   const before = h.host.realtimeDiagnostics(h.room.code);
-  await h.pump(6000, { x: 0.5, y: -0.25, brake: false });
+  // The pump advances simulation time. Keep wall-clock presence heartbeats
+  // out of the SQLite measurement even if this test takes longer on CI.
+  const wallClock = t.mock.method(Date, 'now', () => startedAt);
+  try {
+    await h.pump(6000, { x: 0.5, y: -0.25, brake: false });
+  } finally {
+    wallClock.mock.restore();
+  }
   const after = h.host.realtimeDiagnostics(h.room.code);
   assert.ok(after.coordinator.inputsAccepted - before.coordinator.inputsAccepted >= 230);
   assert.ok(after.checkpointWrites - before.checkpointWrites <= 2);
@@ -144,7 +152,7 @@ test('host stalls pause instead of catching up and restart restores a durable pa
   const h = await harness(t, { databasePath });
   await h.ready(); await h.pump(3500);
   const before = h.tv.snapshot.view;
-  await h.clock.jump(1000);
+  await h.clock.jump(1250);
   assert.equal(h.tv.snapshot.view.phase, 'paused');
   assert.equal(h.tv.snapshot.view.pauseReason, 'host-stall');
   assert.equal(h.tv.snapshot.view.tick, before.tick);
@@ -172,10 +180,11 @@ test('host stalls pause instead of catching up and restart restores a durable pa
   } finally { raw.close(); }
 });
 
-test('graceful whole-host restart reconnects the same clients and credentials to paused recovery', { timeout: 20000 }, async t => {
+test('graceful whole-host restart reconnects the same clients and credentials to paused recovery', { timeout: 300_000 }, async t => {
   const directory = await mkdtemp(path.join(tmpdir(), 'go7-live-restart-'));
   const databasePath = path.join(directory, 'rooms.sqlite');
-  let host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath, enableGravityOrchard: true });
+  const clock = manualClock();
+  let host = await startLanServer({ host: '127.0.0.1', port: 0, databasePath, enableGravityOrchard: true, realtimeClock: clock });
   const origin = host.origin, port = host.port;
   const room = await createRoom(host, { mode: 'practice' });
   const clients = {}, snapshots = {}, states = {}, connections = { host: 0, jon: 0, lydia: 0 };
@@ -183,28 +192,39 @@ test('graceful whole-host restart reconnects the same clients and credentials to
     for (const client of Object.values(clients)) client.dispose();
     await host.close(); await rm(directory, { recursive: true, force: true });
   });
+  // Drive the clients' input and reconnect timers alongside the host scheduler.
+  // A slow OS scheduling turn must not look like a host stall or stale input.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  async function advanceUntil(check, message = 'Expected the room transition.') {
+    for (let step = 0; step < 160; step++) {
+      if (check()) return;
+      t.mock.timers.tick(50);
+      await clock.advance(50);
+    }
+    assert.fail(message);
+  }
   class LocalSocket extends WebSocket { constructor(url) { super(url, { origin }); } }
   for (const seat of ['host', 'jon', 'lydia']) {
     clients[seat] = createRealtimeClient({ url: origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
-      roomCode: room.code, token: room.tokens[seat], WebSocketImpl: LocalSocket,
+      roomCode: room.code, token: room.tokens[seat], WebSocketImpl: LocalSocket, now: clock.now,
       onSnapshot: snapshot => { snapshots[seat] = snapshot; },
       onStatus: status => { states[seat] = status.state; if (status.state === 'connected') connections[seat]++; },
     });
     clients[seat].connect();
   }
   const ready = seat => clients[seat].sendCommand({ id: crypto.randomUUID(), kind: 'ready', payload: { value: true } });
-  await until(() => snapshots.host?.presence.jon.inputFresh && snapshots.host?.presence.lydia.inputFresh);
+  await advanceUntil(() => snapshots.host?.presence.jon.inputFresh && snapshots.host?.presence.lydia.inputFresh);
   assert.equal((await ready('jon')).accepted, true);
   assert.equal((await ready('lydia')).accepted, true);
-  await until(() => snapshots.host?.view.phase === 'playing');
+  await advanceUntil(() => snapshots.host?.view.phase === 'playing');
   clients.jon.setInput({ x: 0.5, y: -0.25, brake: false });
-  await until(() => snapshots.host?.view.players.jon.input.x === 0.5);
+  await advanceUntil(() => snapshots.host?.view.players.jon.input.x === 0.5);
   const before = snapshots.host.view;
   await host.close();
   // Keep all original clients mounted. A host restart must not require a page
   // reload, a new credential, or a replacement realtime client object.
-  host = await startLanServer({ host: '127.0.0.1', port, databasePath, enableGravityOrchard: true });
-  await until(() => Object.keys(clients).every(seat => connections[seat] >= 2 && states[seat] === 'connected'
+  host = await startLanServer({ host: '127.0.0.1', port, databasePath, enableGravityOrchard: true, realtimeClock: clock });
+  await advanceUntil(() => Object.keys(clients).every(seat => connections[seat] >= 2 && states[seat] === 'connected'
     && snapshots[seat]?.view.pauseReason === 'recovery' && snapshots[seat]?.view.runEpoch > before.runEpoch),
   'Same TV and phone client instances must reconnect after a graceful host restart.');
   const recovered = snapshots.host.view;
@@ -216,11 +236,11 @@ test('graceful whole-host restart reconnects the same clients and credentials to
   assert.equal(host.realtimeDiagnostics(room.code).coordinator.sockets, 3);
   const read = await api(host, `/api/rooms/${room.code}`, { token: room.tokens.host });
   assert.equal(read.status, 200); assert.equal(read.value.state.runEpoch, recovered.runEpoch);
-  await until(() => snapshots.host.presence.jon.inputFresh && snapshots.host.presence.lydia.inputFresh);
+  await advanceUntil(() => snapshots.host.presence.jon.inputFresh && snapshots.host.presence.lydia.inputFresh);
   assert.equal((await ready('jon')).accepted, true);
   assert.equal(snapshots.host.view.phase, 'paused', 'One returning controller cannot resume alone.');
   assert.equal((await ready('lydia')).accepted, true);
-  await until(() => snapshots.host.view.phase === 'playing');
+  await advanceUntil(() => snapshots.host.view.phase === 'playing');
   assert.ok(snapshots.host.view.runEpoch > recovered.runEpoch);
   assert.deepEqual(snapshots.host.view.players.jon.input, NEUTRAL, 'Old held steering stays cleared after recovery.');
   for (const client of Object.values(clients)) {
@@ -300,4 +320,99 @@ test('two concurrent orchard rooms isolate steering, snapshots and durable lifec
       if (snapshot) assert.equal(snapshot.roomCode, room.code);
     }
   }
+});
+
+test('failed room-row update rolls back the new Orchard checkpoint and closes the faulted room', { timeout: 300_000 }, async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-rollback-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const databasePath = path.join(directory, 'rooms.sqlite');
+  const h = await harness(t, { databasePath });
+  await h.ready();
+  await h.pump(3100);
+  const view = h.tv.snapshot.view;
+  assert.equal(view.phase, 'playing');
+  const db = new DatabaseSync(databasePath);
+  t.after(() => db.close());
+  const rows = () => ({
+    room: db.prepare('SELECT * FROM sofa_rooms WHERE code = ?').get(h.room.code),
+    checkpoint: db.prepare('SELECT * FROM sofa_gravity_checkpoints WHERE code = ?').get(h.room.code),
+  });
+  const before = rows();
+  // The update follows the checkpoint upsert in the same host transaction.
+  db.exec(`CREATE TRIGGER fail_pause BEFORE UPDATE OF data ON sofa_rooms
+    WHEN json_extract(NEW.data, '$.state.pauseReason') = 'help'
+    BEGIN SELECT RAISE(ABORT, 'injected pause failure'); END`);
+  const closed = Promise.all(h.peers.map(peer => once(peer.ws, 'close')));
+  const id = crypto.randomUUID();
+  h.tv.send({ type: 'command', protocol: 1, matchId: view.matchId, runEpoch: view.runEpoch,
+    id, kind: 'pause', payload: { reason: 'help' } });
+  for (const [code] of await closed) assert.equal(code, 1011);
+  for (const peer of h.peers) {
+    assert.equal(peer.messages.some(m => m.type === 'snapshot' && m.view.pauseReason === 'help'), false);
+    assert.equal(peer.messages.some(m => m.type === 'command-result' && m.id === id && m.accepted), false);
+  }
+  assert.deepEqual(rows(), before);
+  db.exec('DROP TRIGGER fail_pause');
+  await h.host.close();
+  const restarted = await startLanServer({ host: '127.0.0.1', port: 0, databasePath,
+    enableGravityOrchard: true, realtimeClock: manualClock() });
+  t.after(() => restarted.close());
+  const read = await api(restarted, `/api/rooms/${h.room.code}`, { token: h.room.tokens.host });
+  assert.equal(read.status, 200);
+  assert.equal(read.value.state.matchId, view.matchId);
+  assert.equal(read.value.state.phase, 'paused');
+  assert.equal(read.value.state.pauseReason, 'recovery');
+  assert.equal(JSON.parse(rows().checkpoint.checkpoint).commands.some(entry => entry.command.id === id), false);
+});
+
+test('expired orchards free coordinator capacity and restart restores only the newest live checkpoint within its budget', async t => {
+  t.mock.timers.enable({ apis: ['Date'] });
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-room-limit-'));
+  const databasePath = path.join(directory, 'rooms.sqlite');
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const options = { port: 0, host: '127.0.0.1', databasePath,
+    enableGravityOrchard: true, realtimeClock: manualClock() };
+  let host = await startLanServer({ ...options, orchardRoomLimit: 1 });
+  t.after(() => host.close());
+  const expired = await createRoom(host);
+  t.mock.timers.tick(24 * 60 * 60 * 1000 - 1);
+  const replacement = await api(host, '/api/rooms', { body: { gameId: 'gravity-orchard' } });
+  for (const playerId of ['jon', 'lydia']) {
+    assert.equal((await api(host, `/api/rooms/${replacement.value.code}/join`, {
+      body: { playerId, clientId: crypto.randomUUID() },
+    })).status, 200);
+  }
+  const startReplacement = () => api(host, `/api/rooms/${replacement.value.code}/start`, {
+    body: {}, token: replacement.value.hostToken,
+  });
+  assert.equal((await startReplacement()).status, 503);
+  t.mock.timers.tick(2);
+  assert.equal((await startReplacement()).status, 200);
+  assert.equal(host.realtimeDiagnostics(expired.code).coordinator, null);
+  await host.close();
+
+  host = await startLanServer(options);
+  t.mock.timers.tick(1);
+  const newest = await createRoom(host);
+  await host.close();
+  host = await startLanServer({ ...options, orchardRoomLimit: 1 });
+  assert.equal(host.realtimeDiagnostics(newest.code).coordinator.matchId, newest.started.state.matchId);
+  assert.equal(host.realtimeDiagnostics(replacement.value.code).coordinator, null);
+  assert.equal(host.realtimeDiagnostics(expired.code).coordinator, null);
+  assert.equal(host.realtimeDiagnostics(newest.code).checkpointWrites, 1);
+});
+
+test('a second host that cannot bind leaves the running orchard checkpoint intact', async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'go7-occupied-port-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const options = { host: '127.0.0.1', port: 0, databasePath: path.join(directory, 'rooms.sqlite'),
+    realtimeClock: manualClock() };
+  const host = await startLanServer(options);
+  t.after(() => host.close());
+  const room = await createRoom(host);
+  const read = () => api(host, '/api/rooms/' + room.code, { token: room.tokens.host });
+  const before = await read();
+  assert.equal(before.status, 200);
+  await assert.rejects(startLanServer({ ...options, port: host.port }), { code: 'EADDRINUSE' });
+  assert.equal((await read()).value.revision, before.value.revision);
 });

@@ -10,14 +10,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: go7-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: go7-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   protocol-and-delivery:
     name: Shared authority and delivery (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -27,12 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
       - run: npm run install:ci
       - run: npm ci --prefix desktop --ignore-scripts --no-audit --no-fund
       - name: Private bundle exactly reproduces pinned sources and packages
@@ -65,11 +69,16 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24.22.3'
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            ui/media/gravity-orchard/package-lock.json
+            server/secure-lan/package-lock.json
       - run: npm run install:ci
       - run: npm ci --prefix ui/media/gravity-orchard --no-audit --no-fund
       - run: npm ci --prefix server/secure-lan --no-audit --no-fund
@@ -93,6 +102,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -143,6 +153,9 @@ jobs:
           node-version: '24.22.3'
           architecture: ${{ matrix.node_arch }}
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
       - name: Verify actual architecture and locked native toolchain
         run: |
           test "$(uname -m)" = '${{ matrix.arch }}'
@@ -169,10 +182,25 @@ jobs:
           NODE
       - name: Build separate instrumented native acceptance app
         run: npm --prefix desktop run build:native:${{ matrix.suffix }}
+      - name: Record what already listens on the game ports
+        run: |
+          # Tilt setup listens on 4178 and the game host on 4177. A busy port on
+          # a runner would make setup fail, so record it before the test.
+          lsof -nP -iTCP:4177-4178 -sTCP:LISTEN > "$SOFA_EVIDENCE_DIR/ports-before.txt" 2>&1 || true
+          cat "$SOFA_EVIDENCE_DIR/ports-before.txt"
       - name: Actual WKWebView game, trusted setup, recovery and three-process Quit/relaunch
         run: node tests/gravity-orchard-integration/native/run.mjs
         env:
           SOFA_APP_PATH: ${{ github.workspace }}/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/macos/Sofa Arcade.app
+      - name: Tilt setup diagnostics after a failure
+        if: failure()
+        run: |
+          # The host writes only a short fixed-vocabulary code here, such as
+          # PROVISION_FAILED:EADDRINUSE. No messages, paths or certificate data.
+          # The test harness copies it into the evidence folder before it deletes
+          # the app's data folder.
+          cat "$SOFA_EVIDENCE_DIR/secure-lan-last-error.json" 2>/dev/null || echo 'No tilt setup error was recorded.'
+          lsof -nP -iTCP:4177-4178 -sTCP:LISTEN 2>&1 | tee "$SOFA_EVIDENCE_DIR/ports-after.txt" || true
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

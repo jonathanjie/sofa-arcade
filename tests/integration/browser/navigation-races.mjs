@@ -62,7 +62,7 @@ async function remainsOnCollection(page) {
 }
 
 async function createLobby(run, page) {
-  await page.locator('[data-action="open-game"][data-game="sofa-kingdoms"]').first().click();
+  await page.locator('.game-card[data-game="sofa-kingdoms"]').click();
   await page.locator('[data-action="create"]').click();
   await page.locator('.room-code').waitFor();
   return (await page.locator('.room-code').innerText()).trim();
@@ -70,7 +70,7 @@ async function createLobby(run, page) {
 
 export async function verifyNavigationRaces(run, { tv, jon, lydia }) {
   // Create finishes on the server, but its response cannot reclaim an exited UI.
-  await tv.locator('[data-action="open-game"][data-game="sofa-kingdoms"]').first().click();
+  await tv.locator('.game-card[data-game="sofa-kingdoms"]').click();
   const create = await holdResponse(run, tv, run.origin + '/api/rooms', 'POST');
   await tv.locator('[data-action="create"]').click();
   const orphan = await create.received;

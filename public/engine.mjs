@@ -365,6 +365,7 @@ export function projectState(state, viewerId = null) {
   for (const id of PLAYER_IDS) {
     if (id === viewerId || !view.sealedToys[id]) continue;
     view.players[id].lures += 1;
+    view.actionNumber -= 1;
     view.sealedToys[id] = null;
   }
   return view;
@@ -378,7 +379,7 @@ export function applyAction(state, playerId, action) {
   if (!action || typeof action !== 'object' || Array.isArray(action)) throw new Error('Choose an action.');
   const currentPlayer = state.players[playerId];
   if (action.type === 'move') {
-    if (!Object.hasOwn(DIRECTIONS, action.direction)) throw new Error('Choose up, down, left, or right.');
+    if (typeof action.direction !== 'string' || !Object.hasOwn(DIRECTIONS, action.direction)) throw new Error('Choose up, down, left, or right.');
     const [dr, dc] = DIRECTIONS[action.direction];
     if (!inBounds(currentPlayer.row + dr, currentPlayer.col + dc)) throw new Error('That is the edge of the room. Try another direction.');
   } else if (action.type === 'collect') {
@@ -441,7 +442,10 @@ export function applyAction(state, playerId, action) {
     player.banked += banked;
     player.carried = 0;
     const bonus = strategicRules(next) && banked === BAG_CAPACITY ? FULL_BAG_BONUS : 0;
-    const recharged = strategicRules(next) && banked >= TOY_RECHARGE_MINIMUM && player.lures < INITIAL_LURES;
+    // A sealed toy occupies a slot until reveal. A public recharge must
+    // never depend on whether this player has secretly spent a toy.
+    const occupiedToySlots = player.lures + Number(Boolean(next.sealedToys?.[playerId]));
+    const recharged = strategicRules(next) && banked >= TOY_RECHARGE_MINIMUM && occupiedToySlots < INITIAL_LURES;
     if (bonus) player.bonusPoints = (player.bonusPoints || 0) + bonus;
     if (recharged) player.lures += 1;
     appendLog(next, `${player.name} banks ${banked} ${banked === 1 ? 'crumb' : 'crumbs'}.${bonus ? ` +${bonus} full-bag bonus points.` : ''}${recharged ? ' One toy restored.' : ''} Safe from Lala!`, playerId);

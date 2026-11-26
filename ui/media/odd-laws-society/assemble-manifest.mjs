@@ -10,6 +10,12 @@ const manifest = { schemaVersion: 1, gameId: 'odd-laws-society' };
 for (const section of sections) {
   manifest[section] = JSON.parse(await readFile(new URL(`fragments/${section}.json`, base), 'utf8'));
 }
+for (const [, entry] of imageEntries(manifest)) {
+  if (entry.compact) {
+    entry.compact.alt = entry.alt;
+    entry.compact.status = entry.status;
+  }
+}
 await mkdir(new URL('./', target), { recursive: true });
 await writeFile(target, `${JSON.stringify(manifest, null, 2)}\n`);
 console.log(`Assembled ${fileURLToPath(target)} from all five reviewed fragments.`);

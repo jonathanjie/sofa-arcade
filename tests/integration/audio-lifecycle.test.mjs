@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { loadOddLaws } from '../../ui/collection-load.mjs';
 
 /** Capture scheduled notes and graph lifetimes, not an implementation snapshot. */
-function audioEnvironment() {
+function audioEnvironment(t) {
   const storage = new Map();
   const contexts = [];
   const intervals = new Set();
@@ -46,23 +46,24 @@ function audioEnvironment() {
     localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
   });
   const document = Object.assign(new EventTarget(), { hidden: false });
+  // Restore the descriptors even when importing the browser module fails.
+  for (const [name, value] of Object.entries({ window, document })) {
+    const original = Object.getOwnPropertyDescriptor(globalThis, name);
+    t.after(() => {
+      if (original) Object.defineProperty(globalThis, name, original);
+      else delete globalThis[name];
+    });
+    Object.defineProperty(globalThis, name, { configurable: true, writable: true, value });
+  }
   return { window, document, storage, contexts, intervals };
 }
 
 test('collection scores share one graph and clock, respect host/phone preferences, and survive relaunch', async t => {
-  const env = audioEnvironment();
-  const originalWindow = globalThis.window;
-  const originalDocument = globalThis.document;
-  globalThis.window = env.window;
-  globalThis.document = env.document;
+  const env = audioEnvironment(t);
   t.mock.method(globalThis, 'setInterval', fn => { const handle = { fn }; env.intervals.add(handle); return handle; });
   t.mock.method(globalThis, 'clearInterval', handle => env.intervals.delete(handle));
   const { audio } = await import(`../../ui/audio.js?integration=${Date.now()}`);
-  t.after(() => {
-    audio.dispose();
-    if (originalWindow === undefined) delete globalThis.window; else globalThis.window = originalWindow;
-    if (originalDocument === undefined) delete globalThis.document; else globalThis.document = originalDocument;
-  });
+  t.after(() => audio.dispose());
   const modes = [];
   const custom = {
     SCORE: { title: 'Council test theme', bpm: 120, beatsPerBar: 4, bars: [{}, {}, {}, {}] },
@@ -142,12 +143,12 @@ test('collection scores share one graph and clock, respect host/phone preference
 
   audio.dispose();
   const restored = (await import(`../../ui/audio.js?integration=relaunch-${Date.now()}`)).audio;
+  t.after(() => restored.dispose());
   assert.equal(restored.getSettings().volume, .27);
   assert.equal(restored.getSettings().effects, false);
   restored.setContext({ role: 'player' });
   assert.equal(restored.getSettings().effects, true);
   assert.equal(env.contexts.length, 1, 'relaunch does not play without another gesture');
-  restored.dispose();
 });
 
 test('the delivered WS4 score loads through the collection adapter and plays a complete 100 BPM loop', async t => {
@@ -171,18 +172,11 @@ test('the delivered WS4 score loads through the collection adapter and plays a c
   assert.equal(typeof modules.createTutorial, 'function');
   assert.equal(typeof modules.rules.buildQuote, 'function');
 
-  const env = audioEnvironment();
-  const originalWindow = globalThis.window, originalDocument = globalThis.document;
-  globalThis.window = env.window;
-  globalThis.document = env.document;
+  const env = audioEnvironment(t);
   t.mock.method(globalThis, 'setInterval', fn => { const handle = { fn }; env.intervals.add(handle); return handle; });
   t.mock.method(globalThis, 'clearInterval', handle => env.intervals.delete(handle));
   const { audio } = await import(`../../ui/audio.js?integration=ws4-${Date.now()}`);
-  t.after(() => {
-    audio.dispose();
-    if (originalWindow === undefined) delete globalThis.window; else globalThis.window = originalWindow;
-    if (originalDocument === undefined) delete globalThis.document; else globalThis.document = originalDocument;
-  });
+  t.after(() => audio.dispose());
   const calls = [];
   const score = {
     ...modules.score,
@@ -269,15 +263,12 @@ test('the built-in menu score unlocks once, keeps its full composed loop, and sw
   const oddScore = await import('../../ui/media/odd-laws-society/score.mjs');
   const oddEffects = await import('../../ui/media/odd-laws-society/effects.mjs');
   const odd = { ...oddScore, ...oddEffects };
-  assert.equal(menu.SCORE.title, 'Make Yourself at Home');
-  assert.equal(menu.SCORE.bpm, 92);
-  assert.equal(menu.SCORE.beatsPerBar, 3);
-  assert.equal(menu.SCORE.bars.length, 32);
+  assert.equal(menu.SCORE.title, 'Room for One More');
+  assert.equal(menu.SCORE.bpm, 96);
+  assert.equal(menu.SCORE.beatsPerBar, 2);
+  assert.equal(menu.SCORE.bars.length, 48);
 
-  const env = audioEnvironment();
-  const originalWindow = globalThis.window, originalDocument = globalThis.document;
-  globalThis.window = env.window;
-  globalThis.document = env.document;
+  const env = audioEnvironment(t);
   let clockStarts = 0;
   t.mock.method(globalThis, 'setInterval', fn => {
     clockStarts++;
@@ -288,11 +279,7 @@ test('the built-in menu score unlocks once, keeps its full composed loop, and sw
   });
   t.mock.method(globalThis, 'clearInterval', handle => env.intervals.delete(handle));
   const { audio } = await import(`../../ui/audio.js?integration=menu-${Date.now()}`);
-  t.after(() => {
-    audio.dispose();
-    if (originalWindow === undefined) delete globalThis.window; else globalThis.window = originalWindow;
-    if (originalDocument === undefined) delete globalThis.document; else globalThis.document = originalDocument;
-  });
+  t.after(() => audio.dispose());
   const near = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} ≠ ${expected}`);
   function checkVoices(voices, events, at, bpm) {
     let cursor = 0;
@@ -341,9 +328,9 @@ test('the built-in menu score unlocks once, keeps its full composed loop, and sw
     const at = .045 + bar * barSeconds;
     context.currentTime = at - .1;
     firstClock.fn();
-    checkVoices(context.oscillators.slice(before), menu.eventsForBar(bar % 32), at, menu.SCORE.bpm);
+    checkVoices(context.oscillators.slice(before), menu.eventsForBar(bar % menu.SCORE.bars.length), at, menu.SCORE.bpm);
   }
-  assert.equal(clockStarts, 1, 'a complete AABA loop and its return keep the same clock');
+  assert.equal(clockStarts, 1, 'a complete menu loop and its return keep the same clock');
 
   const route = (id, module, view, expectedTitle) => {
     const old = [...context.oscillators];

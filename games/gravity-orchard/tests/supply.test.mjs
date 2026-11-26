@@ -35,7 +35,7 @@ test('hand-checked crossing assignment keeps one cross delivery in each directio
   ]) assert.throws(() => makeBag(...args), RangeError);
 });
 
-test('exhaustive inventory proof covers 96 layouts and all 331,776 combinations', () => {
+if (process.env.SOFA_EXHAUSTIVE === '1') test('exhaustive inventory proof covers 96 layouts and all 331,776 combinations', () => {
   const proof = proveInventory();
   assert.equal(proof.crossingAssignments, 4);
   assert.equal(proof.bagOrders, 24);

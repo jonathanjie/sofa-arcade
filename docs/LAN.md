@@ -1,6 +1,6 @@
 # Play Sofa Arcade over your home Wi-Fi
 
-The local host runs on your Mac. Both phones open pages served directly by that Mac, and room changes are pushed to the TV and phones as they happen. The same game engine, room credentials, turn validation, and retry protection are used as on the public Site. Internet access is not needed during a local game once the files and Node.js are available.
+The local host runs on your Mac. Both phones open pages served directly by that Mac, and room changes are pushed to the TV and phones as they happen. The turn-based games share room authority, turn validation and retry protection with the hosted implementation. Gravity Orchard uses the local realtime coordinator. Internet access is not needed during a local game once the files and Node.js are available.
 
 ## Start
 
@@ -12,14 +12,14 @@ The local host runs on your Mac. Both phones open pages served directly by that 
 node scripts/lan-server.mjs
 ```
 
-No `npm install`, framework build, cloud account, or database setup is required for this mode. In a full checkout, `npm run lan` is an equivalent shortcut.
+No `npm install`, framework build, cloud account, or database setup is required for this mode. In a full checkout, `npm run lan` is an equivalent shortcut. On a Mac, you can also double-click `start-sofa.command` in the extracted folder.
 
 4. Open the local address printed in Terminal on the Mac, for example `http://192.168.1.20:4177/`. Keep Terminal open.
-5. Choose Sofa Kingdoms and **Host on the TV**. Scan the room QR code with both phones. All three devices should use the same home Wi-Fi/LAN.
+5. Select an available game and host it on the TV. Scan the room QR code with both phones. All three devices should use the same home Wi-Fi/LAN. For Gravity Orchard, select **Enter the orchard** on the TV, then **Use touch controls** and **Ready** on both phones. For tilt, use a Mac app build with trusted phone access.
 
 Cast the Mac browser to the TV as usual. The phone-to-Mac traffic stays on the LAN; casting itself can still add display delay. A direct cable or running the local page in the TV browser avoids a separate screencast step where supported.
 
-To stop, press **Control+C** in Terminal. Room state is saved in `.sofa-lan/rooms.sqlite`; keep this folder to resume within the normal 24-hour room lifetime. Phone credentials remain in each browser. These local rooms are separate from rooms created on the public Site.
+To stop, press **Control+C** in Terminal. Two-seat room state is saved in `.sofa-lan/rooms.sqlite`; keep this folder to resume within the normal 24-hour room lifetime. Phone credentials remain in each browser. These local rooms are separate from rooms created on the public Site.
 
 ## Connecting the phones
 
@@ -33,11 +33,27 @@ If port 4177 is in use:
 node scripts/lan-server.mjs --port 4178
 ```
 
+A different port in this checkout still uses the same SQLite file. Use a separate checkout or a test harness with a temporary database for an independent host.
+
 This is a local HTTP host for a trusted home network. It does not expose a public internet server, configure router port forwarding, or create a tunnel. Keep the host running only when you want to play locally.
+
+## Party games
+
+Open **Party → Tap Race → Host on the TV** for 2–16 phones. Guests can scan the QR code or choose **Join a party** and enter the TV code. Each guest chooses a name and look, then taps **Ready**. On the TV, select **Start** once at least two guests are ready. The podium has **Next round** and a **Players** button for managing seats.
+
+Select **End party** on the TV to close the room and release its seats. Stopping the host also closes its parties. If a phone disconnects, its seat stays reserved for 30 seconds after the host detects the disconnect.
+
+The Mac app can show a second phone link when trusted local access is ready. Select **Show phone link with tilt** on the TV to use the HTTPS QR code. Games that offer tilt keep touch controls available until the phone sends a valid sensor sample.
+
+See the [party contract](PARTY_CONTRACT.md) for limits, routes, and game authoring.
 
 ## Implementation and tests
 
-`server/lan.mjs` serves the authored UI and local assets, adapts Node's built-in SQLite to the existing `server/rooms.mjs` API, applies checked-in SQL migrations, and streams authenticated room updates at `/api/rooms/CODE/events`. Credentials use the Authorization header and never appear in URLs or QR codes. Streams recheck credentials and maintain presence. Cross-origin requests, unknown Host headers, and access outside the intended static files are rejected.
+`server/lan.mjs` serves the authored UI and local assets, adapts Node's built-in SQLite to the existing `server/rooms.mjs` API, applies checked-in SQL migrations, and streams authenticated room updates at `/api/rooms/CODE/events`. For authenticated HTTP and SSE, credentials use the Authorization header and never appear in URLs or QR codes. Streams recheck credentials and maintain presence. Cross-origin requests, unknown Host headers, and access outside the intended static files are rejected.
+
+Room API writes require one exact same-origin `Origin` header and one `Content-Type: application/json` header. Send a JSON object when the command has a body. This applies to the HTTP host and to the Mac app's HTTPS controller listener. Browsers add the Origin header to same-origin writes. Command-line clients and test harnesses must supply it explicitly. Use the same scheme, host and port as the request URL. The game page's content security policy blocks framing and allows local assets and the host's own WebSocket.
+
+The default host permits 64 unexpired rooms. Each peer outside loopback can attempt six room creations per minute. A rate limit returns HTTP 429 and a full room store returns HTTP 503. The HTTP listener accepts 64 sockets, with eight reserved for local loopback connections. The HTTPS listener has its own 64-socket limit. The host accepts 24 live event streams across both listeners and up to two per seat in each room to allow reloads. Extra streams return HTTP 429. Gravity Orchard can keep up to 32 active coordinators and reclaims expired rooms when it needs a slot.
 
 `ui/transport.mjs` reads local-host metadata and manages fetch/SSE reconnects. The published Site keeps its cloud transport. The local server does not change the public Site's hosting or database.
 

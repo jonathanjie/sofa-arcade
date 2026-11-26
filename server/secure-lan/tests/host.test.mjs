@@ -160,7 +160,9 @@ test('listener failure leaves safe status, supports retry and never reports nati
   } });
   await assert.rejects(f.host.provision(hostContext), error => error.code === 'PROVISION_FAILED' && !/secret|private|HIDDEN/.test(error.message));
   assert.equal((await f.host.getStatus()).status, 'failed');
-  assert.deepEqual(f.errors, [{ code: 'PROVISION_FAILED' }]);
+  // Only a listed system code is attached for diagnosis; the message never is.
+  assert.deepEqual(f.errors, [{ code: 'PROVISION_FAILED:EADDRINUSE' }]);
+  assert.ok(!/secret|private|HIDDEN/.test(JSON.stringify(f.errors)));
   fail = false;
   assert.equal((await f.host.start(hostContext)).status, 'ready');
   await f.host.close();

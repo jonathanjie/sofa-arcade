@@ -57,21 +57,7 @@ controls, reduced-motion animation properties, live OS motion-preference changes
 without losing the room/role/state, and collection exit. Screenshots
 show councils, private seals, Build previews, unavailable purchases and results.
 
-Before the collection is enabled, run the candidate gate with:
-
-```sh
-SOFA_ACCEPTANCE_CANDIDATE=1 node tests/integration/browser/odd-laws.mjs
-```
-
-That explicit mode uses WS2's real `createRoomApi` injection seam only to allow
-the planned game and fix its creation seed. A real API response creates the room
-and delivers its host credential to temporary browser storage; subsequent
-joining, starting and the entire journey use the real UI. Evidence records this
-exception and the unchanged catalog status. Once it passes and the catalog is
-enabled, rerun without the flag: the final gate must create the room through the
-playable collection card. Missing delivered modules are a failure, never a skip.
-`SOFA_ACCEPTANCE_CHAIR=jon` or `lydia` may narrow a diagnostic rerun; final acceptance
-must cover both. The report records the exact seed and source revision.
+See the [release guide](../../../docs/LOCAL_RELEASE.md#reproduce-the-automated-checks) for the pre-enablement fixture flag and the required enabled-card journey. The final journey covers both initial Chairs and records the seed and source revision.
 
 Rendered latency uses a monotonic clock from actual browser POST emission to
 matching visible resources/city/turn/readiness or results in each context. It

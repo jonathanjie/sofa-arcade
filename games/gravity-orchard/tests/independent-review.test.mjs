@@ -1,6 +1,7 @@
 /**
  * Independent adversarial review of the authority/recovery seam. Lifecycle
- * baselines below are produced only by commands and real fixed ticks. Forged
+ * baselines below cross lifecycle boundaries through commands and engine steps.
+ * The exhaustive lane advances every intermediate fixed tick. Forged
  * checkpoints intentionally recompute the non-authenticating corruption hash:
  * structural rejection must not depend on merely noticing an old checksum.
  */
@@ -11,6 +12,7 @@ import { RULES } from '../catalog.mjs';
 import { hashSeed } from '../supply.mjs';
 import { validatePublicView } from '../public.mjs';
 import { createPilot } from '../validation/pilot.mjs';
+import { finishAtDeadline } from './engine-helpers.mjs';
 
 const HOST = Object.freeze({ role: 'host', playerId: null });
 const PUBLIC = Object.freeze({ role: 'public', playerId: null });
@@ -62,7 +64,7 @@ function reject(checkpoint, label) {
 
 let lifecycleCache;
 function lifecycle() {
-  if (lifecycleCache) return lifecycleCache;
+  if (lifecycleCache) return clone(lifecycleCache);
   const snapshots = {};
   let state = engine.createRun({ seed: 'independent-review', matchId: 'independent-review' });
   snapshots.waiting = state;
@@ -75,7 +77,7 @@ function lifecycle() {
   snapshots.playing = state;
   snapshots.moving = advance(state, 42, LIVE);
   snapshots.paused = command(snapshots.moving, LYDIA, 'pause', { reason: 'recenter' });
-  state = advance(state, 5400);
+  state = finishAtDeadline(state);
   snapshots.interlude = state;
   state = advance(bothReady(state), 180);
   snapshots.secondStage = state;
@@ -83,7 +85,7 @@ function lifecycle() {
   snapshots.gateForecast = state;
   state = advance(state, 120);
   snapshots.gateClosed = state;
-  state = advance(state, 5040);
+  state = finishAtDeadline(state);
   snapshots.secondInterlude = state;
   state = advance(bothReady(state), 180);
   snapshots.thirdStage = state;
@@ -93,17 +95,17 @@ function lifecycle() {
   snapshots.gustActive = state;
   state = advance(state, 90);
   snapshots.gustEnded = state;
-  state = advance(state, 3960);
+  state = finishAtDeadline(state);
   snapshots.finished = state;
   assert.equal(state.phase, 'finished');
   assert.deepEqual(state.results.map(result => result.ordersCompleted), [0, 0, 0]);
-  lifecycleCache = snapshots;
-  return snapshots;
+  lifecycleCache = freeze(snapshots);
+  return clone(lifecycleCache);
 }
 
 let deliveredCache;
 function actuallyDelivered() {
-  if (deliveredCache) return deliveredCache;
+  if (deliveredCache) return clone(deliveredCache);
   let state = engine.createRun({ seed: 'orchard-proof-1', matchId: 'review-delivery' });
   state = advance(bothReady(state), 180);
   const pilot = createPilot();
@@ -114,8 +116,8 @@ function actuallyDelivered() {
   }
   assert.ok(state.orders.activeIndex > 0, 'The real-input review baseline must actually complete a recipe');
   assert.ok(state.consumed.length > 0);
-  deliveredCache = state;
-  return state;
+  deliveredCache = freeze(state);
+  return clone(deliveredCache);
 }
 
 test('checkpoints from every actual lifecycle and hazard state recover paused without elapsed time or readiness', () => {

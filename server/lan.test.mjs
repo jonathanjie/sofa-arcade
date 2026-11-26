@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { once } from 'node:events';
+import { connect } from 'node:net';
 import { request as httpRequest } from 'node:http';
 import { startLanServer } from './lan.mjs';
 import { handleApi } from './rooms.mjs';
@@ -142,7 +144,7 @@ test('local assets expose the game and LAN metadata without exposing source docu
   const oversized = await request(host, '/api/rooms', { body: 'x'.repeat(13 * 1024) });
   assert.equal(oversized.status, 413);
   const chunkedStatus = await new Promise((resolve, reject) => {
-    const message = httpRequest({ hostname: '127.0.0.1', port: host.port, path: '/api/rooms', method: 'POST', headers: { Origin: host.origin, 'Transfer-Encoding': 'chunked' } }, response => {
+    const message = httpRequest({ hostname: '127.0.0.1', port: host.port, path: '/api/rooms', method: 'POST', headers: { Origin: host.origin, 'Content-Type': 'application/json', 'Transfer-Encoding': 'chunked' } }, response => {
       response.resume(); response.once('end', () => resolve(response.statusCode));
     });
     message.once('error', reject); message.write('x'.repeat(7 * 1024)); message.end('y'.repeat(7 * 1024));
@@ -298,4 +300,128 @@ test('local SQLite rooms survive a host restart with the same credentials and re
   assert.equal(restored.body.revision, live.game.revision);
   assert.deepEqual(restored.body.state, live.game.state);
   assert.equal((await request(host, `/api/rooms/${live.code}`, { token: live.tokens.jon })).status, 200);
+});
+
+test('LAN room creation budgets remote peers and stops concurrent creates at the hard limit', async t => {
+  t.mock.timers.enable({ apis: ['Date'] });
+  const host = await startLanServer({ port: 0, databasePath: ':memory:', activeRoomLimit: 4,
+    roomCreateBudget: 1, roomCreateWindowMs: 100 });
+  t.after(() => host.close());
+  const remote = { origin: new URL(host.urls[0]).origin };
+  assert.equal((await request(remote, '/api/rooms', { body: {} })).status, 201);
+  assert.equal((await request(remote, '/api/rooms/', {
+    body: {}, headers: { 'X-Forwarded-For': '127.0.0.1' },
+  })).status, 429);
+  t.mock.timers.tick(100);
+  assert.equal((await request(remote, '/api/rooms', { body: {} })).status, 201);
+  const creates = await Promise.all(Array.from({ length: 4 }, () => request(host, '/api/rooms', { body: {} })));
+  assert.deepEqual(creates.map(result => result.status).sort(), [201, 201, 503, 503]);
+  t.mock.timers.tick(24 * 60 * 60 * 1000);
+  assert.equal((await request(host, '/api/rooms', { body: {} })).status, 201);
+});
+
+test('HTTP socket ceiling reserves a connection for loopback and closes stalled sockets', async t => {
+  const host = await startLanServer({ port: 0, databasePath: ':memory:',
+    httpSocketLimit: 2, loopbackSocketReserve: 1, shutdownGraceMs: 25 });
+  const remote = new URL(host.urls[0]).hostname;
+  const stalled = connect({ host: remote, port: host.port });
+  t.after(async () => { stalled.destroy(); await host.close(); });
+  await once(stalled, 'connect');
+  stalled.write('GET / HTTP/1.1\r\nHost: ');
+  const excess = connect({ host: remote, port: host.port });
+  t.after(() => excess.destroy());
+  excess.on('error', () => {});
+  const remoteClosed = new Promise(resolve => excess.once('close', resolve));
+  const admissionDeadline = AbortSignal.timeout(180);
+  assert.equal(await Promise.race([remoteClosed.then(() => 'closed'),
+    once(admissionDeadline, 'abort').then(() => 'excess connection stayed open')]), 'closed');
+  const response = await fetch(host.origin, { headers: { Connection: 'close' } });
+  assert.equal(response.status, 200);
+  await response.text();
+  const stalledClosed = once(stalled, 'close');
+  const deadline = AbortSignal.timeout(180);
+  await Promise.race([Promise.all([host.close(), stalledClosed]), once(deadline, 'abort').then(() => assert.fail('HTTP shutdown timed out'))]);
+});
+
+test('SSE caps simultaneous subscriptions per seat and host-wide, and releases them on shutdown', async t => {
+  const host = await startLanServer({ port: 0, host: '127.0.0.1', databasePath: ':memory:',
+    seatStreamLimit: 1, totalStreamLimit: 2, shutdownGraceMs: 25 });
+  t.after(() => host.close());
+  const live = await room(host);
+  const open = token => fetch(`${host.origin}/api/rooms/${live.code}/events`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const streams = [];
+  t.after(() => Promise.all(streams.map(response => response.body.cancel().catch(() => {}))));
+  const expectStream = async token => {
+    const response = await open(token);
+    streams.push(response);
+    assert.equal(response.status, 200);
+  };
+  const expectDenied = async token => {
+    const response = await open(token);
+    await response.body.cancel();
+    assert.equal(response.status, 429);
+  };
+  await expectStream(live.tokens.jon);
+  await expectDenied(live.tokens.jon);
+  await expectStream(live.tokens.lydia);
+  await expectDenied(live.hostToken);
+  await streams[1].body.cancel();
+  // A local room read gives the server an I/O turn to process the stream close.
+  await request(host, `/api/rooms/${live.code}`);
+  await expectStream(live.hostToken);
+  await host.close();
+  for (const response of [streams[0], streams[2]]) assert.match(await response.text(), /event: room/);
+});
+
+test('HTTP room mutations require exactly one same-origin Origin and JSON media type', async t => {
+  const host = await startLanServer({ port: 0, host: '127.0.0.1', databasePath: ':memory:' });
+  t.after(() => host.close());
+  const post = headers => new Promise((resolve, reject) => {
+    const message = httpRequest(host.origin + '/api/rooms', { method: 'POST', headers }, response => {
+      response.resume();
+      response.once('end', () => resolve(response.statusCode));
+    });
+    message.once('error', reject);
+    message.end('{}');
+  });
+  for (const origin of [undefined, 'null', 'http://127.0.0.1:1', [host.origin, host.origin]]) {
+    const headers = { 'Content-Type': 'application/json', ...(origin === undefined ? {} : { Origin: origin }) };
+    assert.equal(await post(headers), 403, String(origin));
+  }
+  for (const type of [undefined, 'text/plain', 'application/jsonp', ['application/json', 'application/json']]) {
+    const headers = { Origin: host.origin, ...(type === undefined ? {} : { 'Content-Type': type }) };
+    assert.equal(await post(headers), 415, String(type));
+  }
+  assert.equal(await post({ Origin: host.origin, 'Content-Type': 'application/json; charset=UTF-8' }), 201);
+});
+
+test('an interrupted create releases its reservation after the authority fails', async t => {
+  const entered = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  let attempts = 0;
+  const host = await startLanServer({ port: 0, host: '127.0.0.1', databasePath: ':memory:', activeRoomLimit: 1,
+    async roomApi(message, env) {
+      if (++attempts === 1) {
+        entered.resolve();
+        await release.promise;
+        throw new Error('Interrupted room creation');
+      }
+      return handleApi(message, env);
+    },
+  });
+  t.after(() => host.close());
+  const abort = new AbortController();
+  const first = fetch(host.origin + '/api/rooms', { signal: abort.signal, method: 'POST',
+    headers: { Origin: host.origin, 'Content-Type': 'application/json' }, body: '{}' });
+  try {
+    await entered.promise;
+    assert.equal((await request(host, '/api/rooms', { body: {} })).status, 503);
+  } finally {
+    abort.abort();
+    release.resolve();
+    await assert.rejects(first, { name: 'AbortError' });
+  }
+  assert.equal((await request(host, '/api/rooms', { body: {} })).status, 201);
 });

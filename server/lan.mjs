@@ -11,12 +11,89 @@ import { getGame } from '../games/catalog.mjs';
 import { createGravityOrchardHost } from './gravity-orchard-host.mjs';
 import { GRAVITY_BROWSER_FILES, GRAVITY_ASSET_FILES } from './gravity-orchard-delivery.mjs';
 import { createRequestPolicy } from './runtime/gravity-orchard-dependencies.mjs';
+import { PARTY_BROWSER_FILES } from './party-delivery.mjs';
+import { PARTY_ROOMS_PATH, handlePartyRequest } from './party/http.mjs';
+import { PARTY_ROOM_LIMITS } from './party/rooms.mjs';
+import { createPartyRealtime } from './realtime/party/index.mjs';
+import { PARTY_ENDPOINT, PARTY_LIMITS } from './realtime/party/protocol.mjs';
 
 const PROJECT_ROOT = fileURLToPath(new URL('../', import.meta.url));
+// A shared home host only needs a few simultaneous rooms and occasional retries.
+const ACTIVE_ROOM_LIMIT = 64;
+const ROOM_CREATE_BUDGET = 6;
+// Allow six attempts per peer per minute before another budget is available.
+const ROOM_CREATE_WINDOW_MS = 60_000;
+// Bound memory even if many distinct addresses reach the host within a window.
+const ROOM_CREATE_PEER_LIMIT = 1024;
+// Allow parallel asset loads and controller reconnects, with TV capacity held back.
+const HTTP_SOCKET_LIMIT = 64;
+const LOOPBACK_SOCKET_RESERVE = 8;
+// A seat may briefly have two connections while a phone or TV reloads.
+const SEAT_STREAM_LIMIT = 2;
+// Leave HTTP sockets available for assets and commands even with many live rooms.
+const TOTAL_STREAM_LIMIT = 24;
+// Let final responses drain briefly, then release stalled or upgraded sockets.
+const SHUTDOWN_GRACE_MS = 250;
+
+function peerAddress(socket) {
+  return socket.remoteAddress?.replace(/^::ffff:/, '');
+}
+
+function isLoopback(address) {
+  return address === '::1' || address?.startsWith('127.');
+}
+
+function socketAdmission(limit, loopbackReserve, perPeerLimit) {
+  const sockets = new Set();
+  const counts = perPeerLimit ? new Map() : null;
+  let remoteCount = 0;
+  return {
+    sockets,
+    admit(socket) {
+      const address = peerAddress(socket);
+      const local = isLoopback(address);
+      if (sockets.size >= limit || (!local && remoteCount >= limit - loopbackReserve)) return false;
+      const used = counts && !local ? counts.get(address) ?? 0 : null;
+      if (used !== null && used >= perPeerLimit) return false;
+      if (used !== null) counts.set(address, used + 1);
+      sockets.add(socket);
+      if (!local) remoteCount++;
+      socket.once('close', () => {
+        sockets.delete(socket);
+        if (!local) remoteCount--;
+        if (used !== null) {
+          const remaining = counts.get(address) - 1;
+          if (remaining) counts.set(address, remaining);
+          else counts.delete(address);
+        }
+      });
+      return true;
+    },
+  };
+}
+
+function createPeerBudget(budget, windowMs) {
+  const peers = new Map();
+  let windowEnds = 0;
+  return (socket, now) => {
+    const address = peerAddress(socket);
+    if (isLoopback(address)) return true;
+    if (now >= windowEnds) {
+      peers.clear();
+      windowEnds = now + windowMs;
+    }
+    const used = peers.get(address) || 0;
+    if (used >= budget || (!used && peers.size >= ROOM_CREATE_PEER_LIMIT)) return false;
+    peers.set(address, used + 1);
+    return true;
+  };
+}
+
 const ROOM_CODE = '[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}';
 const SOURCES = new Map([
-  ...GRAVITY_BROWSER_FILES.map(({ url, source }) => [url, source]),
+  ...[...GRAVITY_BROWSER_FILES, ...PARTY_BROWSER_FILES].map(({ url, source }) => [url, source]),
   ['/app.js', 'ui/app.js'], ['/styles.css', 'ui/styles.css'],
+  ['/shelf.mjs', 'ui/shelf.mjs'],
   ['/audio.js', 'ui/audio.js'], ['/score.mjs', 'ui/score.mjs'],
   ['/motion.js', 'ui/motion.js'], ['/motion.css', 'ui/motion.css'],
   ['/board-view.mjs', 'ui/board-view.mjs'], ['/board-view.css', 'ui/board-view.css'],
@@ -46,6 +123,12 @@ const ASSETS = new Set([
   '/assets/characters.png',
   '/assets/qrcode.js',
   '/assets/qrcode-LICENSE.txt',
+  '/assets/characters-1536.webp',
+  '/assets/characters.webp',
+  '/assets/odd-laws-cover-560.webp',
+  '/assets/sofa-room-1200.webp',
+  '/assets/sofa-room-1536.webp',
+  '/assets/sofa-room-640.webp',
   '/favicon.svg',
   '/manifest.webmanifest',
   '/assets/odd-laws-society/buildings/button-workshop.webp',
@@ -66,6 +149,24 @@ const ASSETS = new Set([
   '/assets/odd-laws-society/buildings/public-library.webp',
   '/assets/odd-laws-society/buildings/quilt-bridge.webp',
   '/assets/odd-laws-society/buildings/tea-stall.webp',
+  '/assets/odd-laws-society/buildings/button-workshop-256.webp',
+  '/assets/odd-laws-society/buildings/clockwork-studio-256.webp',
+  '/assets/odd-laws-society/buildings/community-garden-256.webp',
+  '/assets/odd-laws-society/buildings/concert-pavilion-256.webp',
+  '/assets/odd-laws-society/buildings/corner-shop-256.webp',
+  '/assets/odd-laws-society/buildings/debate-hall-256.webp',
+  '/assets/odd-laws-society/buildings/grand-bazaar-256.webp',
+  '/assets/odd-laws-society/buildings/grand-clock-256.webp',
+  '/assets/odd-laws-society/buildings/high-court-256.webp',
+  '/assets/odd-laws-society/buildings/lala-monument-256.webp',
+  '/assets/odd-laws-society/buildings/night-market-256.webp',
+  '/assets/odd-laws-society/buildings/observatory-256.webp',
+  '/assets/odd-laws-society/buildings/opera-house-256.webp',
+  '/assets/odd-laws-society/buildings/petition-kiosk-256.webp',
+  '/assets/odd-laws-society/buildings/pocket-theatre-256.webp',
+  '/assets/odd-laws-society/buildings/public-library-256.webp',
+  '/assets/odd-laws-society/buildings/quilt-bridge-256.webp',
+  '/assets/odd-laws-society/buildings/tea-stall-256.webp',
   '/assets/odd-laws-society/characters/jon-acting.webp',
   '/assets/odd-laws-society/characters/jon-celebrate.webp',
   '/assets/odd-laws-society/characters/jon-disappointed.webp',
@@ -80,6 +181,20 @@ const ASSETS = new Set([
   '/assets/odd-laws-society/characters/lydia-disappointed.webp',
   '/assets/odd-laws-society/characters/lydia-idle.webp',
   '/assets/odd-laws-society/characters/lydia-thinking.webp',
+  '/assets/odd-laws-society/characters/jon-acting-256.webp',
+  '/assets/odd-laws-society/characters/jon-celebrate-256.webp',
+  '/assets/odd-laws-society/characters/jon-disappointed-256.webp',
+  '/assets/odd-laws-society/characters/jon-idle-256.webp',
+  '/assets/odd-laws-society/characters/jon-thinking-256.webp',
+  '/assets/odd-laws-society/characters/lala-celebrate-256.webp',
+  '/assets/odd-laws-society/characters/lala-idle-256.webp',
+  '/assets/odd-laws-society/characters/lala-stamp-256.webp',
+  '/assets/odd-laws-society/characters/lala-thinking-256.webp',
+  '/assets/odd-laws-society/characters/lydia-acting-256.webp',
+  '/assets/odd-laws-society/characters/lydia-celebrate-256.webp',
+  '/assets/odd-laws-society/characters/lydia-disappointed-256.webp',
+  '/assets/odd-laws-society/characters/lydia-idle-256.webp',
+  '/assets/odd-laws-society/characters/lydia-thinking-256.webp',
   '/assets/odd-laws-society/guilds/civic.svg',
   '/assets/odd-laws-society/guilds/commerce.svg',
   '/assets/odd-laws-society/guilds/craft.svg',
@@ -254,9 +369,9 @@ async function respondWeb(response, result) {
   response.end(Buffer.from(await result.arrayBuffer()));
 }
 
-async function bodyBytes(request) {
+async function bodyBytes(request, limit = MAX_BODY_BYTES) {
   const declared = Number(request.headers['content-length']);
-  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
+  if (Number.isFinite(declared) && declared > limit) {
     request.resume();
     throw Object.assign(new Error('That request is too large.'), { status: 413 });
   }
@@ -268,7 +383,7 @@ async function bodyBytes(request) {
     const end = () => { clean(); resolve(Buffer.concat(chunks)); };
     const data = chunk => {
       size += chunk.length;
-      if (size > MAX_BODY_BYTES) {
+      if (size > limit) {
         clean(); request.resume();
         reject(Object.assign(new Error('That request is too large.'), { status: 413 }));
       } else chunks.push(chunk);
@@ -284,11 +399,22 @@ export async function startLanServer({
   host = '0.0.0.0',
   port = 4177,
   heartbeatMs = 10_000,
+  activeRoomLimit = ACTIVE_ROOM_LIMIT,
+  roomCreateBudget = ROOM_CREATE_BUDGET,
+  roomCreateWindowMs = ROOM_CREATE_WINDOW_MS,
+  orchardRoomLimit,
+  httpSocketLimit = HTTP_SOCKET_LIMIT,
+  loopbackSocketReserve = LOOPBACK_SOCKET_RESERVE,
+  seatStreamLimit = SEAT_STREAM_LIMIT,
+  totalStreamLimit = TOTAL_STREAM_LIMIT,
+  shutdownGraceMs = SHUTDOWN_GRACE_MS,
   roomApi,
   browserModules = [],
   enableGravityOrchard = getGame('gravity-orchard')?.status === 'playable',
   realtimeClock,
   realtimeSeed,
+  partyClock,
+  partySeed,
   onRuntimeTiming,
 } = {}) {
   if (roomApi !== undefined && typeof roomApi !== 'function') throw new TypeError('roomApi must be an authoritative request handler.');
@@ -302,6 +428,25 @@ export async function startLanServer({
   const addresses = localAddresses();
   const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]', ...addresses]);
   const streams = new Map();
+  let streamCount = 0;
+  let activeRoomCount;
+  const takeCreateBudget = createPeerBudget(roomCreateBudget, roomCreateWindowMs);
+  const takePartyCreateBudget = createPeerBudget(roomCreateBudget, roomCreateWindowMs);
+  const takePartyJoinBudget = createPeerBudget(24, roomCreateWindowMs);
+  let pendingCreates = 0;
+
+  function admitCreate(socket) {
+    const now = Date.now();
+    if (!takeCreateBudget(socket, now)) return { status: 429, code: 'room_create_rate', error: 'Too many new rooms. Try again in a minute.' };
+    // Reserve before yielding to the async room authority and release on every result.
+    activeRoomCount ??= sqlite.prepare('SELECT count(*) AS count FROM sofa_rooms WHERE expires_at > ?');
+    if (pendingCreates + activeRoomCount.get(now).count >= activeRoomLimit) {
+      return { status: 503, code: 'room_capacity', error: 'The local host has too many active rooms.' };
+    }
+    pendingCreates++;
+    return null;
+  }
+
   let actualPort = port;
   let closed = false;
   let closing = null;
@@ -310,6 +455,7 @@ export async function startLanServer({
   let secureStatus = Object.freeze({ enabled: false, status: 'disabled', controllerOrigins: [], requiresPhoneTrust: false });
   function makePolicy(httpsOrigins) {
     const tlsPolicy = createRequestPolicy({ httpsOrigins });
+    const partyTlsPolicy = createRequestPolicy({ httpsOrigins, upgradePath: PARTY_ENDPOINT });
     function validateRequest(request) {
       if (request.socket.encrypted === true) return tlsPolicy.validateRequest(request);
       const header = name => {
@@ -335,15 +481,19 @@ export async function startLanServer({
       let url;
       try { url = new URL(request.url, authority.origin); } catch { return { ok: false, status: 400, code: 'address_rejected' }; }
       if (url.origin !== authority.origin) return { ok: false, status: 400, code: 'address_rejected' };
+      if (url.pathname.startsWith('/api/') && !['GET', 'HEAD'].includes(request.method)) {
+        if (origins.length !== 1) return { ok: false, status: 403, code: 'origin_rejected' };
+      }
       return { ok: true, origin: authority.origin, scheme: 'http', url };
     }
     return {
       validateRequest,
-      validateUpgrade(request) {
-        if (request.socket.encrypted === true) return tlsPolicy.validateUpgrade(request);
+      validateUpgrade(request, party = false) {
+        if (party && request.headers['sec-websocket-protocol'] !== undefined) return false;
+        if (request.socket.encrypted === true) return (party ? partyTlsPolicy : tlsPolicy).validateUpgrade(request);
         const result = validateRequest(request);
         const count = name => request.rawHeaders.filter((value, i) => i % 2 === 0 && value.toLowerCase() === name).length;
-        return result.ok && request.method === 'GET' && request.url === '/api/realtime/gravity-orchard'
+        return result.ok && request.method === 'GET' && request.url === (party ? PARTY_ENDPOINT : '/api/realtime/gravity-orchard')
           && count('origin') === 1 && request.headers.origin === result.origin
           && count('upgrade') === 1 && request.headers.upgrade?.toLowerCase() === 'websocket'
           && count('connection') === 1 && request.headers.connection?.split(',').some(value => value.trim().toLowerCase() === 'upgrade');
@@ -375,32 +525,37 @@ export async function startLanServer({
     return structuredClone(secureStatus);
   }
   const orchard = createGravityOrchardHost({ sqlite, DB, enabled: enableGravityOrchard,
-    clock: observeRealtimeClock(realtimeClock, onRuntimeTiming), seed: realtimeSeed, onRuntimeTiming,
+    clock: observeRealtimeClock(realtimeClock, onRuntimeTiming), seed: realtimeSeed, onRuntimeTiming, roomLimit: orchardRoomLimit,
     validateUpgrade: request => !closed && requestPolicy?.validateUpgrade(request) === true,
     onLifecycle: ({ roomCode }) => {
       if (!closed) for (const client of streams.get(roomCode) || []) void push(client);
     },
   });
   const effectiveRoomApi = roomApi || orchard.authority;
+  const partySockets = socketAdmission(PARTY_LIMITS.sockets, PARTY_LIMITS.localSocketReserve, PARTY_LIMITS.socketsPerPeer);
+  const party = createPartyRealtime({
+    clock: partyClock, seed: partySeed, admitSocket: partySockets.admit,
+    validateUpgrade: request => !closed && requestPolicy?.validateUpgrade(request, true) === true,
+  });
 
   // The exact same injected authority handles HTTP and every subscriber's GET.
   // Neither this adapter nor a broadcast cache ever sees a full engine state.
-  const callApi = request => {
-    const pending = Promise.resolve().then(() => effectiveRoomApi(request, { DB }));
+  const callApi = (request, onRoomRead) => {
+    const pending = Promise.resolve().then(() => effectiveRoomApi(request, { DB, onRoomRead }));
     pendingApi.add(pending);
     pending.finally(() => pendingApi.delete(pending)).catch(() => {});
     return pending;
   };
-  const roomRead = (code, authorization, origin) => callApi(new Request(`${origin}/api/rooms/${code}`, {
+  const roomRead = (code, authorization, origin, onRoomRead) => callApi(new Request(`${origin}/api/rooms/${code}`, {
     headers: { Authorization: authorization },
-  }));
+  }), onRoomRead);
 
   function removeClient(client) {
     if (client.closed) return;
     client.closed = true;
     clearInterval(client.keepAlive);
     const clients = streams.get(client.code);
-    clients?.delete(client);
+    if (clients?.delete(client)) streamCount--;
     if (!clients?.size) streams.delete(client.code);
   }
 
@@ -443,19 +598,31 @@ export async function startLanServer({
     if (!/^Bearer [A-Za-z0-9_-]{24,128}$/.test(authorization)) {
       return respondJson(response, 401, { error: 'Join the room before receiving live updates.', code: 'session_required' });
     }
-    const initial = await roomRead(code, authorization, origin);
+    const rejectCapacity = () => respondJson(response, 429, {
+      error: 'Too many live connections. Reconnect in a moment.', code: 'stream_capacity',
+    });
+    if (streamCount >= totalStreamLimit) return rejectCapacity();
+    let seat;
+    const initial = await roomRead(code, authorization, origin, viewer => {
+      seat = viewer.role === 'host' ? 'host' : viewer.playerId;
+    });
     if (closed || response.destroyed) { response.end(); return; }
     if (!initial.ok) return respondWeb(response, initial);
     const value = await initial.json();
     if (closed || response.destroyed) { response.end(); return; }
+    if (!seat) return respondJson(response, 403, { error: 'This live connection has no room seat.', code: 'session_required' });
+    const clients = streams.get(code) || new Set();
+    const seatCount = [...clients].filter(client => client.seat === seat).length;
+    if (streamCount >= totalStreamLimit || seatCount >= seatStreamLimit) return rejectCapacity();
     response.writeHead(200, {
       'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store, private',
       Connection: 'keep-alive', 'X-Accel-Buffering': 'no', 'X-Content-Type-Options': 'nosniff',
     });
     response.flushHeaders();
-    const client = { code, authorization, origin, response, closed: false, pending: false, again: false, keepAlive: null };
-    if (!streams.has(code)) streams.set(code, new Set());
-    streams.get(code).add(client);
+    const client = { code, seat, authorization, origin, response, closed: false, pending: false, again: false, keepAlive: null };
+    streams.set(code, clients);
+    clients.add(client);
+    streamCount++;
     response.on('close', () => removeClient(client));
     event(client, 'room', value);
     client.keepAlive = setInterval(() => { void push(client); }, heartbeatMs);
@@ -471,10 +638,23 @@ export async function startLanServer({
       const currentHost = url.hostname;
       const joinHost = ['localhost', '127.0.0.1', '[::1]'].includes(currentHost) ? (addresses[0] || currentHost) : currentHost;
       const joinOrigin = url.protocol === 'https:' ? url.origin : `http://${joinHost}:${actualPort}`;
-      const meta = `<meta name="sofa-transport" content="lan"><meta name="sofa-join-origin" content="${escapeAttribute(joinOrigin)}">`
+      const meta = `<meta name="sofa-transport" content="lan"><meta name="sofa-party" content="enabled"><meta name="sofa-join-origin" content="${escapeAttribute(joinOrigin)}">`
         + (enableGravityOrchard ? '<meta name="sofa-gravity-orchard" content="candidate">' : '');
       const html = (await readFile(path.join(root, 'ui/index.html'), 'utf8')).replace('</head>', meta + '</head>');
-      response.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+      const webSocketOrigin = `${url.protocol === 'https:' ? 'wss' : 'ws'}://${url.host}`;
+      const csp = [
+        "default-src 'self'", "frame-ancestors 'none'", "base-uri 'none'", "object-src 'none'", "form-action 'none'",
+        // The game sets inline styles for board positions and animation.
+        "style-src 'self' 'unsafe-inline'",
+        // The Sofa character atlas decodes a fetched WebP through an object URL.
+        "img-src 'self' data: blob:", "media-src 'self'",
+        // Some browsers do not include WebSocket origins in 'self'.
+        `connect-src 'self' ${webSocketOrigin}`,
+      ].join('; ');
+      response.writeHead(200, {
+        'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': csp,
+      });
       response.end(request.method === 'HEAD' ? undefined : html);
       return;
     }
@@ -515,9 +695,36 @@ export async function startLanServer({
         return await subscribe(request, response, stream[1].toUpperCase(), origin);
       }
       if (url.pathname.startsWith('/api/')) {
-        const body = ['GET', 'HEAD'].includes(request.method) ? undefined : await bodyBytes(request);
+        const partyRoute = url.pathname.startsWith('/api/party/');
+        if (!['GET', 'HEAD'].includes(request.method)) {
+          const types = request.headersDistinct['content-type'] || [];
+          if (types.length !== 1 || types[0].split(';', 1)[0].trim().toLowerCase() !== 'application/json') {
+            return respondJson(response, 415, { error: 'Send the room command as JSON.', code: 'json_required' });
+          }
+        }
+        const body = ['GET', 'HEAD'].includes(request.method) ? undefined
+          : await bodyBytes(request, partyRoute ? PARTY_ROOM_LIMITS.bodyBytes : MAX_BODY_BYTES);
         const webRequest = new Request(url, { method: request.method, headers: request.headers, ...(body ? { body } : {}) });
-        const result = await callApi(webRequest);
+        if (partyRoute) {
+          if (request.url.includes('?')) return respondJson(response, 400, { code: 'invalid_address', error: 'Use the party address without a query.' });
+          if (request.method === 'POST' && url.pathname === PARTY_ROOMS_PATH && !takePartyCreateBudget(request.socket, Date.now())) {
+            return respondJson(response, 429, { code: 'party_create_rate', error: 'Too many new parties. Try again in a minute.' });
+          }
+          if (request.method === 'POST' && url.pathname.endsWith('/join') && !takePartyJoinBudget(request.socket, Date.now())) {
+            return respondJson(response, 429, { code: 'party_join_rate', error: 'Too many join attempts. Try again in a minute.' });
+          }
+          const address = peerAddress(request.socket);
+          const result = await handlePartyRequest(webRequest, url.pathname, party.rooms, isLoopback(address) ? undefined : address);
+          return respondJson(response, result.status, result.body);
+        }
+        const creating = request.method === 'POST' && /^\/api\/rooms\/?$/.test(url.pathname);
+        if (creating) {
+          const denied = admitCreate(request.socket);
+          if (denied) return respondJson(response, denied.status, { error: denied.error, code: denied.code });
+        }
+        let result;
+        try { result = await callApi(webRequest); }
+        finally { if (creating) pendingCreates--; }
         const changedRoom = request.method === 'POST' && result.ok
           ? new RegExp(`^/api/rooms/(${ROOM_CODE})/(join|start|rematch|action)$`, 'i').exec(url.pathname)?.[1]?.toUpperCase() : null;
         try { await respondWeb(response, result); }
@@ -533,7 +740,26 @@ export async function startLanServer({
     }
   };
   const server = createServer(requestHandler);
-  const handleUpgrade = (request, socket, head) => orchard.handleUpgrade(request, socket, head);
+  const { sockets, admit } = socketAdmission(httpSocketLimit, loopbackSocketReserve);
+  let ready = false;
+  server.on('connection', socket => {
+    if (!ready || closed || !admit(socket)) socket.destroy();
+  });
+
+  async function closeHttp() {
+    const deadline = setTimeout(() => {
+      for (const socket of sockets) socket.destroy();
+    }, shutdownGraceMs);
+    deadline.unref();
+    try {
+      await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+    } finally {
+      clearTimeout(deadline);
+    }
+  }
+  const handleUpgrade = (request, socket, head) => request.url?.split('?', 1)[0] === PARTY_ENDPOINT
+    ? party.handleUpgrade(request, socket, head)
+    : orchard.handleUpgrade(request, socket, head);
   server.on('upgrade', handleUpgrade);
   server.requestTimeout = 15_000;
   server.headersTimeout = 15_000;
@@ -544,10 +770,13 @@ export async function startLanServer({
     });
     actualPort = server.address().port;
     refreshPolicy();
+    // Only the process that owns the port may advance saved orchard checkpoints.
     await orchard.restoreExisting();
+    ready = true;
   } catch (error) {
+    party.close();
     await orchard.close();
-    if (server.listening) await new Promise(resolve => server.close(resolve));
+    if (server.listening) await closeHttp();
     sqlite.close(); throw error;
   }
 
@@ -559,12 +788,16 @@ export async function startLanServer({
     close() {
       if (closing) return closing;
       closed = true;
+      party.close();
       for (const clients of streams.values()) for (const client of [...clients]) { removeClient(client); client.response.end(); }
       closing = (async () => {
-        await Promise.allSettled([...pendingApi]);
-        await orchard.close();
-        await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+        const drain = async () => {
+          await Promise.allSettled([...pendingApi]);
+          await orchard.close();
+        };
+        const results = await Promise.allSettled([closeHttp(), drain()]);
         sqlite.close();
+        for (const result of results) if (result.status === 'rejected') throw result.reason;
       })();
       return closing;
     },

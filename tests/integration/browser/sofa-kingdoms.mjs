@@ -11,7 +11,7 @@ try {
   const lydia = await run.page('lydia', { width: 390, height: 844 }, { isMobile: true, hasTouch: true });
   const phones = { jon, lydia };
   await tv.goto(run.origin);
-  await tv.locator('[data-action="open-game"][data-game="sofa-kingdoms"]').first().click();
+  await tv.locator('.game-card[data-game="sofa-kingdoms"]').click();
   await tv.locator('[data-action="create"]').click();
   await tv.locator('.room-code').waitFor();
   const code = (await tv.locator('.room-code').innerText()).trim();

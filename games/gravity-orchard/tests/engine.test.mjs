@@ -5,7 +5,7 @@ import { RULES } from '../catalog.mjs';
 import { getLevel } from '../geometry.mjs';
 import { validatePublicView } from '../public.mjs';
 import { seededRandom, TYPES } from '../supply.mjs';
-import { HOST, PUBLIC, JON, LYDIA, SAFE, clone, command, ready, advance, playing, assertConserved, deepFreeze, stageFixture, contactFixture } from './engine-helpers.mjs';
+import { HOST, PUBLIC, JON, LYDIA, SAFE, clone, command, ready, advance, playing, assertConserved, deepFreeze, finishAtDeadline, stageFixture, contactFixture } from './engine-helpers.mjs';
 
 test('constructor bounds, pure inputs, diagonal limiting and strict unknown-field rejection', () => {
   const args = deepFreeze({ seed: 'abc', matchId: 'abc', options: { mode: 'campaign' } });
@@ -92,7 +92,8 @@ test('trusted system pauses reject forged reasons and pause the whole run exactl
 
 test('seeded replay is bit-for-bit deterministic, immutable and finite across boundaries', () => {
   const random = seededRandom('bounded-transcript');
-  const transcript = Array.from({ length: 1700 }, () => Object.fromEntries(['jon', 'lydia'].map(id => [id, engine.normalizeInput({ x: random() * 2 - 1, y: random() * 2 - 1, brake: random() < 0.2 })])));
+  const ticks = process.env.SOFA_EXHAUSTIVE === '1' ? 1700 : 600;
+  const transcript = Array.from({ length: ticks }, () => Object.fromEntries(['jon', 'lydia'].map(id => [id, engine.normalizeInput({ x: random() * 2 - 1, y: random() * 2 - 1, brake: random() < 0.2 })])));
   function replay() {
     let state = playing({ seed: 'replay', matchId: 'replay' });
     for (let i = 0; i < transcript.length; i += 1) {
@@ -113,7 +114,8 @@ test('seeded replay is bit-for-bit deterministic, immutable and finite across bo
 test('normal spawn schedule begins at zero, defers at eight and never catches up in a burst', () => {
   let state = playing({ seed: 'saturation', matchId: 'saturation' });
   const seen = new Set(); const times = [];
-  for (let i = 0; i < 2600; i += 1) {
+  const ticks = process.env.SOFA_EXHAUSTIVE === '1' ? 2600 : 1681;
+  for (let i = 0; i < ticks; i += 1) {
     for (const event of state.events) if (event.kind === 'spawn' && !seen.has(event.id)) { seen.add(event.id); times.push(event.tick - 180); }
     state = engine.step(state, SAFE);
   }
@@ -168,6 +170,42 @@ test('a bounded recipe chain consumes twelve distinct IDs and emits four rewards
   assert.equal(advance(complete, 500), complete);
 });
 
+test('the fourth recipe on the last legal tick scores a single successful stage', () => {
+  const baskets = getLevel('morning-delivery').baskets;
+  const pear = baskets.find(basket => basket.id === 'pear');
+  const plum = baskets.find(basket => basket.id === 'plum');
+  // The pear completes the first three recipes. Hold the last plum outside its basket.
+  const setup = contactFixture({
+    active: [{ type: 'pear', x: pear.x, y: pear.y }, { type: 'plum', x: 430, y: 360 }],
+    buffered: { apple: 3, plum: 2, pear: 2, starfruit: 3 },
+  });
+  setup.nextEvent = 0; // contactFixture starts with an empty event log.
+  const state = engine.step(setup, SAFE);
+  assert.equal(state.orders.activeIndex, 3);
+  assert.equal(state.fruits.length, 1);
+  const lastFruit = state.fruits[0];
+  lastFruit.x = plum.x;
+  lastFruit.y = plum.y;
+  state.elapsedTicks = RULES.stageDurationTicks - 1;
+  state.tick = RULES.countdownTicks + state.elapsedTicks;
+  state.supply.nextSpawnTick = RULES.stageDurationTicks + 1;
+  assert.doesNotThrow(() => engine.serializeCheckpoint(state));
+
+  const result = engine.step(state, SAFE);
+  const scoring = result.events.filter(event => event.tick === result.tick &&
+    ['order-complete', 'stage-complete'].includes(event.kind));
+  assert.deepEqual(scoring.map(event => event.kind), ['order-complete', 'stage-complete']);
+  assert.equal(scoring[0].entityId, state.orders.recipes[3].id);
+  assert.equal(scoring[1].data.reason, 'success');
+  assert.deepEqual(result.results, [{
+    stageIndex: 0, ordersCompleted: 4, stars: 3, elapsedTicks: RULES.stageDurationTicks,
+    composted: state.composted.length,
+  }]);
+  assert.equal(result.consumed.at(-1).fruitIds.filter(id => id === lastFruit.id).length, 1);
+  assertConserved(result);
+  assert.equal(engine.step(result, SAFE), result);
+});
+
 test('compost center edges remove an ID once and stage remainder is distinct from compost', () => {
   const hole = getLevel('switchback-grove').compost[0];
   const state = contactFixture({ stageIndex: 1, active: [{ type: 'pear', x: hole.x - 0.01, y: hole.y + hole.height / 2 }] });
@@ -178,7 +216,7 @@ test('compost center edges remove an ID once and stage remainder is distinct fro
   assert.equal(after.fruits.length, 0);
   assert.equal(after.composted.length, before.composted.length + 1); assertConserved(after);
   assert.equal(engine.step(after, SAFE).composted.length, after.composted.length);
-  const timeout = advance(playing(), 5400);
+  const timeout = finishAtDeadline(playing());
   const groups = assertConserved(timeout);
   assert.equal(groups.remainingAtEnd.length, 8); assert.equal(groups.unspawned.length, 16);
   assert.equal(groups.composted.length, 0); assert.equal(groups.active.length, 0); assert.equal(groups.buffered.length, 0);
@@ -199,10 +237,24 @@ test('gate closure defers at overlap, forecasts at zero, and closes only once cl
 });
 
 test('all three gusts have exact forecasts/durations and practice suppresses them', () => {
+  const expected = {
+    forecasts: [1170, 2520, 3870], starts: [1350, 2700, 4050], ends: [1440, 2790, 4140],
+  };
+  const boundaries = Object.values(expected).flat().flatMap(tick => [tick - 1, tick, tick + 1]);
+  // Exercise either side of every transition, including the stage deadline.
+  // The exhaustive lane checks every intervening tick for unexpected changes.
+  function sampleTicks(last) {
+    if (process.env.SOFA_EXHAUSTIVE === '1') return Array.from({ length: last }, (_, index) => index + 1);
+    return [1, ...boundaries, last].sort((a, b) => a - b);
+  }
+  function stepAt(state, tick) {
+    const jump = tick - state.elapsedTicks - 1;
+    return engine.step({ ...state, tick: state.tick + jump, elapsedTicks: state.elapsedTicks + jump }, SAFE);
+  }
   let state = stageFixture(2);
   const forecasts = []; const starts = []; const ends = []; let previous = null;
-  while (state.phase === 'playing') {
-    state = engine.step(state, SAFE);
+  for (const tick of sampleTicks(RULES.stageDurationTicks)) {
+    state = stepAt(state, tick);
     if (state.gust && (!previous || previous.id !== state.gust.id || previous.phase !== state.gust.phase)) {
       (state.gust.phase === 'forecast' ? forecasts : starts).push(state.elapsedTicks);
     }
@@ -213,7 +265,10 @@ test('all three gusts have exact forecasts/durations and practice suppresses the
   // Private mode fixture exercises the same late-stage geometry without adding
   // an unsupported stage/hazard option to createRun.
   let practice = stageFixture(2); practice.mode = 'practice';
-  practice = advance(practice, 5500);
+  for (const tick of sampleTicks(5500)) {
+    practice = stepAt(practice, tick);
+    assert.equal(practice.gust, null);
+  }
   assert.equal(practice.phase, 'playing'); assert.equal(practice.gust, null);
   assert.equal(engine.project(practice, PUBLIC).timeRemainingTicks, null);
   assert.equal(practice.events.some(event => event.kind === 'gust-start' || event.kind === 'gust-forecast'), false);
@@ -223,7 +278,7 @@ test('all three gusts have exact forecasts/durations and practice suppresses the
 test('full campaign timeout progression, completed-stage retry, event ring and fresh match fencing', () => {
   let state = playing({ seed: 'whole-run', matchId: 'whole-run' });
   for (let stage = 0; stage < 3; stage += 1) {
-    state = advance(state, 5400);
+    state = finishAtDeadline(state);
     assert.equal(state.results.length, stage + 1); assert.equal(state.results.at(-1).ordersCompleted, 0);
     assert.equal(state.phase, stage === 2 ? 'finished' : 'interlude'); assertConserved(state);
     if (stage < 2) state = advance(ready(state), 180);

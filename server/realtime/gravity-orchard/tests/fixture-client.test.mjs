@@ -1,40 +1,62 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { performance } from 'node:perf_hooks';
+import { ManualClock } from './protocol-support.mjs';
 import WebSocket from 'ws';
 import { createFixtureServer } from '../fixture/server.mjs';
 import { createMockSimulation } from '../fixture/simulation.mjs';
 import { createRealtimeClient } from '../../../../ui/realtime/gravity-orchard/index.mjs';
 
-async function until(check, message) {
-  const deadline = performance.now() + 5000;
-  while (!check()) {
-    if (performance.now() > deadline) assert.fail(message);
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  }
-}
-
-test('real browser-client seam interoperates with fixture authority for two simultaneous seats, ACKs, pause and rematch', { timeout: 15_000 }, async (t) => {
-  const fixture = await createFixtureServer({ simulation: createMockSimulation({ countdownTicks: 2 }) });
+test('real browser-client seam interoperates with fixture authority for two simultaneous seats, ACKs, pause and rematch', { timeout: 120_000 }, async (t) => {
+  const clock = new ManualClock();
+  const fixture = await createFixtureServer({ clock, simulation: createMockSimulation({ countdownTicks: 2 }) });
   const clients = [];
   t.after(async () => { clients.forEach((peer) => peer.client.dispose()); await fixture.close(); });
+  // Issue credentials before mocking browser timers. Each one-shot request
+  // closes its socket so the next seat cannot inherit an expired keep-alive.
+  const credentials = new Map();
+  for (const viewer of ['host', 'jon', 'lydia']) {
+    const response = await fetch(`${fixture.origin}/fixture/session`, {
+      method: 'POST',
+      headers: { Origin: fixture.origin, 'Content-Type': 'application/json', Connection: 'close' },
+      body: JSON.stringify({ viewer }),
+    });
+    assert.equal(response.status, 200);
+    credentials.set(viewer, await response.json());
+  }
+
+  // Use real sockets, but advance the scheduler and client input pumps together.
+  // OS descheduling must not simulate a host stall or make a player's input stale.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  async function until(check, message) {
+    for (let step = 0; step < 100; step++) {
+      if (check()) return;
+      t.mock.timers.tick(10);
+      await clock.advance(10);
+    }
+    const states = clients.map(({ snapshot, status }) => ({
+      phase: snapshot?.view.phase, tick: snapshot?.view.tick,
+      pause: snapshot?.view.pauseReason, status: status?.state,
+    }));
+    assert.fail(message + ' ' + JSON.stringify(states));
+  }
   class OriginSocket extends WebSocket {
     constructor(url) { super(url, { origin: fixture.origin }); }
   }
   async function connect(viewer) {
-    const response = await fetch(`${fixture.origin}/fixture/session`, {
-      method: 'POST', headers: { Origin: fixture.origin, 'Content-Type': 'application/json' }, body: JSON.stringify({ viewer }),
-    });
-    const credential = await response.json();
+    const credential = credentials.get(viewer);
     const peer = { client: null, snapshot: null, status: null };
+    const connected = Promise.withResolvers();
     peer.client = createRealtimeClient({
       url: fixture.origin.replace('http:', 'ws:') + '/api/realtime/gravity-orchard',
-      roomCode: fixture.roomCode, token: credential.token, now: () => performance.now(), WebSocketImpl: OriginSocket,
-      onSnapshot: (snapshot) => { peer.snapshot = snapshot; }, onStatus: (status) => { peer.status = status; },
+      roomCode: fixture.roomCode, token: credential.token, now: clock.now, WebSocketImpl: OriginSocket,
+      onSnapshot: (snapshot) => { peer.snapshot = snapshot; }, onStatus: (status) => {
+        peer.status = status;
+        if (status.state === 'connected') connected.resolve();
+      },
     });
     clients.push(peer);
     peer.client.connect();
-    await until(() => peer.status?.state === 'connected', `${viewer} must authenticate`);
+    await connected.promise;
     assert.equal(JSON.stringify(peer.client.getStats()).includes(credential.token), false);
     return peer;
   }
@@ -60,5 +82,23 @@ test('real browser-client seam interoperates with fixture authority for two simu
   assert.deepEqual(host.snapshot.view.players.jon.input, { x: 0, y: 0, brake: true });
   assert.equal((await command(host, 'same-seed-rematch', 'rematch', { seedMode: 'same' })).accepted, true);
   await until(() => clients.every((peer) => peer.snapshot.view.phase === 'waiting' && peer.snapshot.view.matchId !== oldMatch), 'new match reaches all clients without stale overwrites');
+  await until(() => {
+    const { presence } = fixture.diagnostics().transport;
+    return presence.jon.inputFresh && presence.lydia.inputFresh;
+  }, 'both seats deliver fresh input for the rematch epoch');
+  assert.equal((await command(jon, 'jon-rematch-ready', 'ready', { value: true })).accepted, true);
+  assert.equal((await command(lydia, 'lydia-rematch-ready', 'ready', { value: true })).accepted, true);
+  await until(() => clients.every(peer => peer.snapshot.view.phase === 'playing'), 'the rematch starts for all recipients');
+  await clock.jump(350);
+  const beforeStall = fixture.diagnostics().transport;
+  assert.equal(beforeStall.phase, 'playing', 'A sub-threshold wake stays in play');
+  assert.equal(beforeStall.hostStalls, 0);
+  // Deliver the first overdue scheduler callback at the end of a 1250 ms stall.
+  await clock.jump(1250);
+  await until(() => clients.every(peer => peer.snapshot.view.pauseReason === 'host-stall'), 'a late host callback pauses every recipient');
+  for (const peer of clients) {
+    assert.equal(peer.snapshot.view.phase, 'paused');
+    assert.equal(peer.snapshot.view.tick, beforeStall.tick);
+  }
   for (const peer of clients) assert.equal(peer.client.getStats().invalidMessages, 0);
 });

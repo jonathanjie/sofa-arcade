@@ -9,6 +9,8 @@ import { createRequestPolicy } from './request-policy.mjs';
 import { normalizeIdentities } from './certificates/index.mjs';
 
 const STATES = new Set(['certificate-expired', 'address-mismatch', 'failed']);
+/** System error codes that may be attached to an operation failure for diagnosis. */
+const DIAGNOSTIC_SYSTEM_CODES = new Set(['EADDRINUSE', 'EADDRNOTAVAIL', 'EACCES', 'EPERM', 'ENOENT', 'ENOSPC', 'EROFS', 'ETIMEDOUT']);
 const OPERATIONS = new Set(['start', 'provision', 'exportPublicTrust', 'remove']);
 const LISTENER_CODES = new Set(['tls_client_rejected', 'request_rejected', 'request_failed', 'upgrade_failed', 'certificate_expired', 'listener_failed', 'close_failed']);
 
@@ -112,6 +114,12 @@ export function createSecureLanHost({
   const report = code => {
     try { Promise.resolve(onError?.(Object.freeze({ code }))).catch(() => {}); } catch { /* safe callback */ }
   };
+  // A diagnostic code for an operation failure: the fallback, plus a system
+  // error code only when it is on this fixed list. Never a message, path or
+  // certificate detail.
+  const causeCode = (error, fallback) => (
+    DIAGNOSTIC_SYSTEM_CODES.has(error?.code) ? `${fallback}:${error.code}` : fallback
+  );
   const assertOpen = () => { if (disposed) throw failure('HOST_CLOSED'); };
   async function authorize(context, operation) {
     assertOpen();
@@ -159,13 +167,18 @@ export function createSecureLanHost({
         await stopListener();
         return snapshot(result.state === 'missing' ? 'needs-setup' : STATES.has(result.state) ? result.state : 'failed');
       }
+      const listenerStatus = listener?.status?.status;
+      if (listenerStatus === 'failed' || listenerStatus === 'certificate-expired') {
+        await stopListener();
+        return snapshot(listenerStatus);
+      }
       // A network change or external material change invalidates our advertisement.
       // No privileged renewal happens during a status read.
       if (listener && materialSignature(result) !== activeMaterial) {
         await stopListener();
         return snapshot('needs-setup');
       }
-      if (listener?.status?.status === 'ready') return snapshot('ready');
+      if (listenerStatus === 'ready') return snapshot('ready');
       return snapshot(STATES.has(last.status) ? last.status : 'needs-setup');
     } catch {
       await stopListener();
@@ -220,7 +233,7 @@ export function createSecureLanHost({
         enabled = true;
         explicitlyDisabled = false;
         try { await stopListener(); return await startExisting(); }
-        catch (error) { report('START_FAILED'); return snapshot(disposed ? 'disabled' : STATES.has(error?.status) ? error.status : 'failed'); }
+        catch (error) { report(causeCode(error, 'START_FAILED')); return snapshot(disposed ? 'disabled' : STATES.has(error?.status) ? error.status : 'failed'); }
       });
     },
     provision(context, options = {}) {
@@ -243,7 +256,7 @@ export function createSecureLanHost({
         } catch (error) {
           await stopListener();
           snapshot(disposed ? 'disabled' : STATES.has(error?.status) ? error.status : 'failed');
-          report('PROVISION_FAILED');
+          report(causeCode(error, 'PROVISION_FAILED'));
           throw failure(disposed ? 'HOST_CLOSED' : 'PROVISION_FAILED');
         }
       });

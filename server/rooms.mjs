@@ -111,10 +111,11 @@ function checkOrigin(request) {
   }
 }
 
-async function loadRoom(db, code) {
+async function loadRoom(db, code, { optional = false } = {}) {
   const row = await db.prepare(
     'SELECT code, revision, data, created_at, updated_at, expires_at, jon_seen, lydia_seen FROM sofa_rooms WHERE code = ?',
   ).bind(code).first();
+  if (!row && optional) return null;
   if (!row) throw new ApiError(404, 'That room could not be found. Check the six-character code.', 'room_not_found');
   if (row.expires_at <= Date.now()) throw new ApiError(410, 'This room has expired. Start a new game on the TV.', 'room_expired');
   return { ...row, data: JSON.parse(row.data) };
@@ -346,7 +347,11 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
         throw new Error('The engine did not establish match and phase boundaries.');
       }
       nextData.phase = 'playing';
-      nextData.recentActions = [];
+      // Keep the bounded history across rematches. Older receipts without a
+      // request revision cannot prove an exact retry across a match boundary.
+      nextData.recentActions = (nextData.recentActions || [])
+        .filter(receipt => Number.isSafeInteger(receipt.revision))
+        .map(receipt => ({ ...receipt, previousMatch: true }));
       envelope({ ...room, data: nextData }, auth);
       const committed = await commit(db, room, nextData);
       if (committed) return json(envelope(committed, auth));
@@ -448,6 +453,12 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
     const previous = (room.data.recentActions || []).find(item => item.playerId === playerId && item.actionId === body.actionId);
     if (!previous) return false;
     if (previous.actionKey !== actionKey) throw new ApiError(409, 'That request was already used for a different move. Choose the move again.', 'action_id_reused');
+    if (previous.previousMatch && previous.revision !== body.revision) {
+      if (body.action.matchId && body.action.matchId !== room.data.state?.matchId) {
+        throw new ApiError(409, RULE_ERRORS.stale_match, 'stale_match');
+      }
+      throw staleRevision();
+    }
     return true;
   }
 
@@ -505,7 +516,7 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       nextData.state = nextState;
       nextData.phase = nextState.phase;
       nextData.recentActions = retainRecentActions([
-        ...(nextData.recentActions || []), { playerId: auth.playerId, actionId: body.actionId, actionKey },
+        ...(nextData.recentActions || []), { playerId: auth.playerId, actionId: body.actionId, revision: body.revision, actionKey },
       ]);
       // A deterministic projector failure must not commit an otherwise invisible
       // move. Transport loss after a successful commit is recovered by its ID.
@@ -542,7 +553,8 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
       }
       if (!code) return await createRoom(db, body);
       if (request.method === 'GET') {
-        let room = await loadRoom(db, code);
+        let room = await loadRoom(db, code, { optional: url.searchParams.get('lookup') === '1' });
+        if (room === null) return json(null);
         const auth = await authenticate(request, room);
         if (room.data.gameId === 'gravity-orchard' && room.data.state !== null) {
           adapter('gravity-orchard');
@@ -551,7 +563,10 @@ export function createRoomApi({ resolveGame = getGame, resolveEngine = getGameEn
           room = await loadRoom(db, code);
         }
         if (auth.role === 'player') room = await heartbeat(db, room, auth.playerId);
-        return json(envelope(room, auth));
+        const view = envelope(room, auth);
+        // Internal callback for local stream admission. The viewer stays out of the response.
+        env.onRoomRead?.(auth);
+        return json(view);
       }
       if (operation === 'join') return await joinRoom(db, request, code, body);
       if (operation === 'start' || operation === 'rematch') return await startRoom(db, request, code, operation === 'rematch');

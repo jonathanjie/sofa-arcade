@@ -1,6 +1,6 @@
 # Gravity Orchard: local motion and realtime notes
 
-Research baseline: 20 November 2026. These are design findings and acceptance requirements, not a claim that the proposed transport or sensor support is already implemented. Read the [v0.2 game PRD](games/gravity-orchard.md), [implementation contract](GRAVITY_ORCHARD_CONTRACT.md), and [dispatch packet](DISPATCH_GRAVITY_ORCHARD.md) together. The old turn-based Gravity Orchard draft is superseded by the two-tray cooperative game.
+Browser and certificate research dates from 20 November 2026. The [local realtime contract](GRAVITY_ORCHARD_CONTRACT.md) describes the implemented transport. Physical tilt, trust and latency checks remain open.
 
 ## Decision
 
@@ -12,23 +12,7 @@ There is a real setup tradeoff: reliable browser motion requires a secure contex
 
 ## Repository evidence
 
-Inspected baseline: main `a96fd477d2a3239d715421ed711682648e16eccc`. Inspect current source again before implementation; this note does not override newer code.
-
-| Source | Existing behavior | Required integration consequence |
-| --- | --- | --- |
-| `server/lan.mjs` | Node HTTP listener, exact Host/Origin validation, HTTP join metadata and authenticated SSE | Compose an explicit HTTPS listener around a shared handler. Do not change a scheme string and assume origin handling is complete. |
-| `server/rooms.mjs` | Bearer authentication and SQLite compare-and-swap writes for turn-based actions | Continuous input must bypass per-action persistence. Add a server-only authentication/lifecycle seam during GO7 integration. |
-| `ui/transport.mjs` | Explicit LAN configuration and authenticated fetch/SSE; join-origin parsing already accepts HTTP or HTTPS | Reuse configuration conventions; add a separate realtime client. |
-| `desktop/host/lifecycle.mjs` | Readiness requires loopback HTTP plus HTTP IPv4 controller URLs on the same port | Add secure-controller metadata without weakening existing URL validation. |
-| `desktop/host/entry.mjs` | Starts the shared LAN server and owns process shutdown/network refresh | Keep one owned host process and close both listeners with it. |
-| `desktop/src-tauri/src/protocol.rs` | Validates child readiness records | Extend the native protocol deliberately; do not trust arbitrary URLs from readiness output. |
-| `desktop/src-tauri/src/config.rs` | Persists a validated loopback HTTP origin and public route | Keep credentials out of saved navigation and avoid replacing the host origin with an arbitrary controller URL. |
-
-The room API's `authenticate` function is private inside `createRoomApi`. A successful projected GET does not identify the requesting player to a new socket handler. GO7 must inject an authenticator that returns the actual existing host/player authority. Client-provided seat names never establish ownership.
-
-GO2 and GO6 do not edit those shared sources. They deliver isolated factories and tested fixtures; GO7 owns all production composition, registry, root dependency, native protocol and runtime-allowlist changes.
-
-The coordinator receives an injected synchronous `validateUpgrade(request)` policy and denies upgrades if it is absent or does not explicitly accept. GO7 derives the scheme from the actual listener or `request.socket.encrypted`, then checks exact Host/Origin. GO6 passes the original request; untrusted forwarded headers and header rewriting must not disguise HTTP as HTTPS. Origin validation does not replace first-message bearer authentication.
+The original research used `a96fd47`. In the merged host, `server/lan.mjs` and `server/gravity-orchard-host.mjs` connect the HTTP/WS and optional HTTPS/WSS listeners to one room authority. The coordinator receives the room authenticator and a request policy that checks the actual listener, Host and Origin. The native host owns certificate setup. See the [local release guide](LOCAL_RELEASE.md) for device setup and acceptance.
 
 ## Phone motion behavior
 
@@ -83,51 +67,17 @@ DNS-01 can prove control of a real domain without exposing the game server publi
 
 WebRTC needs offer/answer and ICE candidate exchange outside its data channel. QR/manual exchange can replace a cloud signaling service but needs a two-way pairing and reconnect design. Direct LAN candidates may work without internet services; that must be proved on actual networks. STUN/TURN fallback is an internet dependency unless deliberately supplied locally. [WebRTC peer connections](https://webrtc.org/getting-started/peer-connections), [data channels](https://webrtc.org/getting-started/data-channels).
 
-## Realtime starting contract
+## Realtime design
 
-The [canonical contract](GRAVITY_ORCHARD_CONTRACT.md) owns exact interfaces. These initial values are tuning hypotheses, not measured performance claims:
+A stationary phone may send no new orientation events. Its network heartbeat therefore sends the latest held vector. A delayed TCP backlog can make old input appear recent. The coordinator checks the observed simulation tick and connection identity before applying it. A lost controller causes a shared pause, and both players confirm readiness to resume.
 
-| Concern | Starting value |
-| --- | --- |
-| Authoritative fixed simulation | 60 ticks/second |
-| Latest controller inputs | 20 messages/second |
-| Public snapshots | 20/second |
-| Input stale threshold | 250ms: neutral plus brake |
-| Shared-pause threshold | 2 seconds without valid control/connectivity |
-| Maximum observed-tick lag | 30 simulation ticks |
-| Maximum live fruit | 8 |
+A late host callback can advance at most five fixed ticks (about 83 ms of game time). The host drops the remaining whole ticks, so a brief scheduling delay slows the clock without sending fruit across the garden in one frame. Stale steering becomes neutral with Brake after 250 ms. A gap over one second represents 20 missed snapshot intervals without live feedback. At that point the host pauses before stepping and both players confirm readiness. Replay uses the inputs applied on each simulation tick.
 
-Input fields are `type:'input'`, `protocol:1`, `matchId`, `runEpoch`, `controllerEpoch`, `seq`, `observedTick`, finite normalized `x,y` in `[-1,1]`, and boolean `brake`. After wire validation, the pure input normalizer limits diagonal magnitude and rounds as specified in the contract. The server supplies the player from authenticated connection context. No client actor field is accepted. The first message is exactly `{type:'auth',protocol:1,roomCode,token}`, with the contract's five-second deadline and bounded frame; credentials never appear in URLs, QR codes or logs.
-
-`matchId` changes for a new run. `runEpoch` changes and all input latches clear on pause/resume, stage changes and recovery. `controllerEpoch` is server-assigned on connection/takeover, fencing older sockets. Sequence numbers increase within that connection. Reject future ticks and inputs beyond the observed-tick lag limit.
-
-Receipt time alone is insufficient: an old TCP backlog can arrive later and look newly received. `observedTick`, epochs and bounded buffers limit accepted input age and fence obsolete connections/runs. Local monotonic measurements support diagnostics; no additional client timestamp is part of the frozen input envelope or defines authoritative freshness/game time.
-
-Keep only the latest valid input per player. Bound payload size, unauthenticated lifetime, message rate and output queues. Coalesce snapshots and check browser `bufferedAmount`; it does not include all OS/network buffering. Closing a WebSocket does not discard messages queued before the close handshake, so stale-epoch rejection is still necessary. [WHATWG WebSockets standard](https://websockets.spec.whatwg.org/).
-
-Use a monotonic clock, at most five catch-up ticks per scheduler turn, and a trusted host-stall pause after a gap beyond 250ms. Reliable wire command kinds are `ready`, `pause`, `retry-stage` and `rematch`; both-ready resumes through countdown rather than a separate resume command. Capture a command's match/epoch when first sent and retain that identity on retries. System pauses call the pure server-only `pauseForSystem(state, reason)` for `network`, `host-stall` or `recovery`, never a wire command. Persist stage boundaries, explicit pause/end and bounded periodic checkpoints initially no more than once per five seconds, not each input or frame. Recover paused from the last durable checkpoint and require both controllers ready before resuming.
-
-The existing room projection and realtime frames must describe the same authority. Do not leave one live world in memory and a separate conflicting world exposed through GET/SSE. Checkpoint schema/version and recovery semantics belong in the integration handoff.
-
-WebSocket v1 authenticates only existing host/player credentials; there is no anonymous/public observer connection. A trusted public projection role may still be used by existing HTTP/server paths. Presence stays in the coordinator snapshot wrapper, with GO7 forwarding it to presentation connection status rather than adding networking state to the pure simulation.
+The [wire contract](GRAVITY_ORCHARD_CONTRACT.md#5-realtime-wire-contract) defines authentication, fields, rates, limits and checkpoint recovery.
 
 ## Secure-controller status
 
-The setup view and native integration share this safe status. It contains no private material:
-
-```ts
-type SecureControllerStatus = {
-  enabled: boolean;
-  status: 'disabled' | 'needs-setup' | 'ready' |
-    'certificate-expired' | 'address-mismatch' | 'failed';
-  controllerOrigins: string[];
-  certificateFingerprint?: string;
-  validUntil?: string;
-  requiresPhoneTrust: boolean;
-};
-```
-
-Host `ready` means the listener/certificate are ready, not that either phone has trusted the root or granted sensor access. Those are phone-side checks.
+A ready listener reports that the Mac has usable certificate material. Each phone must establish trust and supply usable motion readings. The [trusted LAN contract](GRAVITY_ORCHARD_CONTRACT.md#9-trusted-lan-and-tauri-setup-component) defines the public status fields.
 
 ## Acceptance and honest evidence
 
@@ -135,7 +85,7 @@ Automated checks must cover deterministic replay, malformed/flooded frames, auth
 
 Manual acceptance requires real iOS Safari and Android Chrome, finite sensor readings, correctly directed axes, background/lock/reconnect behavior, and a cold start with WAN disconnected after trust setup. Test missing trust, wrong SAN/hostname, expiry and changed LAN addresses. Validate the actual packaged Mac host and server shutdown. Record device/browser versions and the exact tested commit.
 
-Synthetic events, HTTP screenshots and browser runs that ignore certificate errors do not prove phone motion support. A session without hardware should complete its component, publish the tested PR and clearly record hardware gates as unverified; it must not claim release readiness. GO7 owns combined hardware/native acceptance.
+Synthetic events, HTTP screenshots and browser runs that ignore certificate errors do not prove phone motion support. Record physical results in the [release sign-off](LOCAL_RELEASE.md#hardware-and-distribution-sign-off).
 
 Measure input acknowledgment RTT, accepted-input tick age, host overruns, frame delivery and rendering separately. Never subtract unsynchronized phone and host clocks to claim one-way delay. Screen-casting adds another path that needs separate physical observation. Tauri provides packaging, lifecycle and local setup; it does not by itself prove lower phone-to-TV latency.
 

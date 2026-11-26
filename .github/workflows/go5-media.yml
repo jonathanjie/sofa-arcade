@@ -8,16 +8,28 @@ on:
       - 'ui/audio.js'
       - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
       - '.github/workflows/go5-media.yml'
+      - 'ui/score.mjs'
+      - 'ui/media/odd-laws-society/**'
+      - 'ui/media/sofa-menu/**'
   push:
     branches: [main]
     paths:
       - 'public/assets/gravity-orchard/**'
       - 'ui/media/gravity-orchard/**'
       - '.github/workflows/go5-media.yml'
+      - 'ui/audio.js'
+      - 'ui/score.mjs'
+      - 'ui/media/odd-laws-society/**'
+      - 'ui/media/sofa-menu/**'
+      - 'docs/GRAVITY_ORCHARD_CONTRACT.md'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: go5-media-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   artwork-animation-and-score:
@@ -26,6 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -60,13 +73,11 @@ jobs:
         run: node ui/media/gravity-orchard/sources/audio/render.mjs --write --encode
       - name: Validate final assets, all atlas poses, inventory, score timing and rendered levels
         run: npm test --prefix ui/media/gravity-orchard
-      - name: Preserve existing rules, room and audio contracts
-        run: npm test
       - name: Render 720p, 1080p and phone galleries; test motion, errors and audio playback
         run: node ui/media/gravity-orchard/sources/browser-check.mjs
       - name: Retain exact-commit render evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: gravity-orchard-media-${{ github.event.pull_request.head.sha || github.sha }}
           path: |

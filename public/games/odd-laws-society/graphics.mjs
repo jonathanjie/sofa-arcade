@@ -50,8 +50,19 @@ export function fallbackCharacter(id,state='idle') {
   const fur=cat?'#dba05f':lydia?'#c8b5a3':'#b4b7a5', shirt=cat?'#e7d4aa':lydia?'#a66878':'#537e74';
   return `<svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="110" rx="38" ry="5" fill="#584834" opacity=".12"/><path d="M25 99q-22-27-12-34" stroke="${fur}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M31 107V87q29-25 58 0v20" fill="${shirt}"/>${cat?'<path d="M29 51 27 16 53 34m39 17 2-35-27 18" fill="'+fur+'"/>':'<circle cx="31" cy="33" r="20" fill="'+fur+'"/><circle cx="89" cy="33" r="20" fill="'+fur+'"/><circle cx="31" cy="33" r="13" fill="#e5b8ac"/><circle cx="89" cy="33" r="13" fill="#e5b8ac"/>'}<ellipse cx="60" cy="59" rx="36" ry="33" fill="${fur}"/><ellipse cx="60" cy="72" rx="23" ry="16" fill="#f3e6cf"/>${state==='celebrate'?'<path d="m43 56 5-4 5 4m14 0 5-4 5 4" stroke="#45392f" stroke-width="3" fill="none"/>':'<circle cx="47" cy="55" r="3" fill="#45392f"/><circle cx="73" cy="55" r="3" fill="#45392f"/>'}<path d="m55 67 5 4 5-4Z" fill="#73544d"/><path d="M60 71v5m-8 0q8 8 16 0" stroke="#73544d" stroke-width="2" fill="none"/><path d="M37 70 16 65m21 10-22 2m68-7 21-5m-21 10 22 2" stroke="#8a7764" stroke-width="1.5"/>${lydia?'<path d="m70 25 16-8-1 17-15-9 0 0-11-8-1 17Z" fill="#9b5469"/>':''}${cat?'<path d="M53 29 56 39m8-10-1 10" stroke="#b87339" stroke-width="4"/>':''}<path d="m45 91 15 10 15-10" fill="none" stroke="#f0dfb9" stroke-width="2"/></svg>`;
 }
-export function mediaPicture(entry,fallback,manifestUrl,className='',label='') {
-  let src=null;
-  try { if(entry?.src && manifestUrl) {const url=new URL(entry.src,manifestUrl); if(['http:','https:','file:','blob:','data:'].includes(url.protocol)) src=url.href;} } catch {}
-  return `<span class="ols-media ${escape(className)}"${label?` role="img" aria-label="${escape(label)}"`:' aria-hidden="true"'}><span class="ols-fallback">${fallback}</span>${src?`<img class="ols-sprite" src="${escape(src)}" alt="" width="${Number(entry.width)||120}" height="${Number(entry.height)||100}" draggable="false" decoding="async" data-ols-media>`:''}</span>`;
+function imageUrl(source, manifestUrl) {
+  try {
+    if (!source || !manifestUrl) return null;
+    const url = new URL(source, manifestUrl);
+    return ['http:', 'https:', 'file:', 'blob:', 'data:'].includes(url.protocol) ? url.href : null;
+  } catch { return null; }
+}
+export function mediaPicture(entry, fallback, manifestUrl, className = '', label = '', {sizes, lazy = false} = {}) {
+  const src = imageUrl(entry?.src, manifestUrl);
+  const compact = sizes ? imageUrl(entry?.compact?.src, manifestUrl) : null;
+  const width = Number(entry?.width) || 120;
+  const compactWidth = Number(entry?.compact?.width);
+  const srcset = compact && src && Number.isInteger(compactWidth) && compactWidth > 0 && compactWidth < width
+    ? ` srcset="${escape(compact)} ${compactWidth}w, ${escape(src)} ${width}w" sizes="${escape(sizes)}"` : '';
+  return `<span class="ols-media ${escape(className)}"${label ? ` role="img" aria-label="${escape(label)}"` : ' aria-hidden="true"'}><span class="ols-fallback">${fallback}</span>${src ? `<img class="ols-sprite" src="${escape(src)}"${srcset} alt="" width="${width}" height="${Number(entry.height) || 100}" draggable="false" decoding="async"${lazy ? ' loading="lazy"' : ''} data-ols-media>` : ''}</span>`;
 }

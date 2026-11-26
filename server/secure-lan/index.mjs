@@ -7,6 +7,7 @@
 import { createServer } from 'node:https';
 import { isIP } from 'node:net';
 import os from 'node:os';
+import { rejectUpgrade } from '../reject-upgrade.mjs';
 import { validateTlsMaterial, normalizeIdentities } from './certificates/index.mjs';
 
 const CLOSE_GRACE_MS = 250;
@@ -82,15 +83,6 @@ function failedResponse(response) {
   response.end('{"error":"The local host could not serve this request.","code":"request_failed"}');
 }
 
-function rejectUpgrade(socket, status = 404) {
-  if (socket.destroyed) return;
-  socket.end(`HTTP/1.1 ${status} ${status === 404 ? 'Not Found' : 'Service Unavailable'}\r\nConnection: close\r\nContent-Length: 0\r\n\r\n`);
-  // A malicious peer may keep the writable half of a rejected upgrade open.
-  const timer = setTimeout(() => socket.destroy(), CLOSE_GRACE_MS);
-  timer.unref();
-  socket.once('close', () => clearTimeout(timer));
-}
-
 /**
  * @param {{tlsMaterial: {key: Buffer,cert: Buffer,ca: Buffer,identities: string[]},
  *   host?: string,port?: number,requestHandler: Function,onUpgrade?: Function,onError?: Function}} options
@@ -157,13 +149,18 @@ export async function createSecureLanServer({ tlsMaterial, host = '0.0.0.0', por
   });
   server.on('upgrade', (request, socket, head) => {
     track(socket);
-    if (closed || !onUpgrade) { rejectUpgrade(socket, closed ? 503 : 404); return; }
+    if (closed || !onUpgrade) {
+      if (closed) rejectUpgrade(socket, 503, 'Service Unavailable');
+      else rejectUpgrade(socket, 404, 'Not Found');
+      return;
+    }
     try {
       Promise.resolve(onUpgrade(request, socket, head)).catch(() => { notify('upgrade_failed'); socket.destroy(); });
     } catch { notify('upgrade_failed'); socket.destroy(); }
   });
-  server.on('tlsClientError', (_error, socket) => { notify('tls_client_rejected'); socket.destroy(); });
-  server.on('clientError', (_error, socket) => { notify('request_rejected'); socket.destroy(); });
+  // A failed peer handshake or HTTP parse does not change listener readiness.
+  server.on('tlsClientError', (_error, socket) => socket.destroy());
+  server.on('clientError', (_error, socket) => socket.destroy());
   server.requestTimeout = 15_000;
   server.headersTimeout = 15_000;
   server.keepAliveTimeout = 5000;
@@ -228,9 +225,9 @@ export async function createSecureLanServer({ tlsMaterial, host = '0.0.0.0', por
     throw new SecureLanListenerError(error?.code === 'EADDRINUSE' ? 'port_in_use' : 'bind_failed');
   }
   server.on('error', () => {
-    notify('listener_failed');
     void close().catch(() => {});
     currentStatus = Object.freeze({ enabled: true, status: 'failed', controllerOrigins: Object.freeze([]), requiresPhoneTrust: true });
+    notify('listener_failed');
   });
   // TLS clients enforce dates themselves; the host must also stop advertising
   // ready after expiry. Recheck long deadlines in short chunks (Node timers
@@ -239,12 +236,12 @@ export async function createSecureLanServer({ tlsMaterial, host = '0.0.0.0', por
     if (closed) return;
     const remaining = Date.parse(material.validUntil) - Date.now();
     if (remaining <= 0) {
-      notify('certificate_expired');
       void close().catch(() => {});
       currentStatus = Object.freeze({
         enabled: true, status: 'certificate-expired', controllerOrigins: Object.freeze([]),
         certificateFingerprint: material.certificateFingerprint, validUntil: material.validUntil, requiresPhoneTrust: true,
       });
+      notify('certificate_expired');
       return;
     }
     expiryTimer = setTimeout(checkExpiry, Math.min(remaining, 60_000));

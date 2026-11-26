@@ -54,7 +54,7 @@ Unknown scenes use `menu`. Finite numeric bar indices are floored and wrapped;
 all other indices select bar zero. All nested score data are frozen. Event calls
 return new arrays and event objects so presentation code cannot mutate the score.
 
-## Runtime interface and GO7 integration
+## Runtime interface and collection integration
 
 Only two files belong in the shipped music runtime:
 
@@ -81,11 +81,7 @@ audio.setContext({ role: 'host', view: 'game', scoreScene: 'stage1' });
 await audio.unlock();
 ```
 
-The example's relative import paths are illustrative from the game wiring;
-GO7 should resolve them from its actual entry module. `audio.setContext` already
-accepts `scoreScene`. The current `audio.setScene` convenience method has a
-whitelist for older games; GO7 must extend that whitelist if it chooses that
-method instead. Do not silently rename the contracted scenes to old-game names.
+The example uses illustrative import paths. The collection selects the score in `ui/app.js`. Its game adapter updates the scene through `audio.setContext`.
 
 Update `scoreScene` when the phase or stage changes; do not call `setScore` for
 every catch. Selecting the same game score repeatedly is unnecessary. Existing
@@ -118,7 +114,7 @@ The canonical contract cues `catch`, `reject`, `compost`, `order`, `forecast`,
 `spawn`, `transfer`, `impact`, `collision` and bare `phase-change` are deliberately
 silent: continuous physics does not need a jingle.
 
-GO7/GO4's host event adapter should:
+Host event handling requirements:
 
 1. Deduplicate each committed public event by `(matchId, event.id)`. Preserve the
    cursor across repeated projections and reconnects within the match, and clear
@@ -198,8 +194,7 @@ Review recordings:
 
 **No human auditory evaluation is claimed.** Reading notation, rendering Web
 Audio, checking signal levels, decoding files and operating playback controls
-are distinct from listening. The final Mac/TV speaker balance and the complete
-game's event deduplication remain GO7 acceptance checks.
+are distinct from listening. Physical Mac/TV speaker balance still needs a listening check. The collection adapter in `ui/games/gravity-orchard/index.mjs` handles event deduplication.
 
 ## Source and distribution notes
 

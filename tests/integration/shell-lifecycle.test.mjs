@@ -16,7 +16,7 @@ async function pollingHarness(error, gameId = 'odd-laws-society') {
     assert.ok(begin >= 0 && finish > begin, `Missing production section: ${start}`);
     return source.slice(begin, finish);
   };
-  const state = { code: 'ABC234', network: 'connected', networkMessage: '', gameId, view: 'game', error: '', room: { phase: 'playing' } };
+  const state = { code: 'ABC234', network: 'connected', networkMessage: '', gameId, view: 'game', error: '', room: { code: 'ABC234', phase: 'playing' } };
   const statuses = [], pill = { hidden: true, textContent: '' };
   let stopped = 0, rendered = 0;
   const context = vm.createContext({
@@ -28,7 +28,8 @@ async function pollingHarness(error, gameId = 'odd-laws-society') {
     api: async () => { throw error; }, stopPolling: () => { stopped++; },
     render: () => { rendered++; }, receiveNetworkRoom: () => assert.fail('An error must not supply a board'),
   });
-  vm.runInContext(section('function connectionStatus(', 'function ensureCollectionModules(') +
+  vm.runInContext(section('const hasCurrentRoom ', 'function header(') +
+    section('function connectionStatus(', 'function ensureCollectionModules(') +
     section('async function poll(', 'function startPolling('), context);
   return { context, state, statuses, pill, get stopped() { return stopped; }, get rendered() { return rendered; } };
 }

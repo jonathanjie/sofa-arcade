@@ -6,6 +6,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
+import {LIMITS} from '../../../server/realtime/gravity-orchard/index.mjs';
 import {startLanServer} from '../../../server/lan.mjs';
 
 export const root=fileURLToPath(new URL('../../../',import.meta.url));
@@ -16,7 +17,11 @@ export function distribution(values){const sorted=values.filter(Number.isFinite)
 
 export async function createSession(){
  const temp=await mkdtemp(path.join(tmpdir(),'sofa-go7-browser-'));
- const options={root,databasePath:path.join(temp,'rooms.sqlite'),host:'127.0.0.1',port:0,enableGravityOrchard:true,realtimeSeed:'orchard-proof-1',heartbeatMs:500};
+ let tickCallbacks = 0;
+ function onRuntimeTiming(event) {
+   if (event.operation === 'realtime.timer' && event.delayMs === LIMITS.tickMs) tickCallbacks++;
+ }
+ const options={root,onRuntimeTiming,databasePath:path.join(temp,'rooms.sqlite'),host:'127.0.0.1',port:0,enableGravityOrchard:true,realtimeSeed:'orchard-proof-1',heartbeatMs:500};
  let server=await startLanServer(options);const origin=server.origin,port=server.port;let browser;
  try{browser=await chromium.launch({headless:true,...(process.env.SOFA_CHROMIUM?{executablePath:process.env.SOFA_CHROMIUM}:{})});}
  catch(error){await server.close();await rm(temp,{recursive:true,force:true});throw error;}
@@ -27,6 +32,11 @@ export async function createSession(){
  return {origin,evidence,browser,
   protect(value){if(typeof value==='string'&&value)secrets.add(value);},
   check(name,detail=true){checks.push({name,result:'passed',detail});console.log(`GO7 browser: ${name}`);},
+  async waitForHostTicks(observationMs) {
+    const callbacks = Math.ceil(observationMs / LIMITS.tickMs);
+    const target = tickCallbacks + callbacks;
+    await until(() => tickCallbacks >= target, `${callbacks} coordinator tick callbacks while paused`);
+  },
   diagnostics(code){return server.realtimeDiagnostics(code);},
   async restart(){await server.close();server=await startLanServer({...options,port});},
   async page(name,viewport,{permission='denied',reducedMotion='reduce',phone=false}={}){

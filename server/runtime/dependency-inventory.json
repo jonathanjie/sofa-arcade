@@ -3,8 +3,8 @@
   "builder": "esbuild@0.28.0",
   "output": {
     "path": "server/runtime/gravity-orchard-dependencies.mjs",
-    "bytes": 703336,
-    "sha256": "9cdcdab7837fb2fc189cd29b621dfb19ce223b7d5c181060ef18d82cd85e8472"
+    "bytes": 705552,
+    "sha256": "33822f2a98aca39359f97d6e5fb7ee56fb841e4bc7309f8226c90b225fa4599c"
   },
   "optionalUnbundledAccelerators": [
     "bufferutil",
@@ -1282,23 +1282,28 @@
     },
     {
       "path": "scripts/runtime-dependencies-entry.mjs",
-      "bytes": 683,
-      "sha256": "23f0a1555bf4ec8b5664deb35dab3a168a39e95b0911980bc5096408466bc12c"
+      "bytes": 721,
+      "sha256": "53003ceb337046957714ca816da188170d1b35b986ebae21863b39725fdf2920"
     },
     {
       "path": "server/realtime/gravity-orchard/index.mjs",
-      "bytes": 38057,
-      "sha256": "aafe67e1b66709e6e88b29d0dabeb0e9979c9d5ba3879a013fcdc2fe8b2268dc"
+      "bytes": 39924,
+      "sha256": "aba5cc817f47ee21f35812dd56c737530f2095085567459228bf1eea141b0521"
     },
     {
       "path": "server/realtime/gravity-orchard/lib/checkpoint.mjs",
-      "bytes": 4484,
-      "sha256": "a55b598c19f6d9031fcd77e413bf71cf9255001577bdcf5fbcad0e56c9fb8b42"
+      "bytes": 4732,
+      "sha256": "c950ae8524e19de57035cde903e9bb18076dd7ef785fff0fb987c630d266b87b"
     },
     {
       "path": "server/realtime/gravity-orchard/lib/protocol.mjs",
-      "bytes": 6376,
-      "sha256": "d0e44bab926c1514e6c3227e6bfb0a224fa158eef704ddd5c8402c7f4c9cd38c"
+      "bytes": 6377,
+      "sha256": "8004e5faa387b1f5ee9dd38cd3ed961bf675dbf475afffbd497a4bc1613a626f"
+    },
+    {
+      "path": "server/reject-upgrade.mjs",
+      "bytes": 562,
+      "sha256": "df1176873f4d5a4e2b9fe947731a6ec78f348cb650d19157b0c21d88c5b18fe7"
     },
     {
       "path": "server/secure-lan/certificates/errors.mjs",
@@ -1332,13 +1337,13 @@
     },
     {
       "path": "server/secure-lan/host-capabilities.mjs",
-      "bytes": 13066,
-      "sha256": "1a7dc897cbb0f7790a24f8fdde9f7969c7cae6e1454b0b80c02a328cf4989cef"
+      "bytes": 13845,
+      "sha256": "84188ee2d068df30947411b901f9f1910433df5bb72840a0ef5cf283ce2a7ba1"
     },
     {
       "path": "server/secure-lan/index.mjs",
-      "bytes": 12362,
-      "sha256": "faa21ba6739054103420a1b3ffab51ba7e39d2346ba673e4492aac48968030b5"
+      "bytes": 12078,
+      "sha256": "f73e1de881cd3c1b76cb5fbfd6c21cf71e6683fa3e1d866806fe24f9a906b129"
     },
     {
       "path": "server/secure-lan/request-policy.mjs",

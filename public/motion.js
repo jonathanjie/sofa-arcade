@@ -5,7 +5,6 @@ const roots = new Set();
 let visibilityBound = false;
 const PLAYER_IDS = ['jon', 'lydia'];
 const clock = () => Date.now();
-const clamp = (n, low, high) => Math.max(low, Math.min(high, n));
 const catKey = event => event ? `${event.round}:${event.type}:${event.axis || ''}:${event.index ?? ''}:${event.direction ?? ''}:${event.row ?? ''}:${event.col ?? ''}` : '';
 
 /** A pure, testable projection of rules changes into presentation events. */

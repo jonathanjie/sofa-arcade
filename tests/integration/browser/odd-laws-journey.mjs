@@ -134,6 +134,24 @@ async function assertSealedProjections(run, live, before, first, vote) {
   }
 }
 
+async function assertResponsiveCover(cover) {
+  const selected = await cover.evaluate(async image => {
+    await image.decode();
+    // A width-descriptor srcset exposes density-corrected natural dimensions.
+    // Decode the selected URL on its own to measure the actual file.
+    const source = new Image();
+    source.src = image.currentSrc;
+    await source.decode();
+    return { path: new URL(source.src).pathname, size: [source.naturalWidth, source.naturalHeight] };
+  });
+  const variants = {
+    '/assets/odd-laws-cover.webp': [1586, 992],
+    '/assets/odd-laws-cover-560.webp': [560, 351],
+  };
+  assert.ok(Object.hasOwn(variants, selected.path), `Unexpected Odd Laws cover: ${selected.path}`);
+  assert.deepEqual(selected.size, variants[selected.path], 'The selected Odd Laws cover decodes at its actual size');
+}
+
 export async function openOddLaws(run, { candidate = false } = {}) {
   const tv = await run.page('tv', { width: 1920, height: 1080 });
   const phones = {
@@ -151,21 +169,17 @@ export async function openOddLaws(run, { candidate = false } = {}) {
     await tv.evaluate(({ code, token }) => localStorage.setItem('sofa-room:' + code, JSON.stringify({ hostToken: token, playerTokens: {} })), { code, token: room.hostToken });
     await tv.goto(`${run.origin}/?room=${code}`);
   } else {
-    const shelfCover = tv.locator('[data-action="open-game"][data-game="odd-laws-society"] .game-cover img');
+    const shelfCover = tv.locator('.game-card[data-game="odd-laws-society"] .game-cover img');
     await shelfCover.scrollIntoViewIfNeeded();
-    const shelfSize = await shelfCover.evaluate(async image => {
-      await image.decode();
-      return [image.naturalWidth, image.naturalHeight];
-    });
-    assert.deepEqual(shelfSize, [1586, 992], 'The actual Odd Laws collection cover decodes');
+    await assertResponsiveCover(shelfCover);
     await run.screenshot(tv, 'odd-laws-collection-cover', { fullPage: true });
-    await tv.locator('[data-action="open-game"][data-game="odd-laws-society"]').click();
+    await tv.locator('.game-card[data-game="odd-laws-society"]').click();
     const detailCover = tv.locator('.odd-laws-detail .game-cover img');
     await detailCover.waitFor();
-    assert.equal(await detailCover.evaluate(async image => { await image.decode(); return image.naturalWidth; }), 1586);
+    await assertResponsiveCover(detailCover);
     assert.ok(await detailCover.getAttribute('alt'), 'The standalone cover has descriptive alternate text');
     await run.screenshot(tv, 'odd-laws-detail-cover');
-    run.check('Original Odd Laws cover loads on the collection shelf and detail page');
+    run.check('Responsive Odd Laws covers decode on the collection shelf and detail page');
     await tv.locator('.odd-laws-detail [data-action="create"]').click();
   }
   await tv.locator('.room-code').waitFor();
@@ -678,7 +692,7 @@ export async function finishOddJourney(run, live) {
   await live.tv.locator('.arcade-home').waitFor();
   assert.equal(new URL(live.tv.url()).search, '');
   assert.equal(await live.tv.locator('.ols').count(), 0);
-  await live.tv.locator('[data-action="open-game"][data-game="sofa-kingdoms"]').first().click();
+  await live.tv.locator('.game-card[data-game="sofa-kingdoms"]').click();
   await live.tv.locator('.game-detail [data-action="create"]').waitFor();
   assert.equal(await live.tv.locator('link[data-odd-laws-style]').count(), 0, 'Leaving disposes Odd Laws view styles');
   run.check('Component exit returns to the collection, bare-root relaunch stays there, and Sofa Kingdoms remains available');

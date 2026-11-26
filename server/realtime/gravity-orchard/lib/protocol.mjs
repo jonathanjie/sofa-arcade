@@ -5,7 +5,7 @@ export const PUBLIC_VIEWER = Object.freeze({ role: 'public', playerId: null });
 export const PLAYERS = Object.freeze(['jon', 'lydia']);
 export const LIMITS = Object.freeze({
   tickMs: 1000 / 60, snapshotMs: 50, staleInputMs: 250, pauseInputMs: 2000,
-  maxObservedTickLag: 30, maxCatchUpTicks: 5, hostStallMs: 250,
+  maxObservedTickLag: 30, maxCatchUpTicks: 5, hostStallMs: 1000,
   authTimeoutMs: 5000, reauthorizeMs: 1000, reauthorizeTimeoutMs: 1000,
   maxAuthAgeMs: 2000, maxFrameBytes: 4096, maxInputBytes: 512,
   maxFragments: 16, maxBufferedChunks: 64,

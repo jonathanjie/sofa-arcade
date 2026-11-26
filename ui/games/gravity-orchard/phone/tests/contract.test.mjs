@@ -28,13 +28,13 @@ test('the explicit runtime inventory imports in isolation without fixture, engin
       await mkdir(path.dirname(destination), { recursive: true });
       await copyFile(source, destination);
     }
-    const module = await import(pathToFileURL(path.join(isolated, 'games/gravity-orchard/phone/index.mjs')));
-    assert.equal(typeof module.mountPhone, 'function');
-    assert.equal(typeof module.createMotionController, 'function');
+    const phoneModule = await import(pathToFileURL(path.join(isolated, 'games/gravity-orchard/phone/index.mjs')));
+    assert.equal(typeof phoneModule.mountPhone, 'function');
+    assert.equal(typeof phoneModule.createMotionController, 'function');
     // No DOM, WebSocket, game engine, or framework exists in the isolated closure.
     const values = [];
     const status = [];
-    const controller = module.createMotionController({
+    const controller = phoneModule.createMotionController({
       emitInput: value => values.push(value), onStatus: value => status.push(value),
       environment: { isSecureContext: false },
     });

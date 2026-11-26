@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openFixture, snapshot, setScene, action, expectNoHorizontalOverflow, expectTouchTargets } from './browser-helpers.mjs';
+import { openFixture, snapshot, action, expectNoHorizontalOverflow, expectTouchTargets } from './browser-helpers.mjs';
 
 test('phone drafts stay local until Seal, then dispatch exactly the normalized private command', async ({ browser }) => {
   const contexts = await Promise.all([browser.newContext({ viewport: { width: 360, height: 800 } }), browser.newContext(), browser.newContext({ viewport: { width: 390, height: 844 } })]);
@@ -152,7 +152,6 @@ test('disposing during a pending response prevents detached updates and allows a
   await page.evaluate(() => window.fixture.dispose());
   await expect(page.locator('.ols-phone')).toHaveCount(0);
   await page.evaluate(() => window.fixture.releaseNext());
-  await page.waitForTimeout(50);
   await expect(page.locator('.ols-phone')).toHaveCount(0);
   await page.evaluate(() => window.fixture.remount());
   await expect(page.locator('.ols-phone')).toBeVisible();

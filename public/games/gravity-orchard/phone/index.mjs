@@ -11,7 +11,7 @@ const ACTIONABLE_SENSOR_STATES = new Set(['insecure', 'unsupported', 'needs-perm
 const sheetOwners = new WeakMap();
 let mountSequence = 0;
 
-function useStyles(document) {
+function acquireStyles(document) {
   let record = sheetOwners.get(document);
   if (!record) {
     const link = document.createElement('link');
@@ -41,6 +41,16 @@ function assetSource(assets, playerId) {
   return typeof item?.src === 'string' && /^\/(?!\/)/.test(item.src) ? item.src : null;
 }
 
+function setText(node, text) {
+  if (node.textContent !== text) node.textContent = text;
+}
+function setProperty(target, key, value) {
+  if (target[key] !== value) target[key] = value;
+}
+function setAttribute(node, name, value) {
+  if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+}
+
 function vector(x, y) {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return { x: 0, y: 0 };
   const scale = Math.max(1, Math.hypot(x, y));
@@ -54,7 +64,7 @@ function vector(x, y) {
  * onCommand receives a unique id, kind and payload, and may return a Promise.
  */
 export function mountPhone(root, {
-  playerId, input, onCommand, onExit = () => {}, assets = {}, reducedMotion,
+  playerId, input, onCommand, onExit = () => {}, assets = {}, portrait, reducedMotion,
 } = {}) {
   if (!root?.ownerDocument || !['jon', 'lydia'].includes(playerId)) {
     throw new TypeError('mountPhone requires a DOM root and a jon or lydia playerId.');
@@ -64,7 +74,7 @@ export function mountPhone(root, {
   }
   const document = root.ownerDocument;
   const window = document.defaultView;
-  const releaseStyles = useStyles(document);
+  const releaseStyles = acquireStyles(document);
   const instance = ++mountSequence;
   const id = `go3-${instance}`;
   const playerName = playerId === 'jon' ? 'Jon' : 'Lydia';
@@ -107,6 +117,7 @@ export function mountPhone(root, {
   shell.className = 'go3-phone';
   shell.dataset.go3 = 'phone';
   shell.dataset.player = playerId;
+  shell.dataset.mode = selectedMode;
   shell.setAttribute('aria-label', `Gravity Orchard — ${playerName}'s controller`);
   shell.innerHTML = `
     <div class="go3-shell">
@@ -130,13 +141,19 @@ export function mountPhone(root, {
         <div class="go3-calibration" data-go3="calibration" hidden><span></span></div>
         <div class="go3-setup-actions">
           <button class="go3-primary" type="button" data-go3="enable-tilt">${icon('phone')}<span>Enable tilt</span></button>
-          <button class="go3-primary" type="button" data-go3="calibrate" hidden>${icon('center')}<span>Center my phone</span></button>
+          <button class="go3-primary" type="button" data-go3="calibrate" hidden>${icon('center')}<span>Recenter</span></button>
           <button class="go3-secondary" type="button" data-go3="touch-mode">${icon('touch')}<span>Use touch controls</span></button>
         </div>
       </section>
+      <section class="go3-ready-panel" data-go3="ready-panel">
+        <div class="go3-ready-seats" data-go3="ready-seats"><span data-go3="self-ready">${playerName} · Not ready</span><span data-go3="partner-ready">${partnerName} · Not ready</span></div>
+        <button class="go3-primary go3-ready" type="button" data-go3="ready">${icon('check')}<span>Ready</span></button>
+        <p class="go3-ready-note" data-go3="ready-note">Both gardeners start together.</p>
+      </section>
+      <p class="go3-error" data-go3="error" role="alert" hidden></p>
       <div class="go3-play-controls">
         <section class="go3-controller" aria-labelledby="${id}-control-title">
-          <div class="go3-control-heading"><h3 id="${id}-control-title" data-go3="control-title">Your tilt</h3><span data-go3="vector-label">Centered</span></div>
+          <div class="go3-control-heading"><h3 id="${id}-control-title" data-go3="control-title">Your tilt</h3><span data-go3="vector-label">Centred</span></div>
           <div class="go3-steering" data-go3="joystick" role="group" aria-roledescription="two-dimensional joystick" aria-label="Steer ${playerName}'s garden" aria-describedby="${id}-keyboard" tabindex="0">
             <div class="go3-steering-rings" aria-hidden="true"><i></i><i></i><i></i></div>
             <span class="go3-direction go3-up" aria-hidden="true">↑</span><span class="go3-direction go3-right" aria-hidden="true">→</span>
@@ -156,16 +173,10 @@ export function mountPhone(root, {
           </div>
         </div>
       </div>
-      <section class="go3-ready-panel" data-go3="ready-panel">
-        <div class="go3-ready-seats" data-go3="ready-seats"><span data-go3="self-ready">${playerName} · Not ready</span><span data-go3="partner-ready">${partnerName} · Not ready</span></div>
-        <button class="go3-primary go3-ready" type="button" data-go3="ready">${icon('check')}<span>I'm ready</span></button>
-        <p class="go3-ready-note" data-go3="ready-note">Both gardeners start together.</p>
-      </section>
       <section class="go3-results" data-go3="results" hidden>
         <div class="go3-result-symbol">${icon('basket')}</div><h3>Picnic complete</h3><p data-go3="results-summary"></p>
         <p class="go3-ready-note">Choose the next adventure on the TV.</p>
       </section>
-      <p class="go3-error" data-go3="error" role="alert" hidden></p>
       <p class="go3-live go3-sr-only" data-go3="announcement" role="status" aria-live="polite"></p>
     </div>
     <div class="go3-dialog-backdrop" data-go3="help-backdrop" hidden>
@@ -173,26 +184,36 @@ export function mountPhone(root, {
         <header><div><span class="go3-kicker">A little help</span><h2 id="${id}-help-title">Make yourself at home</h2></div><button class="go3-icon-button" type="button" data-go3="close-help" aria-label="Close Help">${icon('close')}</button></header>
         <p>Steer your garden while watching the TV. Pass fruit over the bridge and guide it into its matching basket.</p>
         <div class="go3-help-tip">${icon('brake')}<p><strong>Hold Brake</strong> to steady your fruit. You can steer and brake together.</p></div>
-        <div class="go3-help-tip">${icon('center')}<p><strong>Recenter</strong> with your phone in a natural seated grip. Rotating your screen pauses play for a new center.</p></div>
+        <div class="go3-help-tip">${icon('center')}<p><strong>Recenter</strong> with your phone in a natural seated grip. Rotating your screen pauses play for a new centre.</p></div>
         <h3>Your controls</h3>
-        <div class="go3-help-modes"><button type="button" class="go3-secondary" data-go3="tilt-mode">${icon('phone')}<span>Set up tilt</span></button><button type="button" class="go3-secondary" data-go3="help-touch">${icon('touch')}<span>Use touch</span></button></div>
+        <div class="go3-help-modes"><button type="button" class="go3-secondary" data-go3="tilt-mode">${icon('phone')}<span>Set up tilt</span></button><button type="button" class="go3-secondary" data-go3="help-touch">${icon('touch')}<span>Use touch controls</span></button></div>
         <p class="go3-keyboard-help"><strong>Keyboard:</strong> focus the steering pad, use arrows or W A S D, and hold Space for Brake. Escape pauses.</p>
         <p class="go3-help-pause">Closing Help keeps play paused. Both gardeners must be ready to continue.</p>
         <button class="go3-secondary go3-exit" type="button" data-go3="exit">${icon('exit')}<span>Leave controller</span></button>
       </section>
     </div>`;
   root.replaceChildren(shell);
-  const element = (name) => shell.querySelector(`[data-go3="${name}"]`);
   const refs = Object.fromEntries([...shell.querySelectorAll('[data-go3]')].map((node) => [node.dataset.go3, node]));
-  const source = assetSource(assets, playerId);
+  const connectionLabel = refs.connection.querySelector('span');
+  const modeLabel = refs['mode-label'].querySelector('span');
+  const pauseLabel = refs.pause.querySelector('span');
+  const readyLabel = refs.ready.querySelector('span');
+  const brakeLabel = refs.brake.querySelector('strong');
+  const calibrationFill = refs.calibration.firstElementChild;
+  const source = portrait?.src ?? assetSource(assets, playerId);
   if (source) {
-    const portrait = document.createElement('img');
-    portrait.alt = '';
-    portrait.src = source;
-    listen(portrait, 'load', () => {
+    const image = document.createElement('img');
+    image.alt = '';
+    if (portrait) {
+      image.width = portrait.width;
+      image.height = portrait.height;
+      image.style.objectFit = 'fill';
+    }
+    listen(image, 'load', () => {
       if (!disposed) refs.portrait.classList.add('go3-portrait-loaded');
     }, { once: true });
-    refs.portrait.append(portrait);
+    image.src = source;
+    refs.portrait.append(image);
   }
   const motionQuery = window?.matchMedia?.('(prefers-reduced-motion: reduce)');
   function updateReducedMotion() {
@@ -222,16 +243,18 @@ export function mountPhone(root, {
 
   function drawVector() {
     const { x, y, brake } = shownVector;
-    refs.joystick.style.setProperty('--go3-x', String(x));
-    refs.joystick.style.setProperty('--go3-y', String(y));
-    refs.joystick.dataset.braking = String(brake);
+    const style = refs.joystick.style;
+    if (style.getPropertyValue('--go3-x') !== String(x)) style.setProperty('--go3-x', String(x));
+    if (style.getPropertyValue('--go3-y') !== String(y)) style.setProperty('--go3-y', String(y));
+    setProperty(refs.joystick.dataset, 'braking', String(brake));
     const vertical = Math.abs(y) > 0.1 ? (y < 0 ? 'Up' : 'Down') : '';
     const horizontal = Math.abs(x) > 0.1 ? (x < 0 ? 'left' : 'right') : '';
-    refs['vector-label'].textContent = vertical && horizontal ? `${vertical} ${horizontal}` : vertical || (horizontal ? horizontal[0].toUpperCase() + horizontal.slice(1) : 'Centered');
+    const label = vertical && horizontal ? `${vertical} ${horizontal}` : vertical || (horizontal ? horizontal[0].toUpperCase() + horizontal.slice(1) : 'Centred');
+    setText(refs['vector-label'], label);
     const held = brakePointers.size > 0 || keys.has(' ');
-    refs.brake.setAttribute('aria-pressed', String(held));
-    refs.brake.dataset.held = String(held);
-    refs.brake.querySelector('strong').textContent = held ? 'Steady' : 'Brake';
+    setAttribute(refs.brake, 'aria-pressed', String(held));
+    setProperty(refs.brake.dataset, 'held', String(held));
+    setText(brakeLabel, held ? 'Steady' : 'Brake');
   }
 
   function releasePointers() {
@@ -261,7 +284,7 @@ export function mountPhone(root, {
     return Promise.resolve(result).then((reply) => {
       if (!disposed && generation === lifecycleGeneration &&
           (kind !== 'ready' || readyVersion === readyGeneration) && reply?.accepted === false) {
-        commandError = kind === 'pause' ? 'Pause was not confirmed. Keep controls released and check the TV.' : 'Ready was not confirmed. Check the connection and try again.';
+        commandError = kind === 'pause' ? 'Pause was not confirmed. Keep controls released and check the TV.' : 'That didn’t go through. Check your Wi-Fi and try again.';
         render();
       }
       return reply;
@@ -309,7 +332,7 @@ export function mountPhone(root, {
     motion?.pause();
     input.setInput({ ...SAFE });
     if (shared) requestSharedPause(reason, retry);
-    render();
+    if (updateDepth === 0) render();
   }
 
   function syncControls() {
@@ -395,7 +418,7 @@ export function mountPhone(root, {
       motion.calibrate();
     } else {
       motion.setTouchVector(0, 0);
-      refs.announcement.textContent = 'Touch controls centered. Both gardeners must be ready to continue.';
+      refs.announcement.textContent = 'Touch controls centred. Both gardeners must be ready to continue.';
     }
     render();
   }
@@ -556,83 +579,97 @@ export function mountPhone(root, {
     if (disposed) return;
     const phase = PHASES.has(view?.phase) ? view.phase : 'waiting';
     const ready = !!view?.ready?.[playerId];
-    shell.dataset.phase = phase;
-    shell.dataset.mode = selectedMode;
-    shell.dataset.sensorState = sensor.state;
-    shell.dataset.connection = connection.state;
-    shell.dataset.controlling = String(canControl());
-    refs.connection.querySelector('span').textContent = ({ connected: 'Connected', connecting: 'Connecting', reconnecting: 'Reconnecting', offline: 'Offline', error: 'Connection issue' })[connection.state] || 'Connecting';
-    refs['mode-label'].querySelector('span').textContent = selectedMode === 'touch' ? 'Touch controls' : 'Tilt controls';
-    refs['mode-label'].querySelector('svg').outerHTML = icon(selectedMode === 'touch' ? 'touch' : 'phone');
+    setProperty(shell.dataset, 'phase', phase);
+    if (shell.dataset.mode !== selectedMode) {
+      shell.dataset.mode = selectedMode;
+      setText(modeLabel, selectedMode === 'touch' ? 'Touch controls' : 'Tilt controls');
+      refs['mode-label'].querySelector('svg').outerHTML = icon(selectedMode === 'touch' ? 'touch' : 'phone');
+    }
+    setProperty(shell.dataset, 'sensorState', sensor.state);
+    setProperty(shell.dataset, 'connection', connection.state);
+    const controlsEnabled = canControl();
+    setProperty(shell.dataset, 'controlling', String(controlsEnabled));
+    setText(connectionLabel, ({ connected: 'Connected', connecting: 'Connecting', reconnecting: 'Reconnecting', offline: 'Offline', error: 'Connection issue' })[connection.state] || 'Connecting');
     const stageNames = ['Morning Delivery', 'Switchback Grove', "Lala’s Moonlight Picnic"];
-    refs.stage.textContent = view ? `${view.mode === 'practice' ? 'Practice' : `Orchard ${view.stageIndex + 1} of 3`} · ${stageNames[view.stageIndex] || 'Gravity Orchard'}` : 'Your floating garden';
+    setText(refs.stage, view ? `${view.mode === 'practice' ? 'Practice' : `Orchard ${view.stageIndex + 1} of 3`} · ${stageNames[view.stageIndex] || 'Gravity Orchard'}` : 'Your floating garden');
     const headings = { waiting: configured ? 'Ready to roll?' : 'Make yourself comfortable', countdown: 'Here we grow', playing: localHold ? 'Controls held safely' : 'A little teamwork', paused: 'Take a breather', interlude: 'A lovely harvest', finished: 'The picnic is ready' };
-    refs.phase.textContent = headings[phase];
-    refs.time.textContent = phase === 'countdown' ? String(Math.max(0, Math.ceil((view?.countdownTicks || 0) / 60))) : phase === 'playing' && Number.isFinite(view?.timeRemainingTicks) ? `${Math.ceil(view.timeRemainingTicks / 60)}s` : view?.mode === 'practice' ? '∞' : '';
+    setText(refs.phase, headings[phase]);
+    setText(refs.time, phase === 'countdown' ? String(Math.max(0, Math.ceil((view?.countdownTicks || 0) / 60))) : phase === 'playing' && Number.isFinite(view?.timeRemainingTicks) ? `${Math.ceil(view.timeRemainingTicks / 60)}s` : view?.mode === 'practice' ? '∞' : '');
     const notes = {
       waiting: '', countdown: 'Get comfortable. Watch the TV.',
       playing: localHold ? 'Waiting for the shared pause.' : '',
-      paused: view?.pauseReason === 'network' ? 'Reconnect, then get ready together.' : 'Both gardeners choose ready to continue.',
+      paused: view?.pauseReason === 'network' ? 'Reconnect, then get ready together.' : 'Both gardeners choose Ready to continue.',
       interlude: 'Catch your breath before the next garden.', finished: '',
     };
-    refs['phase-note'].textContent = connection.state !== 'connected' ? 'Controls held safely while reconnecting.' : notes[phase];
-    refs['phase-note'].hidden = !refs['phase-note'].textContent;
-    refs.setup.hidden = !setupOpen;
+    const phaseNote = connection.state !== 'connected' ? 'Controls paused. Reconnecting…' : notes[phase];
+    setText(refs['phase-note'], phaseNote);
+    setProperty(refs.setup, 'hidden', !setupOpen);
     const setupCopy = {
-      insecure: ['Touch is ready to play', 'Tilt needs the trusted secure link from your Mac. You can play the whole game with touch here.'],
+      insecure: ['Touch is ready to play', 'Tilt needs the one-time setup on your Mac. You can play the whole game with touch.'],
       unsupported: ['Touch is ready to play', 'This browser does not provide phone tilt. Touch has all the same controls.'],
-      'needs-permission': ['Play with a gentle tilt', 'Hold your phone naturally while seated. Enable tilt, then keep still briefly to find your center.'],
-      denied: ['Your choice — touch works too', 'Tilt permission was not allowed. Use touch, or review motion permission in your browser settings.'],
-      'no-samples': ['No tilt readings yet', 'Permission alone is not enough. Try centering again, or play with touch controls.'],
-      calibrating: ['Find your comfortable center', 'Hold your phone naturally and still for a moment. No flat table or shaking needed.'],
-      ready: ['Your controls are ready', 'Choose ready when you and your partner are comfortable.'],
-      paused: ['Center your phone again', sensor.reason === 'rotation' ? 'The screen rotated. Hold your new comfortable grip and recenter before continuing.' : 'Keep your phone in a comfortable grip, then center it.'],
+      'needs-permission': ['Play with a gentle tilt', 'Hold your phone naturally while seated. Enable tilt, then keep still briefly to find your centre.'],
+      denied: ['Your choice — touch works too', 'Tilt was not allowed. Use touch, or allow motion in your browser settings.'],
+      'no-samples': ['No tilt readings yet', 'Tilt isn’t responding. Try Recenter, or play with touch.'],
+      calibrating: ['Find your comfortable centre', 'Hold your phone naturally and still for a moment. No flat table or shaking needed.'],
+      ready: ['Your controls are ready', 'Choose Ready when you and your partner are comfortable.'],
+      paused: ['Find your centre again', sensor.reason === 'rotation' ? 'The screen rotated. Hold your new comfortable grip and recenter before continuing.' : 'Keep your phone in a comfortable grip, then tap Recenter.'],
     };
     const [title, copy] = setupCopy[sensor.state] || setupCopy['needs-permission'];
-    refs['setup-title'].textContent = title;
-    refs['sensor-status'].textContent = copy;
-    refs['enable-tilt'].hidden = !['needs-permission'].includes(sensor.state);
-    refs.calibrate.hidden = !['no-samples', 'paused', 'ready'].includes(sensor.state) || selectedMode !== 'tilt';
-    refs.calibration.hidden = sensor.state !== 'calibrating';
+    setText(refs['setup-title'], title);
+    setText(refs['sensor-status'], copy);
+    setProperty(refs['enable-tilt'], 'hidden', !['needs-permission'].includes(sensor.state));
+    setProperty(refs.calibrate, 'hidden', !['no-samples', 'paused', 'ready'].includes(sensor.state) || selectedMode !== 'tilt');
+    setProperty(refs.calibration, 'hidden', sensor.state !== 'calibrating');
     const progress = Number.isFinite(sensor.progress) ? Math.max(0, Math.min(1, sensor.progress)) : 0;
-    refs.calibration.firstElementChild.style.transform = `scaleX(${progress})`;
-    refs['control-title'].textContent = selectedMode === 'touch' ? 'Your garden' : 'Your tilt';
-    refs['steering-caption'].textContent = selectedMode === 'touch' ? 'Drag to steer' : 'Gently tilt to steer';
-    refs.joystick.setAttribute('aria-disabled', String(!canControl() || selectedMode !== 'touch'));
-    refs.brake.setAttribute('aria-disabled', String(!canControl()));
-    refs.pause.disabled = !ACTIVE.has(phase) || pauseRequest?.state === 'pending';
-    refs.pause.querySelector('span').textContent = pauseRequest?.state === 'pending' ? 'Pausing…' : localHold && ACTIVE.has(phase) ? 'Retry pause' : 'Pause';
-    refs.recenter.disabled = !configured && sensor.state !== 'ready';
-    refs['ready-panel'].hidden = !READY_PHASES.has(phase) || setupOpen;
-    refs['self-ready'].textContent = `${playerName} · ${ready ? 'Ready ✓' : 'Not ready'}`;
-    refs['partner-ready'].textContent = `${partnerName} · ${view?.ready?.[partnerId] ? 'Ready ✓' : 'Not ready'}`;
-    refs['self-ready'].dataset.ready = String(ready);
-    refs['partner-ready'].dataset.ready = String(!!view?.ready?.[partnerId]);
-    refs.ready.disabled = !view || !configured || connection.state !== 'connected' || pendingReady || setupOpen || dialogOpen || (selectedMode === 'tilt' && !sensor.calibrated);
-    refs.ready.querySelector('span').textContent = pendingReady ? 'Sending…' : ready ? 'Ready — tap to cancel' : phase === 'interlude' ? 'Ready for the next garden' : "I'm ready";
-    refs['ready-note'].textContent = ready ? `Waiting for ${partnerName}.` : 'Both gardeners start together.';
-    refs.results.hidden = phase !== 'finished';
+    setProperty(calibrationFill.style, 'transform', `scaleX(${progress})`);
+    setText(refs['control-title'], selectedMode === 'touch' ? 'Your garden' : 'Your tilt');
+    setText(refs['steering-caption'], selectedMode === 'touch' ? 'Drag to steer' : 'Gently tilt to steer');
+    setAttribute(refs.joystick, 'aria-disabled', String(!controlsEnabled || selectedMode !== 'touch'));
+    setAttribute(refs.brake, 'aria-disabled', String(!controlsEnabled));
+    setProperty(refs.pause, 'disabled', !ACTIVE.has(phase) || pauseRequest?.state === 'pending');
+    setText(pauseLabel, pauseRequest?.state === 'pending' ? 'Pausing…' : localHold && ACTIVE.has(phase) ? 'Retry pause' : 'Pause');
+    setProperty(refs.recenter, 'disabled', !configured && sensor.state !== 'ready');
+    setProperty(refs['ready-panel'], 'hidden', !READY_PHASES.has(phase) || setupOpen);
+    setText(refs['self-ready'], `${playerName} · ${ready ? 'Ready ✓' : 'Not ready'}`);
+    setText(refs['partner-ready'], `${partnerName} · ${view?.ready?.[partnerId] ? 'Ready ✓' : 'Not ready'}`);
+    setProperty(refs['self-ready'].dataset, 'ready', String(ready));
+    setProperty(refs['partner-ready'].dataset, 'ready', String(!!view?.ready?.[partnerId]));
+    setProperty(refs.ready, 'disabled', !view || !configured || connection.state !== 'connected' || pendingReady || setupOpen || dialogOpen || (selectedMode === 'tilt' && !sensor.calibrated));
+    setText(readyLabel, pendingReady ? 'Sending…' : ready ? 'Cancel ready' : 'Ready');
+    setText(refs['ready-note'], ready ? `Waiting for ${partnerName}.` : 'Both gardeners start together.');
+    setProperty(refs.results, 'hidden', phase !== 'finished');
     if (phase === 'finished') {
       const results = Array.isArray(view?.results) ? view.results : [];
       const orders = results.reduce((total, result) => total + (Number.isFinite(result.ordersCompleted) ? result.ordersCompleted : 0), 0);
       const stars = results.reduce((total, result) => total + (Number.isFinite(result.stars) ? result.stars : 0), 0);
-      refs['results-summary'].textContent = `${orders} shared orders · ${stars} stars`;
+      setText(refs['results-summary'], `${orders} shared orders · ${stars} stars`);
     }
-    refs.error.hidden = !commandError;
-    refs.error.textContent = commandError;
+    setProperty(refs.error, 'hidden', !commandError);
+    setText(refs.error, commandError);
+  }
+
+  function applyConnection(nextStatus) {
+    const nextState = nextStatus?.state ?? 'offline';
+    const previousState = connection.state;
+    if (nextState === previousState) return false;
+    connection = {state: nextState};
+    if (connection.state !== 'connected' && previousState === 'connected') hold('requested');
+    else if (connection.state === 'connected' && localHold && ACTIVE.has(view?.phase)) requestSharedPause('requested', true);
+    return true;
   }
 
   render();
   input.setInput({ ...SAFE });
 
   return {
-    update(nextView) {
+    update(nextView, nextStatus) {
       if (disposed || nextView?.gameId !== 'gravity-orchard' || !PHASES.has(nextView.phase)) return;
       // pause() reports status synchronously. Do not let that callback resume
       // halfway through clearing an authoritative boundary, then overwrite its
       // fresh input with SAFE. Nested fixture/stream updates settle as one unit.
       updateDepth += 1;
       try {
+        if (nextStatus !== undefined) applyConnection(nextStatus);
         const previous = view;
         const boundary = previous && (previous.matchId !== nextView.matchId || previous.runEpoch !== nextView.runEpoch || previous.phase !== nextView.phase);
         view = nextView;
@@ -680,12 +717,17 @@ export function mountPhone(root, {
     },
     setConnection(nextStatus) {
       if (disposed) return;
-      const previousState = connection.state;
-      connection = nextStatus && typeof nextStatus === 'object' ? { ...nextStatus } : { state: 'offline' };
-      if (connection.state !== 'connected' && previousState === 'connected') hold('requested');
-      else if (connection.state === 'connected' && previousState !== 'connected' && localHold && ACTIVE.has(view?.phase)) requestSharedPause('requested', true);
-      render();
-      syncControls();
+      updateDepth += 1;
+      let changed;
+      try {
+        changed = applyConnection(nextStatus);
+      } finally {
+        updateDepth -= 1;
+      }
+      if (changed && updateDepth === 0) {
+        render();
+        syncControls();
+      }
     },
     dispose() {
       if (disposed) return;

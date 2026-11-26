@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { startFixture } from '../fixture/server.mjs';
 import {
-  select, SAFE, input, status, waitInput, safe, chooseTouch, beginPlay, enableTilt,
+  select, input, status, waitInput, safe, chooseTouch, beginPlay, enableTilt,
   bounds, mouseSteer, touchController, assertLayout, checkRecordedInput,
 } from './browser-helpers.mjs';
 
@@ -251,6 +251,8 @@ const cases = [
     await beginPlay(page);
     await page.evaluate(() => window.go3Fixture.stableSamples({ beta: 35, gamma: 14, count: 10 }));
     await waitInput(page, () => window.go3Fixture.lastInput.x > .45 && Math.abs(window.go3Fixture.lastInput.y) < .05 && !window.go3Fixture.lastInput.brake);
+    assert.equal(await page.locator(select('vector-label')).innerText(), 'Right');
+    assert.ok(Number(await page.locator(select('joystick')).evaluate(el => el.style.getPropertyValue('--go3-x'))) > .45);
     await page.evaluate(() => window.go3Fixture.advance(1500));
     const held = await input(page);
     const viewBefore = await page.evaluate(() => window.go3Fixture.view);

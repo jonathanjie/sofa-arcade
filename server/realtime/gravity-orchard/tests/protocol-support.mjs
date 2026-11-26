@@ -41,7 +41,7 @@ export class ManualClock {
       this.time = next[1].at;
       this.tasks.delete(next[0]);
       next[1].callback();
-      await drain(2);
+      await turn();
     }
     this.time = end;
     await drain();

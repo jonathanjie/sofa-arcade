@@ -6,19 +6,21 @@ import { getGameEngine, gravityOrchardRoomEngine } from '../games/registry.mjs';
 import { createRoomApi } from './rooms.mjs';
 import { createRealtimeCoordinator, readCoordinatorDiagnostics } from './runtime/gravity-orchard-dependencies.mjs';
 
+// Match the coordinator's 32-room ceiling and bound the number of startup checkpoints.
+const ORCHARD_ROOM_LIMIT = 32;
 const GAME_ID = 'gravity-orchard';
 const PUBLIC = Object.freeze({ role: 'public', playerId: null });
 const fail = code => Object.assign(new Error('The local harvest is unavailable.'), { code, status: 503 });
 
 /** All storage calls use the host's existing SQLite connection, never a second DB. */
-export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecycle, clock, seed, enabled = false, onRuntimeTiming }) {
+export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecycle, clock, seed, enabled = false, roomLimit = ORCHARD_ROOM_LIMIT, onRuntimeTiming }) {
   sqlite.exec(`CREATE TABLE IF NOT EXISTS sofa_gravity_checkpoints (
     code TEXT PRIMARY KEY NOT NULL REFERENCES sofa_rooms(code) ON DELETE CASCADE,
     checkpoint TEXT NOT NULL, updated_at INTEGER NOT NULL
   )`);
   const starting = new Map();
-  const activeRooms = new Set();
-  const failedRooms = new Set();
+  const activeRooms = new Map();
+  const failedRooms = new Map();
   let closed = false;
   let checkpointWrites = 0;
   let authority;
@@ -77,25 +79,41 @@ export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecy
     onLifecycle: packet => onLifecycle?.(packet),
   });
 
+  function reclaimExpiredRooms() {
+    const now = Date.now();
+    for (const [code, expiresAt] of activeRooms) {
+      if (expiresAt > now) continue;
+      activeRooms.delete(code);
+      // closeRoom removes the coordinator slot immediately and drains any
+      // outstanding writes. The saved checkpoint follows normal DB retention.
+      void coordinator.closeRoom(code);
+    }
+    for (const [code, expiresAt] of failedRooms) {
+      if (expiresAt <= now) failedRooms.delete(code);
+    }
+  }
+
   async function ensureRoom(code, proposed = null) {
+    reclaimExpiredRooms();
     if (!enabled || closed || failedRooms.has(code)) throw fail('realtime_unavailable');
     const current = coordinator.getPublicView(code, PUBLIC);
     if (current) return current;
     if (activeRooms.has(code)) throw fail('realtime_unavailable');
     if (starting.has(code)) return starting.get(code);
+    if (activeRooms.size + starting.size >= roomLimit) throw fail('realtime_unavailable');
+    const room = roomRecord(code);
     const promise = (async () => {
-      const room = roomRecord(code);
       const persisted = room.data.realtime;
       if (!persisted && !proposed) throw fail('game_not_started');
       const parameters = persisted ? { roomCode: code, ...persisted } : { ...proposed, ...(seed === undefined ? {} : { seed }) };
       if (!['jon', 'lydia'].every(id => room.data.seats[id])) throw fail('players_required');
       const snapshot = await coordinator.startRoom(parameters);
-      activeRooms.add(code);
+      activeRooms.set(code, room.expires_at);
       return snapshot.view;
     })();
     starting.set(code, promise);
     try { return await promise; }
-    catch (error) { failedRooms.add(code); throw error; }
+    catch (error) { failedRooms.set(code, room.expires_at); throw error; }
     finally { starting.delete(code); }
   }
 
@@ -115,20 +133,17 @@ export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecy
     /** Restore before accepting sockets, so refresh/reconnect needs no HTTP race. */
     async restoreExisting() {
       if (!enabled) return;
-      const rows = sqlite.prepare('SELECT code, data FROM sofa_rooms WHERE expires_at > ? ORDER BY updated_at DESC').all(Date.now());
-      let restored = 0;
-      for (const row of rows) {
-        let data;
-        try { data = JSON.parse(row.data); } catch { continue; }
-        if (data.gameId !== GAME_ID || !data.realtime) continue;
-        if (++restored > 32) { failedRooms.add(row.code); continue; }
-        // A damaged orchard cannot stop old games or silently reset that harvest.
-        await ensureRoom(row.code).catch(() => {});
+      const rows = sqlite.prepare(`SELECT rooms.code FROM sofa_gravity_checkpoints AS checkpoints
+        JOIN sofa_rooms AS rooms ON rooms.code = checkpoints.code
+        WHERE rooms.expires_at > ? ORDER BY rooms.updated_at DESC, rooms.code LIMIT ?`).all(Date.now(), roomLimit);
+      for (const { code } of rows) {
+        // A damaged orchard cannot stop other games or silently reset that harvest.
+        await ensureRoom(code).catch(() => {});
       }
     },
     async pauseAllForSystem(reason = 'network') {
       if (!['network', 'host-stall', 'recovery'].includes(reason)) throw new TypeError('Invalid pause reason.');
-      await Promise.all([...activeRooms].map(code => coordinator.pauseRoom(code, reason)));
+      await Promise.all([...activeRooms.keys()].map(code => coordinator.pauseRoom(code, reason)));
     },
     diagnostics(code) {
       return { checkpointWrites, databaseChanges: Number(sqlite.prepare('SELECT total_changes() AS count').get().count),
@@ -138,7 +153,7 @@ export function createGravityOrchardHost({ sqlite, DB, validateUpgrade, onLifecy
       if (closed) return;
       closed = true;
       await Promise.allSettled([...starting.values()]);
-      await Promise.allSettled([...activeRooms].map(code => coordinator.pauseRoom(code, 'network')));
+      await Promise.allSettled([...activeRooms.keys()].map(code => coordinator.pauseRoom(code, 'network')));
       await coordinator.close();
     },
   };

@@ -4,6 +4,7 @@
   "minimumNode": "22.13.0",
   "desktopNode": "24.22.3",
   "hostRuntimeFiles": [
+    "server/reject-upgrade.mjs",
     "server/secure-lan/index.mjs",
     "server/secure-lan/request-policy.mjs",
     "server/secure-lan/host-capabilities.mjs",

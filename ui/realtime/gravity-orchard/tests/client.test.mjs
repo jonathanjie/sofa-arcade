@@ -499,3 +499,38 @@ test('unrecognized result error text is sanitized and cannot become a credential
   assert.equal((await pending).code, 'server_rejected');
   assert.equal(JSON.stringify([h.statuses, h.client.getStats()]).includes(TOKEN), false);
 });
+
+test('reconnect backoff caps and resets after a verified welcome', t => {
+  const h = harness(t);
+  h.client.connect();
+  function retryAfter(delay) {
+    const old = h.Socket.instances.at(-1);
+    const count = h.Socket.instances.length;
+    const snapshotCount = h.snapshots.length;
+    const inputCount = old.frames('input').length;
+    old.drop(1006);
+    old.receive(snapshot(99));
+    h.clock.advance(delay - 1);
+    assert.equal(h.Socket.instances.length, count);
+    h.clock.advance(1);
+    assert.equal(h.Socket.instances.length, count + 1);
+    assert.equal(h.snapshots.length, snapshotCount);
+    assert.equal(old.frames('input').length, inputCount);
+    h.Socket.instances.at(-1).open();
+  }
+
+  for (let attempt = 0; attempt < 8; attempt++) {
+    retryAfter(Math.min(CLIENT_LIMITS.reconnectMaxMs, CLIENT_LIMITS.reconnectMinMs * 2 ** Math.min(attempt, 5)));
+  }
+  const current = h.Socket.instances.at(-1);
+  current.receive(welcome());
+  assert.equal(h.client.getStats().connected, true);
+  const detached = h.Socket.instances.slice(0, -1);
+  for (const socket of detached) socket.receive(snapshot(99, { tick: 99 }));
+  assert.equal(h.snapshots.at(-1).view.tick, 10, 'Only the current socket can publish a view');
+  h.client.setInput({ x: 1, y: 0, brake: false });
+  h.clock.advance(50);
+  assert.equal(current.frames('input').at(-1).x, 1);
+  for (const socket of detached) assert.equal(socket.frames('input').length, 0);
+  retryAfter(CLIENT_LIMITS.reconnectMinMs);
+});
