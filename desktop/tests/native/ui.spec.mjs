@@ -91,14 +91,17 @@ describe(`Sofa Arcade actual native macOS window (${phase})`, () => {
     assert.match(await $('h1').getText(), /starts on the sofa/i);
     await browser.waitUntil(() => browser.execute(() => {
       const image = document.querySelector('.featured-image img');
-      return image?.complete && image.naturalWidth > 0 && document.documentElement.classList.contains('generated-art');
-    }), { timeoutMsg: 'Original illustration or character atlas failed to load in WKWebView' });
+      return image?.complete && image.naturalWidth > 0;
+    }), { timeoutMsg: 'Original illustration failed to load in WKWebView' });
     await screenshot('native-collection.png');
-    await $('[data-action="open-game"][data-game="sofa-kingdoms"]').click();
+    await $('.game-card[data-game="sofa-kingdoms"]').click();
     await waitRendered('[data-action="create"]', { scrollIntoView: true });
     assert.match(await $('.lan-mode-label').getText(), /Home Wi-Fi/);
     await $('[data-action="create"]').click();
     await waitRendered('.room-code');
+    // The character atlas loads only once a screen shows characters, such as this lobby.
+    await browser.waitUntil(() => browser.execute(() => document.documentElement.classList.contains('generated-art')),
+      { timeoutMsg: 'Character atlas failed to load in WKWebView' });
     const code = await browser.execute(() => document.querySelector('.room-code')?.textContent.trim());
     assert.match(code, /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/);
     await browser.waitUntil(() => browser.execute(() => !!document.querySelector('#room-qr svg, #room-qr img')),
