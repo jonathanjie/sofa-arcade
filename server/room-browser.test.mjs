@@ -482,7 +482,9 @@ test('a phone can swipe a party hero and select its matching game', async t => {
   }
   await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   const second = await assertSlide(page, 'dont-wake-lala');
-  await second.locator('[data-action="open-game"]').tap();
+  // The swipe above uses real touch input. Linux headless Chromium does not
+  // synthesize a click after a later synthesized tap, so select with a click.
+  await second.locator('[data-action="open-game"]').click();
   // Wait for the detail page: before it opens, the hero and the shelf card both show this title.
   try {
     await page.getByRole('heading', { level: 1, name: "Don't Wake Lala", exact: true }).waitFor();
