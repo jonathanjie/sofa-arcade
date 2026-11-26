@@ -23,7 +23,11 @@ import { mountPhone as wobbleMountPhone } from './wobble-tower/phone.mjs';
 import { mountTimberTv } from './timber-rush/tv.mjs';
 import { mountTimberPhone } from './timber-rush/phone.mjs';
 
+import { mountTv as hopTv, instruction } from './head-hop/tv.mjs';
+import { mountPhone as hopPhone } from './head-hop/phone.mjs';
+
 const views = new Map([
+  ['head-hop', { mountTv: hopTv, mountPhone: hopPhone, playHint: instruction }],
   ['timber-rush', { mountTv: mountTimberTv, mountPhone: mountTimberPhone, playHint: 'Tap the side clear of the lowest branch.' }],
   ['wobble-tower', { mountTv: wobbleMountTv, mountPhone: wobbleMountPhone, resultSummary: wobbleResultSummary, playHint: 'Tap when the plank lines up with the tower.' }],
   ['balloon-bop', { mountPhone, mountTv, resultSummary, playHint: 'Tap a spot to hop there and bop the balloon.' }],

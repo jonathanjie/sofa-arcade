@@ -218,6 +218,9 @@ const GAME_COVERS = {
     src: '/assets/party/timber-rush/cover.webp', compact: '/assets/party/timber-rush/cover-560.webp', width: 1280, height: 720,
     alt: 'Headband-clad woodcutters swing their axes among flying chips and crooked branches.',
   },
+  'head-hop': {
+    src: '/assets/party/head-hop/cover.webp', compact: '/assets/party/head-hop/cover-560.webp', width: 1280, height: 720,
+  },
   'whiteout-drift': {
     src: '/assets/party/whiteout-drift/cover.webp', compact: '/assets/party/whiteout-drift/cover-560.webp', width: 1280, height: 720,
     alt: 'A getaway mouse drifts through midnight snow, smashing a fire hydrant into an ice trap for pursuing patrol cars.',
