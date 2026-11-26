@@ -6,6 +6,7 @@ import {
   drawCone,
   drawHydrant,
   drawIcePatch,
+  drawLamp,
   headlights,
   rect,
   polygon,
@@ -65,12 +66,10 @@ function city(c, s) {
   for (let i = 0; i < (s.w * s.h) / 170; i++) {
     rect(c, i % 3 ? '#869eb036' : '#17283a48', noise(i) * s.w, noise(i + 8103) * s.h, 2 + (i % 4), 1);
   }
-  for (const block of s.blocks) drawBuildingBlock(c, ...block);
   for (const [x, y] of s.lamps) {
     glow(c, x, y, 44, '#ffc26775');
     glow(c, x, y, 16, '#ffbd5d92');
-    rect(c, '#344151', x - 1, y - 1, 2, 6);
-    rect(c, '#fff1b9', x - 2, y - 3, 4, 3);
+
   }
 }
 function ring(c, x, y, r, colour, width = 2) {
@@ -130,7 +129,7 @@ function indicator(c, target, s, colour) {
   ]);
   c.restore();
 }
-function drawWorld(c, s, roster, time, reduced) {
+function drawWorld(c, s, roster, time, reduced, buildings) {
   const phase = !reduced && Math.floor(time / 350) % 2 === 1;
   for (const p of s.ice) drawIcePatch(c, p.x, p.y, p.r, p.seed, reduced ? 0 : p.ms);
   if (s.checkpoint) {
@@ -140,8 +139,6 @@ function drawWorld(c, s, roster, time, reduced) {
     ring(c, x, y, r * (0.8 + 0.05 * Math.sin(time / 300)), gold, 1);
   }
   for (const p of s.pings) ring(c, p.x, p.y, 15 + (reduced ? 0 : (p.ms / 30) % 24), '#c0deff');
-  for (const [, x, y, hit] of s.cones) drawCone(c, x, y, hit);
-  for (const p of s.hydrants) drawHydrant(c, p.x, p.y, p.cd);
   const cars = s.cars.filter((car) => car.role !== 2);
   for (const car of cars) {
     c.save();
@@ -150,11 +147,19 @@ function drawWorld(c, s, roster, time, reduced) {
     headlights(c, patrol(car), phase);
     c.restore();
   }
-  for (const car of cars) {
+  const objects = [...buildings];
+  for (const [x, y] of s.lamps) objects.push({ y, draw: () => drawLamp(c, x, y) });
+  for (const [, x, y, hit] of s.cones) objects.push({ y, draw: () => drawCone(c, x, y, hit) });
+  for (const p of s.hydrants) objects.push({ y: p.y, draw: () => drawHydrant(c, p.x, p.y, p.cd) });
+  for (const car of cars) objects.push({ y: car.y, draw() {
     c.save();
     c.translate(car.x, car.y);
     drawCarSprite(c, { ...car, colour: tint(car), sirenPhase: phase });
     c.restore();
+  } });
+  objects.sort((a, b) => a.y - b.y);
+  for (const item of objects) item.draw();
+  for (const car of cars) {
     if (car.pin > 0) {
       c.beginPath();
       c.arc(car.x, car.y, 16, -TAU / 4, -TAU / 4 + TAU * Math.min(1, car.pin / 10));
@@ -168,7 +173,7 @@ function drawWorld(c, s, roster, time, reduced) {
       c.textAlign = 'center';
       const w = Math.min(76, c.measureText(name).width + 8),
         x = Math.max(w / 2, Math.min(s.w - w / 2, car.x)),
-        y = car.y < 37 ? car.y + 27 : car.y - 23;
+        y = car.y < 55 ? car.y + 34 : car.y - 42;
       rect(c, '#122030db', x - w / 2, y - 10, w, 13);
       c.fillStyle = '#f2f5ef';
       c.fillText(name, x, y, w - 5);
@@ -192,7 +197,7 @@ function drawWorld(c, s, roster, time, reduced) {
   if (s.crown) {
     const holder = cars.find((car) => car.id === s.crown.holder),
       p = holder ?? s.crown;
-    crown(c, p.x, holder ? (p.y < 37 ? p.y + 38 : p.y - 40) : p.y);
+    crown(c, p.x, holder ? (p.y < 55 ? p.y + 46 : p.y - 58) : p.y);
     indicator(c, p, s, gold);
   }
 }
@@ -240,6 +245,7 @@ export function mountWhiteoutTv(canvas, { sound }) {
   const timeline = createTimeline(),
     juice = createJuice(),
     play = createSoundHooks(sound, cues);
+  let buildings = [];
   let view,
     area,
     layout,
@@ -262,6 +268,14 @@ export function mountWhiteoutTv(canvas, { sound }) {
       trackCanvas.width = s.w;
       trackCanvas.height = s.h;
     }
+    buildings = s.blocks.map(([x, y, w, h, seed]) => {
+      // Leave room above and left for the tallest roof and below for the pavement.
+      const bitmap = canvas.ownerDocument.createElement('canvas');
+      bitmap.width = Math.ceil(w + 24);
+      bitmap.height = Math.ceil(h + 34);
+      drawBuildingBlock(bitmap.getContext('2d'), 16, 27, w, h, seed);
+      return { y: y + h, draw: () => c.drawImage(bitmap, x - 16, y - 27) };
+    });
     city(cityCanvas.getContext('2d'), s);
   }
   const loop = createArcadeLoop(
@@ -280,7 +294,7 @@ export function mountWhiteoutTv(canvas, { sound }) {
       c.clip();
       c.drawImage(cityCanvas, 0, 0);
       c.drawImage(trackCanvas, 0, 0);
-      drawWorld(c, s, roster, time, reduced);
+      drawWorld(c, s, roster, time, reduced, buildings);
       if (!reduced) {
         juice.draw(c, now);
         for (let i = 0; i < 72; i++)

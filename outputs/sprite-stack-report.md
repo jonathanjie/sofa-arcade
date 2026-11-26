@@ -1,40 +1,40 @@
-# Whiteout Drift sprite stacks
+# Sprite stacks on the party TV
 
-At 1920×1080 with 16 players, the TV draw callback took 2.8 ms at p95 over 71 frames. The browser test limit is 16.7 ms. The baseline took 0.8 ms at p95. These were separate live rounds with different car positions.
+## Whiteout Drift
 
-Drawing 16 cached coupes took 0.1 ms at median and 0.2 ms at p95 in headless Chromium. The measurement used a 1920×1080 canvas, all 16 seat colours and 32 warm-up frames to cover every heading. It timed the next 120 batches of 16 car draws. These times measure JavaScript and canvas command submission. They exclude display latency.
+Each block rises 18–24 world pixels above its footprint. Each course steps north and every second course steps west. This exposes the south and east walls. Lower courses are darker. Lit apartments, a snow-covered parapet and raised vents, skylights or water tanks give the roof and walls distinct features. The TV builds one bitmap per block when it prepares the layout and copies it once per frame.
 
-## Kit and art
+Buildings, street props and cars share a draw order. A building uses the y coordinate of its south foundation edge. A car uses its ground centre. A car on the north street can disappear behind the roof edge. A car on the south street draws over the wall. Driver labels and the crown draw afterward.
 
-Use `compileStack(document, layers, palette)` once per look. Supply equal-size letter grids from the ground up. The result includes slice canvases, width, height and depth. Use `drawStack(ctx, stack, x, y, {angle, scale, sliceGap, shade})` to draw at a ground-centre position. The angle is in radians and the gap is in art pixels. Each frame includes the shadow and lower-slice shading.
+Cars are 48 world pixels long, up from 32. The eight coupe slices rise 2.16 world pixels per course, up from 1. Player cars keep their seat colour, including the patrol body below its white roof and raised light bar. Hydrants and cones use double-size slices. Street lamps have a base, shaft and lantern above the existing pool of light.
 
-Each palette variant caches up to 64 bitmaps across 32 headings and all scale, gap and shade settings. The oldest entry is evicted first. Whiteout uses one scale per model. A coupe frame measures 40×47 pixels. A cruiser frame measures 40×48. With all 32 headings for 16 coupes and both patrol light phases, the vehicle frame pixels occupy about 4.14 MiB at four bytes per pixel, before canvas overhead and slice storage. Props each use one cached frame.
+## Dust Bunny Sumo
 
-The 16×8-pixel coupe has eight slices. The cruiser adds a ninth for its light bar. Reduced motion holds the bar and siren glow steady. The road keeps its original camera, headlights, track marks and ice. The new roof height has clearance below the driver labels. Static buildings bake four wall levels into the city canvas.
+Each bunny has 12 slices with feet, uneven fleece, a seat-coloured scarf, muzzle, eyes and pink-lined ears. Moving bunnies face their velocity. Still bunnies face the audience. The TV keeps the dash, squash, blink and reduced-motion behaviour. Label placement allows space for the taller model. The round rug has four edge layers below its playing surface. Its warning and pull use the same radius as the game rules.
 
-## Files changed
+The browser readability check measures opaque rows in the cached model frame and applies the live canvas transform. The 64 CSS pixel minimum still applies. The final art pass widened the bunnies and varied roof colours, seams and rooftop fixtures after review of the first full-TV captures.
 
-- Shared renderer and tests in `ui/party/kit/stack.mjs` and `ui/party/kit/stack.test.mjs`.
-- Whiteout art, TV and canvas test fixture in `ui/party/games/whiteout-drift/{art,tv,tv.test}.mjs`.
-- Cover renderer import list and heading handling in `ui/media/party/sources/whiteout-drift-cover.mjs`.
-- Delivery lists in `server/party-delivery.mjs` and `desktop/runtime-manifest.json`. The runtime file list imports the party list.
-- Served copies in `public/party/kit/stack.mjs` and `public/party/games/whiteout-drift/{art,tv}.mjs`.
-- API contract in `docs/PARTY_CONTRACT.md` and this report.
+## Verification
 
-## Checks and screenshots
+| 1920 × 1080 TV, 16 players | Draw callback p95 | Frames sampled |
+| --- | ---: | ---: |
+| Whiteout Drift | 1.6 ms | 71 |
+| Dust Bunny Sumo | 1.0 ms | 180 |
 
-| Check | Result |
+Both measurements are below 16.7 ms. The smallest measured bunny was 66.7 CSS pixels high. These Chromium timings cover the TV draw callback. Physical TV viewing at 3 m and end-to-end display latency remain unverified.
+
+| Check | Final result |
 | --- | --- |
 | Prepare game and production build | Passed |
 | ESLint | 0 errors, 14 warnings outside the changed files |
-| Unit suite | 735 passed, 1 exhaustive-only test skipped |
-| Integration suite | 81 passed, 2 failed. The ZIP inventory lacks the new module and the archived host returns 404 for it. The integrator owns the pinned ZIP rebuild. |
-| Whiteout browser test | 1 passed with 16 players |
+| Unit suite | 735 passed, 1 skipped |
+| Integration suite | 81 passed, 2 expected portable-ZIP failures. The archive differs from current source and its host returns 404 for the stack module. An earlier concurrent run also timed out in Wall of Paddles. That test passed on both subsequent full runs. |
+| Whiteout browser | 1 passed |
+| Sumo browser | 2 passed |
 
-The local evidence includes the [before TV](../work/sprite-stack/before.png), [after TV](../work/sprite-stack/after.png) and [three-car close-up](../work/sprite-stack/cars.png). The crop uses nearest-neighbour enlargement. The wider windscreen in the final art helps separate the roof and hood at diagonal headings.
+Local captures from the final browser runs:
 
-## Other party games
+- [Whiteout full TV](../work/sprite-stack/pass2/whiteout-tv.png) and [two buildings with cars](../work/sprite-stack/pass2/whiteout-close.png)
+- [Sumo full TV](../work/sprite-stack/pass2/sumo-tv.png) and [bunny close-up](../work/sprite-stack/pass2/sumo-close.png)
 
-- **Dust Bunny Sumo** — Stack the fur, ears and feet so a bunny's heading stays visible during a shove.
-- **Don’t Wake Lala** — Give the sleeping cat a raised back and ears while keeping its face clear.
-- **Snack Stack** — Give each snack a visible edge so players can count layers in a pile.
+The [first-pass Whiteout frame](../work/sprite-stack/after.png) shows the previous wall and car heights from commit `d8da427`.

@@ -1,49 +1,22 @@
 import { compileSprite, drawSprite } from '../../kit/sprites.mjs';
+import { compileStack, drawStack } from '../../kit/stack.mjs';
 import { LOOKS } from '../../looks.mjs';
 
 export const INK = '#251e28';
 export const CREAM = '#fff1d6';
 export const GOLD = '#ffd782';
 
-// o outline, e ear, m mouse fur, c cheek, k eye, n nose, s scarf,
-// h highlight, f dust, d shadow.
-const RIDER = [
-  '......oo.....oo.......',
-  '.....oeeo...oeeo......',
-  '.....oeemoomeeeo......',
-  '......ommmmmmoo.......',
-  '.....ommmhmmmmo.......',
-  '....omkmmmmmkmo.......',
-  '....omcmmmnmcmo.......',
-  '.....omccccmmo........',
-  '......ossssso.........',
-];
-const PUFF = [
-  '....ooooffooooo.......',
-  '..oohhffffhhfffooo....',
-  '..offfhffhffffdddo....',
-  '.ofhfffffffffdddo.....',
-  '.offffffffffdddddoo...',
-  '..offdfffdfdddddddo...',
-  '.ooddddfddddddddoo....',
-  '...oooddoooddooo......',
-  '......oo...oo.........',
-];
-const ROLL = [
-  '....ooffooooo.........',
-  '...ohhfffhhffooooo....',
-  '..offfhhffhffffdddo...',
-  '.offfffffffhfffddo....',
-  'oofffffdfddfdddddo....',
-  '.oddfffffdddddddooo...',
-  '..ooooddddddddddddo...',
-  '.....oodddooooooo.....',
-  '.......ooo............',
-];
-export const BUNNY_SIZE = { width: RIDER[0].length, height: RIDER.length + PUFF.length };
-
-const FUR = { o: INK, e: '#ed9ba9', m: '#bfa68b', c: '#fff0d5', h: '#fef0e4',
-  k: '#221623', n: '#e07786', f: '#c8b3cd', d: '#83748f' };
+// Plan views face east. Raised ears sit behind the eyes and nose.
+const feet = ['.........', '....pp...', '....pp...', '.........', '.........', '....pp...', '....pp...', '.........', '.........'];
+const belly = ['.........', '...fff...', '..fffff..', '.ffffff..', '.ffffff..', '.fffffff.', '..fffff..', '...fff...', '.........'];
+const fleece = ['...fff...', '..hffff..', '.hhfffff.', 'ffhfffff.', '.fffffff.', 'ffffffhff', '.fffffhh.', '..fffff..', '...ff....'];
+const scarf = fleece.map(row => row.replace(/[fh]/g, 's'));
+const head = ['.........', '...fff...', '..ffffk..', '.ffffffm.', '..fffffmn', '.ffffffm.', '..ffffk..', '...fff...', '.........'];
+const ears = ['.........', '..pp.....', '..pe.....', '.........', '.........', '.........', '..pe.....', '..pp.....', '.........'];
+const tips = ears.map(row => row.replaceAll('e', 'p'));
+const layers = [feet, feet, belly, fleece, fleece, scarf, scarf, head, head, ears, ears, tips];
+export const BUNNY_SIZE = { width: 13, height: 19 };
+const FUR = { p: '#efdbc8', e: '#e69bab', f: '#d4c4d6', h: '#ffeddc', m: '#fff0db', n: '#da8197', k: INK };
 
 const LALA = [
   '.....oo.........oo....',
@@ -70,15 +43,12 @@ function changedRow(rows, index, value) {
 }
 
 export function createSumoArt(document) {
-  const blink = changedRow(RIDER, 5, '....omdmmmmmdmo.......');
-  const lean = RIDER.slice(1).map(row => '.' + row.slice(0, -1));
   const sprites = LOOKS.map(look => {
     const palette = { ...FUR, s: look.colour };
-    return [
-      compileSprite(document, [...RIDER, ...PUFF], palette),
-      compileSprite(document, [...blink, ...PUFF], palette),
-      compileSprite(document, ['......................', ...lean, ...ROLL], palette),
-    ];
+    return {
+      awake: compileStack(document, layers, palette),
+      blink: compileStack(document, layers, { ...palette, k: palette.f }),
+    };
   });
   const cats = [
     compileSprite(document, LALA, LALA_PALETTE),
@@ -87,12 +57,13 @@ export function createSumoArt(document) {
     compileSprite(document, changedRow(LALA, 8, '....owwwwkwwwffo......'), LALA_PALETTE),
   ];
   return {
-    bunny(context, look, pose, x, y, scale, squash) {
-      const sprite = sprites[look][pose];
-      // The art has more transparent padding on the right than on the left.
-      const scaleX = Math.max(1, scale - 1 + squash);
-      const scaleY = Math.max(1, scale - squash);
-      drawSprite(context, sprite, x - 9 * scaleX, y + 4 * scale - sprite.height * scaleY, scaleX, scaleY);
+    bunny(context, look, pose, x, y, scale, squash, angle) {
+      context.save();
+      context.translate(x, y);
+      context.scale(1.32 + squash * .07, 1 - squash * .06);
+      const lift = pose === 2 ? -scale : 0;
+      drawStack(context, pose === 1 ? sprites[look].blink : sprites[look].awake, 0, lift, { angle, scale, sliceGap: 1.05 });
+      context.restore();
     },
     lala(context, pose, x, y, scale) {
       drawSprite(context, cats[pose], x, y, scale);
@@ -157,6 +128,9 @@ export function makeRug(document, radius) {
   const context = rug.getContext('2d');
   context.translate(centre, centre);
   disc(context, 0, 12, radius + 7, '#211a28b8');
+  for (const [index, colour] of ['#543a44', '#af7258', '#65454b', '#cb9366'].entries()) {
+    disc(context, 0, 12 - 3 * index, radius + 1, colour);
+  }
   const rim = radius - 3;
   context.strokeStyle = '#e0a568';
   context.lineWidth = 3;
