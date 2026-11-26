@@ -362,12 +362,3 @@ html:has(.party-phone[data-playing]), body:has(.party-phone[data-playing]) {
   box-shadow: 0 0 0 100vmax #162b2a48;
 }
 
-.party-tv[data-game="wobble-tower"] .party-countdown {
-  inset: 4% 4% auto auto;
-  translate: none;
-  color: #141414;
-  background: #fcd34d;
-  border: 3px solid #141414;
-  box-shadow: 3px 4px #141414;
-  font-size: clamp(32px, 4vw, 66px);
-}

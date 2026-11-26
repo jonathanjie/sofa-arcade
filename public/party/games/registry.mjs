@@ -17,8 +17,6 @@ import { mountWhiteoutPhone } from './whiteout-drift/phone.mjs';
 import { mountPhone as balloonPhone } from './balloon-bop/phone.mjs';
 import { mountTv as balloonTv, resultSummary as balloonResultSummary } from './balloon-bop/tv.mjs';
 
-import { mountTv as wobbleMountTv, resultSummary as wobbleResultSummary } from './wobble-tower/tv.mjs';
-import { mountPhone as wobbleMountPhone } from './wobble-tower/phone.mjs';
 
 import { mountTimberTv } from './timber-rush/tv.mjs';
 import { mountTimberPhone } from './timber-rush/phone.mjs';
@@ -29,7 +27,6 @@ import { mountPhone as hopPhone } from './head-hop/phone.mjs';
 const views = new Map([
   ['head-hop', { mountTv: hopTv, mountPhone: hopPhone, playHint: instruction }],
   ['timber-rush', { mountTv: mountTimberTv, mountPhone: mountTimberPhone, playHint: 'Tap the side clear of the lowest branch.' }],
-  ['wobble-tower', { mountTv: wobbleMountTv, mountPhone: wobbleMountPhone, resultSummary: wobbleResultSummary, playHint: 'Tap when the plank lines up with the tower.' }],
   ['balloon-bop', { mountPhone: balloonPhone, mountTv: balloonTv, resultSummary: balloonResultSummary, playHint: 'Tap a spot to hop there and bop the balloon.' }],
   ['dont-wake-lala', { mountTv: mountDontWakeLalaTv, mountPhone: mountDontWakeLalaPhone }],
   ['dust-bunny-sumo', { mountTv: mountDustBunnyTv, mountPhone: mountDustBunnyPhone }],

@@ -210,10 +210,6 @@ const GAME_COVERS = {
     src: '/assets/party/balloon-bop/cover.webp', compact: '/assets/party/balloon-bop/cover-560.webp', width: 1280, height: 720,
     alt: 'Headband-wearing stick figures leap to keep balloons in the air.',
   },
-  'wobble-tower': {
-    src: '/assets/party/wobble-tower/cover.webp', compact: '/assets/party/wobble-tower/cover-560.webp', width: 1280, height: 720,
-    alt: 'Headband crews balance on crooked towers as a plank swings overhead.',
-  },
   'timber-rush': {
     src: '/assets/party/timber-rush/cover.webp', compact: '/assets/party/timber-rush/cover-560.webp', width: 1280, height: 720,
     alt: 'Headband-clad woodcutters swing their axes among flying chips and crooked branches.',

@@ -8,7 +8,6 @@ import { timberRush } from './timber-rush/rules.mjs';
 import { tugOfYarn } from './tug-of-yarn/game.mjs';
 import { wallOfPaddles } from './wall-of-paddles/round.mjs';
 import { whiteoutDrift } from './whiteout-drift/rules.mjs';
-import { wobbleTower } from './wobble-tower/rules.mjs';
 
 export const PARTY_GAMES = Object.freeze([
   tapRace,
@@ -19,7 +18,6 @@ export const PARTY_GAMES = Object.freeze([
   snackStack,
   whiteoutDrift,
   balloonBop,
-  wobbleTower,
   timberRush,
   headHop,
 ]);
