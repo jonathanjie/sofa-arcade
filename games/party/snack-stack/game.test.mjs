@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { INTRO_MS, SHORT_MS } from '../../../ui/party/games/snack-stack/cards.mjs';
 import { snackStack } from './game.mjs';
 import { CHALLENGES, PLAY_MS, PREVIEW_MS, SLOT_MS } from './schedule.mjs';
 
@@ -7,12 +8,16 @@ const roster = Array.from({ length: 16 }, (_, index) => ({ id: 'p' + index, look
 const input = (kind, at, value = 0, playerId = 'p0') => ({ playerId, input: { kind, at, value, slot: 0 } });
 const byId = id => CHALLENGES.findIndex(challenge => challenge.id === id);
 const fixture = id => ({ ...snackStack.createRound(roster.slice(0, 2), 'test'),
-  slots: [{ card: byId(id), variant: 0 }], elapsed: PREVIEW_MS });
+  introMs: 0, slots: [{ card: byId(id), variant: 0 }], elapsed: PREVIEW_MS });
 const tick = (state, inputs = []) => snackStack.step(state, inputs, 50);
 
 test('all twelve cards appear exactly once and the same seed and tick log replay identically', () => {
   function run() {
     let state = snackStack.createRound(roster, 'on the rug');
+    for (let ms = 0; ms < INTRO_MS; ms += 50) {
+      assert.equal(snackStack.projectForTv(state).phase, 'intro');
+      state = tick(state);
+    }
     assert.equal(new Set(state.slots.map(slot => slot.card)).size, 12);
     for (let elapsed = 0; elapsed < 12 * SLOT_MS; elapsed += 50) {
       assert.equal(snackStack.isRoundOver(state), false);
@@ -98,7 +103,7 @@ test('a zigzag needs one stroke that starts at the first corner', () => {
 test('every fourth slot doubles a settled gain and only settles it once', () => {
   const card = byId('quick-taps');
   let state = snackStack.createRound(roster.slice(0, 2), 'test');
-  state = { ...state, slots: Array.from({ length: 4 }, () => ({ card, variant: 0 })) };
+  state = { ...state, introMs: 0, slots: Array.from({ length: 4 }, () => ({ card, variant: 0 })) };
   for (let elapsed = 0; elapsed < 4 * SLOT_MS; elapsed += 50) {
     const slot = Math.floor(elapsed / SLOT_MS);
     const at = elapsed % SLOT_MS - PREVIEW_MS;
@@ -134,7 +139,7 @@ test('a later round narrows the cheese target, with difficulty capped after roun
   function stop(round) {
     const initial = snackStack.createRound(roster, 'cheese', round);
     // At 1812 ms the pointer is just inside the first-round target and outside round three.
-    let state = { ...initial, slots: [{ card: byId('cheese-wheel'), variant: 0 }], elapsed: PREVIEW_MS + 1800 };
+    let state = { ...initial, slots: [{ card: byId('cheese-wheel'), variant: 0 }], elapsed: initial.introMs + initial.tutorialMs + 1800 };
     state = tick(state, [input('tap', 1812)]);
     while (!snackStack.isRoundOver(state)) state = tick(state);
     return snackStack.scores(state)[0].score;
@@ -145,7 +150,20 @@ test('a later round narrows the cheese target, with difficulty capped after roun
 
 test('the phone gets a play anchor in host time and it follows discarded ticks', () => {
   const state = snackStack.createRound(roster, 'clock', 1, { startsAt: 82_000 });
-  assert.equal(snackStack.projectForPhone(state, 'p0').a, 83_500);
+  assert.equal(snackStack.projectForPhone(state, 'p0').a, 82_000 + INTRO_MS + PREVIEW_MS);
   const next = tick(state);
-  assert.equal(snackStack.projectForPhone(next, 'p0', { tickAt: 82_400 }).a, 83_850);
+  assert.equal(snackStack.projectForPhone(next, 'p0', { tickAt: 82_400 }).a, 82_350 + INTRO_MS + PREVIEW_MS);
+});
+
+test('tutorial modes set the authoritative opening and reject early taps', () => {
+  for (const [round, mode, duration] of [[1, 'short', SHORT_MS], [2, 'auto', SHORT_MS], [2, 'full', PREVIEW_MS]]) {
+    const state = snackStack.createRound(roster, 'mode', round, { mode });
+    assert.equal(state.tutorialMs, duration);
+    const before = { ...state, elapsed: state.introMs + duration - 50, slots: [{ card: 0, variant: 0 }] };
+    assert.equal(snackStack.projectForTv(before).phase, 'preview');
+    const live = tick(before, [input('tap', 0)]);
+    assert.equal(snackStack.projectForTv(live).phase, 'play');
+    assert.equal(live.players.p0.attempt.count, 0);
+    assert.equal(tick(live, [input('tap', 0)]).players.p0.attempt.count, 1);
+  }
 });

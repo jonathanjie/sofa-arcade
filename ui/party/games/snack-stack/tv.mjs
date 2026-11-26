@@ -1,7 +1,7 @@
 import { createArcadeLoop, createJuice, createSoundHooks } from '../../kit/animation.mjs';
 import { fitSpriteScale } from '../../kit/sprites.mjs';
 import { LOOKS } from '../../looks.mjs';
-import { CARDS, PLAY_MS, PREVIEW_MS } from './cards.mjs';
+import { CARDS, INTRO, exampleGesture, PLAY_MS, PREVIEW_MS } from './cards.mjs';
 import { createCardArt, label, rect } from './art.mjs';
 
 const CREAM = '#fff3d7';
@@ -130,6 +130,40 @@ function drawCard(context, art, box, scene, time, reduced, roundPhase, results) 
   label(context, 'CHALLENGE ' + progress, x + 42, y + 50, 23, { colour: CREAM });
   if (bonus) label(context, 'LALA BONUS   ×2', x + width - 41, y + 50, 28, { colour: GOLD, align: 'right' });
   else label(context, 'Highest score wins', x + width - 42, y + 50, 25, { colour: CREAM, align: 'right' });
+
+  if (phase === 'intro') {
+    for (const [i, line] of ['12 tiny challenges.', '5 seconds each.', 'Fastest and most accurate', 'climb the stack.'].entries()) {
+      label(context, line, centre, y + height * (.31 + i * .13), i < 2 ? 76 : 49,
+        { align: 'center', face: 'Georgia', max: width - 76 });
+    }
+    return;
+  }
+  if (phase === 'preview') {
+    const short = scene.tutorialMs < PREVIEW_MS;
+    const line = (text, position, size, colour = DARK) => label(context, text, centre, y + height * position, size,
+      { align: 'center', colour, max: width - 70 });
+    line(entry.name, .17, 43, accent);
+    line(entry.instruction, short ? .44 : .27, 60);
+    if (!short) {
+      const demo = exampleGesture(entry.visual, time, reduced);
+      context.save();
+      context.translate(centre, y + height * .51);
+      const scale = Math.min(width / 680, height / 900);
+      context.scale(scale, scale);
+      context.rotate(demo.angle * Math.PI / 180);
+      panel(context, { x: -248, y: -134, width: 496, height: 268 }, DARK);
+      panel(context, { x: -234, y: -120, width: 468, height: 240 }, PLATTER);
+      context.scale(.64, .64);
+      art.draw(context, entry.visual, 0, 0, demo.time, 0, 0, false);
+      label(context, '☞', (demo.x - 50) * 7, (demo.y - 50) * 3 + 40, 95, { colour: JAM, align: 'right' });
+      context.restore();
+      line(demo.caption, .70, 34, JAM);
+      line(entry.score, .78, 38);
+    }
+    const seconds = Math.ceil((PREVIEW_MS - time) / 1000);
+    line(seconds <= 3 ? 'Starts in ' + Math.max(1, seconds) : 'Watch first', .90, 48, accent);
+    return;
+  }
 
   const winning = roundPhase === 'results';
   const scored = phase === 'score' || winning;
@@ -375,7 +409,10 @@ export function mountSnackStackTv(canvas, { art, sound }) {
       playSound('win');
       juice.impact({ x: card.x + card.width / 2, y: card.y + card.height * .59, colour: GOLD, time, strong: true });
     }
-    canvas.setAttribute('aria-label', CARDS[scene.card].instruction + '. ' + finished + ' of ' + rows.length + ' finished.');
+    const entry = CARDS[scene.card];
+    const description = scene.phase === 'intro' ? INTRO : scene.phase === 'preview'
+      ? entry.name + '. ' + entry.instruction + '. ' + entry.score : entry.instruction + '. ' + finished + ' of ' + rows.length + ' finished.';
+    canvas.setAttribute('aria-label', description);
     view = next;
     arrival = time;
   }

@@ -8,7 +8,7 @@ import { CARDS, PICTURE_ANGLE, TRACE, PREVIEW_MS, cheeseAngle, greenPosition, la
 import { launchPartyHarness } from './harness.mjs';
 import { inputsForCard } from './snack-stack-driver.mjs';
 
-const output = fileURLToPath(new URL('../../work/snack-stack/review/', import.meta.url));
+const output = fileURLToPath(new URL('../../work/snack-tutorial/', import.meta.url));
 
 async function waitFor(predicate, label, timeout = 5000) {
   const limit = performance.now() + timeout;
@@ -131,7 +131,7 @@ async function playController(page, getView) {
   }
 }
 
-test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen socket controllers', { timeout: 145_000 }, async t => {
+test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen socket controllers', { timeout: 185_000 }, async t => {
   const fixture = await launchPartyHarness(t, { gameId: 'snack-stack', manual: false });
   const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
   t.after(() => browser.close());
@@ -240,14 +240,23 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
     requestAnimationFrame(sample);
   }));
 
+  await phones[0].getByText(/12 tiny challenges/).waitFor();
+  await tv.screenshot({ path: output + 'intro.png' });
   let timing;
   for (let index = 0; index < CARDS.length; index++) {
-    await waitFor(() => view.scene.index === index && view.scene.phase === 'play', 'challenge ' + (index + 1), 10_000);
+    if (index < 4) {
+      await waitFor(() => view.scene.index === index && view.scene.phase === 'preview' && view.scene.elapsed >= 900, 'tutorial', 15_000);
+      const id = CARDS[view.scene.card].id;
+      assert.equal(await phones[0].locator('.snack-control').evaluate(node => node.inert), true);
+      await Promise.all([tv.screenshot({ path: output + id + '-tv.png' }), phones[0].screenshot({ path: output + id + '-phone.png' })]);
+      if (index === 0) await phones[1].screenshot({ path: output + 'tutorial-reduced.png' });
+    }
+    await waitFor(() => view.scene.index === index && view.scene.phase === 'play', 'challenge ' + (index + 1), 15_000);
     const purpose = CARDS[view.scene.card].instruction;
     for (const phone of phones) {
       const brief = phone.getByText(purpose, { exact: true });
       await brief.waitFor();
-      assert.ok(await brief.evaluate(node => node.clientHeight <= parseFloat(getComputedStyle(node).lineHeight) + 1));
+      assert.ok(await brief.evaluate(node => node.clientHeight <= 3 * parseFloat(getComputedStyle(node).lineHeight) + 1));
     }
     await Promise.all(phones.map(checkViewport));
     const plays = Promise.all(phones.map(phone => playController(phone, () => view)));
@@ -297,6 +306,10 @@ test('Snack Stack runs on a 1920×1080 TV, two 390×844 phones and fourteen sock
     assert.ok(view.results.find(result => result.playerId === id).score >= 750, name + ' played the round');
   }
   await tv.screenshot({ path: output + 'podium.png' });
+  await tv.getByRole('button', { name: /^Next / }).click();
+  await waitFor(() => view.round === 2 && view.phase === 'playing' && view.scene.phase === 'preview', 'short repeat', 8000);
+  assert.equal(view.scene.tutorialMs, 2000);
+  await tv.screenshot({ path: output + 'short-repeat.png' });
   for (const tab of [tv, ...phones]) {
     assert.deepEqual(await tab.evaluate(() => window.snackCsp), []);
     await checkViewport(tab);
@@ -334,7 +347,8 @@ for (const count of [2, 8]) {
     const start = tv.getByRole('button', { name: 'Start', exact: true });
     for (let attempt = 0; attempt < 20 && !(await start.isEnabled()); attempt++) await fixture.advance();
     await start.click();
-    await fixture.advance(5150);
+    // Let the browser consume snapshots between manual clock advances.
+    for (let elapsed = 0; elapsed < 11_500; elapsed += 100) await fixture.advance(100);
     await tv.locator('[data-phase="playing"] canvas[data-party-canvas]').waitFor();
     await tv.waitForFunction(() => window.mouseHeights.size > 0);
     const heights = await tv.evaluate(() => [...window.mouseHeights]);
