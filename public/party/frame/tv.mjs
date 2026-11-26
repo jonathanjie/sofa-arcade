@@ -160,6 +160,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
           <button type="button" class="party-primary" data-start>Start</button>
           <button type="button" class="party-secondary" data-toggle-players hidden>Players</button>
           <label class="party-next-game" hidden>Next game<select></select></label>
+          <label class="party-next-mode" hidden>Mode<select></select></label>
           <p data-start-hint></p>
         </div>
       </aside>
@@ -199,6 +200,8 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
   const lobby = find('.party-lobby');
   const results = find('[data-party-results]');
   const gameMenu = find('.party-next-game');
+  const modeMenu = find('.party-next-mode');
+  const modeSelect = modeMenu.querySelector('select');
   const nextGame = gameMenu.querySelector('select');
   const motion = find('[data-motion]');
   const music = find('[data-music]');
@@ -279,6 +282,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
   }
   gameMenu.hidden = games.length < 2;
   nextGame.addEventListener('change', () => actions.send({ type: 'select', round: previous.round, gameId: nextGame.value }));
+  modeSelect.addEventListener('change', () => actions.send({ type: 'mode', round: previous.round, mode: modeSelect.value }));
   start.addEventListener('click', () => {
     start.disabled = true;
     void sound.unlock();
@@ -319,6 +323,7 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     const canStart = ready >= view.minPlayers && connection === 'connected';
     start.disabled = !canStart;
     nextGame.disabled = connection !== 'connected';
+    modeSelect.disabled = connection !== 'connected';
     const roundName = partyGameView(view.gameId)?.roundName ?? 'round';
     setText(start, view.phase === 'results' ? `Next ${roundName}` : 'Start');
     setText(find('[data-start-hint]'), ready < view.minPlayers ? `Start with ${view.minPlayers} ready players.` : '');
@@ -364,8 +369,18 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     if (main.dataset.game !== view.gameId) main.dataset.game = view.gameId;
     const roundName = gameView?.roundName ?? 'round';
     const roundTitle = roundName[0].toUpperCase() + roundName.slice(1);
-    setText(playHint, gameView?.playHint ?? '');
-    playHint.hidden = !gameView?.playHint;
+    modeMenu.hidden = !Array.isArray(view.modes) || view.modes.length < 2;
+    if (!modeMenu.hidden) {
+      // Mode definitions belong to the game; do not rebuild an open menu on each TV tick.
+      if (prior?.gameId !== view.gameId) {
+        modeSelect.replaceChildren(...view.modes.map(({ id, label }) => new Option(label, id)));
+      }
+      if (modeSelect.value !== view.mode) modeSelect.value = view.mode;
+    }
+    const hint = gameView?.playHintForMode?.(view.mode)
+      ?? view.modes?.find(entry => entry.id === view.mode)?.hint ?? gameView?.playHint ?? '';
+    setText(playHint, hint);
+    playHint.hidden = !hint;
     const active = view.phase === 'countdown' || view.phase === 'playing';
     if (stage.dataset.phase !== view.phase) stage.dataset.phase = view.phase;
     const count = Math.max(0, Math.ceil(view.ms / 1000));

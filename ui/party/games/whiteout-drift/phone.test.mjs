@@ -57,10 +57,10 @@ test('role updates, practice, status and cooldown', () => {
   const f = fixture();
   assert.equal(f.phone.practiceWhileWaiting, true);
   f.phone.update(null, false, { practice: true });
-  assert.equal(f.find('[data-role]').textContent, 'Practice');
+  assert.equal(f.find('[data-role-label]').textContent, 'Practice');
   assert.equal(f.find('.wd-drift').disabled, false);
   f.phone.update(state, true);
-  assert.equal(f.find('[data-role]').textContent, 'Getaway');
+  assert.equal(f.find('[data-role-label]').textContent, 'Getaway');
   assert.equal(f.find('[data-score]').textContent, '123');
   assert.equal(f.find('[data-hp]').attributes.get('aria-label'), '2 of 3 integrity');
   assert.equal(f.find('[data-spin]').hidden, false);
@@ -70,7 +70,7 @@ test('role updates, practice, status and cooldown', () => {
   assert.equal(f.find('.wd-drift').disabled, true);
   assert.equal(f.find('.wd-action progress').value, 25);
   f.phone.update({ ...state, r: 3 }, true);
-  assert.equal(f.find('[data-role]').textContent, 'Most Wanted');
+  assert.equal(f.find('[data-role-label]').textContent, 'Most Wanted');
   f.phone.dispose();
 });
 

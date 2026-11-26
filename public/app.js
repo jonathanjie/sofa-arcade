@@ -206,6 +206,10 @@ const GAME_COVERS = {
     src: '/assets/party/snack-stack/cover.webp', compact: '/assets/party/snack-stack/cover-560.webp', width: 1280, height: 720,
     alt: 'Mice stack cheese and berries into a tower while Lala watches.',
   },
+  'whiteout-drift': {
+    src: '/assets/party/whiteout-drift/cover.webp', compact: '/assets/party/whiteout-drift/cover-560.webp', width: 1280, height: 720,
+    alt: 'A getaway mouse drifts through midnight snow, smashing a fire hydrant into an ice trap for pursuing patrol cars.',
+  },
 };
 function preloadSofaCover(sizes) {
   const link = document.createElement('link');

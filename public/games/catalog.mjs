@@ -2,6 +2,7 @@
 export const SOFA_GAME_ID = 'sofa-kingdoms';
 export const ODD_LAWS_GAME_ID = 'odd-laws-society';
 export const TAP_RACE_GAME_ID = 'tap-race';
+export const WHITEOUT_DRIFT_GAME_ID = 'whiteout-drift';
 export const GRAVITY_ORCHARD_GAME_ID = 'gravity-orchard';
 
 export const GAME_CATALOG = Object.freeze([
@@ -14,6 +15,7 @@ export const GAME_CATALOG = Object.freeze([
   { id: 'wall-of-paddles', title: 'Wall of Paddles', tagline: 'Two walls. A storm of balls.', description: 'Slide to guard your team’s wall and turn rebounds into goals. The goal target depends on the number of players.', mode: '2–16 players', duration: 'Up to 90 sec', status: 'local-only', category: 'party', accent: '#176176', icon: 'race' },
   { id: 'tug-of-yarn', title: 'Tug of Yarn', tagline: 'One yarn. One beat.', description: 'Tap on the beat with your team and pull the knot past your line. The first team to win two heats takes the match.', mode: '2–16 players', duration: 'Best of 3 heats', status: 'local-only', category: 'party', accent: '#b64c56', icon: 'race' },
   { id: 'snack-stack', title: 'Snack Stack', tagline: 'Five seconds. One big snack.', description: 'Race through twelve tiny challenges, including double-point rounds with Lala.', mode: '2–16 players', duration: '2 min rounds', status: 'local-only', category: 'party', accent: '#a14459', icon: 'sparkles' },
+  { id: WHITEOUT_DRIFT_GAME_ID, title: 'Whiteout Drift', tagline: 'Midnight snow. Frozen traps. Full-couch chase.', description: 'Outdrift the midnight patrol, smash fire hydrants to freeze ice traps, and battle across four chase modes.', mode: '2–16 players · 4 modes', duration: '75 sec rounds', status: 'local-only', category: 'party', accent: '#4a7ba7', icon: 'race' },
   { id: 'afterglow-market', title: 'Afterglow Market', tagline: 'A little stall. A big night.', description: 'Build a night-market stall, trade curious goods, and guess what the next wave of customers will crave.', mode: 'Trading & strategy', duration: '25–35 min', status: 'planned', accent: '#ad6f65', icon: 'market' },
   { id: ODD_LAWS_GAME_ID, title: 'The Odd Laws Society', tagline: 'Build the city. Rewrite its rules.', description: 'Build a nine-plot borough across six council sessions. Compete for a shared market, seal your influence bids, and shape the laws that score both cities.', mode: 'City-building strategy', duration: '35–45 min target', status: 'playable', accent: '#6d829b', icon: 'laws' },
   { id: 'last-ninety-seconds', title: 'The Last Ninety Seconds', tagline: 'Two witnesses. One missing minute and a half.', description: 'Compare the clues on your phones and reconstruct a tiny mystery together before the scene slips away.', mode: 'Cooperative mystery', duration: '15–25 min', status: 'planned', accent: '#8c7680', icon: 'mystery' },

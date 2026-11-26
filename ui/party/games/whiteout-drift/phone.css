@@ -12,7 +12,7 @@
 .wd-phone [hidden] { display: none !important; }
 .wd-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: space-between; font-size: 14px; }
 .wd-status strong { padding: 5px 8px; border-radius: 20px; background: #1f2d45; color: #7be0ff; }
-.wd-phone[data-role="3"] [data-role], .wd-status [data-spin] { color: #ffd25a; }
+.wd-phone[data-role="3"] [data-role-label], .wd-status [data-spin] { color: #ffd25a; }
 .wd-status [data-spin] { animation: wd-flash .65s alternate infinite; }
 @keyframes wd-flash { to { background: #604a24; } }
 .wd-driving, .wd-dispatch, .wd-action { display: grid; gap: 8px; min-width: 0; }

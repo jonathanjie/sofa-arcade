@@ -11,6 +11,8 @@ import { mountTugOfYarnPhone } from './tug-of-yarn/phone.mjs';
 import { mountTugOfYarnTv, tugResultSummary } from './tug-of-yarn/tv.mjs';
 import { mountSnackStackTv } from './snack-stack/tv.mjs';
 import { mountSnackStackPhone } from './snack-stack/phone.mjs';
+import { mountWhiteoutTv, whiteoutPlayHintForMode, whiteoutResultSummary } from './whiteout-drift/tv.mjs';
+import { mountWhiteoutPhone } from './whiteout-drift/phone.mjs';
 
 const views = new Map([
   ['dont-wake-lala', { mountTv: mountDontWakeLalaTv, mountPhone: mountDontWakeLalaPhone }],
@@ -22,6 +24,13 @@ const views = new Map([
     playHint: 'Tap on the beat. Pull the knot past your line.', resultSummary: tugResultSummary,
   }],
   ['snack-stack', { mountTv: mountSnackStackTv, mountPhone: mountSnackStackPhone }],
+  ['whiteout-drift', {
+    mountTv: mountWhiteoutTv,
+    mountPhone: mountWhiteoutPhone,
+    playHint: whiteoutPlayHintForMode('getaway'),
+    playHintForMode: whiteoutPlayHintForMode,
+    resultSummary: whiteoutResultSummary,
+  }],
 ]);
 
 export function partyGameView(id) {

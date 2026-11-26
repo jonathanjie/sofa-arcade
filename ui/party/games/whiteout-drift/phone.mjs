@@ -20,7 +20,7 @@ export function mountWhiteoutPhone(root, { input }) {
   stylesheet.rel = 'stylesheet';
   stylesheet.href = new URL('./phone.css', import.meta.url).href;
   root.innerHTML = `<div class="wd-phone">
-    <header class="wd-status"><strong data-role>Practice</strong><span data-hp>● ● ●</span><span>Score <b data-score>0</b></span><strong data-spin hidden>ICE SPIN!</strong></header>
+    <header class="wd-status"><strong data-role-label>Practice</strong><span data-hp>● ● ●</span><span>Score <b data-score>0</b></span><strong data-spin hidden>ICE SPIN!</strong></header>
     <div class="wd-driving">
       <div class="wd-wheel"><button type="button" class="wd-tilt" hidden>Enable tilt</button><div class="wd-stick"></div><div class="wd-rim" aria-hidden="true"><i></i></div><span class="wd-label">Steer</span></div>
       <div class="wd-action"><button type="button" class="wd-drift">DRIFT / BOOST</button><progress max="10" value="0" aria-label="Boost charge"></progress></div>
@@ -200,7 +200,7 @@ export function mountWhiteoutPhone(root, { input }) {
       practice = nextPractice;
       cooldown = state?.c ?? 0;
       panel.dataset.role = String(role);
-      find('[data-role]').textContent = practice ? 'Practice' : ['Getaway', 'Police', 'Dispatch', 'Most Wanted'][role];
+      find('[data-role-label]').textContent = practice ? 'Practice' : ['Getaway', 'Police', 'Dispatch', 'Most Wanted'][role];
       const hp = state?.h ?? 3;
       find('[data-hp]').textContent = '● '.repeat(hp) + '○ '.repeat(3 - hp);
       find('[data-hp]').setAttribute('aria-label', `${hp} of 3 integrity`);

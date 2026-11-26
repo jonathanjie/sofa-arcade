@@ -181,6 +181,8 @@ try {
     c.restore();
   });
   const png = await page.locator('canvas').screenshot();
+  const rawPath = fileURLToPath(new URL('./raw/whiteout-drift.webp', import.meta.url));
+  execFileSync('cwebp', ['-quiet', '-z', '6', '-exact', '-o', rawPath, '--', '-'], { input: png });
   for (const [name, width, height] of [
     ['cover.webp', 1280, 720],
     ['cover-560.webp', 560, 315],

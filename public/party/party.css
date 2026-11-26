@@ -127,8 +127,8 @@
 .party-host-controls button { font-size: 23px; }
 .party-host-controls p { font-weight: 650; color: var(--muted-party); }
 .party-host-controls p:empty { display: none; }
-.party-next-game { display: grid; gap: 6px; text-align: left; }
-.party-next-game select { width: 100%; min-height: 44px; color: var(--ink); }
+.party-next-game, .party-next-mode { display: grid; gap: 6px; text-align: left; }
+.party-next-game select, .party-next-mode select { width: 100%; min-height: 44px; color: var(--ink); }
 .party-stage { position: relative; min-height: 0; background: #274946; overflow: hidden; }
 .party-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .party-countdown {
