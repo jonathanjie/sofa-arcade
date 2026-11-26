@@ -14,7 +14,11 @@ import { mountSnackStackPhone } from './snack-stack/phone.mjs';
 import { mountWhiteoutTv, whiteoutPlayHintForMode, whiteoutResultSummary } from './whiteout-drift/tv.mjs';
 import { mountWhiteoutPhone } from './whiteout-drift/phone.mjs';
 
+import { mountPhone } from './balloon-bop/phone.mjs';
+import { mountTv, resultSummary } from './balloon-bop/tv.mjs';
+
 const views = new Map([
+  ['balloon-bop', { mountPhone, mountTv, resultSummary, playHint: 'Tap a spot to hop there and bop the balloon.' }],
   ['dont-wake-lala', { mountTv: mountDontWakeLalaTv, mountPhone: mountDontWakeLalaPhone }],
   ['dust-bunny-sumo', { mountTv: mountDustBunnyTv, mountPhone: mountDustBunnyPhone }],
   ['tap-race', { mountTv: mountTapRaceTv, mountPhone: mountTapRacePhone }],
