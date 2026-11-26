@@ -35,7 +35,9 @@ export const PARTY_BROWSER_FILES = Object.freeze([
   'games/whiteout-drift/art.mjs',
   'games/whiteout-drift/phone.css',
   'games/whiteout-drift/phone.mjs',
+  'games/wobble-tower/phone.mjs',
   'games/whiteout-drift/tv.mjs',
+  'games/wobble-tower/tv.mjs',
   'kit/animation.mjs',
   'kit/sprites.mjs',
   'kit/ink.mjs',
@@ -47,7 +49,7 @@ export const PARTY_BROWSER_FILES = Object.freeze([
   // Serve the optimized, authored covers directly on LAN. Preparation copies
   // the same files to public/ for the hosted collection.
   [
-    'tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack', 'whiteout-drift',
+    'tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack', 'whiteout-drift', 'wobble-tower',
   ].flatMap(game => ['cover.webp', 'cover-560.webp'].map(file => Object.freeze({
     url: `/assets/party/${game}/${file}`,
     source: `ui/media/party/covers/${game}/${file}`,
@@ -65,6 +67,7 @@ export const PARTY_HOST_FILES = Object.freeze([
   'games/party/whiteout-drift/modes.mjs',
   'games/party/whiteout-drift/physics.mjs',
   'games/party/whiteout-drift/rules.mjs',
+  'games/party/wobble-tower/rules.mjs',
   'games/party/snack-stack/challenges/cheese-wheel.mjs',
   'games/party/snack-stack/challenges/count-mice.mjs',
   'games/party/snack-stack/challenges/exact-seven.mjs',

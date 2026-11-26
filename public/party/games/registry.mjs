@@ -14,7 +14,11 @@ import { mountSnackStackPhone } from './snack-stack/phone.mjs';
 import { mountWhiteoutTv, whiteoutPlayHintForMode, whiteoutResultSummary } from './whiteout-drift/tv.mjs';
 import { mountWhiteoutPhone } from './whiteout-drift/phone.mjs';
 
+import { mountTv, resultSummary } from './wobble-tower/tv.mjs';
+import { mountPhone } from './wobble-tower/phone.mjs';
+
 const views = new Map([
+  ['wobble-tower', { mountTv, mountPhone, resultSummary, playHint: 'Tap when the plank lines up with the tower.' }],
   ['dont-wake-lala', { mountTv: mountDontWakeLalaTv, mountPhone: mountDontWakeLalaPhone }],
   ['dust-bunny-sumo', { mountTv: mountDustBunnyTv, mountPhone: mountDustBunnyPhone }],
   ['tap-race', { mountTv: mountTapRaceTv, mountPhone: mountTapRacePhone }],
