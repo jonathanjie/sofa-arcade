@@ -46,7 +46,7 @@ function newSeat(id, token, time, extra = {}) {
 }
 
 /** Process-local authority. No party records use the two-seat database. */
-export function createPartyRooms({ now, seed = () => randomBytes(16).toString('hex'), onRoomCountChange = () => {} }) {
+export function createPartyRooms({ now, resolveGame = getPartyGame, seed = () => randomBytes(16).toString('hex'), onRoomCountChange = () => {} }) {
   const rooms = new Map();
   const createReceipts = new Map();
   const secret = randomBytes(32);
@@ -88,7 +88,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
 
   function create(body, peer) {
     if (closed) fail(503, 'party_closed', 'The local host is closing.');
-    const game = getPartyGame(body?.gameId);
+    const game = resolveGame(body?.gameId);
     if (!exactFields(body, 'gameId', 'requestId') || !game || !retryKey(body.requestId)) {
       fail(400, 'invalid_create', 'Choose an available party game.');
     }
@@ -110,7 +110,7 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
       code, game, nonce: randomBytes(16).toString('hex'), initialGameId: game.id, createKey: key, creatorPeer: peer,
       seats: new Map(), revoked: new Set(), peerJoins: new Map(),
       nextPlayer: 1, phase: 'lobby', round: 0, activeRound: null, notice: null, touchedAt: time,
-      gameRound: 0, previousResults: [],
+      gameRound: 0, previousResults: [], mode: game.defaultMode ?? null,
     };
     const token = tokenFor('host', room, key);
     room.host = newSeat('host', token, time);
@@ -215,14 +215,22 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
     }
     const starting = message?.type === 'start' && exactFields(message, 'type', 'round');
     const selecting = message?.type === 'select' && exactFields(message, 'type', 'round', 'gameId');
-    if ((!starting && !selecting) || !validSequence(message.round)) fail(400, 'invalid_command', 'That party command is invalid.');
+    const settingMode = message?.type === 'mode' && exactFields(message, 'type', 'round', 'mode') && typeof message.mode === 'string';
+    if ((!starting && !selecting && !settingMode) || !validSequence(message.round)) fail(400, 'invalid_command', 'That party command is invalid.');
     if (message.round !== room.round || isActive(room.phase)) fail(409, 'round_changed', 'Wait for the current round to finish.');
     if (starting) {
       if (!startRound(room, time, seed())) fail(409, 'not_enough_ready', 'Wait for more players to get ready.');
+    } else if (settingMode) {
+      if (!Array.isArray(room.game.modes) || !room.game.modes.some(entry => entry.id === message.mode)) {
+        fail(400, 'invalid_mode', 'Choose an available mode.');
+      }
+      room.mode = message.mode;
+      room.notice = null;
     } else {
-      const game = getPartyGame(message.gameId);
+      const game = resolveGame(message.gameId);
       if (!game) fail(400, 'invalid_game', 'Choose an available party game.');
       room.game = game;
+      room.mode = game.defaultMode ?? null;
       room.gameRound = 0;
       room.previousResults = [];
       room.activeRound = null;
@@ -256,6 +264,8 @@ export function createPartyRooms({ now, seed = () => randomBytes(16).toString('h
       const players = [...room.seats.values()].map(player => ({ ...publicSeat(player), connected: Boolean(player.connection) }));
       return {
         ...common, players, minPlayers: room.game.minPlayers,
+        mode: room.mode ?? null,
+        modes: room.game.modes?.map(({ id, label, hint }) => ({ id, label, ...(hint ? { hint } : {}) })) ?? [],
         roster: round?.roster ?? [],
         scene: round ? room.game.projectForTv(round.state) : null,
         results: round?.results ?? [],

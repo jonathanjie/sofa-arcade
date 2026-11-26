@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPartyRooms } from './rooms.mjs';
+import { getPartyGame } from '../../games/party/registry.mjs';
 import { advancePartyClock } from '../realtime/party/round.mjs';
 
-function fixture(gameId = 'tap-race') {
+function fixture(gameId = 'tap-race', resolveGame) {
   let time = 0;
-  const rooms = createPartyRooms({ now: () => time, seed: () => 'test-seed' });
+  const rooms = createPartyRooms({ resolveGame, now: () => time, seed: () => 'test-seed' });
   const host = rooms.create({ gameId, requestId: 'host'.repeat(8) });
   const room = rooms.find(host.code);
   function join(look, name = 'Runner') {
@@ -14,8 +15,63 @@ function fixture(gameId = 'tap-race') {
   return { rooms, host, room, join, at: value => { time = value; } };
 }
 
+test('only the host can select a game mode between rounds', () => {
+  const base = getPartyGame('tap-race');
+  const modes = [{ id: 'solo', label: 'Solo', hint: 'Race alone.' }, { id: 'team', label: 'Team' }];
+  let matchMode;
+  const game = {
+    ...base, id: 'mode-fixture', defaultMode: 'solo', modes: modes.map(mode => ({ ...mode, private: true })),
+    createRound(players, seed, number, match) {
+      matchMode = match.mode;
+      return base.createRound(players, seed, number, match);
+    },
+  };
+  const { rooms, room, join, at } = fixture(game.id, id => id === game.id ? game : getPartyGame(id));
+  const command = message => rooms.command(room, room.host, { round: room.round, ...message });
+  const choose = mode => command({ type: 'mode', mode });
+  assert.equal(room.mode, 'solo');
+  assert.deepEqual(rooms.project(room, room.host).modes, modes);
+  const [phone] = [0, 1].map(look => {
+    const seat = rooms.authorize(room, join(look).token);
+    rooms.attach(seat, {});
+    rooms.command(room, seat, { type: 'ready', value: true });
+    return seat;
+  });
+  const phoneView = () => rooms.project(room, phone);
+  const before = JSON.stringify(phoneView());
+  assert.ok(!Object.hasOwn(phoneView(), 'mode') && !Object.hasOwn(phoneView(), 'modes'));
+  assert.throws(() => rooms.command(room, phone, { type: 'mode', mode: 'team', round: 0 }), { status: 403, code: 'forbidden' });
+  assert.throws(() => choose('missing'), { status: 400, code: 'invalid_mode' });
+  for (const fields of [{ mode: 1 }, { extra: 1 }, { round: -1 }]) {
+    assert.throws(() => command({ type: 'mode', mode: 'team', ...fields }), { code: 'invalid_command' });
+  }
+  assert.throws(() => command({ type: 'mode', mode: 'team', round: 1 }), { status: 409, code: 'round_changed' });
+  choose('team');
+  assert.equal(rooms.project(room, room.host).mode, 'team');
+  assert.equal(JSON.stringify(phoneView()), before);
+  command({ type: 'start' });
+  assert.equal(matchMode, 'team');
+  assert.throws(() => choose('solo'), { status: 409, code: 'round_changed' });
+  for (let time = 500; time <= 3000 + game.durationMs; time += 500) {
+    at(time);
+    rooms.tick(time);
+    if (time === 3000) assert.throws(() => choose('solo'), { status: 409, code: 'round_changed' });
+  }
+  assert.equal(room.phase, 'results');
+  choose('solo');
+  assert.equal(room.mode, 'solo');
+  assert.equal(room.notice, null);
+  command({ type: 'select', gameId: base.id });
+  assert.equal(room.mode, null);
+  assert.deepEqual(rooms.project(room, room.host).modes, []);
+  assert.throws(() => choose('team'), { code: 'invalid_mode' });
+  command({ type: 'select', gameId: game.id });
+  assert.equal(room.mode, game.defaultMode);
+});
+
 test('room retries preserve credentials, name filtering and exclusive looks', () => {
   const { rooms, host, room, join } = fixture();
+  assert.equal(room.mode, null);
   assert.deepEqual(rooms.create({ gameId: 'tap-race', requestId: 'host'.repeat(8) }), host);
   const first = join(0, '   Pip\u0000\u202e!   ');
   assert.deepEqual(join(0, 'Pip!'), first);
@@ -332,13 +388,13 @@ test('createRound receives a game round, start time and previous results', () =>
   rooms.command(room, room.host, { type: 'start', round: 0 });
   assert.deepEqual(calls[0], {
     gameRound: 1, seed: 'test-seed',
-    match: { roomRound: 1, gameId: 'tap-race', startsAt: 3000, previousResults: [] },
+    match: { roomRound: 1, gameId: 'tap-race', mode: null, startsAt: 3000, previousResults: [] },
   });
   advanceTo(48_000);
   rooms.command(room, room.host, { type: 'start', round: 1 });
   assert.deepEqual(calls[1], {
     gameRound: 2, seed: 'test-seed',
-    match: { roomRound: 2, gameId: 'tap-race', startsAt: 51_000, previousResults: [
+    match: { roomRound: 2, gameId: 'tap-race', mode: null, startsAt: 51_000, previousResults: [
       { playerId: 'p1', score: 2, place: 1 },
       { playerId: 'p2', score: 1, place: 2 },
       { playerId: 'p3', score: 0, place: 3 },
