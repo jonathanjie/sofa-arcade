@@ -87,7 +87,7 @@ export function mountTv(canvas) {
         ctx.restore();
       }
       const caption = s.mode === 'coop' ? 'Best ' + s.peak : s.mode === 'duel' ? crews.map((c,i) => c + ' ' + s.points[i]).join('   /   ') : crews[lane];
-      title(caption + '   ·   ' + tower.height + (tower.height === 1 ? ' floor' : ' floors'), cx, deck + 31, 23);
+      title(caption + '   ·   ' + tower.height + (tower.height === 1 ? ' floor' : ' floors'), cx, deck + 24, 23);
     });
     ctx.restore();
     effects.draw(ctx, time, area);
@@ -96,9 +96,9 @@ export function mountTv(canvas) {
       const slot = members.indexOf(p);
       const width = 565 / Math.min(4, members.length);
       const x = 62 + 593 * p.side + width * (slot % 4 + .5);
-      const y = 509 + Math.floor(slot / 4) * 121;
+      const y = 509 + Math.floor(slot / 4) * 115;
       const pose = p.id === s.active ? P.cheer : i % 3 === 1 ? P.ready : P.stand;
-      drawFigure(ctx, pose, x, y, { look: p.look, flip: !!p.side, scale: .58, reducedMotion: reduced });
+      drawFigure(ctx, pose, x, y, { look: p.look, flip: !!p.side, scale: .54, reducedMotion: reduced });
       drawNameTag(ctx, p.name, p.look, { x: x - 64, y: y - 1, width: 128, height: 29 });
     });
   }, value => effects.setReducedMotion(value));
