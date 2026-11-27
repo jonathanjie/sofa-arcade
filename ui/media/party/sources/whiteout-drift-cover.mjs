@@ -19,7 +19,7 @@ try {
         contentType: 'text/html',
         body: '<style>*{margin:0}</style><canvas width="1280" height="720"></canvas>',
       });
-    const modules = ['party/games/whiteout-drift/art.mjs', 'party/looks.mjs', 'party/kit/sprites.mjs'];
+    const modules = ['party/games/whiteout-drift/art.mjs', 'party/looks.mjs', 'party/kit/sprites.mjs', 'party/kit/stack.mjs'];
     if (!modules.includes(path)) return route.abort();
     return route.fulfill({ contentType: 'text/javascript', body: await readFile(new URL(path, ui)) });
   });
@@ -107,7 +107,9 @@ try {
       c.rotate(a);
       c.scale(scale, scale);
       headlights(c, cop, phase);
+      c.rotate(-a);
       drawCarSprite(c, {
+        a,
         colour: '#ffc543',
         role: cop ? 1 : 0,
         ai: +cop,
@@ -115,6 +117,7 @@ try {
         boost: !cop,
         hp: 2,
       });
+      c.rotate(a);
       if (!cop) {
         // Mouse ears and a tiny scarf peeking out of the gold coupe.
         rect(c, '#563d4e', -5, -5, 4, 4);

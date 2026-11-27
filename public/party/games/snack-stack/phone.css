@@ -9,7 +9,7 @@
 .party-handset:has(.snack-phone:not([hidden])) [data-status] { font-size: 15px; }
 .party-handset:has(.snack-phone[data-active="true"]:not([hidden])) [data-status] { display: none; }
 .snack-phone { display: grid; gap: 13px; }
-.snack-brief { font-size: clamp(14px, 4.35vw, 18px); font-weight: 850; line-height: 1.2; }
+.snack-brief { text-wrap: balance; font-size: clamp(20px, 5.8vw, 26px); font-weight: 850; line-height: 1.2; }
 .snack-control { min-height: 286px; display: grid; gap: 10px; align-content: start; }
 .snack-phone > :is(p, div, output):empty { display: none; }
 .snack-practice {
@@ -137,3 +137,14 @@
   .snack-trace canvas { width: min(100%, 210px); }
   .snack-level { height: 75px; }
 }
+.snack-control { position: relative; }
+.snack-control[hidden], .snack-ghost[hidden] { display: none; }
+.snack-ghost {
+  position: absolute;
+  translate: -95% -40%;
+  pointer-events: none;
+  color: #7b2744;
+  text-shadow: 0 1px 3px white;
+  font: bold 68px/1 Georgia, serif;
+}
+.snack-control[data-control="hold"] .snack-ghost { margin-left: clamp(-84px, -19vw, -60px); }

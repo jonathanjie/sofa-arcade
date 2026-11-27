@@ -1,0 +1,13 @@
+button.bop-pad {
+  width: 100%; height: clamp(115px, 33dvh, 280px); max-width: none;
+  border: 4px solid #141414; border-radius: 24px 30px 19px 28px;
+  color: #201d17; background: radial-gradient(#d8b453 1px, transparent 1.5px) 0 0 / 14px 14px, #fde68a;
+  font: bold clamp(24px, 7vw, 40px)/1.1 system-ui !important; touch-action: manipulation; position: relative;
+}
+.bop-pad.bop-teach { opacity: 1; }
+.bop-teach::after {
+  content: '☞'; position: absolute; bottom: 12%; left: 60%; font-size: 2rem;
+  animation: bop-demo 1.2s ease-in-out infinite alternate;
+}
+@keyframes bop-demo { from { transform: translate(-60px, -15px) rotate(20deg); } to { transform: rotate(-20deg); } }
+@media (prefers-reduced-motion: reduce) { .bop-teach::after { animation: none; } }

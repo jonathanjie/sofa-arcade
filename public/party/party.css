@@ -361,3 +361,4 @@ html:has(.party-phone[data-playing]), body:has(.party-phone[data-playing]) {
 .party-tv[data-game="tug-of-yarn"] .party-countdown {
   box-shadow: 0 0 0 100vmax #162b2a48;
 }
+

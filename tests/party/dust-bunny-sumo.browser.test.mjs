@@ -62,21 +62,21 @@ test('Dust Bunny Sumo plays in Chromium with a TV, two phones and fourteen socke
         const draw = CanvasRenderingContext2D.prototype.drawImage;
         const rows = new WeakMap();
         window.sumoSpriteMinimum = Infinity;
-        CanvasRenderingContext2D.prototype.drawImage = function (sprite, x, y, width, height) {
-          if (height && sprite.height === 18 && this.canvas.hasAttribute('data-party-canvas')) {
+        CanvasRenderingContext2D.prototype.drawImage = function (sprite) {
+          if (arguments.length === 3 && sprite.height > sprite.width && sprite.width < 160 && this.canvas.hasAttribute('data-party-canvas')) {
             if (!rows.has(sprite)) {
               const pixels = sprite.getContext('2d').getImageData(0, 0, sprite.width, sprite.height).data;
               const visible = Array.from({ length: sprite.height }, (_, row) => row).filter(row => {
                 const start = row * sprite.width * 4;
                 for (let alpha = start + 3; alpha < start + sprite.width * 4; alpha += 4) {
-                  if (pixels[alpha]) return true;
+                  if (pixels[alpha] >= 192) return true;
                 }
                 return false;
               });
               rows.set(sprite, visible.at(-1) - visible[0] + 1);
             }
             const cssHeight = this.canvas.clientHeight / this.canvas.height;
-            window.sumoSpriteMinimum = Math.min(window.sumoSpriteMinimum, cssHeight * height * rows.get(sprite) / sprite.height);
+            window.sumoSpriteMinimum = Math.min(window.sumoSpriteMinimum, cssHeight * this.getTransform().d * rows.get(sprite));
           }
           return draw.apply(this, arguments);
         };

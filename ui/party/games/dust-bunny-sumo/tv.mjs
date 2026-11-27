@@ -192,14 +192,11 @@ function drawRider(context, body, player, { layout, sprites, time, reduced, juic
     }
     context.globalAlpha = 1;
   }
-  context.fillStyle = '#23202a94';
-  context.beginPath();
-  context.ellipse(x, y + 3 * scale, 7 * scale, 2.8 * scale, 0, 0, TAU);
-  context.fill();
   const speed = body.vx * body.vx + body.vy * body.vy;
   const phase = time + player.look * 123;
   const pose = reduced ? 0 : dashing || (speed > 80 && phase % 160 < 95) ? 2 : Number(phase % 2800 > 2580);
-  sprites.bunny(context, player.look, pose, x, y, scale, reduced ? 0 : juice.squash(body.id, time));
+  sprites.bunny(context, player.look, pose, x, y, scale, reduced ? 0 : juice.squash(body.id, time),
+    speed > 1 ? Math.atan2(body.vy, body.vx) : Math.PI / 2);
   context.globalAlpha = 1;
   if (!out) return { x, y, colour, player };
 }
@@ -223,14 +220,14 @@ function drawTags(context, riders, layout, art, names, connected) {
     const { x, y, player, colour } = rider;
     const w = names.get(player.id);
     const below = y + 5 * scale;
-    const above = y - 16 * scale - height;
+    const above = y - 19 * scale - height;
     const candidates = [
       tagAt(x - w / 2, below, w), tagAt(x - w / 2, above, w),
       tagAt(x + 9 * scale, y - height, w), tagAt(x - 9 * scale - w, y - height, w),
       tagAt(x - w / 2, below + height + gap, w), tagAt(x - w / 2, above - height - gap, w),
     ];
     const clearsRiders = candidate => riders.every(other => other === rider || !intersects(candidate, {
-      x: other.x - 7 * scale, y: other.y - 13 * scale, w: 14 * scale, h: 17 * scale,
+      x: other.x - 8 * scale, y: other.y - 18 * scale, w: 16 * scale, h: 23 * scale,
     }));
     const clearsTags = candidate => placed.every(tag => !intersects(candidate, tag));
     const rect = candidates.find(candidate => clearsTags(candidate) && clearsRiders(candidate))

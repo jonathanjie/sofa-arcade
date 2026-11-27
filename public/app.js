@@ -206,6 +206,17 @@ const GAME_COVERS = {
     src: '/assets/party/snack-stack/cover.webp', compact: '/assets/party/snack-stack/cover-560.webp', width: 1280, height: 720,
     alt: 'Mice stack cheese and berries into a tower while Lala watches.',
   },
+  'balloon-bop': {
+    src: '/assets/party/balloon-bop/cover.webp', compact: '/assets/party/balloon-bop/cover-560.webp', width: 1280, height: 720,
+    alt: 'Headband-wearing stick figures leap to keep balloons in the air.',
+  },
+  'timber-rush': {
+    src: '/assets/party/timber-rush/cover.webp', compact: '/assets/party/timber-rush/cover-560.webp', width: 1280, height: 720,
+    alt: 'Headband-clad woodcutters swing their axes among flying chips and crooked branches.',
+  },
+  'head-hop': {
+    src: '/assets/party/head-hop/cover.webp', compact: '/assets/party/head-hop/cover-560.webp', width: 1280, height: 720,
+  },
   'whiteout-drift': {
     src: '/assets/party/whiteout-drift/cover.webp', compact: '/assets/party/whiteout-drift/cover-560.webp', width: 1280, height: 720,
     alt: 'A getaway mouse drifts through midnight snow, smashing a fire hydrant into an ice trap for pursuing patrol cars.',

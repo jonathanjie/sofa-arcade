@@ -1,5 +1,5 @@
 import { CHALLENGES, makeSchedule } from './schedule.mjs';
-import { EXACT_TAP_TARGET, PLAY_MS, PREVIEW_MS, REVEAL_MS, SLOT_MS, slotPhase } from '../../../ui/party/games/snack-stack/cards.mjs';
+import { EXACT_TAP_TARGET, INTRO_MS, SHORT_MS, PLAY_MS, PREVIEW_MS, REVEAL_MS, SLOT_MS, slotPhase } from '../../../ui/party/games/snack-stack/cards.mjs';
 
 const MAX_INPUT_LAG_MS = 450;
 const MAX_INPUT_LEAD_MS = 100;
@@ -28,13 +28,18 @@ function normalizeInput(input) {
 }
 
 function currentSlot(state) {
-  const index = Math.min(Math.floor(state.elapsed / SLOT_MS), state.slots.length - 1);
+  const time = state.elapsed - state.introMs;
+  // Use the full-card timeline for both views and scoring. Short tutorials
+  // enter that timeline with two seconds left before the play boundary.
+  const skipped = PREVIEW_MS - state.tutorialMs;
+  const length = SLOT_MS - skipped;
+  const index = Math.max(0, Math.min(Math.floor(time / length), state.slots.length - 1));
   const { card, variant } = state.slots[index];
-  return { index, card, variant, elapsed: state.elapsed - index * SLOT_MS, challenge: CHALLENGES[card] };
+  return { index, card, variant, elapsed: time - index * length + skipped, challenge: CHALLENGES[card] };
 }
 
 function isRoundOver(state) {
-  return state.elapsed >= state.slots.length * SLOT_MS;
+  return state.elapsed >= state.introMs + state.slots.length * (SLOT_MS - PREVIEW_MS + state.tutorialMs);
 }
 
 function multiplier(index) {
@@ -88,10 +93,14 @@ export const snackStack = Object.freeze({
   id: 'snack-stack',
   minPlayers: 2,
   maxPlayers: 16,
-  durationMs: CHALLENGES.length * SLOT_MS + STALL_RESERVE_MS,
-  createRound(players, seed, gameRound = 1, { startsAt } = {}) {
+  defaultMode: 'auto',
+  modes: [{ id: 'auto', label: 'Short tutorials on repeats' }, { id: 'full', label: 'Always full tutorials' }, { id: 'short', label: 'Always short tutorials' }],
+  durationMs: INTRO_MS + CHALLENGES.length * SLOT_MS + STALL_RESERVE_MS,
+  createRound(players, seed, gameRound = 1, { startsAt, mode } = {}) {
     return {
       slots: makeSchedule(seed),
+      introMs: gameRound === 1 ? INTRO_MS : 0,
+      tutorialMs: mode === 'short' || (mode !== 'full' && gameRound > 1) ? SHORT_MS : PREVIEW_MS,
       elapsed: 0,
       startsAt,
       difficulty: Math.min(2, Math.max(0, gameRound - 1)),
@@ -110,6 +119,7 @@ export const snackStack = Object.freeze({
     const { index, card, variant, elapsed, challenge } = currentSlot(state);
     const { attempt, gain, total } = state.players[playerId];
     const view = { i: index, c: card, t: elapsed, n: attempt.count, d: Number(attempt.finish !== null) };
+    if (state.tutorialMs === SHORT_MS) view.h = 1;
     if (challenge.phoneVariant) view.v = variant;
     if (elapsed >= REVEAL_MS) {
       view.g = gain;
@@ -122,9 +132,9 @@ export const snackStack = Object.freeze({
   },
   projectForTv(state) {
     const { index, card, variant, elapsed, challenge } = currentSlot(state);
-    const phase = slotPhase(elapsed);
+    const phase = state.elapsed < state.introMs ? 'intro' : slotPhase(elapsed);
     return {
-      index, card, variant, elapsed, phase, multiplier: multiplier(index), difficulty: state.difficulty,
+      index, card, variant, elapsed, phase, tutorialMs: state.tutorialMs, multiplier: multiplier(index), difficulty: state.difficulty,
       nextCard: state.slots[index + 1]?.card,
       players: Object.entries(state.players).map(([id, { attempt, total, gain }]) => ({
         id, total, gain,

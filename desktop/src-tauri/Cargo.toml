@@ -1,7 +1,7 @@
 [package]
 name = "sofa-arcade-desktop"
 default-run = "sofa-arcade"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 rust-version = "1.90"
 description = "Local Tauri host for Sofa Arcade"
