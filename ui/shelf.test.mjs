@@ -24,7 +24,7 @@ test('the featured order follows the selected mode and excludes drawing-board ga
   ]);
   // Local-host-only games stay in the rotation so hosted visitors can discover them.
   assert.deepEqual(featuredGames(GAME_CATALOG, 'party').map(game => game.id), [
-    'tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack', 'whiteout-drift', 'balloon-bop', 'timber-rush', 'head-hop',
+    'tap-race', 'dont-wake-lala', 'dust-bunny-sumo', 'wall-of-paddles', 'tug-of-yarn', 'snack-stack', 'whiteout-drift', 'balloon-bop', 'timber-rush', 'head-hop', 'paper-skies',
   ]);
 });
 

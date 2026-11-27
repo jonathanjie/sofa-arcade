@@ -23,6 +23,8 @@ import { mountTimberPhone } from './timber-rush/phone.mjs';
 
 import { mountTv as hopTv, instruction } from './head-hop/tv.mjs';
 import { mountPhone as hopPhone } from './head-hop/phone.mjs';
+import { mountPaperSkiesTv, paperSkiesPlayHintForMode, paperSkiesResultSummary } from './paper-skies/tv.mjs';
+import { mountPaperSkiesPhone } from './paper-skies/phone.mjs';
 
 const views = new Map([
   ['head-hop', { mountTv: hopTv, mountPhone: hopPhone, playHint: instruction }],
@@ -43,6 +45,13 @@ const views = new Map([
     playHint: whiteoutPlayHintForMode('getaway'),
     playHintForMode: whiteoutPlayHintForMode,
     resultSummary: whiteoutResultSummary,
+  }],
+  ['paper-skies', {
+    mountTv: mountPaperSkiesTv,
+    mountPhone: mountPaperSkiesPhone,
+    playHint: paperSkiesPlayHintForMode('ring-rally'),
+    playHintForMode: paperSkiesPlayHintForMode,
+    resultSummary: view => ({ label: paperSkiesResultSummary(view), colour: '#ffd477' }),
   }],
 ]);
 

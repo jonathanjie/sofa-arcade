@@ -1,0 +1,125 @@
+.ps-phone {
+  --ps-x: 0%;
+  --ps-y: 0%;
+  --ps-bank: 0deg;
+  --ps-target: 0deg;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 16px;
+  background: #e0edf2;
+  color: #203a4a;
+  touch-action: none;
+  user-select: none;
+}
+.ps-phone [hidden] { display: none !important; }
+.ps-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 14px; }
+.ps-status strong, .ps-status [data-context], .ps-status [data-wobble] { border-radius: 20px; padding: 4px 8px; background: #284c61; color: #fff; }
+.ps-status [data-context] { background: #f5dd9e; color: #3c301e; }
+.ps-status [data-wobble] { background: #914927; color: #fff; }
+.ps-cockpit { display: flex; align-items: center; gap: 10px; }
+.ps-compass {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 50%;
+  border: 2px solid #284c61;
+  background: #9ec8dc;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 2px #f8fbfc;
+}
+.ps-compass[data-crown] { border-color: #c48820; box-shadow: inset 0 0 0 2px #ffe08a, 0 0 0 2px #f5dd9e; }
+.ps-compass[data-wobble] { border-color: #914927; }
+.ps-horizon {
+  position: absolute;
+  inset: -14px;
+  background: linear-gradient(to bottom, #9ec8dc 0 50%, #c8b68e 50% 100%);
+  transform: rotate(var(--ps-bank));
+  transition: transform 80ms linear;
+}
+.ps-wings {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 3px;
+  background: #203a4a;
+  border-radius: 2px;
+  translate: -50% -50%;
+}
+.ps-wings::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #203a4a;
+  translate: -50% 0;
+}
+.ps-arrow {
+  position: absolute;
+  inset: 0;
+  transform: rotate(var(--ps-target));
+  transition: transform 80ms linear;
+}
+.ps-arrow::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid #e09624;
+  translate: -50% 0;
+  filter: drop-shadow(0 1px 0 #203a4a);
+}
+.ps-gauges { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.ps-target { font-size: 13px; font-weight: 700; color: #284c61; }
+.ps-fuel { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+.ps-fuel progress { flex: 1; min-width: 0; height: 12px; accent-color: #28785e; }
+.ps-controls { display: grid; grid-template-columns: minmax(110px, 3fr) minmax(64px, 2fr); align-items: start; gap: 10px; }
+.ps-steer, .ps-actions { min-width: 0; display: grid; gap: 8px; }
+.ps-phone .ps-steer .party-stick {
+  position: relative;
+  min-height: 110px;
+  height: clamp(110px, 24svh, 180px);
+  color: transparent;
+  background: #f8fbfc;
+  border: 2px solid #557888;
+  box-shadow: none;
+  translate: none;
+  overflow: hidden;
+}
+.ps-steer .party-stick::before, .ps-steer .party-stick::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  translate: -50% -50%;
+}
+.ps-steer .party-stick::before { width: 64%; aspect-ratio: 1; max-width: 106px; left: 50%; top: 50%; border: 2px dashed #91aab6; }
+.ps-steer .party-stick::after { width: 34px; aspect-ratio: 1; left: calc(50% + var(--ps-x)); top: calc(50% + var(--ps-y)); background: #284c61; border: 3px solid #d1e5ed; }
+.ps-steer .party-secondary { min-height: 44px; padding: 5px; font-size: 14px; }
+.ps-actions button {
+  min-width: 64px;
+  min-height: 64px;
+  border: 2px solid #284c61;
+  border-radius: 14px;
+  background: #284c61;
+  color: #fff;
+  font: 800 20px/1.15 system-ui, sans-serif;
+  touch-action: none;
+}
+.ps-actions .ps-boost { background: #f5dd9e; color: #3c301e; border-color: #91703b; }
+.ps-actions button[aria-pressed="true"], .ps-actions .ps-boost[data-boosting] { background: #28684f; color: #fff; box-shadow: 0 0 0 3px #a1d6b5; }
+.ps-actions .ps-fire[data-cooldown] { border: 3px dashed #f5dd9e; }
+.ps-fire small { display: block; font-size: 12px; margin-top: 4px; }
+.ps-phone button:disabled { opacity: .6; }
+@media (prefers-reduced-motion: reduce) {
+  .ps-phone *, .ps-phone *::before, .ps-phone *::after { animation: none !important; transition: none !important; }
+}
