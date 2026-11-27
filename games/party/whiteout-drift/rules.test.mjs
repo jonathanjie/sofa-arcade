@@ -199,3 +199,23 @@ test('car-soccer splits Gold vs Blue, kicks the ball, scores goals, resets kicko
   assert.equal(game.isRoundOver(s), true);
   assert.equal(s.team.winner, 'gold');
 });
+
+
+test('solo 1P play works across all 5 Whiteout Drift modes with AI opponents', () => {
+  const solo = [{ id: 'p1', look: 0, name: 'Jon' }];
+  for (const mode of game.modes.map(m => m.id)) {
+    let s = game.createRound(solo, `solo-${mode}`, 1, { mode });
+    assert.equal(s.cars.filter(c => !c.ai).length, 1);
+    assert.ok(s.cars.filter(c => c.ai).length >= 1, `expected AI bots in 1P ${mode}`);
+    if (mode === 'car-soccer') {
+      const bot = s.cars.find(c => c.ai);
+      const startX = bot.x;
+      for (let i = 0; i < 10; i++) s = game.step(s, [{ playerId: 'p1', input: { kind: 'drive', x: 1, y: 0, d: 0 } }], 50);
+      assert.notEqual(s.cars.find(c => c.ai).x, startX);
+    } else {
+      assert.equal(s.cars.find(c => !c.ai).role, 0);
+      for (let i = 0; i < 5; i++) s = game.step(s, [{ playerId: 'p1', input: { kind: 'drive', x: 1, y: 0, d: 0 } }], 50);
+    }
+    assert.equal(game.scores(s).length, 1);
+  }
+});

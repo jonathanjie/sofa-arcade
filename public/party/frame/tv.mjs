@@ -326,7 +326,8 @@ export function mountPartyTv(root, { code, joinUrl, actions, sound, motionPrefer
     modeSelect.disabled = connection !== 'connected';
     const roundName = partyGameView(view.gameId)?.roundName ?? 'round';
     setText(start, view.phase === 'results' ? `Next ${roundName}` : 'Start');
-    setText(find('[data-start-hint]'), ready < view.minPlayers ? `Start with ${view.minPlayers} ready players.` : '');
+    setText(find('[data-start-hint]'), ready < view.minPlayers
+      ? `Start with ${view.minPlayers} ready ${view.minPlayers === 1 ? 'player' : 'players'}.` : '');
     find('.party-empty').hidden = view.players.length > 0;
   }
 

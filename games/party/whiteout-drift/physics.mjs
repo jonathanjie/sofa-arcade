@@ -24,6 +24,18 @@ export function steer(s, c, { x, y, d }) {
 }
 
 function aiSteer(s, c) {
+  if (s.mode === 'car-soccer' && s.ball) {
+    const b = s.ball;
+    const attackDir = c.side === 'gold' ? 1 : -1;
+    const behindX = clamp(b.x - attackDir * 28, 24, s.w - 24);
+    const aligned = (b.x - c.x) * attackDir > -8 && Math.abs(b.y - c.y) < 42;
+    const tx = aligned ? b.x + attackDir * 12 : behindX;
+    const ty = aligned ? b.y : clamp(b.y + (b.y > s.h / 2 ? -12 : 12), 24, s.h - 24);
+    const gap = Math.max(1, Math.hypot(tx - c.x, ty - c.y));
+    const charge = aligned && distance(c, b) > 70 && distance(c, b) < 170 && c.boostCharge < 520;
+    steer(s, c, { x: (tx - c.x) / gap, y: (ty - c.y) / gap, d: +charge });
+    return;
+  }
   let target = s.pings.at(-1) ?? s.cars.find(v => v.role === 3);
   if (!target) {
     for (const v of s.cars) if (driver(v) && (!target || distance(c, v) < distance(c, target))) target = v;

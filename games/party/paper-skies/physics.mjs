@@ -23,9 +23,44 @@ function weather(s, p) {
   }
   p.storm = storm;
 }
+function botControl(s, p) {
+  const nearest = list => {
+    let best = null, bestD = Infinity;
+    for (const item of list) {
+      const d = distance(p, item);
+      if (d < bestD) { bestD = d; best = item; }
+    }
+    return best;
+  };
+  let target = null, shoot = false;
+  if (s.mode === 'ring-rally') {
+    target = nearest(s.rings.filter(r => r.gold)) ?? nearest(s.rings);
+  } else if (s.mode === 'balloon-pop') {
+    target = nearest(s.balloons);
+    shoot = true;
+  } else if (s.mode === 'sky-tag') {
+    if (p.crown) {
+      const chaser = nearest(s.planes.filter(o => o !== p));
+      if (chaser) target = { x: clamp(2 * p.x - chaser.x, 120, s.w - 120), y: clamp(2 * p.y - chaser.y, 120, s.h - 120) };
+    } else {
+      target = nearest(s.crowns);
+      shoot = Boolean(target?.holder);
+    }
+  }
+  if (!target) return { x: 0, y: 0, b: 0, f: 0 };
+  const diff = Math.atan2(target.y - p.y, target.x - p.x) - p.a;
+  const rel = Math.atan2(Math.sin(diff), Math.cos(diff));
+  const gap = distance(p, target);
+  return {
+    x: clamp(rel * 1.4, -1, 1),
+    y: Math.abs(rel) > 1.1 ? 0.6 : -0.3,
+    b: +(Math.abs(rel) < 0.35 && gap > 190 && p.boostCharge > 40),
+    f: +(shoot && Math.abs(rel) < 0.28 && gap < 360),
+  };
+}
 export function fly(s, p, dt, clockDelta) {
   const sec = dt / 1000;
-  const { x, y, b, f } = p.control;
+  const { x, y, b, f } = p.ai ? botControl(s, p) : p.control;
   for (const key of ['fireCd', 'wobbleMs', 'stealCd', 'liftMs']) p[key] = Math.max(0, p[key] - clockDelta);
   // Add integer point-milliseconds so half-point standings round consistently.
   if (p.crown) p.score = (Math.round(p.score * 1000) + 2 * clockDelta) / 1000;

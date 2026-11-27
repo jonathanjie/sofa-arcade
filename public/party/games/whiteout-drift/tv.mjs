@@ -39,7 +39,7 @@ const cues = {
 const calls = { hydrant: 'ICE ON THE ROAD', 'ice-spin': 'SPINOUT', bust: 'BUSTED!', crown: 'CROWN SNATCHED', powershot: 'POWER SHOT!' };
 const gold = '#ffd477';
 const blueTeam = '#7cc8ff';
-const patrol = (car) => car.ai === 1 || car.role === 1;
+const patrol = (car) => car.role === 1;
 const tint = (car) => LOOKS[car.look]?.colour ?? gold;
 export const whiteoutPlayHintForMode = (mode) => (modes[mode] ?? modes.getaway)[1];
 export function whiteoutResultSummary(view) {
@@ -288,8 +288,8 @@ function drawWorld(c, s, roster, time, reduced, buildings) {
       c.lineWidth = 3;
       c.stroke();
     }
-    const name = roster.get(car.id);
-    if (name && !car.ai) {
+    const name = roster.get(car.id) ?? (s.mode === 'car-soccer' && car.ai ? 'Bot' : null);
+    if (name) {
       c.font = 'bold 11px system-ui';
       c.textAlign = 'center';
       const w = Math.min(76, c.measureText(name).width + 8),

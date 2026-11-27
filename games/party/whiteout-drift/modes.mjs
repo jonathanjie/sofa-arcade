@@ -68,11 +68,17 @@ export function setup(s, players, round) {
       s.cars.push(car);
       s.roster.push({ id: player.id, side, score: 0 });
     }
+    if (n === 1) {
+      const botSide = s.cars[0].side === 'gold' ? 'blue' : 'gold';
+      const bot = chassis(s, `ai${++s.police}`, (players[0].look + 8) % 16, botSide === 'gold' ? 0 : 4, true);
+      bot.side = botSide;
+      s.cars.push(bot);
+    }
     resetKickoff(s);
     return;
   }
   const teams = s.mode === 'cops-and-robbers', tag = s.mode === 'freeze-tag';
-  const cops = teams ? Math.max(1, Math.round(n * 0.35)) : tag ? (n > 8 ? 2 : 1) : 0;
+  const cops = n === 1 ? 0 : teams ? Math.max(1, Math.round(n * 0.35)) : tag ? (n > 8 ? 2 : 1) : 0;
   for (const [index, player] of players.entries()) {
     const cop = (index - (round - 1) % n + n) % n < cops;
     s.cars.push(chassis(s, player.id, player.look, cop ? 1 : 0));
@@ -80,7 +86,10 @@ export function setup(s, players, round) {
   }
   if (teams) { s.team = { robbers: 0, cops: 0, winner: null }; checkpoint(s); }
   if (s.mode === 'drift-king') s.crown = { x: s.w / 2, y: s.h / 2, holder: null };
-  const patrol = s.mode === 'getaway' ? (n <= 4 ? 2 : n <= 10 ? 3 : 4) : s.crown ? 2 : +(teams && n <= 4);
+  const patrol = s.mode === 'getaway' ? (n <= 4 ? 2 : n <= 10 ? 3 : 4)
+    : s.crown ? 2
+    : n === 1 ? 2
+    : +(teams && n <= 4);
   for (let i = 0; i < patrol; i++) addPolice(s);
 }
 

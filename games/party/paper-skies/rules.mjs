@@ -84,7 +84,7 @@ function targetBearing(s, p) {
   return Math.round(rel * 180 / Math.PI);
 }
 function projectForPhone(s, id) {
-  const p = s.planes.find(plane => plane.id === id);
+  const p = s.planes.find(plane => !plane.ai && plane.id === id);
   if (!p) return null;
   const t = targetBearing(s, p);
   const view = { m: modes.findIndex(m => m.id === s.mode), s: Math.round(p.score), b: Math.min(10, Math.floor(p.boostCharge / 10)),
@@ -97,6 +97,6 @@ function scores(s) {
   return s.roster.map(seat => ({ playerId: seat.id, score: Math.round(s.planes.find(p => p.id === seat.id)?.score ?? seat.score) }))
     .sort((a, b) => b.score - a.score);
 }
-export const paperSkies = Object.freeze({ id: 'paper-skies', minPlayers: 2, maxPlayers: 16, durationMs, modes,
+export const paperSkies = Object.freeze({ id: 'paper-skies', minPlayers: 1, maxPlayers: 16, durationMs, modes,
   defaultMode: modes[0].id, createRound, normalizeInput, step, projectForTv, projectForPhone, scores,
   isRoundOver: s => s.elapsedMs >= durationMs });

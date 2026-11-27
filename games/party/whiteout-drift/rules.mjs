@@ -83,7 +83,7 @@ function projectForTv(s) {
     cones: s.cones.map(c => [c.id, r1(c.x), r1(c.y), +c.hit]),
     hydrants: s.hydrants.map(h => ({ id: h.id, x: r1(h.x), y: r1(h.y), cd: Math.round(h.cd) })),
     ice: s.ice.map(p => ({ id: p.id, x: r1(p.x), y: r1(p.y), r: r1(p.r), seed: p.seed, ms: Math.round(p.ms) })),
-    cars: s.cars.map(c => ({ id: c.id, ai: +c.ai, look: c.ai ? -1 : c.look, x: r1(c.x), y: r1(c.y), a: r2(c.a),
+    cars: s.cars.map(c => ({ id: c.id, ai: +c.ai, look: c.ai && c.role === 1 ? -1 : c.look, x: r1(c.x), y: r1(c.y), a: r2(c.a),
       spd: r1(Math.hypot(c.vx, c.vy)), role: c.role, hp: c.hp, drift: +c.drift, spin: +(c.spinMs > 0),
       boost: +(c.boostMs > 0), pin: Math.min(10, Math.round(c.pinMs / 100)), score: Math.round(c.score) })),
     checkpoint: s.checkpoint && { x: r1(s.checkpoint.x), y: r1(s.checkpoint.y), r: r1(s.checkpoint.r) },
@@ -111,6 +111,6 @@ function scores(s) {
     .sort((a, b) => b.score - a.score);
 }
 
-export const whiteoutDrift = Object.freeze({ id: 'whiteout-drift', minPlayers: 2, maxPlayers: 16, durationMs: DURATION,
+export const whiteoutDrift = Object.freeze({ id: 'whiteout-drift', minPlayers: 1, maxPlayers: 16, durationMs: DURATION,
   defaultMode: 'getaway', modes, createRound, normalizeInput, step, projectForPhone, projectForTv, scores,
   isRoundOver: s => s.over });

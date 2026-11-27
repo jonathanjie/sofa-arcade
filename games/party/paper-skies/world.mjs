@@ -21,9 +21,15 @@ export function createWorld(players, seed) {
     thermals: [], clouds: [], rings: [], balloons: [], crowns: [], darts: [], planes: [],
     roster: players.map(({ id }) => ({ id, score: 0 })) };
   const phase = random(s) * TAU;
-  s.planes = players.map(({ id, look }, i) => {
-    const angle = phase + i * TAU / players.length;
-    return { id, look, x: s.w / 2 + 520 * Math.cos(angle), y: s.h / 2 + 330 * Math.sin(angle),
+  const entrants = players.length === 1
+    ? [
+      { id: players[0].id, look: players[0].look, ai: false },
+      ...[4, 8, 12].map((offset, i) => ({ id: `bot${i + 1}`, look: (players[0].look + offset) % 16, ai: true })),
+    ]
+    : players.map(({ id, look }) => ({ id, look, ai: false }));
+  s.planes = entrants.map(({ id, look, ai }, i) => {
+    const angle = phase + i * TAU / entrants.length;
+    return { id, look, ai, x: s.w / 2 + 520 * Math.cos(angle), y: s.h / 2 + 330 * Math.sin(angle),
       a: angle + Math.PI, bank: 0, spd: 250, boostCharge: 100, boosting: false, fireCd: 0,
       wobbleMs: 0, liftMs: 0, stealCd: 0, thermal: null, storm: null, score: 0, crown: false,
       streak: 0, popped: 0, control: { x: 0, y: 0, b: 0, f: 0 } };

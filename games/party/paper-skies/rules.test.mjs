@@ -182,3 +182,19 @@ test('TV projects only public fields at the specified precision', () => {
     assert.equal(tv.planes[0].x, 400.1); assert.equal(tv.planes[0].a, 0.13);
   }
 });
+
+
+test('solo 1P play spawns 3 deterministic AI rival planes across all 3 Paper Skies modes', () => {
+  const solo = [{ id: 'p1', look: 0, name: 'Jon' }];
+  for (const mode of game.modes.map(m => m.id)) {
+    let s = game.createRound(solo, `solo-${mode}`, 1, { mode });
+    assert.equal(s.planes.length, 4);
+    assert.equal(s.planes.filter(p => p.ai).length, 3);
+    assert.equal(game.projectForPhone(s, 'bot1'), null);
+    assert.ok(game.projectForPhone(s, 'p1'));
+    const botStart = s.planes.find(p => p.ai).x;
+    for (let i = 0; i < 20; i++) s = game.step(s, [{ playerId: 'p1', input: { kind: 'fly', x: 0.2, y: -0.3, b: 0, f: 0 } }], 50);
+    assert.notEqual(s.planes.find(p => p.ai).x, botStart);
+    assert.equal(game.scores(s).length, 1);
+  }
+});
