@@ -1,7 +1,7 @@
 import { clamp, distance, pursuitWaypoint, random } from './city.mjs';
 
 const RADIUS = 11;
-export const driver = c => c.role === 0 || c.role === 3;
+export const driver = c => c.role === 0 || c.role === 3 || c.role === 4;
 export function emit(s, kind, at, by, target = null) {
   s.events.push({ id: ++s.serial, at: s.elapsedMs, kind, x: at.x, y: at.y, by, target });
 }
@@ -127,5 +127,64 @@ export function iceContacts(s, car) {
     const owner = s.cars.find(c => c.id === patch.owner);
     if (owner && owner !== car) style(owner, s.mode === 'freeze-tag' && car.role === 1 ? 50 : 60);
     if (car.role === 1) awardDispatch(s, car);
+  }
+}
+
+const BALL_MAX_SPEED = 540;
+
+export function stepBall(s, dt, onGoal) {
+  const b = s.ball;
+  if (!b) return;
+  const seconds = dt / 1000;
+  for (const car of s.cars) {
+    if (car.role === 2) continue;
+    const gap = distance(car, b);
+    const minGap = RADIUS + b.r;
+    if (gap >= minGap) continue;
+    const nx = gap > 0.001 ? (b.x - car.x) / gap : Math.cos(car.a);
+    const ny = gap > 0.001 ? (b.y - car.y) / gap : Math.sin(car.a);
+    const overlap = minGap - gap;
+    b.x += nx * overlap * 0.85;
+    b.y += ny * overlap * 0.85;
+    car.x -= nx * overlap * 0.15;
+    car.y -= ny * overlap * 0.15;
+    constrain(s, car);
+    const carSpeed = Math.hypot(car.vx, car.vy);
+    const rel = Math.max(0, (car.vx - b.vx) * nx + (car.vy - b.vy) * ny);
+    const power = car.boostMs > 0 ? 1.55 : 1.15;
+    const kick = Math.max(125, rel * power + carSpeed * 0.45);
+    b.vx += nx * kick + car.vx * 0.25;
+    b.vy += ny * kick + car.vy * 0.25;
+    const nextSpeed = Math.hypot(b.vx, b.vy);
+    if (nextSpeed > BALL_MAX_SPEED) {
+      b.vx = b.vx / nextSpeed * BALL_MAX_SPEED;
+      b.vy = b.vy / nextSpeed * BALL_MAX_SPEED;
+    }
+    b.spin = clamp(b.spin + ((car.vx * ny - car.vy * nx) / 140), -10, 10);
+    b.lastTouch = car.id;
+    b.lastSide = car.side;
+    if (!car.touchCd) {
+      car.score += 10;
+      car.touchCd = 800;
+      if (car.boostMs > 0 || kick > 230) emit(s, car.boostMs > 0 ? 'powershot' : 'kick', b, car.id);
+    }
+  }
+  const onIce = s.ice.some(p => distance(b, p) <= p.r + b.r * 0.5);
+  const drag = onIce ? 0.996 : 0.985;
+  b.vx *= drag;
+  b.vy *= drag;
+  b.spin *= 0.96;
+  b.x += b.vx * seconds;
+  b.y += b.vy * seconds;
+
+  if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy) * 0.82; }
+  else if (b.y > s.h - b.r) { b.y = s.h - b.r; b.vy = -Math.abs(b.vy) * 0.82; }
+
+  const inGoalMouth = s.goal && b.y >= s.goal.top + 4 && b.y <= s.goal.bottom - 4;
+  if (inGoalMouth && b.x <= 4) { onGoal('blue'); return; }
+  if (inGoalMouth && b.x >= s.w - 4) { onGoal('gold'); return; }
+  if (!inGoalMouth) {
+    if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx) * 0.82; }
+    else if (b.x > s.w - b.r) { b.x = s.w - b.r; b.vx = -Math.abs(b.vx) * 0.82; }
   }
 }

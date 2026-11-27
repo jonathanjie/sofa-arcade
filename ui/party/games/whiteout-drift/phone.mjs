@@ -200,10 +200,17 @@ export function mountWhiteoutPhone(root, { input }) {
       practice = nextPractice;
       cooldown = state?.c ?? 0;
       panel.dataset.role = String(role);
-      find('[data-role-label]').textContent = practice ? 'Practice' : ['Getaway', 'Police', 'Dispatch', 'Most Wanted'][role];
+      const soccer = state?.m === 4;
+      find('[data-role-label]').textContent = practice
+        ? 'Practice'
+        : soccer
+          ? (role === 4 ? 'Blue Team' : 'Gold Team')
+          : (['Getaway', 'Police', 'Dispatch', 'Most Wanted'][role] ?? 'Getaway');
       const hp = state?.h ?? 3;
-      find('[data-hp]').textContent = '● '.repeat(hp) + '○ '.repeat(3 - hp);
-      find('[data-hp]').setAttribute('aria-label', `${hp} of 3 integrity`);
+      const hpNode = find('[data-hp]');
+      hpNode.hidden = soccer;
+      hpNode.textContent = '● '.repeat(hp) + '○ '.repeat(3 - hp);
+      hpNode.setAttribute('aria-label', `${hp} of 3 integrity`);
       find('[data-score]').textContent = String(state?.s ?? 0);
       find('[data-spin]').hidden = !state?.i;
       find('.wd-driving').hidden = role === 2;

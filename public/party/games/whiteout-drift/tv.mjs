@@ -20,6 +20,7 @@ const modes = {
   'cops-and-robbers': ['Cops & Robbers', 'Patrol pins the crew. The crew drives for checkpoints.'],
   'freeze-tag': ['Freeze Tag', 'Tagged drivers join the patrol. Be the last driver.'],
   'drift-king': ['Drift King', 'Grab the crown and keep it moving.'],
+  'car-soccer': ['Car Soccer', 'Gold vs. Blue on a snowy stadium pitch. Drift-boost to blast goals!'],
 };
 const cues = {
   hydrant: 'swipe',
@@ -31,26 +32,41 @@ const cues = {
   crown: 'collect',
   dispatch: 'join',
   cone: 'move',
+  kick: 'move',
+  powershot: 'lure',
+  goal: 'bank',
 };
-const calls = { hydrant: 'ICE ON THE ROAD', 'ice-spin': 'SPINOUT', bust: 'BUSTED!', crown: 'CROWN SNATCHED' };
+const calls = { hydrant: 'ICE ON THE ROAD', 'ice-spin': 'SPINOUT', bust: 'BUSTED!', crown: 'CROWN SNATCHED', powershot: 'POWER SHOT!' };
 const gold = '#ffd477';
+const blueTeam = '#7cc8ff';
 const patrol = (car) => car.ai === 1 || car.role === 1;
 const tint = (car) => LOOKS[car.look]?.colour ?? gold;
 export const whiteoutPlayHintForMode = (mode) => (modes[mode] ?? modes.getaway)[1];
 export function whiteoutResultSummary(view) {
+  const mode = view.scene?.mode ?? view.mode;
   const winner = view.scene?.team?.winner;
-  if ((view.scene?.mode ?? view.mode) !== 'cops-and-robbers' || !winner) return null;
+  if (!winner) return null;
+  if (mode === 'car-soccer') {
+    if (winner === 'gold') return { label: 'Gold Team Wins!', colour: gold };
+    if (winner === 'blue') return { label: 'Blue Team Wins!', colour: '#9ccfff' };
+    return { label: 'Draw Match!', colour: '#f5f0df' };
+  }
+  if (mode !== 'cops-and-robbers') return null;
   return winner === 'cops'
     ? { label: 'Police Patrol Wins!', colour: '#9ccfff' }
     : { label: 'Getaway Crew Wins!', colour: gold };
 }
 function interpolate(prev, scene, t, lerp) {
   const last = new Map(prev.cars.map((car) => [car.id, car]));
+  const ball = scene.ball && prev.ball && Math.hypot(scene.ball.x - prev.ball.x, scene.ball.y - prev.ball.y) < 120
+    ? { ...scene.ball, x: lerp(prev.ball.x, scene.ball.x, t), y: lerp(prev.ball.y, scene.ball.y, t) }
+    : scene.ball;
   return {
     ...scene,
+    ball,
     cars: scene.cars.map((car) => {
       const old = last.get(car.id);
-      if (!old || old.role === 2) return car;
+      if (!old || old.role === 2 || Math.hypot(car.x - old.x, car.y - old.y) > 120) return car;
       const delta = car.a - old.a;
       return {
         ...car,
@@ -61,7 +77,106 @@ function interpolate(prev, scene, t, lerp) {
     }),
   };
 }
+function pitch(c, s) {
+  const bands = 10;
+  const bw = s.w / bands;
+  for (let i = 0; i < bands; i++) rect(c, i % 2 ? '#2c4152' : '#334a5d', i * bw, 0, bw + 1, s.h);
+  for (let i = 0; i < (s.w * s.h) / 180; i++) {
+    rect(c, i % 3 ? '#d5e9f426' : '#13223138', noise(i) * s.w, noise(i + 8103) * s.h, 2 + (i % 4), 1);
+  }
+  c.save();
+  c.strokeStyle = '#dbeaf5a8';
+  c.lineWidth = 3;
+  c.strokeRect(10, 10, s.w - 20, s.h - 20);
+  c.beginPath();
+  c.moveTo(s.w / 2, 10);
+  c.lineTo(s.w / 2, s.h - 10);
+  c.stroke();
+  c.beginPath();
+  c.arc(s.w / 2, s.h / 2, 74, 0, TAU);
+  c.stroke();
+  c.fillStyle = '#dbeaf5c8';
+  c.beginPath();
+  c.arc(s.w / 2, s.h / 2, 5, 0, TAU);
+  c.fill();
+  const boxW = Math.round(s.w * 0.13);
+  const boxH = Math.round(s.h * 0.56);
+  const boxY = Math.round((s.h - boxH) / 2);
+  c.strokeRect(10, boxY, boxW, boxH);
+  c.strokeRect(s.w - 10 - boxW, boxY, boxW, boxH);
+  if (s.goal) {
+    const { top, bottom } = s.goal;
+    const gh = bottom - top;
+    rect(c, '#ffd47738', 0, top, 18, gh);
+    rect(c, '#7cc8ff38', s.w - 18, top, 18, gh);
+    c.strokeStyle = '#ffffff44';
+    c.lineWidth = 1;
+    for (let y = top + 10; y < bottom; y += 14) {
+      c.beginPath(); c.moveTo(0, y); c.lineTo(18, y); c.moveTo(s.w - 18, y); c.lineTo(s.w, y); c.stroke();
+    }
+    rect(c, gold, 0, top - 4, 22, 6);
+    rect(c, gold, 0, bottom - 2, 22, 6);
+    rect(c, blueTeam, s.w - 22, top - 4, 22, 6);
+    rect(c, blueTeam, s.w - 22, bottom - 2, 22, 6);
+  }
+  c.restore();
+  for (const [x, y] of s.lamps) {
+    glow(c, x, y, 64, '#ffe19e55');
+    glow(c, x, y, 22, '#fff0c478');
+  }
+}
+function drawBall(c, ball, time, reduced) {
+  const { x, y, r, vx = 0, vy = 0, spin = 0 } = ball;
+  const speed = Math.hypot(vx, vy);
+  if (!reduced && speed > 220) {
+    glow(c, x, y, r * 2.1, speed > 360 ? '#ffd47788' : '#a8dcff66');
+  }
+  c.save();
+  c.fillStyle = '#0c152299';
+  c.beginPath();
+  c.ellipse(x + 4, y + 7, r * 0.96, r * 0.78, 0, 0, TAU);
+  c.fill();
+  const grad = c.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.15, x, y, r);
+  grad.addColorStop(0, '#ffffff');
+  grad.addColorStop(0.68, '#d9e6f0');
+  grad.addColorStop(1, '#7c93a8');
+  c.fillStyle = grad;
+  c.beginPath();
+  c.arc(x, y, r, 0, TAU);
+  c.fill();
+  c.save();
+  c.beginPath();
+  c.arc(x, y, r - 1, 0, TAU);
+  c.clip();
+  const angle = reduced ? 0 : (x * 0.04 + y * 0.03 + spin * 0.25 + time * 0.0005);
+  c.translate(x, y);
+  c.rotate(angle);
+  c.fillStyle = '#203247';
+  const pentagon = (px, py, pr) => {
+    c.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = -TAU / 4 + i * TAU / 5;
+      const vx0 = px + Math.cos(a) * pr, vy0 = py + Math.sin(a) * pr;
+      if (i) c.lineTo(vx0, vy0); else c.moveTo(vx0, vy0);
+    }
+    c.closePath();
+    c.fill();
+  };
+  pentagon(0, 0, r * 0.34);
+  for (let i = 0; i < 5; i++) {
+    const a = -TAU / 4 + i * TAU / 5;
+    pentagon(Math.cos(a) * r * 0.86, Math.sin(a) * r * 0.86, r * 0.3);
+  }
+  c.restore();
+  c.strokeStyle = '#18283a';
+  c.lineWidth = 2;
+  c.beginPath();
+  c.arc(x, y, r, 0, TAU);
+  c.stroke();
+  c.restore();
+}
 function city(c, s) {
+  if (s.mode === 'car-soccer') { pitch(c, s); return; }
   rect(c, '#354558', 0, 0, s.w, s.h);
   for (let i = 0; i < (s.w * s.h) / 170; i++) {
     rect(c, i % 3 ? '#869eb036' : '#17283a48', noise(i) * s.w, noise(i + 8103) * s.h, 2 + (i % 4), 1);
@@ -152,11 +267,17 @@ function drawWorld(c, s, roster, time, reduced, buildings) {
   for (const [, x, y, hit] of s.cones) objects.push({ y, draw: () => drawCone(c, x, y, hit) });
   for (const p of s.hydrants) objects.push({ y: p.y, draw: () => drawHydrant(c, p.x, p.y, p.cd) });
   for (const car of cars) objects.push({ y: car.y, draw() {
+    if (s.mode === 'car-soccer') {
+      const sideColour = car.role === 4 ? blueTeam : gold;
+      glow(c, car.x, car.y + 2, 22, car.role === 4 ? '#7cc8ff55' : '#ffd47755');
+      ring(c, car.x, car.y + 2, 16, sideColour, 2.5);
+    }
     c.save();
     c.translate(car.x, car.y);
     drawCarSprite(c, { ...car, colour: tint(car), sirenPhase: phase });
     c.restore();
   } });
+  if (s.ball) objects.push({ y: s.ball.y, draw: () => drawBall(c, s.ball, time, reduced) });
   objects.sort((a, b) => a.y - b.y);
   for (const item of objects) item.draw();
   for (const car of cars) {
@@ -212,7 +333,9 @@ function hud(c, s, roster, callout) {
   const players = s.cars.filter((car) => !car.ai);
   const holder = roster.get(s.crown?.holder);
   const status = s.team
-    ? `Crew ${s.team.robbers}   /   Patrol ${s.team.cops}`
+    ? (s.mode === 'car-soccer'
+      ? `Gold ${s.team.gold}   –   ${s.team.blue} Blue`
+      : `Crew ${s.team.robbers}   /   Patrol ${s.team.cops}`)
     : s.crown
       ? holder
         ? `Crown: ${holder}`
@@ -338,13 +461,14 @@ export function mountWhiteoutTv(canvas, { sound }) {
         if (seen.has(e.id)) continue;
         seen.add(e.id);
         play(e.kind);
-        if (calls[e.kind]) callout = { text: calls[e.kind], until: now + 1250 };
+        const call = e.kind === 'goal' ? (e.target === 'gold' ? 'GOLD GOAL!' : 'BLUE GOAL!') : calls[e.kind];
+        if (call) callout = { text: call, until: now + (e.kind === 'goal' ? 1500 : 1250) };
         juice.impact({
           x: e.x,
           y: e.y,
           time: now,
-          colour: e.kind === 'ram' ? gold : '#c4eaff',
-          strong: e.kind === 'bust' || e.kind === 'hydrant',
+          colour: e.kind === 'ram' || (e.kind === 'goal' && e.target === 'gold') ? gold : '#c4eaff',
+          strong: e.kind === 'bust' || e.kind === 'hydrant' || e.kind === 'goal' || e.kind === 'powershot',
         });
       }
       timeline.push(s, next.round, now);

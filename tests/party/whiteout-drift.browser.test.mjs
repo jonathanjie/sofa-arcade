@@ -159,3 +159,53 @@ test('TV and phone browsers play Whiteout Drift across modes with 16 players', {
   await writeFile(output + 'frame-times.json', JSON.stringify({ count: sorted.length, p95 }, null, 2) + '\n');
   assert.ok(p95 < 16.7, `TV render p95 exceeded 16.7 ms: ${p95}`);
 });
+
+test('TV and phones play Whiteout Drift Car Soccer mode with 16 players', { timeout: 35_000 }, async t => {
+  const fixture = await launchPartyHarness(t, { gameId: 'whiteout-drift', manual: false });
+  const browser = await chromium.launch({ executablePath: process.env.SOFA_CHROMIUM_EXECUTABLE });
+  t.after(() => browser.close());
+  await mkdir(output, { recursive: true });
+  const issues = [];
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const tv = await context.newPage();
+  tv.on('console', message => { if (message.type() === 'error') issues.push(`TV: ${message.text()}`); });
+  tv.on('pageerror', error => issues.push(`TV: ${error.message}`));
+  tv.on('response', response => { if (response.status() === 404) issues.push(`TV: 404 ${new URL(response.url()).pathname}`); });
+
+  await tv.goto(fixture.origin);
+  await tv.getByRole('tab', { name: 'Party', exact: true }).click();
+  await tv.locator('.game-card[data-game="whiteout-drift"]').click();
+  await tv.getByRole('link', { name: 'Host on the TV' }).click();
+  await tv.getByRole('button', { name: 'Start', exact: true }).waitFor();
+  const code = await tv.locator('[data-party-code]').textContent();
+  await tv.locator('.party-next-mode select').selectOption('car-soccer');
+  await tv.getByText(/snowy stadium pitch/i).waitFor();
+
+  const phones = await Promise.all(Array.from({ length: 16 }, async (_, index) => {
+    const phone = await fixture.connect(await fixture.join(code, index));
+    phone.send({ type: 'ready', value: true });
+    return phone;
+  }));
+  await tv.getByText('16 of 16 ready').waitFor();
+  await tv.getByRole('button', { name: 'Start', exact: true }).click();
+  await tv.locator('.party-countdown').waitFor({ state: 'hidden' });
+
+  const drive = setInterval(() => {
+    for (const [index, phone] of phones.entries()) {
+      if (phone.view.phase === 'playing') {
+        const towardCenter = index % 2 === 0 ? 1 : -1;
+        phone.input({ kind: 'drive', x: towardCenter * 0.9, y: Math.sin(index) * 0.3, d: 0 });
+      }
+    }
+  }, 100);
+  try {
+    await tv.waitForTimeout(1400);
+    await tv.screenshot({ path: output + 'tv-soccer.png' });
+  } finally {
+    clearInterval(drive);
+  }
+  await tv.getByText('Menu', { exact: true }).click();
+  await tv.getByRole('button', { name: 'End party' }).click();
+  await tv.getByText('This party has closed.').waitFor();
+  assert.deepEqual(issues, []);
+});

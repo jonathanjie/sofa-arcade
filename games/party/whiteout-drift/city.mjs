@@ -53,6 +53,28 @@ export function createCity(count, seed) {
   return state;
 }
 
+export function createArena(count, seed) {
+  const large = count > 8;
+  const w = large ? 1120 : 960, h = large ? 630 : 540;
+  const state = {
+    w, h, rng: hashSeed(seed), blocks: [], lamps: [], cones: [], hydrants: [], streets: [], spawns: [],
+    goal: { top: Math.round(h * 0.30), bottom: Math.round(h * 0.70) },
+  };
+  for (const frac of [0.18, 0.4, 0.6, 0.82]) {
+    state.lamps.push([Math.round(w * frac), 8], [Math.round(w * frac), h - 8]);
+  }
+  for (const [x, y] of [[28, 28], [w - 28, 28], [28, h - 28], [w - 28, h - 28]]) {
+    state.cones.push({ id: state.cones.length + 1, x, y, hit: false });
+  }
+  for (const frac of [0.28, 0.72]) {
+    state.hydrants.push(
+      { id: state.hydrants.length + 1, x: Math.round(w * frac), y: 18, side: 1, cd: 0 },
+      { id: state.hydrants.length + 1, x: Math.round(w * frac), y: h - 18, side: -1, cd: 0 },
+    );
+  }
+  return state;
+}
+
 // Segment/slab test against buildings expanded by a car radius. If the target
 // is hidden, use a visible intersection on a shortest grid route toward it.
 function clearRoad(state, a, b) {

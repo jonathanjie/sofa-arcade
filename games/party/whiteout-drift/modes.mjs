@@ -7,13 +7,45 @@ export const modes = Object.freeze([
   { id: 'cops-and-robbers', label: 'Cops vs. Robbers', hint: 'Robbers hit checkpoints and freeze traps. Cops ram to bust.' },
   { id: 'freeze-tag', label: 'Frostbite Tag', hint: 'Tagged drivers join the patrol. Last getaway car wins.' },
   { id: 'drift-king', label: 'Whiteout Crown', hint: 'Grab the Most Wanted Crown and ice-trap anyone in pursuit.' },
+  { id: 'car-soccer', label: 'Car Soccer', hint: 'Gold vs. Blue on a snowy stadium pitch. Drift-boost to blast goals!' },
 ].map(Object.freeze));
 
 function chassis(s, id, look, role, ai = false) {
   const spot = s.spawns.find(p => s.cars.every(c => c.role === 2 || distance(c, p) >= 36));
-  return { ...(spot ?? s.spawns[0]), id, look, role, ai, hp: role === 0 && s.mode === 'freeze-tag' ? 2 : 3,
+  return { ...(spot ?? s.spawns[0] ?? { x: s.w / 2, y: s.h / 2 }), id, look, role, ai, hp: role === 0 && s.mode === 'freeze-tag' ? 2 : 3,
     a: random(s) * Math.PI * 2, vx: 0, vy: 0, score: 0, spinMs: 0, boostMs: 0, boostCharge: 0,
-    cd: 0, grace: 0, pinMs: 0, drift: false, button: 0, stickX: 0, stickY: 0, wallPinned: false, respawnAt: 0 };
+    cd: 0, touchCd: 0, grace: 0, pinMs: 0, drift: false, button: 0, stickX: 0, stickY: 0, wallPinned: false, respawnAt: 0 };
+}
+
+export function resetKickoff(s) {
+  const gold = s.cars.filter(c => c.side === 'gold');
+  const blue = s.cars.filter(c => c.side === 'blue');
+  const place = (list, isGold) => {
+    const count = list.length;
+    for (const [i, car] of list.entries()) {
+      const col = Math.floor(i / 4);
+      const rowCount = Math.min(4, count - col * 4);
+      const row = i % 4;
+      const x = isGold ? s.w * (0.34 - col * 0.14) : s.w * (0.66 + col * 0.14);
+      const y = s.h * ((row + 1) / (rowCount + 1));
+      Object.assign(car, { x, y, a: isGold ? 0 : Math.PI, vx: 0, vy: 0, spinMs: 0, boostMs: 0,
+        boostCharge: 0, drift: false, button: 0, pinMs: 0, wallPinned: false });
+    }
+  };
+  place(gold, true);
+  place(blue, false);
+  s.ball = { x: s.w / 2, y: s.h / 2, vx: 0, vy: 0, r: 22, lastTouch: null, lastSide: null, spin: 0 };
+}
+
+export function scoreGoal(s, scoringSide) {
+  if (!s.team || s.mode !== 'car-soccer') return;
+  s.team[scoringSide]++;
+  const scorer = s.cars.find(c => c.id === s.ball?.lastTouch && c.side === scoringSide);
+  if (scorer) scorer.score += 100;
+  else for (const c of s.cars) if (c.side === scoringSide) c.score += 40;
+  emit(s, 'goal', s.ball, scorer?.id ?? null, scoringSide);
+  resetKickoff(s);
+  s.kickoffMs = 1500;
 }
 
 function addPolice(s) {
@@ -26,7 +58,20 @@ function checkpoint(s) {
 }
 
 export function setup(s, players, round) {
-  const n = players.length, teams = s.mode === 'cops-and-robbers', tag = s.mode === 'freeze-tag';
+  const n = players.length;
+  if (s.mode === 'car-soccer') {
+    s.team = { gold: 0, blue: 0, winner: null };
+    for (const [index, player] of players.entries()) {
+      const side = (index + round - 1) % 2 === 0 ? 'gold' : 'blue';
+      const car = chassis(s, player.id, player.look, side === 'gold' ? 0 : 4);
+      car.side = side;
+      s.cars.push(car);
+      s.roster.push({ id: player.id, side, score: 0 });
+    }
+    resetKickoff(s);
+    return;
+  }
+  const teams = s.mode === 'cops-and-robbers', tag = s.mode === 'freeze-tag';
   const cops = teams ? Math.max(1, Math.round(n * 0.35)) : tag ? (n > 8 ? 2 : 1) : 0;
   for (const [index, player] of players.entries()) {
     const cop = (index - (round - 1) % n + n) % n < cops;
@@ -75,6 +120,7 @@ function bust(s, victim, cop) {
 }
 
 export function contact(s, attacker, victim, speed, pins) {
+  if (s.mode === 'car-soccer') return;
   if (!driver(victim) || attacker.spinMs || attacker.role === 2) return;
   if (victim.role === 3 && driver(attacker) && s.elapsedMs >= s.stealAt && speed > (attacker.boostMs ? 45 : 100)) {
     victim.role = 0; takeCrown(s, attacker); return;
@@ -119,6 +165,9 @@ export function updateModes(s, previous) {
     s.lastAt ??= s.elapsedMs;
     if (s.elapsedMs - s.lastAt >= 3000 || s.elapsedMs >= DURATION) { live[0].score += 200; s.over = true; }
   }
-  s.over ||= s.elapsedMs >= DURATION || (!s.crown && !live.length) || !s.cars.some(c => !c.ai);
-  if (s.team && s.over) s.team.winner = live.length && s.team.robbers >= s.team.cops ? 'robbers' : 'cops';
+  s.over ||= s.elapsedMs >= DURATION || (!s.crown && s.mode !== 'car-soccer' && !live.length) || !s.cars.some(c => !c.ai);
+  if (s.team && s.over) {
+    if (s.mode === 'car-soccer') s.team.winner = s.team.gold > s.team.blue ? 'gold' : s.team.blue > s.team.gold ? 'blue' : 'draw';
+    else s.team.winner = live.length && s.team.robbers >= s.team.cops ? 'robbers' : 'cops';
+  }
 }
