@@ -134,21 +134,140 @@ export function createPlaneArt(document) {
   };
 }
 
+function seeded(n) {
+  const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return v - Math.floor(v);
+}
+
 export function paintSky(c, w, h) {
-  const sky = c.createLinearGradient(0, 0, w * 0.3, h);
-  for (const [at, colour] of [[0, '#72bac6'], [0.46, '#f6d6a3'], [0.74, '#ebb88a'], [1, '#a9c7b2']]) sky.addColorStop(at, colour);
-  c.fillStyle = sky;
+  // 1. Sunlit coastal sea base with turquoise shallows & subtle wave glints.
+  const sea = c.createLinearGradient(0, 0, w, h);
+  for (const [at, colour] of [[0, '#5a9fb4'], [0.45, '#6db3c4'], [0.8, '#83c3cc'], [1, '#68aab9']]) sea.addColorStop(at, colour);
+  c.fillStyle = sea;
   c.fillRect(0, 0, w, h);
-  oval(c, w * 0.77, h * 0.17, 75, 75, '#fff0bf66');
-  oval(c, w * 0.77, h * 0.17, 58, 58, '#fff1c8');
-  const fields = ['#accabc', '#d1cfad', '#e4c5a8', '#bbd0b7'];
-  for (let i = 0; i < 11; i++) oval(c, i * w / 9, h * 0.92, w / 6, h * (0.19 + 0.05 * Math.sin(i)), '#bdcebf');
-  const corner = (col, row) => [(col - row * 0.19) * w / 9, h * (0.83 + 0.06 * row + 0.017 * Math.sin(col + row))];
-  for (let row = 0; row < 4; row++) for (let col = 0; col < 11; col++) {
-    paper(c, fields[(col * 3 + row) % 4], [corner(col, row), corner(col + 1, row), corner(col + 1, row + 1), corner(col, row + 1)]);
+  for (let i = 0; i < 160; i++) {
+    const wx = seeded(i + 1) * w, wy = seeded(i + 301) * h;
+    oval(c, wx, wy, 10 + seeded(i + 7) * 18, 2, '#d8f4f738');
   }
-  paper(c, '#a9cbd0', [[w * 0.69, h * 0.78], [w * 0.58, h * 0.89], [w * 0.63, h * 0.91], [w * 0.48, h],
-    [w * 0.40, h], [w * 0.60, h * 0.91], [w * 0.55, h * 0.89]]);
+
+  // 2. Sculpted islands & coastal headlands (shallow reef -> sandy beach -> layered meadows).
+  const islands = [
+    { x: w * 0.22, y: h * 0.32, rx: 310, ry: 210, rot: -0.18 },
+    { x: w * 0.14, y: h * 0.78, rx: 270, ry: 175, rot: 0.22 },
+    { x: w * 0.56, y: h * 0.68, rx: 360, ry: 230, rot: -0.12 },
+    { x: w * 0.85, y: h * 0.34, rx: 240, ry: 175, rot: 0.3 },
+    { x: w * 0.88, y: h * 0.84, rx: 210, ry: 145, rot: -0.25 },
+  ];
+  for (const isl of islands) oval(c, isl.x, isl.y, isl.rx + 28, isl.ry + 24, '#95d6d666', isl.rot);
+  for (const isl of islands) oval(c, isl.x, isl.y, isl.rx + 10, isl.ry + 8, '#edd9ae', isl.rot);
+  for (const isl of islands) oval(c, isl.x, isl.y, isl.rx - 4, isl.ry - 6, '#82b682', isl.rot);
+  for (const isl of islands) oval(c, isl.x - 14, isl.y - 10, isl.rx * 0.72, isl.ry * 0.68, '#95c489', isl.rot);
+  for (const isl of islands) oval(c, isl.x - 24, isl.y - 18, isl.rx * 0.44, isl.ry * 0.42, '#accf90', isl.rot);
+
+  // 3. Patchwork golden wheat, sage, and lavender farmland on the main islands.
+  const patches = [
+    [w * 0.11, h * 0.24, 92, 54, '#e0c98a', -0.15],
+    [w * 0.20, h * 0.34, 86, 48, '#c8cf8d', 0.08],
+    [w * 0.45, h * 0.62, 110, 62, '#e2ca8c', -0.1],
+    [w * 0.57, h * 0.58, 96, 54, '#b8c98e', 0.14],
+    [w * 0.52, h * 0.74, 84, 48, '#c9b3c4', -0.06],
+    [w * 0.78, h * 0.30, 74, 44, '#e1cb8d', 0.2],
+  ];
+  for (const [px, py, pw, ph, col, rot] of patches) {
+    c.save();
+    c.translate(px, py);
+    c.rotate(rot);
+    c.fillStyle = col;
+    c.fillRect(-pw / 2, -ph / 2, pw, ph);
+    c.fillStyle = '#ffffff24';
+    for (let row = -ph / 2 + 6; row < ph / 2; row += 8) c.fillRect(-pw / 2 + 4, row, pw - 8, 2);
+    c.restore();
+  }
+
+  // 4. Winding sunlit river cutting across the central island with a tiny stone bridge.
+  c.save();
+  c.strokeStyle = '#73bac9';
+  c.lineWidth = 24;
+  c.lineCap = 'round';
+  c.beginPath();
+  c.moveTo(w * 0.36, h * 0.88);
+  c.lineTo(w * 0.44, h * 0.77);
+  c.lineTo(w * 0.52, h * 0.69);
+  c.lineTo(w * 0.60, h * 0.62);
+  c.lineTo(w * 0.68, h * 0.54);
+  c.stroke();
+  c.strokeStyle = '#bce6ec66';
+  c.lineWidth = 6;
+  c.stroke();
+  // Tiny stone bridge across the river.
+  c.translate(w * 0.51, h * 0.69);
+  c.rotate(-0.62);
+  c.fillStyle = '#d9ccb4';
+  c.fillRect(-16, -8, 32, 16);
+  c.fillStyle = '#8b7b6a';
+  c.fillRect(-16, -8, 32, 3);
+  c.fillRect(-16, 5, 32, 3);
+  c.restore();
+
+  // 5. Miniature pine & orchard tree groves with soft afternoon shadows.
+  const groves = [
+    [w * 0.27, h * 0.23, 14], [w * 0.16, h * 0.42, 12], [w * 0.65, h * 0.73, 16],
+    [w * 0.43, h * 0.75, 11], [w * 0.87, h * 0.41, 12], [w * 0.15, h * 0.74, 12],
+  ];
+  for (const [gx, gy, count] of groves) {
+    for (let i = 0; i < count; i++) {
+      const a = seeded(gx + i * 7) * TURN;
+      const dist = 10 + seeded(gy + i * 13) * 58;
+      const tx = gx + Math.cos(a) * dist, ty = gy + Math.sin(a) * dist * 0.75;
+      const tr = 6 + seeded(i * 19 + gx) * 6;
+      oval(c, tx + 3, ty + 4, tr, tr * 0.85, '#3b5a4a44');
+      oval(c, tx, ty, tr, tr * 0.9, i % 3 ? '#4c865b' : '#5e9b64');
+      oval(c, tx - tr * 0.25, ty - tr * 0.25, tr * 0.45, tr * 0.4, '#88be7e');
+    }
+  }
+
+  // 6. Miniature coastal villages (terracotta cottages) + red/white striped lighthouse + sailboats.
+  const houses = [
+    [w * 0.23, h * 0.29, '#cf6a52'], [w * 0.25, h * 0.31, '#d98456'], [w * 0.21, h * 0.32, '#c86050'],
+    [w * 0.56, h * 0.66, '#cf6a52'], [w * 0.58, h * 0.68, '#d98a52'], [w * 0.59, h * 0.65, '#68829e'],
+    [w * 0.61, h * 0.67, '#cf6a52'], [w * 0.84, h * 0.32, '#d87a56'], [w * 0.86, h * 0.34, '#cf6a52'],
+  ];
+  for (const [hx, hy, roof] of houses) {
+    c.fillStyle = '#33465255';
+    c.fillRect(hx - 6, hy - 4, 18, 13);
+    c.fillStyle = '#f8eed8';
+    c.fillRect(hx - 8, hy - 6, 16, 11);
+    c.fillStyle = roof;
+    c.fillRect(hx - 9, hy - 7, 18, 6);
+    c.fillStyle = '#ffffff44';
+    c.fillRect(hx - 9, hy - 7, 18, 2);
+  }
+  // Striped coastal lighthouse on the eastern headland.
+  const lx = w * 0.77, ly = h * 0.40;
+  oval(c, lx + 4, ly + 5, 11, 8, '#2d404c55');
+  oval(c, lx, ly, 9, 9, '#fff7e6');
+  oval(c, lx, ly, 6, 6, '#d9574c');
+  oval(c, lx, ly, 3, 3, '#ffe794');
+
+  // Tiny sailboats dotting the bays.
+  for (const [bx, by] of [[w * 0.42, h * 0.26], [w * 0.68, h * 0.24], [w * 0.33, h * 0.55], [w * 0.75, h * 0.70]]) {
+    oval(c, bx + 2, by + 3, 9, 4, '#2a566644');
+    paper(c, '#a86b46', [[bx - 8, by], [bx + 8, by], [bx + 4, by + 4], [bx - 5, by + 4]]);
+    paper(c, '#fff9eb', [[bx - 1, by - 1], [bx - 1, by - 13], [bx + 7, by - 2]]);
+  }
+
+  // 7. High-altitude atmospheric golden-hour mist + warm sunbeams so the 3D planes pop cleanly above.
+  const mist = c.createLinearGradient(0, 0, w * 0.85, h);
+  mist.addColorStop(0, '#c8ecf048');
+  mist.addColorStop(0.5, '#fae4bd52');
+  mist.addColorStop(1, '#f4d3a438');
+  c.fillStyle = mist;
+  c.fillRect(0, 0, w, h);
+
+  // Soft golden sun glow in the upper right.
+  oval(c, w * 0.82, h * 0.14, 120, 120, '#fff2c244');
+  oval(c, w * 0.82, h * 0.14, 62, 62, '#fff5cf99');
+  oval(c, w * 0.82, h * 0.14, 34, 34, '#fffbe6cc');
 }
 
 export function thermal(c, { x, y, r }, time) {

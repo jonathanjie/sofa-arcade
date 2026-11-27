@@ -177,18 +177,69 @@ function drawBall(c, ball, time, reduced) {
 }
 function city(c, s) {
   if (s.mode === 'car-soccer') { pitch(c, s); return; }
-  // Bright moonlit snow-covered streets so dark buildings, ice traps, headlights & sirens pop.
+  // Moody moonlit snowy city streets: cool midnight snow with darker worn tire lanes so lights glow.
   const snow = c.createLinearGradient(0, 0, 0, s.h);
-  snow.addColorStop(0, '#9eb0c4');
-  snow.addColorStop(0.5, '#b8c7d8');
-  snow.addColorStop(1, '#98aac0');
+  snow.addColorStop(0, '#6b7e96');
+  snow.addColorStop(0.5, '#7c90a8');
+  snow.addColorStop(1, '#64768f');
   rect(c, snow, 0, 0, s.w, s.h);
-  for (let i = 0; i < (s.w * s.h) / 140; i++) {
-    rect(c, i % 3 ? '#e4effa66' : '#64799238', noise(i) * s.w, noise(i + 8103) * s.h, 2 + (i % 3), 2);
+
+  // Subtle snowbanks & crosswalks framed around the city blocks.
+  const xs = [...new Set(s.blocks.flatMap(([bx, , bw]) => [bx - 44, bx + bw + 44]))].sort((a, b) => a - b);
+  const ys = [...new Set(s.blocks.flatMap(([, by, , bh]) => [by - 44, by + bh + 44]))].sort((a, b) => a - b);
+
+  // Darker driven tire-rut center lanes along avenues.
+  for (const x of xs) rect(c, '#586b8466', x - 18, 0, 36, s.h);
+  for (const y of ys) rect(c, '#586b8466', 0, y - 18, s.w, 36);
+
+  // Faded dashed road lane dividers peeking through the snow.
+  c.save();
+  c.fillStyle = '#d4e2f044';
+  for (const x of xs) for (let y = 10; y < s.h; y += 22) rect(c, '#d4e2f042', x - 1, y, 2, 10);
+  for (const y of ys) for (let x = 10; x < s.w; x += 22) rect(c, '#d4e2f042', x, y - 1, 10, 2);
+
+  // Weathered snow-dusted zebra crosswalks at every intersection.
+  for (const x of xs) {
+    for (const y of ys) {
+      for (let s0 = -16; s0 <= 12; s0 += 7) {
+        rect(c, '#dce8f558', x + s0, y - 34, 4, 11);
+        rect(c, '#dce8f558', x + s0, y + 23, 4, 11);
+        rect(c, '#dce8f558', x - 34, y + s0, 11, 4);
+        rect(c, '#dce8f558', x + 23, y + s0, 11, 4);
+      }
+    }
   }
+  c.restore();
+
+  // Snow drifts & frosty curb banks around each block.
+  for (const [bx, by, bw, bh, seed] of s.blocks) {
+    rect(c, '#161f3055', bx + 2, by + 6, bw + 12, bh + 12);
+    for (let i = 0; i < bw; i += 14) {
+      if (noise(seed + i) > 0.35) rect(c, '#b3c6da66', bx + i, by - 14, 10, 5);
+      if (noise(seed + i + 77) > 0.4) rect(c, '#a9bdd358', bx + i, by + bh + 9, 11, 5);
+    }
+    // Decorative curb cone pairs along vertical sidewalks (like the original snow-chase curbs).
+    for (let j = 18; j < bh - 18; j += 28) {
+      if (noise(seed + j * 3) > 0.45) {
+        rect(c, '#e86f2c', bx - 12, by + j, 4, 4);
+        rect(c, '#fff0c4', bx - 11, by + j + 1, 2, 1);
+      }
+      if (noise(seed + j * 5 + 19) > 0.45) {
+        rect(c, '#e86f2c', bx + bw + 8, by + j, 4, 4);
+        rect(c, '#fff0c4', bx + bw + 9, by + j + 1, 2, 1);
+      }
+    }
+  }
+
+  // Fine snow grain & sparkles across the streets.
+  for (let i = 0; i < (s.w * s.h) / 130; i++) {
+    rect(c, i % 3 ? '#dce9f752' : '#2f405836', noise(i) * s.w, noise(i + 8103) * s.h, 2 + (i % 3), 2);
+  }
+
+  // Warm golden streetlamp light pools illuminating the snow.
   for (const [x, y] of s.lamps) {
-    glow(c, x, y, 56, '#ffd27a88');
-    glow(c, x, y, 20, '#fff0b8aa');
+    glow(c, x, y, 72, '#ffd07085');
+    glow(c, x, y, 28, '#fff1bdcc');
   }
 }
 function ring(c, x, y, r, colour, width = 2) {

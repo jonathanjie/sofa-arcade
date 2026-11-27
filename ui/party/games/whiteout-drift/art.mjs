@@ -23,69 +23,111 @@ export function glow(c, x, y, r, colour) {
   light.addColorStop(1, 'transparent');
   rect(c, light, x - r, y - r, r * 2, r * 2);
 }
-export function drawBuildingBlock(c, x, y, w, h, seed) {
-  // Deep curb shadow + dark recessed sidewalk border so snowy streets pop brightly.
-  rect(c, '#1c2537', x - 7, y - 7, w + 14, h + 14);
-  rect(c, '#56677d', x - 5, y - 5, w + 10, h + 10);
-  rect(c, '#8da0b5', x - 5, y - 5, w + 10, 2);
-  const height = 16 + seed % 6;
-  // Each higher course steps north, and every second course steps west.
+function drawSubBuilding(c, x, y, w, h, seed) {
+  const height = 14 + (seed % 9);
   for (let z = 0; z <= height; z++) {
     const left = x - Math.floor(z / 2), top = y - z;
     const band = Math.floor(18 * z / height);
-    rect(c, `rgb(${24 + band} ${31 + band} ${49 + band})`, left, top, w, h);
-    rect(c, `rgb(${36 + band} ${44 + band} ${64 + band})`, left, top + h - 1, w, 1);
-    const floor = Math.floor(z / 7);
-    if (z % 7 < 2 || z % 7 > 5) continue;
-    for (let i = 5; i < w - 7; i += 10) {
+    rect(c, `rgb(${22 + band} ${29 + band} ${47 + band})`, left, top, w, h);
+    rect(c, `rgb(${33 + band} ${41 + band} ${62 + band})`, left, top + h - 1, w, 1);
+    const floor = Math.floor(z / 6);
+    if (z % 6 < 2 || z % 6 > 4) continue;
+    for (let i = 4; i < w - 6; i += 8) {
       const n = noise(seed + i * 3 + floor * 17);
-      const lit = n > 0.32;
-      const colour = n > 0.78 ? '#fff4cf' : lit ? '#ffd470' : '#182233';
-      rect(c, colour, left + i, top + h - 1, 5, 1);
+      if (n > 0.36) rect(c, n > 0.78 ? '#fff4cf' : '#ffcf66', left + i, top + h - 1, 4, 1);
     }
-    for (let j = 6; j < h - 7; j += 12) {
+    for (let j = 5; j < h - 6; j += 10) {
       const n = noise(seed + j * 5 + floor * 13);
-      rect(c, n > 0.48 ? '#f5c26b' : '#151e2e', left + w - 1, top + j, 1, 5);
+      if (n > 0.45) rect(c, n > 0.8 ? '#ffeeb8' : '#f2b85c', left + w - 1, top + j, 1, 4);
     }
   }
   x -= Math.floor(height / 2);
   y -= height;
-  // Crisp frosted parapet lip around a deep midnight slate rooftop.
-  rect(c, '#6a7f99', x - 1, y - 1, w + 2, h + 2);
-  rect(c, '#1c2638', x + 2, y + 2, w - 4, h - 4);
-  const slate = ['#28354c', '#243045', '#2c3a54', '#222d42'][seed % 4];
+  // Crisp frosted parapet lip around a deep midnight-indigo rooftop.
+  rect(c, '#7c92ad', x - 1, y - 1, w + 2, h + 2);
+  rect(c, '#192234', x + 2, y + 2, w - 4, h - 4);
+  const slate = ['#26334a', '#212d42', '#2b3952', '#1f2a3e'][seed % 4];
   rect(c, slate, x + 4, y + 4, w - 8, h - 8);
-  // Subtle frost drift tucked against the north parapet.
-  for (let i = 5; i < w - 6; i += 6) {
-    rect(c, '#475c77', x + i, y + 4, 6, 2 + Math.floor(5 * noise(seed + Math.floor(i / 20))));
+  // Uneven wind-blown snowdrifts banked along the north and west parapets.
+  for (let i = 4; i < w - 6; i += 5) {
+    const drift = 2 + Math.floor(6 * noise(seed + Math.floor(i / 14)));
+    rect(c, '#6a829e', x + i, y + 4, 5, drift);
+    if (drift > 4) rect(c, '#9eb5cc', x + i, y + 4, 5, 2);
   }
-  // Subtle roof panel seams.
-  for (let seam = 19; seam < w - 8; seam += 24) {
-    rect(c, '#99b4d41a', x + seam, y + 10, 1, h - 16);
+  for (let j = 4; j < h - 6; j += 6) {
+    const drift = 2 + Math.floor(4 * noise(seed + 99 + Math.floor(j / 16)));
+    rect(c, '#566d87', x + 4, y + j, drift, 6);
   }
-  // Glowing lit pixel window strip along the south rooftop edge for unmistakable night-city glow.
-  for (let i = 8; i < w - 10; i += 11) {
-    const n = noise(seed + i * 7);
-    if (n > 0.35) rect(c, n > 0.76 ? '#fff2c4' : '#ffcf66', x + i, y + h - 3, 6, 2);
+  // Subtle standing-seam roof lines.
+  for (let seam = 16; seam < w - 8; seam += 20) {
+    rect(c, '#99b4d416', x + seam, y + 10, 1, h - 16);
   }
-  const vx = x + w * (.12 + .29 * noise(seed)), vy = y + h * (.44 + .28 * noise(seed + 1));
-  rect(c, '#161e2e', vx + 3, vy + 4, 23, 14);
-  rect(c, '#42536b', vx, vy, 23, 14);
-  for (let i = 3; i < 21; i += 4) rect(c, '#1d283b', vx + i, vy + 2, 2, 9);
-  const tx = x + w * (.52 + .23 * noise(seed + 2)), ty = y + h * (.17 + .48 * noise(seed + 3));
-  if (seed % 3 === 0) {
-    rect(c, '#151e2d', tx + 2, ty + 4, 25, 18);
-    rect(c, '#3d4f68', tx, ty, 25, 18);
-    for (let i = 0; i < 3; i++) rect(c, '#587291', tx + 2 + 8 * i, ty + 2, 6, 13);
-    return;
+  // Stepped rooftop penthouse or skylight + HVAC units.
+  if (w > 54 && h > 54) {
+    const px = x + Math.floor(w * (0.14 + 0.22 * noise(seed + 5)));
+    const py = y + Math.floor(h * (0.2 + 0.22 * noise(seed + 6)));
+    const pw = Math.min(34, Math.floor(w * 0.36));
+    const ph = Math.min(26, Math.floor(h * 0.32));
+    rect(c, '#121928', px + 4, py + 5, pw, ph);
+    rect(c, '#3a4c66', px, py, pw, ph);
+    rect(c, '#29374f', px + 2, py + 2, pw - 4, ph - 4);
+    rect(c, '#8ba3bd', px, py, pw, 2);
+    if (seed % 2 === 0) {
+      for (let i = 4; i < pw - 6; i += 8) rect(c, '#6389ab', px + i, py + 5, 5, ph - 10);
+    } else {
+      for (let i = 4; i < pw - 6; i += 6) rect(c, '#1b2638', px + i, py + 4, 3, ph - 8);
+    }
   }
-  rect(c, '#161f2f', tx + 4, ty + 7, 20, 14);
-  rect(c, '#202b3d', tx + 2, ty + 13, 3, 6);
-  rect(c, '#202b3d', tx + 14, ty + 13, 3, 6);
-  rect(c, '#594a52', tx, ty, 19, 14);
-  rect(c, '#413740', tx + 13, ty, 6, 14);
-  rect(c, '#252c3b', tx, ty + 9, 19, 2);
-  rect(c, '#9eb5c9', tx - 1, ty - 2, 21, 4);
+  if (w > 46 && h > 42) {
+    const tx = x + Math.floor(w * (0.58 + 0.14 * noise(seed + 2)));
+    const ty = y + Math.floor(h * (0.48 + 0.2 * noise(seed + 3)));
+    if (tx + 20 < x + w - 4 && ty + 16 < y + h - 4) {
+      rect(c, '#141c2b', tx + 3, ty + 5, 18, 13);
+      rect(c, '#594850', tx, ty, 17, 12);
+      rect(c, '#3e333c', tx + 11, ty, 6, 12);
+      rect(c, '#a8bfd4', tx - 1, ty - 2, 19, 3);
+    }
+  }
+}
+
+export function drawBuildingBlock(c, x, y, w, h, seed) {
+  // Deep curb shadow + paved sidewalk frame around the whole block.
+  rect(c, '#192233aa', x - 6, y - 5, w + 16, h + 16);
+  rect(c, '#4b5c73', x - 6, y - 6, w + 12, h + 12);
+  rect(c, '#8ca1b8', x - 6, y - 6, w + 12, 2);
+  rect(c, '#7489a1', x - 6, y - 6, 2, h + 12);
+  // Subtle sidewalk curb joints.
+  for (let i = 0; i < w + 8; i += 18) {
+    rect(c, '#354459', x - 5 + i, y - 6, 1, 5);
+    rect(c, '#354459', x - 5 + i, y + h + 1, 1, 5);
+  }
+  // Split each block with a lit midnight alley (like the original snow-chase city).
+  const alley = 14;
+  if (seed % 2 === 0 && h > 95) {
+    const split = Math.floor(h * (0.44 + 0.12 * noise(seed + 11)));
+    rect(c, '#151d2d', x, y + split - 2, w, alley + 4);
+    for (let i = 6; i < w - 8; i += 9) {
+      const n = noise(seed + i * 5);
+      if (n > 0.34) rect(c, n > 0.75 ? '#fff2c2' : '#ffcf66', x + i, y + split + 2, 5, 3);
+      const n2 = noise(seed + i * 9 + 41);
+      if (n2 > 0.42) rect(c, n2 > 0.78 ? '#fff2c2' : '#f5b856', x + i, y + split + alley - 5, 5, 3);
+    }
+    drawSubBuilding(c, x, y, w, split - 2, seed + 1);
+    drawSubBuilding(c, x, y + split + alley, w, h - split - alley, seed + 7);
+  } else if (w > 110) {
+    const split = Math.floor(w * (0.45 + 0.1 * noise(seed + 13)));
+    rect(c, '#151d2d', x + split - 2, y, alley + 4, h);
+    for (let j = 6; j < h - 8; j += 10) {
+      const n = noise(seed + j * 7);
+      if (n > 0.36) rect(c, n > 0.76 ? '#fff2c2' : '#ffcf66', x + split + 2, y + j, 3, 5);
+      const n2 = noise(seed + j * 11 + 29);
+      if (n2 > 0.42) rect(c, n2 > 0.78 ? '#fff2c2' : '#f5b856', x + split + alley - 5, y + j, 3, 5);
+    }
+    drawSubBuilding(c, x, y, split - 2, h, seed + 3);
+    drawSubBuilding(c, x + split + alley, y, w - split - alley, h, seed + 11);
+  } else {
+    drawSubBuilding(c, x, y, w, h, seed);
+  }
 }
 // Mirror each half across the longitudinal centreline. The nose faces east.
 function footprint(...rows) {
