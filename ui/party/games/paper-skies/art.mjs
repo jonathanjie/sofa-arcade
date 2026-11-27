@@ -27,41 +27,116 @@ function arc(c, x, y, rx, ry, angle, start, end, colour, width) {
   c.stroke();
 }
 
-// A back-swept tail narrows into the keel; the other edge tapers to an east-facing nose.
-const halfWing = ['C', 'CCC', 'PCCCCC', 'PPCCCPPPP', '.PPCCCPPPPPP', '.PPPCCCPPPPPPPP',
-  '..PPPCCCPPPPPPPPPP', '..PPPPCCCPPPPPPPPPPPP', '...PPPPCCCPPPPPPPPPPPPPP', '...FFFFFFFFFFFFFFFFFFFFFFFF'];
-const wing = [...halfWing, ...halfWing.slice(0, -1).reverse().map(row => row.replaceAll('P', 'S'))]
-  .map(row => row.padEnd(27, '.'));
-const layers = [wing.map(row => row.replace(/[^.]/g, 'K')), wing,
-  wing.map(row => row.replace(/[PCS]/g, '.')), wing.map(row => row.replace(/[PCS]/g, '.').replace('FFFFFFFF', '........'))];
+// Mirror a half-footprint across the longitudinal centreline (nose faces east).
+function mirror(rows, width = 21) {
+  const full = [...rows, ...rows.slice(0, -1).reverse()];
+  return full.map(row => row.padEnd(width, '.'));
+}
+
+// 9-slice 3D folded paper plane (21x17): deep folded keel -> shaded underside -> wide coloured wings -> raised crest.
+const keel = mirror([
+  '', '', '', '', '', '', '',
+  '..KKKKKKKKKKKKK......',
+  '..KDDDDDDDDDDDDKKK...',
+]);
+const belly = mirror([
+  '', '', '', '', '', '',
+  '..KKKKKKKKKKK........',
+  '.KSSSSSSSSSSSSKK.....',
+  '.KDDDDDDDDDDDDDDKKK..',
+]);
+const lowerWing = mirror([
+  '', '', '',
+  '.KKKKKK..............',
+  '.KSSSSSKKK...........',
+  '..KSSSSSSSSKKK.......',
+  '..KSSCCCCCCSSSSKK....',
+  '...KSSCCCCCCCCSSSKK..',
+  '...KDDDDDDDDDDDDDDDK.',
+]);
+const mainWing = mirror([
+  'KKK..................',
+  'KCCKKK...............',
+  '.KCCCCKKK............',
+  '.KPPCCCCPKKK.........',
+  '..KPPPCCCCPPKKK......',
+  '..KPPPPCCCCPPPPKK....',
+  '...KPPPPCCCCPPPPPKK..',
+  '...KPPPPPCCCCPPPPPPK.',
+  '...KFFFFFFFFFFFFFFFFK',
+]);
+const upperWing = mirror([
+  '', '',
+  '.KKKK................',
+  '.KCCPKKK.............',
+  '..KPPCCPKKK..........',
+  '..KPPPCCPPPKK........',
+  '...KPPPCCPPPPKK......',
+  '...KPPPPCCPPPPPKK....',
+  '...KFFFFFFFFFFFFFFFFK',
+]);
+const ridge = mirror([
+  '', '', '', '', '', '',
+  '...KKKKKKK...........',
+  '...KPPPPPPKKKKK......',
+  '...KFFFFFFFFFFFFFFFFK',
+]);
+const crest = mirror([
+  '', '', '', '', '', '', '',
+  '....KKKKKKKKKKKK.....',
+  '....FFFFFFFFFFFFFFFF.',
+]);
+const planeLayers = [keel, keel, belly, lowerWing, mainWing, mainWing, upperWing, ridge, crest];
+
+// 7-slice 3D stacked balloon (11x11).
+const b0 = ['...........', '...........', '...........', '....KKK....', '...KDDDK...', '...KDDDK...', '...KDDDK...', '....KKK....', '...........', '...........', '...........'];
+const b1 = ['...........', '...........', '...KKKKK...', '..KDDDDDK..', '..KDBBBDK..', '..KDBBBDK..', '..KDBBBDK..', '..KDDDDDK..', '...KKKKK...', '...........', '...........'];
+const b2 = ['...........', '...KKKKK...', '..KBBBBBK..', '.KBBBBBBBK.', '.KBBHHBBBK.', '.KBBHHBBBK.', '.KBBBBBBBK.', '.KBBBBBBBK.', '..KBBBBBK..', '...KKKKK...', '...........'];
+const b3 = ['...KKKKK...', '..KBBBBBK..', '.KBBHHBBBK.', 'KBBHHHHBBBK', 'KBBHHHHBBBK', 'KBBBBBBBBBK', 'KBBBBBBBBBK', 'KBBBBBBBBBK', '.KBBBBBBBK.', '..KBBBBBK..', '...KKKKK...'];
+const b4 = ['...........', '...KKKKK...', '..KBBHBBK..', '.KBBHHHBBK.', '.KBBHHHBBK.', '.KBBBBBBBK.', '.KBBBBBBBK.', '.KBBBBBBBK.', '..KBBBBBK..', '...KKKKK...', '...........'];
+const b5 = ['...........', '...........', '...KKKKK...', '..KBBHBBK..', '..KBHHBBK..', '..KBBBBBK..', '..KBBBBBK..', '..KBBBBBK..', '...KKKKK...', '...........', '...........'];
+const b6 = ['...........', '...........', '...........', '....KKK....', '...KHHBK...', '...KBBBK...', '...KBBBK...', '....KKK....', '...........', '...........', '...........'];
+const balloonLayers = [b0, b1, b2, b3, b4, b5, b6];
+
+// 6-slice 3D stacked Sun Crown (9x9).
+const cBase = ['..KKKKK..', '.KGGGGGK.', 'KGGGGGGGK', 'KGDDDDDGK', 'KGDDDDDGK', 'KGDDDDDGK', 'KGGGGGGGK', '.KGGGGGK.', '..KKKKK..'];
+const cJewel = ['..KKKKK..', '.KGRGRGK.', 'KGGGGGGGK', 'KG.....GK', 'KR.....RK', 'KG.....GK', 'KGGGGGGGK', '.KGRGRGK.', '..KKKKK..'];
+const cSpikes = ['...KKK...', '...KHK...', 'KK.....KK', 'KH.....HK', 'KK.....KK', '.........', 'KK.....KK', '...KHK...', '...KKK...'];
+const crownLayers = [cBase, cBase, cJewel, cJewel, cSpikes, cSpikes];
+
+const propCaches = new WeakMap();
+function getPropCache(document) {
+  if (!propCaches.has(document)) propCaches.set(document, new Map());
+  return propCaches.get(document);
+}
 
 export function createPlaneArt(document) {
   const models = new Map();
   return (c, plane, time, reduced) => {
     const { x, y, look, boost, wobble, bank, a } = plane;
     const angle = a + (wobble && !reduced ? Math.sin(time * 0.021) * 0.13 : 0);
-    if (!models.has(look)) models.set(look, compileStack(document, layers, {
-      C: scarf(look), P: '#fff6db', S: '#b9c8ce', K: ink, F: '#ffffee',
+    if (!models.has(look)) models.set(look, compileStack(document, planeLayers, {
+      C: scarf(look), P: '#fff7e0', S: '#bfd0d8', D: '#6d8294', K: ink, F: '#ffffff',
     }));
-    oval(c, x + 9, y + 15, 21, 9, '#647a8525', angle);
+    oval(c, x + 14, y + 22, 24, 10, '#32485848', angle);
     c.save();
     c.translate(x, y);
     c.rotate(angle);
-    const length = boost ? 78 : 34 + Math.min(18, Math.max(0, plane.spd));
+    const length = boost ? 84 : 36 + Math.min(20, Math.max(0, plane.spd * 0.08));
     const ripple = reduced ? 0 : Math.sin(time / 110) * 2;
     for (const side of [-1, 1]) {
-      paper(c, boost ? '#fff3bedb' : '#fffbef8a', [[-17, side * 12], [-37, side * 13],
-        [-length, side * 15 + ripple], [-36, side * 16], [-17, side * 16]]);
+      paper(c, boost ? '#fff2b6e0' : '#fffdf499', [[-18, side * 13], [-38, side * 14],
+        [-length, side * 16 + ripple], [-37, side * 17], [-18, side * 17]]);
     }
-    if (boost) paper(c, '#ed9854', [[-16, -3], [-48, ripple], [-16, 3]]);
+    if (boost) paper(c, '#f2954b', [[-17, -4], [-52, ripple], [-17, 4]]);
     c.restore();
-    drawStack(c, models.get(look), x, y, { angle, scale: 2, sliceGap: Math.abs(bank) > 0.25 ? 1 : 0.5 });
+    drawStack(c, models.get(look), x, y, { angle, scale: 3, sliceGap: Math.abs(bank) > 0.25 ? 1.15 : 0.85 });
   };
 }
 
 export function paintSky(c, w, h) {
   const sky = c.createLinearGradient(0, 0, w * 0.3, h);
-  for (const [at, colour] of [[0, '#8fcbd2'], [0.48, '#f8dfb7'], [0.75, '#edd2b0'], [1, '#c1d5be']]) sky.addColorStop(at, colour);
+  for (const [at, colour] of [[0, '#72bac6'], [0.46, '#f6d6a3'], [0.74, '#ebb88a'], [1, '#a9c7b2']]) sky.addColorStop(at, colour);
   c.fillStyle = sky;
   c.fillRect(0, 0, w, h);
   oval(c, w * 0.77, h * 0.17, 75, 75, '#fff0bf66');
@@ -97,24 +172,42 @@ export function hoop(c, { x, y, r, a, gold }, time) {
   const start = time / 680;
   arc(c, x, y, r * 0.56, r, a, start, start + 1.1, '#fff9df', 3);
 }
-const balloonColours = ['#df7376', '#639fd1', '#b38ac2', '#73b99f'];
+const balloonColours = ['#df7376', '#639fd1', '#b38ac2', '#f6c445'];
+const balloonDark = ['#9e464b', '#3f6e99', '#7a5489', '#b88322'];
 export function balloon(c, { x, y, r, pts, col }) {
   arc(c, x - r * 0.21, y + r * 1.45, r * 0.23, r * 0.49, 0.12, -1, 1.6, ink, 1.6);
-  paper(c, ink, [[x, y + r * 0.9], [x - 3, y + r + 5], [x + 3, y + r + 5]]);
-  oval(c, x, y + 2, r * 0.86, r, '#665772');
-  oval(c, x, y, r * 0.86, r, balloonColours[col]);
-  oval(c, x - r * 0.32, y - r * 0.46, r * 0.22, r * 0.11, '#fff6decc', -0.7);
-  for (let i = 0; i < pts; i++) oval(c, x + (i - (pts - 1) / 2) * 6, y + 3, 2, 2, ink);
+  const doc = c.canvas?.ownerDocument;
+  if (doc) {
+    const cache = getPropCache(doc);
+    const key = `balloon-${col}`;
+    if (!cache.has(key)) {
+      cache.set(key, compileStack(doc, balloonLayers, {
+        B: balloonColours[col] ?? balloonColours[0],
+        D: balloonDark[col] ?? balloonDark[0],
+        H: '#fff8e2',
+        K: ink,
+      }));
+    }
+    drawStack(c, cache.get(key), x, y + r * 0.35, { angle: 0, scale: Math.max(2, Math.round(r / 7)), sliceGap: 0.9 });
+  } else {
+    oval(c, x, y, r * 0.86, r, balloonColours[col]);
+  }
+  for (let i = 0; i < pts; i++) oval(c, x + (i - (pts - 1) / 2) * 6, y - r * 0.3, 2.2, 2.2, '#ffffff');
 }
 export function crown(c, x, y, time) {
-  c.save();
-  c.translate(x, y);
-  c.scale(0.78 + 0.22 * Math.cos(time / 420), 1);
-  oval(c, 0, 0, 20, 17, '#fff29d88');
-  paper(c, '#9f6436', [[-15, -8], [-7, -3], [0, -15], [7, -3], [15, -8], [11, 9], [-11, 9]]);
+  oval(c, x, y, 22, 18, '#fff29d88');
+  const doc = c.canvas?.ownerDocument;
+  if (doc) {
+    const cache = getPropCache(doc);
+    if (!cache.has('crown')) {
+      cache.set('crown', compileStack(doc, crownLayers, {
+        G: '#ffcf53', D: '#b07128', H: '#fff8d6', R: '#e85d5d', K: ink,
+      }));
+    }
+    drawStack(c, cache.get('crown'), x, y + 6, { angle: time / 900, scale: 3, sliceGap: 1 });
+    return;
+  }
   paper(c, '#ffcf53', [[-13, -7], [-6, -1], [0, -12], [6, -1], [13, -7], [10, 5], [-10, 5]]);
-  oval(c, 0, 1, 2, 3, '#fff7ce');
-  c.restore();
 }
 export function dart(c, { x, y, a, look }) {
   c.save(); c.translate(x, y); c.rotate(a);

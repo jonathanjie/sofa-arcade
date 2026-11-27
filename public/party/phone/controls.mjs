@@ -134,9 +134,15 @@ export function mountTilt(root, { onInput }) {
       updateMode('Use touch');
     }
     const degreesForFullInput = 30;
+    const wrap = value => ((value + 540) % 360) - 180;
+    const rawX = wrap(event.gamma - neutral.gamma) / degreesForFullInput;
+    const rawY = wrap(event.beta - neutral.beta) / degreesForFullInput;
+    const angle = (view.screen?.orientation?.angle ?? view.orientation ?? 0) * Math.PI / 180;
+    const x = rawX * Math.cos(angle) + rawY * Math.sin(angle);
+    const y = rawY * Math.cos(angle) - rawX * Math.sin(angle);
     sampler.offer({
-      x: clamp((event.gamma - neutral.gamma) / degreesForFullInput),
-      y: clamp((event.beta - neutral.beta) / degreesForFullInput),
+      x: clamp(x),
+      y: clamp(y),
     });
   }
   function stop() {
