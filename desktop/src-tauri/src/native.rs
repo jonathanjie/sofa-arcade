@@ -23,6 +23,7 @@ use tauri::{
 
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(20);
 const STOP_TIMEOUT: Duration = Duration::from_secs(3);
+const MAX_PORT_FALLBACKS: u8 = 20;
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -335,6 +336,7 @@ fn supervisor(
     let mut host: Option<OwnedHost> = None;
     let mut should_launch = true;
     let mut restarts = 0u8;
+    let mut port_fallbacks = 0u8;
     let mut last_remember = Instant::now();
     loop {
         if should_launch {
@@ -395,6 +397,7 @@ fn supervisor(
                 }
                 config = config::load_or_create(&paths.data).ok();
                 restarts = 0;
+                port_fallbacks = 0;
                 should_launch = true;
                 continue;
             }
@@ -573,6 +576,17 @@ fn supervisor(
             retire_game(&app);
             if let Some(mut owned) = host.take() {
                 let _ = process::stop(&mut owned.child, STOP_TIMEOUT);
+            }
+            if code == "port_in_use" && port_fallbacks < MAX_PORT_FALLBACKS {
+                if let Some(cfg) = config.as_mut() {
+                    if let Some(next_port) = cfg.port.checked_add(1) {
+                        port_fallbacks += 1;
+                        cfg.port = next_port;
+                        should_launch = true;
+                        set_status(&app, &shared, &paths, "restarting", None, None);
+                        continue;
+                    }
+                }
             }
             if can_restart && restarts < 1 {
                 restarts += 1;

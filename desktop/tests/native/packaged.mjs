@@ -283,16 +283,16 @@ try {
   sentinel.on('connection', socket => { sentinelConnections++; sockets.add(socket); socket.once('close', () => sockets.delete(socket)); });
   sentinel.listen(status.port, '0.0.0.0'); await once(sentinel, 'listening');
   child = launch();
-  const conflict = await hostStatus(info => info.parentPid === child.pid && info.state === 'error',
-    { timeout: 15000, message: 'Occupied saved port was not reported as a native error' });
-  assert.equal(conflict.errorCode, 'port_in_use');
-  assert.equal(conflict.port, status.port); assert.equal(conflict.childPid, undefined);
+  const fallback = await hostStatus(info => info.parentPid === child.pid && info.state === 'ready',
+    { timeout: 15000, message: 'Occupied saved port did not fall back to another free port' });
+  assert.notEqual(fallback.port, status.port);
+  assert.ok(fallback.port > status.port);
   await delay(300);
   assert.equal(sentinelConnections, 0, 'The app connected to an unrelated process on its saved port');
-  await quit(child);
+  await quit(child, fallback.port);
   assert.equal(sentinel.listening, true);
   await new Promise(resolve => sentinel.close(resolve)); sentinel = undefined;
-  check('occupied port produced an actionable error without connecting to or killing the unrelated listener');
+  check('occupied saved port automatically fell back to a free port without touching the unrelated listener');
 
   const database = path.join(dataDir, 'rooms.sqlite');
   const backup = path.join(dataDir, 'rooms.sqlite.test-backup');
