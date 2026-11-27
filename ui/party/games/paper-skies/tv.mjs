@@ -1,11 +1,12 @@
 import { createArcadeLoop, createTimeline } from '../../kit/animation.mjs';
 import { LOOKS } from '../../looks.mjs';
-import { balloon, burst, cloud, createPlaneArt, crown, dart, hoop, paintSky, scarf, thermal } from './art.mjs';
+import { drawObject, drawShadow, pixelText, popup } from './art.mjs';
+import { WIDTH, HEIGHT, buildTerrain, colourTerrain, createCamera, createFrame, renderTerrain, wrapped } from './voxel.mjs';
 
 const modes = {
-  'ring-rally': ['Bank through glowing sky rings. Gold rings score triple!', 'Ring Rally'],
-  'balloon-pop': ['Fire paper darts or swoop through drifting balloons to pop them.', 'Balloon Pop'],
-  'sky-tag': ['Snatch the Sun Crown and stay aloft—tag the leader with a dart to steal it.', 'Sky Tag'],
+  'ring-rally': ['Climb, dive, roll and loop through glowing Sun chains—dodge spiky storms!', 'Ring Rally'],
+  'balloon-pop': ['Swoop through 3D sky balloons at matching altitude and barrel-roll past storms!', 'Balloon Pop'],
+  'sky-tag': ['Snatch the 3D Sun Crown and out-maneuver rivals with rolls and loops!', 'Sky Tag'],
 };
 export const paperSkiesPlayHintForMode = mode => (modes[mode] ?? modes['ring-rally'])[0];
 export function paperSkiesResultSummary(view) {
@@ -25,80 +26,99 @@ function glide(previous, scene, t, lerp) {
   if (previous.mode !== scene.mode) return scene;
   const planes = scene.planes.map((p, i) => {
     const old = previous.planes[i]?.id === p.id ? previous.planes[i] : previous.planes.find(other => other.id === p.id);
-    // Do not interpolate across a world wrap or a respawn.
-    if (!old || Math.abs(old.x - p.x) > scene.w / 2 || Math.abs(old.y - p.y) > scene.h / 2) return p;
+    if (!old || previous.seed !== scene.seed) return p;
+    const next = { ...p, x: (old.x + wrapped(p.x-old.x)*t + 512)%512, y: (old.y + wrapped(p.y-old.y)*t + 512)%512 };
     const turn = p.a - old.a;
-    return { ...p, x: lerp(old.x, p.x, t), y: lerp(old.y, p.y, t), a: old.a + t * Math.atan2(Math.sin(turn), Math.cos(turn)) };
+    next.a = old.a + t*Math.atan2(Math.sin(turn),Math.cos(turn));
+    for (const key of ['z','bank','pitch','roll','loop']) {
+      // A completed trick returns to zero; never rewind it through a full turn.
+      if ((key === 'roll' || key === 'loop') && old[key] > .5 && !p[key]) continue;
+      next[key] = lerp(old[key] || 0,p[key] || 0,t);
+    }
+    return next;
   });
   return { ...scene, planes };
 }
 
-export function mountPaperSkiesTv(canvas, { reducedMotion = false } = {}) {
-  const c = canvas.getContext('2d', { alpha: false });
-  const sky = canvas.ownerDocument.createElement('canvas');
-  const drawPlane = createPlaneArt(canvas.ownerDocument);
-  const timeline = createTimeline();
-  let safe = { x: 0, y: 0, width: canvas.width, height: canvas.height };
-  let roster = new Map(), lastRound, receivedAt, disposed = false, still = false;
-  canvas.setAttribute('aria-label', 'Paper Skies flight board');
+function hud(c, scene, ranked, focus, names) {
+  c.font = 'bold 8px monospace'; c.textAlign = 'left';
+  c.fillStyle = '#171b30';
+  c.fillRect(3,3,scene.solo ? 103 : 93,scene.solo ? 24 : ranked.length * 10 + 4);
+  if (scene.solo) {
+    pixelText(c,`SCORE ${focus.score}  LV ${scene.lv}`,6,12);
+    pixelText(c,`SUNS ${focus.suns}  x${focus.combo}`,6,23,'#ffe28a');
+  } else ranked.forEach((p,i) => {
+    const look = LOOKS[p.look] ?? LOOKS[0];
+    pixelText(c,`${i+1} ${(names.get(p.id) ?? look.name).slice(0,8)} ${p.score}`,6,12+i*10,look.colour);
+  });
+  c.fillStyle = '#171b30'; c.fillRect(WIDTH-68,3,65,14); c.fillRect(WIDTH-22,19,19,40);
+  pixelText(c,'FUEL',WIDTH-66,13); pixelText(c,'ALT',WIDTH-21,27);
+  c.fillStyle = '#394259'; c.fillRect(WIDTH-41,7,35,6); c.fillRect(WIDTH-16,30,7,26);
+  const fraction = v => Math.max(0,Math.min(1,v));
+  c.fillStyle = focus.fuel < 25 ? '#ff8278' : '#80eaca'; c.fillRect(WIDTH-41,7,Math.round(35*fraction(focus.fuel/100)),6);
+  const altitude = Math.round(26*fraction((focus.z-8)/60));
+  c.fillStyle = '#bc9ced'; c.fillRect(WIDTH-16,56-altitude,7,altitude);
+}
 
+export function mountPaperSkiesTv(canvas, { reducedMotion = false } = {}) {
+  const doc = canvas.ownerDocument, c = canvas.getContext('2d', { alpha: false });
+  const buffer = doc.createElement('canvas'); buffer.width = WIDTH; buffer.height = HEIGHT;
+  const ctx = buffer.getContext('2d', { alpha: false }); ctx.imageSmoothingEnabled = false;
+  const image = ctx.createImageData?.(WIDTH,HEIGHT) ?? { data: new Uint8ClampedArray(WIDTH*HEIGHT*4), width: WIDTH, height: HEIGHT };
+  const frame = createFrame(image.data), timeline = createTimeline();
+  let bounds = { x: 0, y: 0, width: canvas.width, height: canvas.height };
+  let terrain, seed, lastRound, receivedAt, chaseOverride, solo, disposed = false, still = false;
+  let names = new Map();
+  canvas.setAttribute('aria-label','Paper Skies flight board');
+  const toggle = event => {
+    if (event.key?.toLowerCase() === 'v' && !event.repeat && !event.metaKey && !event.ctrlKey && !event.altKey) chaseOverride = !(chaseOverride ?? solo);
+  };
+  doc.addEventListener('keydown',toggle);
   function update(view) {
     const scene = view.scene ?? view.state;
-    if (disposed || !scene || view.round < lastRound) return;
-    if (sky.width !== scene.w || sky.height !== scene.h) {
-      sky.width = scene.w; sky.height = scene.h;
-      paintSky(sky.getContext('2d'), scene.w, scene.h);
+    if (disposed || !scene?.planes || view.round < lastRound) return;
+    if (!terrain || seed !== scene.seed) {
+      seed = scene.seed; terrain = colourTerrain(buildTerrain(seed).heights);
     }
-    roster = new Map((view.roster ?? []).map(p => [p.id, p.name]));
-    lastRound = view.round;
-    receivedAt = performance.now();
-    timeline.push(scene, lastRound, receivedAt);
+    if (view.round !== lastRound || solo !== Boolean(scene.solo)) chaseOverride = undefined;
+    solo = Boolean(scene.solo); lastRound = view.round; receivedAt = performance.now();
+    names = new Map((view.roster ?? []).map(p => [p.id,p.name]));
+    timeline.push(scene,lastRound,receivedAt);
   }
-  function draw(at, reduced = still) {
-    if (disposed) return;
-    const s = timeline.sample(at, glide, reduced);
-    if (!s) return;
-    const scale = Math.min(safe.width / s.w, safe.height / s.h);
-    if (!(scale > 0)) return;
-    const elapsed = s.elapsedMs + Math.max(0, at - receivedAt);
+  function draw(at = performance.now(), reduced = still) {
+    if (disposed || !(bounds.width > 0 && bounds.height > 0)) return;
+    const s = timeline.sample(at,glide,reduced);
+    if (!s?.planes.length) return;
+    const ranked = [...s.planes].sort((a,b) => b.score-a.score).slice(0,4);
+    const focus = solo ? s.planes[0] : ranked[0], camera = createCamera(focus,chaseOverride ?? solo,reduced);
+    const elapsed = s.elapsedMs + (reduced ? 0 : Math.max(0,at-receivedAt));
     const time = reduced ? 0 : elapsed;
-    c.fillStyle = '#424c58';
-    c.fillRect(0, 0, canvas.width, canvas.height);
-    c.save();
-    c.translate(safe.x + (safe.width - scale * s.w) / 2, safe.y + (safe.height - scale * s.h) / 2);
-    c.scale(scale, scale);
-    c.beginPath(); c.rect(0, 0, s.w, s.h); c.clip();
-    c.drawImage(sky, 0, 0);
-    for (const item of s.thermals) thermal(c, item, time);
-    for (const item of s.clouds) cloud(c, item);
-    for (const item of s.rings) hoop(c, item, time);
-    for (const item of s.balloons) balloon(c, item);
-    for (const item of s.crowns) if (item.holder == null) crown(c, item.x, item.y, time);
-    for (const item of s.darts) dart(c, item);
-    c.font = 'bold 16px system-ui'; c.textAlign = 'center';
-    for (const p of s.planes) {
-      drawPlane(c, p, time, reduced);
-      if (p.crown || s.crowns.some(item => item.holder === p.id)) crown(c, p.x, p.y - 35, time);
-      const label = `${(roster.get(p.id) ?? LOOKS[p.look].name).slice(0, 9)} · ${p.score}`;
-      const width = Math.min(112, c.measureText(label).width + 16);
-      const x = Math.max(width / 2, Math.min(s.w - width / 2, p.x));
-      const y = p.y > s.h - 52 ? p.y - 45 : p.y + 23;
-      c.fillStyle = '#334155'; c.beginPath(); c.roundRect(x - width / 2, y, width, 22, 9); c.fill();
-      c.fillStyle = scarf(p.look); c.fillText(label, x, y + 16, width - 10);
+    renderTerrain(frame,terrain,camera);
+    const objects = [];
+    for (let i = 0; i < 6; i++) objects.push(['cloud',{ x: (43+i*83+time*.002)%512, y: (38+i*137)%512, z: 69+i%3*4 }]);
+    for (const [kind,items] of [['sun',s.suns],['storm',s.storms],['balloon',s.balloons],['plane',s.planes]]) {
+      for (const item of items ?? []) objects.push([kind,item]);
     }
-    if (!reduced) for (const event of s.events) burst(c, event, elapsed - event.at);
-    c.restore();
+    for (const crown of s.crowns ?? []) {
+      const holder = s.planes.find(p => p.id === crown.holder);
+      objects.push(['crown',holder ? { ...crown,x:holder.x,y:holder.y,z:holder.z+11 } : crown]);
+    }
+    for (const [kind,item] of objects) drawShadow(frame,camera,terrain,item,kind);
+    for (const [kind,item] of objects) drawObject(frame,camera,kind,item,time);
+    ctx.putImageData?.(image,0,0);
+    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+    for (const e of s.events ?? []) popup(ctx,camera,e,elapsed-e.at,reduced);
+    hud(ctx,s,ranked,focus,names);
+    const scale = Math.min(bounds.width/WIDTH,bounds.height/HEIGHT);
+    c.imageSmoothingEnabled = false; c.fillStyle = '#171b30'; c.fillRect(0,0,canvas.width,canvas.height);
+    c.drawImage(buffer,bounds.x+(bounds.width-WIDTH*scale)/2,bounds.y+(bounds.height-HEIGHT*scale)/2,WIDTH*scale,HEIGHT*scale);
   }
-  const loop = createArcadeLoop(draw, value => { still = value; });
-  loop.setReducedMotion(reducedMotion);
-  return {
-    update, push: update, draw,
-    resize({ width, height, safe: bounds }) {
+  const loop = createArcadeLoop(draw,value => { still = value; }); loop.setReducedMotion(reducedMotion);
+  return { update, push: update, draw, setReducedMotion: loop.setReducedMotion,
+    resize({ width,height,safe }) {
       if (disposed) return;
-      canvas.width = width; canvas.height = height;
-      safe = bounds ?? { x: 0, y: 0, width, height };
+      canvas.width = width; canvas.height = height; bounds = safe ?? { x:0,y:0,width,height };
     },
-    setReducedMotion: loop.setReducedMotion,
-    dispose() { disposed = true; loop.dispose(); sky.width = sky.height = 0; },
+    dispose() { disposed = true; loop.dispose(); doc.removeEventListener('keydown',toggle); buffer.width = buffer.height = 0; terrain = null; },
   };
 }

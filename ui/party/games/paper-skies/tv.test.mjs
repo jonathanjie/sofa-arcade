@@ -1,29 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { buildTerrain, cell, createCamera } from './voxel.mjs';
 import { mountPaperSkiesTv, paperSkiesPlayHintForMode, paperSkiesResultSummary } from './tv.mjs';
 
 const hints = {
-  'ring-rally': 'Bank through glowing sky rings. Gold rings score triple!',
-  'balloon-pop': 'Fire paper darts or swoop through drifting balloons to pop them.',
-  'sky-tag': 'Snatch the Sun Crown and stay aloft—tag the leader with a dart to steal it.',
-};
-function fixture(mode) {
-  const target = { id: 0, x: 200, y: 250, r: 30, a: 0.4 };
-  return { mode, w: 1600, h: 960, elapsedMs: 120,
-    thermals: [target], clouds: [0, 1].map(gust => ({ ...target, gust })),
-    rings: mode === 'ring-rally' ? [0, 1].map(gold => ({ ...target, gold })) : [],
-    balloons: mode === 'balloon-pop' ? [1, 2, 3].map(pts => ({ ...target, pts, col: pts })) : [],
-    crowns: mode === 'sky-tag' ? [null, 'p0'].map(holder => ({ ...target, holder })) : [],
-    darts: [{ ...target, look: 2 }],
-    events: ['hit','ring','pop','crown'].map((type, id) => ({ ...target, type, id, look: 3, at: 80 })),
-    planes: Array.from({ length: 16 }, (_, look) => ({ id: `p${look}`, look, x: 50 + look % 4 * 380,
-      y: 90 + Math.floor(look / 4) * 220, a: look / 2, bank: look % 2, spd: 15, boost: look % 2,
-      wobble: look % 3 === 0 ? 1 : 0, crown: mode === 'sky-tag' && look === 0 ? 1 : 0, score: look })),
+  'ring-rally': 'Climb, dive, roll and loop through glowing Sun chains—dodge spiky storms!',
+  'balloon-pop': 'Swoop through 3D sky balloons at matching altitude and barrel-roll past storms!',
+  'sky-tag': 'Snatch the 3D Sun Crown and out-maneuver rivals with rolls and loops!',
+ };
+function fixture(mode, solo = 0) {
+  const item = { id: 0, x: 256, y: 220, z: 44 };
+  return { mode, seed: 123, elapsedMs: 120, lv: 2, w: 512, h: 512, solo,
+    storms: [{ ...item, y: 170 }], suns: mode === 'ring-rally' ? [{ ...item, gold: 1 }] : [],
+    balloons: mode === 'balloon-pop' ? [{ ...item, r: 10, pts: 3, col: 1 }] : [],
+    crowns: mode === 'sky-tag' ? [{ ...item, holder: 'p0' }] : [],
+    events: [{ ...item, text: 'LOOP!', at: 120 }],
+    planes: Array.from({ length: solo ? 1 : 16 }, (_, look) => ({ id: `p${look}`, look,
+      x: 256 + look%4*45, y: 280 + Math.floor(look/4)*40, z: 38, a: -Math.PI/2,
+      bank: .2, pitch: .1, roll: .3, loop: .2, score: look+1, fuel: 85, suns: 2, combo: 3 })),
   };
 }
-function board(t) {
+function board(t, upload = true) {
   const frames = new Map(), listeners = new Set(), surfaces = [];
-  const events = { addEventListener: (_, fn) => listeners.add(fn), removeEventListener: (_, fn) => listeners.delete(fn) };
+  const handlers = {};
+  const events = { addEventListener: (key, fn) => { handlers[key] = fn; listeners.add(fn); }, removeEventListener: (_, fn) => listeners.delete(fn) };
   const doc = { ...events, hidden: false, createElement() {
     const calls = [];
     const ctx = { createLinearGradient: gradient, createRadialGradient: gradient, measureText: s => ({ width: s.length * 8 }) };
@@ -31,6 +32,7 @@ function board(t) {
       ctx[op] = (...args) => calls.push([op, ...args]);
     }
     const canvas = { ownerDocument: doc, getContext: () => ctx, setAttribute() {}, calls };
+    if (upload) ctx.putImageData = image => { canvas.hash = createHash('sha256').update(image.data).digest('hex'); };
     ctx.canvas = canvas; surfaces.push(canvas); return canvas;
   } };
   function gradient() { return { addColorStop() {} }; }
@@ -41,51 +43,50 @@ function board(t) {
     Object.defineProperty(globalThis, key, { configurable: true, value });
     t.after(() => original ? Object.defineProperty(globalThis, key, original) : Reflect.deleteProperty(globalThis, key));
   }
-  return { canvas: doc.createElement(), listeners, frames, surfaces };
+  return { canvas: doc.createElement(), listeners, frames, surfaces, handlers };
 }
-test('host renders every look and mode, reuses cached art, and releases its loop', t => {
-  const { canvas, listeners, frames, surfaces } = board(t);
-  const tv = mountPaperSkiesTv(canvas);
-  tv.resize({ width: 1920, height: 1080, safe: { x: 20, y: 12, width: 1880, height: 1056 } });
-  for (const [round, mode] of Object.keys(hints).entries()) {
-    const scene = fixture(mode);
-    tv.push({ round, scene });
-    canvas.calls.length = 0;
-    const at = 1000;
-    tv.draw(at);
-    assert.ok(canvas.calls.filter(([op]) => op === 'drawImage').length >= 17);
-    assert.equal(canvas.calls.filter(([op]) => op === 'fillText').length, 16);
-    const count = surfaces.length, skyOps = surfaces[1].calls.length;
-    tv.resize({ width: 800, height: 480 });
-    tv.draw(at);
-    assert.equal(surfaces.length, count);
-    assert.equal(surfaces[1].calls.length, skyOps);
-    assert.ok(canvas.calls.some(([op,x,y]) => op === 'scale' && x === 0.5 && y === 0.5));
-  }
-  assert.equal(frames.size, 1);
-  tv.dispose();
-  assert.equal(frames.size, 0); assert.equal(listeners.size, 0);
-  const count = canvas.calls.length;
-  tv.draw(5000); assert.equal(canvas.calls.length, count);
-});
-test('reduced motion freezes decorative motion and drops event particles, not position updates', t => {
-  const { canvas } = board(t);
+test('camera defaults and V toggle render distinct frames for each mode and player count', t => {
+  const { canvas, handlers, frames, surfaces, listeners } = board(t);
   const tv = mountPaperSkiesTv(canvas, { reducedMotion: true });
-  tv.resize({ width: 1600, height: 960 });
-  const state = fixture('sky-tag');
-  tv.update({ state });
-  const now = performance.now();
-  function sample(at) { canvas.calls.length = 0; tv.draw(at); return canvas.calls.slice(); }
-  const first = sample(now);
-  assert.deepEqual(sample(now + 140), first);
-  tv.setReducedMotion(false);
-  const moving = sample(now + 140);
-  const ellipses = calls => calls.filter(([op]) => op === 'ellipse').length;
-  assert.equal(ellipses(moving) - ellipses(first), state.events.length * 8);
-  tv.setReducedMotion(true);
-  tv.update({ state: { ...state, planes: state.planes.map(p => ({ ...p, x: p.x + 20 })) } });
-  assert.notDeepEqual(sample(now + 150), first);
-  tv.dispose();
+  const buffer = surfaces[1];
+  let round = 0;
+  for (const mode of Object.keys(hints)) for (const solo of [1,0]) {
+    tv.resize({ width:1920, height:1080 });
+    tv.push({ round: ++round, scene: fixture(mode,solo) }); tv.draw();
+    const first = buffer.hash;
+    assert.equal(canvas.getContext('2d').imageSmoothingEnabled,false);
+    assert.deepEqual(canvas.calls.at(-1).slice(2),[0,0,1920,1080]);
+    assert.ok(buffer.calls.some(([op,text]) => op === 'fillText' && text === (solo ? 'SUNS 2  x3' : '1 Dots 16')));
+    handlers.keydown({key:'V'}); tv.draw(); assert.notEqual(buffer.hash,first);
+    handlers.keydown({key:'v'}); tv.draw(); assert.equal(buffer.hash,first);
+    tv.resize({ width: 800, height: 480, safe:{ x:16,y:10,width:768,height:432 } }); tv.draw();
+    assert.deepEqual(canvas.calls.at(-1).slice(2),[16,10,768,432]);
+    buffer.calls.length = 0;
+  }
+  assert.equal(frames.size,1); tv.dispose(); assert.equal(frames.size,0); assert.equal(listeners.size,0);
+  const count = canvas.calls.length; tv.draw(); assert.equal(count,canvas.calls.length);
+});
+test('reduced motion freezes clouds, not flight updates', t => {
+  const { canvas,surfaces } = board(t), tv = mountPaperSkiesTv(canvas);
+  tv.resize({width:800,height:450}); const state = fixture('ring-rally',1);
+  tv.update({state}); tv.setReducedMotion(true);
+  const frame = at => { tv.draw(at); return surfaces[1].hash; };
+  const now = performance.now(), first = frame(now);
+  assert.equal(first,frame(now+800)); tv.setReducedMotion(false); assert.notEqual(first,frame(now+800));
+  tv.setReducedMotion(true); tv.update({state:{...state,planes:[{...state.planes[0],x:310}]}});
+  assert.notEqual(first,frame(now+900)); tv.dispose();
+});
+test('mock canvas without image data methods can still draw and dispose', t => {
+  const {canvas} = board(t,false), tv = mountPaperSkiesTv(canvas);
+  tv.resize({width:640,height:360}); tv.update({scene:fixture('sky-tag')}); tv.draw(); tv.dispose();
+  assert.ok(canvas.calls.some(([op]) => op === 'drawImage'));
+});
+test('engine height signature, torus wrapping and chase projection', () => {
+  assert.equal(createHash('sha256').update(buildTerrain(123).heights).digest('hex'),'296e9868f4bcb4c8725211f3617d0ee5cf04209b9612989735ec688ec7fb7ab0');
+  assert.equal(cell(-1,512),cell(511,0));
+  const p = { x:3,y:8,z:40,a:0 }, cam = createCamera(p,true);
+  assert.ok(cam.project(p.x,p.y,p.z).q > 0); assert.equal(cam.project(510,p.y,p.z).q,cam.project(-2,p.y,p.z).q);
+  assert.ok(cam.project(3,8,7).y > cam.project(3,8,40).y);
 });
 test('each mode has its exact hint and a mode-specific podium with safe tie and empty copy', () => {
   for (const [mode, hint] of Object.entries(hints)) {
