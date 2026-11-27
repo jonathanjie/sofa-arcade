@@ -49,12 +49,15 @@ for (const [m, { id }] of game.modes.entries()) {
       const s = start(id, n);
       for (const seat of seats(n)) {
         const p = s.planes.find(p => p.id === seat.id);
-        Object.assign(p, { score: 1499.8, popped: 112, streak: 5, crown: true, wobbleMs: 550, fireCd: 450, boosting: true });
+        Object.assign(p, { score: 1499.8, popped: 112, streak: 5, crown: true, wobbleMs: 550, fireCd: 450, boosting: true, bank: -1 });
         const state = game.projectForPhone(s, seat.id);
-        assert.deepEqual(state, { m, s: 1500, b: 10, f: 5, c: [5, 99, 1][m], w: 6, k: 1 });
+        const { t, ...rest } = state;
+        assert.deepEqual(rest, { m, s: 1500, b: 10, f: 5, c: [5, 99, 1][m], w: 6, k: 1, r: -10 });
+        if (m === 2) assert.equal(t, undefined);
+        else assert.ok(Number.isInteger(t) && t >= -180 && t <= 180);
         const packet = { type: 'snapshot', view: { phase: 'playing', round: 99, ms: 74950, notice: null,
           gameId: game.id, self: { ...seat, ready: true }, waiting: false, state, place: null } };
-        assert.ok(Buffer.byteLength(JSON.stringify(packet)) < 300);
+        assert.ok(Buffer.byteLength(JSON.stringify(packet)) <= 320);
       }
       assert.equal(game.projectForPhone(s, 'spectator'), null);
     }

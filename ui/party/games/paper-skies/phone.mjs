@@ -12,7 +12,17 @@ export function mountPaperSkiesPhone(root, { input }) {
   stylesheet.href = new URL('./phone.css', import.meta.url).href;
   root.innerHTML = `<div class="ps-phone">
     <header class="ps-status"><strong data-mode>Practice</strong><span>Score <b data-score>0</b></span><span data-context hidden></span><span data-wobble hidden>Wobble</span></header>
-    <label class="ps-fuel">Boost <progress max="10" value="0" aria-label="Boost charge"></progress></label>
+    <div class="ps-cockpit">
+      <div class="ps-compass" aria-hidden="true" data-compass>
+        <div class="ps-horizon"></div>
+        <div class="ps-wings"></div>
+        <div class="ps-arrow" data-arrow hidden></div>
+      </div>
+      <div class="ps-gauges">
+        <span class="ps-target" data-target>Bank to steer</span>
+        <label class="ps-fuel">Boost <progress max="10" value="0" aria-label="Boost charge"></progress></label>
+      </div>
+    </div>
     <div class="ps-controls"><div class="ps-steer"></div><div class="ps-actions">
       <button type="button" class="ps-boost" aria-pressed="false">Boost</button>
       <button type="button" class="ps-fire" aria-pressed="false">Fire <small data-fire>Ready</small></button>
@@ -49,6 +59,7 @@ export function mountPaperSkiesPhone(root, { input }) {
     y = axis(next.y);
     panel.style.setProperty('--ps-x', `${x * 30}%`);
     panel.style.setProperty('--ps-y', `${y * 30}%`);
+    if (practice) panel.style.setProperty('--ps-bank', `${Math.round(x * 28)}deg`);
     changed();
   } });
   function listen(node, type, handler) {
@@ -86,6 +97,7 @@ export function mountPaperSkiesPhone(root, { input }) {
     x = y = b = f = 0;
     panel.style.setProperty('--ps-x', '0%');
     panel.style.setProperty('--ps-y', '0%');
+    panel.style.setProperty('--ps-bank', '0deg');
     releaseBoost();
     releaseFire();
     dirty = true;
@@ -126,6 +138,16 @@ export function mountPaperSkiesPhone(root, { input }) {
       boost.toggleAttribute('data-boosting', state?.k === 1);
       fire.toggleAttribute('data-cooldown', state?.f > 0);
       find('[data-fire]').textContent = state?.f > 0 ? `${(state.f / 10).toFixed(1)}s` : 'Ready';
+      const compass = find('[data-compass]');
+      const arrow = find('[data-arrow]');
+      const targetLabel = find('[data-target]');
+      const hasTarget = typeof state?.t === 'number';
+      if (typeof state?.r === 'number') panel.style.setProperty('--ps-bank', `${Math.round(state.r * 2.8)}deg`);
+      if (hasTarget) panel.style.setProperty('--ps-target', `${state.t}deg`);
+      arrow.hidden = !hasTarget;
+      compass.toggleAttribute('data-crown', state?.m === 2 && state?.c === 1);
+      compass.toggleAttribute('data-wobble', state?.w > 0);
+      targetLabel.textContent = state?.m === 0 ? 'Gold ring' : state?.m === 1 ? 'Next balloon' : state?.m === 2 ? (state.c === 1 ? 'Keep flying!' : 'Sun Crown') : 'Bank to steer';
     },
     dispose() {
       if (disposed) return;

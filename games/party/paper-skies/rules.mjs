@@ -62,12 +62,36 @@ function projectForTv(s) {
     planes: s.planes.map(p => ({ ...position(p), look: p.look, a: r2(p.a), bank: r2(p.bank), spd: r1(p.spd),
       boost: +p.boosting, wobble: +(p.wobbleMs > 0), crown: +p.crown, score: Math.round(p.score) })), events: s.events.slice(-24) };
 }
+function nearest(from, list) {
+  let best = null, bestD = Infinity;
+  for (const item of list) {
+    const d = Math.hypot(item.x - from.x, item.y - from.y);
+    if (d < bestD) { bestD = d; best = item; }
+  }
+  return best;
+}
+function targetBearing(s, p) {
+  let target = null;
+  if (s.mode === 'ring-rally') target = nearest(p, s.rings.filter(r => r.gold)) ?? nearest(p, s.rings);
+  else if (s.mode === 'balloon-pop') {
+    const gold = nearest(p, s.balloons.filter(b => b.pts >= 3));
+    target = gold && Math.hypot(gold.x - p.x, gold.y - p.y) <= 550 ? gold : nearest(p, s.balloons);
+  } else if (s.mode === 'sky-tag' && !p.crown) target = nearest(p, s.crowns);
+  if (!target) return null;
+  let rel = Math.atan2(target.y - p.y, target.x - p.x) - p.a;
+  while (rel > Math.PI) rel -= Math.PI * 2;
+  while (rel < -Math.PI) rel += Math.PI * 2;
+  return Math.round(rel * 180 / Math.PI);
+}
 function projectForPhone(s, id) {
   const p = s.planes.find(plane => plane.id === id);
   if (!p) return null;
-  return { m: modes.findIndex(m => m.id === s.mode), s: Math.round(p.score), b: Math.min(10, Math.floor(p.boostCharge / 10)),
+  const t = targetBearing(s, p);
+  const view = { m: modes.findIndex(m => m.id === s.mode), s: Math.round(p.score), b: Math.min(10, Math.floor(p.boostCharge / 10)),
     f: Math.ceil(p.fireCd / 100), c: s.mode === 'sky-tag' ? +p.crown : s.mode === 'ring-rally' ? Math.min(9, p.streak) : Math.min(99, p.popped),
-    w: Math.ceil(p.wobbleMs / 100), k: +p.boosting };
+    w: Math.ceil(p.wobbleMs / 100), k: +p.boosting, r: Math.round(p.bank * 10) };
+  if (t !== null) view.t = t;
+  return view;
 }
 function scores(s) {
   return s.roster.map(seat => ({ playerId: seat.id, score: Math.round(s.planes.find(p => p.id === seat.id)?.score ?? seat.score) }))
