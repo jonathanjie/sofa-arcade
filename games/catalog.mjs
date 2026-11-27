@@ -3,6 +3,7 @@ export const SOFA_GAME_ID = 'sofa-kingdoms';
 export const ODD_LAWS_GAME_ID = 'odd-laws-society';
 export const TAP_RACE_GAME_ID = 'tap-race';
 export const WHITEOUT_DRIFT_GAME_ID = 'whiteout-drift';
+export const PAPER_SKIES_GAME_ID = 'paper-skies';
 export const GRAVITY_ORCHARD_GAME_ID = 'gravity-orchard';
 
 export const GAME_CATALOG = Object.freeze([
@@ -19,6 +20,7 @@ export const GAME_CATALOG = Object.freeze([
   { id: 'balloon-bop', title: 'Balloon Bop', tagline: 'One more hop before it pops.', description: 'Hop under drifting balloons and block the dart goon. Save three lives together or send a volley across the net.', mode: '2–16 players · 2 modes', duration: '90 sec rounds', status: 'local-only', category: 'party', accent: '#dfaa41', icon: 'race' },
   { id: 'timber-rush', title: 'Timber Rush', tagline: 'Pick a side. Mind your head.', description: 'Chop through a forest of crooked branches, sling axes at rivals or pool logs with your crew.', mode: '2–16 players · 3 modes', duration: '90 sec rounds', status: 'local-only', category: 'party', accent: '#e6ad38', icon: 'race' },
   { id: 'head-hop', title: 'Head Hop', tagline: 'The floor is spikes. Borrow a head.', description: 'Hop between grey goons and rival jumpers. Outlast the brambles, chain your stomps or crown yourself king.', mode: '2–16 players · 3 modes', duration: '90 sec rounds', status: 'local-only', category: 'party', accent: '#e3ac38', icon: 'race' },
+  { id: PAPER_SKIES_GAME_ID, title: 'Paper Skies', tagline: 'Folded wings. Golden rings. Whole-couch dogfight.', description: 'Bank sprite-stacked paper planes across a sunlit sky. Weave through rings, pop drifting balloons, or snatch the Sun Crown.', mode: '2–16 players · 3 modes', duration: '75 sec rounds', status: 'local-only', category: 'party', accent: '#5b8ec9', icon: 'race' },
   { id: 'afterglow-market', title: 'Afterglow Market', tagline: 'A little stall. A big night.', description: 'Build a night-market stall, trade curious goods, and guess what the next wave of customers will crave.', mode: 'Trading & strategy', duration: '25–35 min', status: 'planned', accent: '#ad6f65', icon: 'market' },
   { id: ODD_LAWS_GAME_ID, title: 'The Odd Laws Society', tagline: 'Build the city. Rewrite its rules.', description: 'Build a nine-plot borough across six council sessions. Compete for a shared market, seal your influence bids, and shape the laws that score both cities.', mode: 'City-building strategy', duration: '35–45 min target', status: 'playable', accent: '#6d829b', icon: 'laws' },
   { id: 'last-ninety-seconds', title: 'The Last Ninety Seconds', tagline: 'Two witnesses. One missing minute and a half.', description: 'Compare the clues on your phones and reconstruct a tiny mystery together before the scene slips away.', mode: 'Cooperative mystery', duration: '15–25 min', status: 'planned', accent: '#8c7680', icon: 'mystery' },

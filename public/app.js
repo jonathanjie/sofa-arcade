@@ -221,6 +221,10 @@ const GAME_COVERS = {
     src: '/assets/party/whiteout-drift/cover.webp', compact: '/assets/party/whiteout-drift/cover-560.webp', width: 1280, height: 720,
     alt: 'A getaway mouse drifts through midnight snow, smashing a fire hydrant into an ice trap for pursuing patrol cars.',
   },
+  'paper-skies': {
+    src: '/assets/party/paper-skies/cover.webp', compact: '/assets/party/paper-skies/cover-560.webp', width: 1280, height: 720,
+    alt: 'Colourful folded paper planes bank through a golden ring above sunlit clouds and drifting balloons while Lala peeks out.',
+  },
 };
 function preloadSofaCover(sizes) {
   const link = document.createElement('link');

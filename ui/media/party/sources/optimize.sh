@@ -8,7 +8,7 @@ raw_dir="$source_dir/raw"
 covers_dir="$source_dir/../covers"
 incoming_dir="${1:-}"
 
-for game in tap-race dont-wake-lala dust-bunny-sumo wall-of-paddles tug-of-yarn snack-stack whiteout-drift; do
+for game in tap-race dont-wake-lala dust-bunny-sumo wall-of-paddles tug-of-yarn snack-stack whiteout-drift paper-skies; do
   raw="$raw_dir/$game.webp"
   if [[ -n "$incoming_dir" && -f "$incoming_dir/$game.png" ]]; then
     cwebp -quiet -z 6 -exact "$incoming_dir/$game.png" -o "$raw"

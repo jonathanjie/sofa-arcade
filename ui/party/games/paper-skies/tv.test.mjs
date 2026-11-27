@@ -51,12 +51,13 @@ test('host renders every look and mode, reuses cached art, and releases its loop
     const scene = fixture(mode);
     tv.push({ round, scene });
     canvas.calls.length = 0;
-    tv.draw(performance.now());
+    const at = 1000;
+    tv.draw(at);
     assert.equal(canvas.calls.filter(([op]) => op === 'drawImage').length, 17);
     assert.equal(canvas.calls.filter(([op]) => op === 'fillText').length, 16);
     const count = surfaces.length, skyOps = surfaces[1].calls.length;
     tv.resize({ width: 800, height: 480 });
-    tv.draw(performance.now());
+    tv.draw(at);
     assert.equal(surfaces.length, count);
     assert.equal(surfaces[1].calls.length, skyOps);
     assert.ok(canvas.calls.some(([op,x,y]) => op === 'scale' && x === 0.5 && y === 0.5));
