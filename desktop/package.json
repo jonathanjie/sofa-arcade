@@ -1,6 +1,6 @@
 {
   "name": "sofa-arcade-desktop",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "private": true,
   "type": "module",
   "description": "Tauri Mac packaging and native validation for the existing Sofa Arcade LAN runtime",
