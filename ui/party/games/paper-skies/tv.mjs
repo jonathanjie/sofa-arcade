@@ -1,6 +1,6 @@
 import { createArcadeLoop, createTimeline } from '../../kit/animation.mjs';
 import { LOOKS } from '../../looks.mjs';
-import { drawObject, drawShadow, pixelText, popup } from './art.mjs';
+import { drawObject, drawShadow } from './art.mjs';
 import { WIDTH, HEIGHT, buildTerrain, colourTerrain, createCamera, createFrame, renderTerrain, wrapped } from './voxel.mjs';
 
 const modes = {
@@ -40,24 +40,65 @@ function glide(previous, scene, t, lerp) {
   return { ...scene, planes };
 }
 
+// The world is deliberately pixelated; all overlay coordinates are 1080p artwork.
+const HUD_W = 1920, HUD_H = 1080;
+const panel = '#161c30', paper = '#fff8db', mint = '#7ef0c4', coral = '#ff6b6b';
+const tricks = { dodge:'DODGE!', close:'CLOSE CALL!', loop:'LOOP!', skim:'SKIM!', crash:'CRASH!' };
+const fraction = value => Math.max(0,Math.min(1,value));
+function rect(c,x,y,w,h,colour) {
+  c.fillStyle = colour; c.fillRect(x,y,w,h);
+}
+function label(c,text,x,y,size,colour = paper) {
+  c.font = `bold ${size}px monospace`;
+  x = Math.round(x); y = Math.round(y);
+  c.fillStyle = '#101321'; c.fillText(text,x+2,y+3);
+  c.fillStyle = colour; c.fillText(text,x,y);
+}
 function hud(c, scene, ranked, focus, names) {
-  c.font = 'bold 8px monospace'; c.textAlign = 'left';
-  c.fillStyle = '#171b30';
-  c.fillRect(3,3,scene.solo ? 103 : 93,scene.solo ? 24 : ranked.length * 10 + 4);
+  c.textAlign = 'left';
+  rect(c,24,24,340,scene.solo ? 100 : 28+ranked.length*32,panel);
   if (scene.solo) {
-    pixelText(c,`SCORE ${focus.score}  LV ${scene.lv}`,6,12);
-    pixelText(c,`SUNS ${focus.suns}  x${focus.combo}`,6,23,'#ffe28a');
+    rect(c,24,24,5,100,'#ffe28a');
+    label(c,`SCORE ${focus.score}`,42,68,40);
+    label(c,`SUNS ${focus.suns}  LV ${scene.lv}  ×${focus.combo}`,42,105,25,'#ffe28a');
   } else ranked.forEach((p,i) => {
     const look = LOOKS[p.look] ?? LOOKS[0];
-    pixelText(c,`${i+1} ${(names.get(p.id) ?? look.name).slice(0,8)} ${p.score}`,6,12+i*10,look.colour);
+    rect(c,36,41+i*32,6,21,look.colour);
+    label(c,`${i+1} ${(names.get(p.id) ?? look.name).slice(0,9)}`,55,60+i*32,25);
+    c.textAlign = 'right'; label(c,String(p.score),350,60+i*32,25); c.textAlign = 'left';
   });
-  c.fillStyle = '#171b30'; c.fillRect(WIDTH-68,3,65,14); c.fillRect(WIDTH-22,19,19,40);
-  pixelText(c,'FUEL',WIDTH-66,13); pixelText(c,'ALT',WIDTH-21,27);
-  c.fillStyle = '#394259'; c.fillRect(WIDTH-41,7,35,6); c.fillRect(WIDTH-16,30,7,26);
-  const fraction = v => Math.max(0,Math.min(1,v));
-  c.fillStyle = focus.fuel < 25 ? '#ff8278' : '#80eaca'; c.fillRect(WIDTH-41,7,Math.round(35*fraction(focus.fuel/100)),6);
-  const altitude = Math.round(26*fraction((focus.z-8)/60));
-  c.fillStyle = '#bc9ced'; c.fillRect(WIDTH-16,56-altitude,7,altitude);
+  rect(c,1616,24,280,58,panel);
+  label(c,'FUEL',1630,63,28);
+  rect(c,1710,39,170,29,'#090c15'); rect(c,1714,43,162,21,'#384056');
+  rect(c,1714,43,Math.round(162*fraction(focus.fuel/100)),21,focus.fuel < 25 ? coral : mint);
+  rect(c,1824,92,72,168,panel); label(c,'ALT',1835,123,25);
+  rect(c,1846,135,27,110,'#090c15'); rect(c,1850,139,19,102,'#384056');
+  const altitude = Math.round(102*fraction((focus.z-8)/60));
+  rect(c,1850,241-altitude,19,altitude,'#c29eff');
+  rect(c,1760,1012,136,44,panel); label(c,'V · CAM',1773,1042,25,'#c6cede');
+}
+function markers(c,camera,scene,names,elapsed,reduced) {
+  c.textAlign = 'center';
+  for (const plane of scene.planes) {
+    const p = camera.project(plane.x,plane.y,plane.z);
+    if (camera.chase && p.q < 5) continue;
+    const look = LOOKS[plane.look] ?? LOOKS[0];
+    const name = (names.get(plane.id) ?? look.name).slice(0,10);
+    const x = Math.round(p.x*HUD_W/WIDTH), y = Math.round(p.y*HUD_H/HEIGHT - 12*p.scale*HUD_W/WIDTH);
+    c.font = 'bold 21px monospace';
+    const width = Math.ceil(c.measureText(name).width)+18;
+    rect(c,x-width/2,y-26,width,29,panel); rect(c,x-4,y+3,8,5,look.colour);
+    label(c,name,x,y-4,21,look.colour);
+  }
+  for (const e of scene.events ?? []) {
+    const age = elapsed-e.at, title = tricks[e.kind];
+    if (age < 0 || age > 800 || (!title && !e.text)) continue;
+    const p = camera.project(e.x,e.y,e.z ?? 32);
+    if (camera.chase && p.q < 5) continue;
+    const x = p.x*HUD_W/WIDTH, y = p.y*HUD_H/HEIGHT-50-(reduced ? 0 : age*.075);
+    label(c,title ?? e.text,x,y,36,e.kind === 'crash' ? coral : '#fff299');
+    if (title && e.text && title !== e.text) label(c,e.text,x,y+27,24);
+  }
 }
 
 export function mountPaperSkiesTv(canvas, { reducedMotion = false } = {}) {
@@ -93,7 +134,7 @@ export function mountPaperSkiesTv(canvas, { reducedMotion = false } = {}) {
     const focus = solo ? s.planes[0] : ranked[0], camera = createCamera(focus,chaseOverride ?? solo,reduced);
     const elapsed = s.elapsedMs + (reduced ? 0 : Math.max(0,at-receivedAt));
     const time = reduced ? 0 : elapsed;
-    renderTerrain(frame,terrain,camera);
+    renderTerrain(frame,terrain,camera,time);
     const objects = [];
     for (let i = 0; i < 6; i++) objects.push(['cloud',{ x: (43+i*83+time*.002)%512, y: (38+i*137)%512, z: 69+i%3*4 }]);
     for (const [kind,items] of [['sun',s.suns],['storm',s.storms],['balloon',s.balloons],['plane',s.planes]]) {
@@ -106,12 +147,15 @@ export function mountPaperSkiesTv(canvas, { reducedMotion = false } = {}) {
     for (const [kind,item] of objects) drawShadow(frame,camera,terrain,item,kind);
     for (const [kind,item] of objects) drawObject(frame,camera,kind,item,time);
     ctx.putImageData?.(image,0,0);
-    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-    for (const e of s.events ?? []) popup(ctx,camera,e,elapsed-e.at,reduced);
-    hud(ctx,s,ranked,focus,names);
-    const scale = Math.min(bounds.width/WIDTH,bounds.height/HEIGHT);
-    c.imageSmoothingEnabled = false; c.fillStyle = '#171b30'; c.fillRect(0,0,canvas.width,canvas.height);
-    c.drawImage(buffer,bounds.x+(bounds.width-WIDTH*scale)/2,bounds.y+(bounds.height-HEIGHT*scale)/2,WIDTH*scale,HEIGHT*scale);
+    const scale = Math.min(bounds.width/HUD_W,bounds.height/HUD_H);
+    const x = bounds.x+(bounds.width-HUD_W*scale)/2, y = bounds.y+(bounds.height-HUD_H*scale)/2;
+    c.imageSmoothingEnabled = false; rect(c,0,0,canvas.width,canvas.height,panel);
+    c.drawImage(buffer,x,y,HUD_W*scale,HUD_H*scale);
+    c.save(); c.translate(x,y); c.scale(scale,scale);
+    c.beginPath(); c.rect(0,0,HUD_W,HUD_H); c.clip();
+    markers(c,camera,s,names,elapsed,reduced);
+    hud(c,s,ranked,focus,names);
+    c.restore();
   }
   const loop = createArcadeLoop(draw,value => { still = value; }); loop.setReducedMotion(reducedMotion);
   return { update, push: update, draw, setReducedMotion: loop.setReducedMotion,
