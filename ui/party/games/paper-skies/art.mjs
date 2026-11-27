@@ -1,334 +1,128 @@
-import { compileStack, drawStack } from '../../kit/stack.mjs';
 import { LOOKS } from '../../looks.mjs';
+import { WIDTH, HEIGHT, cell, hex } from './voxel.mjs';
 
-const TURN = Math.PI * 2;
-const ink = '#141924';
-export const scarf = look => (LOOKS[look] ?? LOOKS[0]).colour;
-
-function seeded(n) {
-  const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-  return v - Math.floor(v);
-}
-
-// Smooth 2D value noise for blocky voxel-style pixel island heightmaps.
-function valueNoise(x, y) {
-  const xi = Math.floor(x), yi = Math.floor(y);
-  const xf = x - xi, yf = y - yi;
-  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-  const h = (ix, iy) => seeded(ix * 13.7 + iy * 71.3);
-  const a = h(xi, yi), b = h(xi + 1, yi), c = h(xi, yi + 1), d = h(xi + 1, yi + 1);
-  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-}
-function fbm(x, y) {
-  return valueNoise(x, y) * 0.56 + valueNoise(x * 2.1 + 11, y * 2.1 + 7) * 0.3 + valueNoise(x * 4.3 + 23, y * 4.3 + 19) * 0.14;
-}
-
-function oval(c, x, y, rx, ry, colour, angle = 0) {
-  c.beginPath();
-  c.ellipse(x, y, rx, ry, angle, 0, TURN);
-  c.fillStyle = colour;
-  c.fill();
-}
-function pxRect(c, colour, x, y, w, h) {
-  c.fillStyle = colour;
-  c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
-}
-
-// Mirror a half-footprint across the longitudinal centreline (nose faces east).
-function mirror(rows, width = 20) {
-  const full = [...rows, ...rows.slice(0, -1).reverse()];
-  return full.map(row => row.padEnd(width, '.'));
-}
-
-// 9-slice Pixel Skies style chunky 3D stacked aircraft (20x17):
-// Black outline (K), player colour body/wings (C), orange-gold wingtips/nose (O), mint canopy (M), warm thruster (Y).
-const planeUnder = mirror([
-  '', '', '', '', '', '',
-  '..KKKKKKKKKK........',
-  '.KDDDDDDDDDDKKK.....',
-  '.KDDDDDDDDDDDDDKK...',
-]);
-const planeLowerWing = mirror([
-  '', '',
-  '.KKKK...............',
-  '.KOOOKKK............',
-  '..KOOCCCKKK.........',
-  '..KCCCCCCCKKK.......',
-  '...KCCCCCCCCCKKK....',
-  '...KDDDDDDDDDDDDKK..',
-  '..YDDDDDDDDDDDDDOOK.',
-]);
-const planeMainWing = mirror([
-  'KKKK................',
-  'KOOOKKK.............',
-  '.KOOCCCKKK..........',
-  '.KCCCCCCCCKKK.......',
-  '..KCCCCCCCCCCKKK....',
-  '..KCCCCCCCCCCCCCKK..',
-  '...KCCCCCCCCCCCCCCK.',
-  '..YKCCCCCMMMCCCCCCOK',
-  '.YYKCCCCCMMMMCCCCOOK',
-]);
-const planeUpperBody = mirror([
-  '', '', '', '',
-  '...KKKKKK...........',
-  '...KCCCCCCKKK.......',
-  '...KCCCCCMMMMKKK....',
-  '..YKCCCCMMMMMMCCKK..',
-  '..YKCCCCMMMMMMCCCOK.',
-]);
-const planeCanopy = mirror([
-  '', '', '', '', '', '',
-  '.....KKKKKK.........',
-  '.....KMMMMMK........',
-  '.....KMMHHMK........',
-]);
-const planeCrest = mirror([
-  '', '', '', '', '', '', '',
-  '......KKKKK.........',
-  '......KHHHK.........',
-]);
-const planeLayers = [
-  planeUnder, planeUnder, planeLowerWing,
-  planeMainWing, planeMainWing, planeUpperBody,
-  planeUpperBody, planeCanopy, planeCrest,
-];
-
-// 7-slice 3D pixel balloon (11x11) with crisp black outline & glossy highlight.
-const b0 = ['...........', '...........', '...........', '....KKK....', '...KDDDK...', '...KDDDK...', '...KDDDK...', '....KKK....', '...........', '...........', '...........'];
-const b1 = ['...........', '...........', '...KKKKK...', '..KDDDDDK..', '..KDBBBDK..', '..KDBBBDK..', '..KDBBBDK..', '..KDDDDDK..', '...KKKKK...', '...........', '...........'];
-const b2 = ['...........', '...KKKKK...', '..KBBBBBK..', '.KBBBBBBBK.', '.KBBHHBBBK.', '.KBBHHBBBK.', '.KBBBBBBBK.', '.KBBBBBBBK.', '..KBBBBBK..', '...KKKKK...', '...........'];
-const b3 = ['...KKKKK...', '..KBBBBBK..', '.KBBHHBBBK.', 'KBBHHHHBBBK', 'KBBHHHHBBBK', 'KBBBBBBBBBK', 'KBBBBBBBBBK', 'KBBBBBBBBBK', '.KBBBBBBBK.', '..KBBBBBK..', '...KKKKK...'];
-const b4 = ['...........', '...KKKKK...', '..KBBHBBK..', '.KBBHHHBBK.', '.KBBHHHBBK.', '.KBBBBBBBK.', '.KBBBBBBBK.', '.KBBBBBBBK.', '..KBBBBBK..', '...KKKKK...', '...........'];
-const b5 = ['...........', '...........', '...KKKKK...', '..KBBHBBK..', '..KBHHBBK..', '..KBBBBBK..', '..KBBBBBK..', '..KBBBBBK..', '...KKKKK...', '...........', '...........'];
-const b6 = ['...........', '...........', '...........', '....KKK....', '...KHHBK...', '...KBBBK...', '...KBBBK...', '....KKK....', '...........', '...........', '...........'];
-const balloonLayers = [b0, b1, b2, b3, b4, b5, b6];
-
-// 6-slice 3D pixel Sun Crown (9x9).
-const cBase = ['..KKKKK..', '.KGGGGGK.', 'KGGGGGGGK', 'KGDDDDDGK', 'KGDDDDDGK', 'KGDDDDDGK', 'KGGGGGGGK', '.KGGGGGK.', '..KKKKK..'];
-const cJewel = ['..KKKKK..', '.KGRGRGK.', 'KGGGGGGGK', 'KG.....GK', 'KR.....RK', 'KG.....GK', 'KGGGGGGGK', '.KGRGRGK.', '..KKKKK..'];
-const cSpikes = ['...KKK...', '...KHK...', 'KK.....KK', 'KH.....HK', 'KK.....KK', '.........', 'KK.....KK', '...KHK...', '...KKK...'];
-const crownLayers = [cBase, cBase, cJewel, cJewel, cSpikes, cSpikes];
-
-const propCaches = new WeakMap();
-function getPropCache(document) {
-  if (!propCaches.has(document)) propCaches.set(document, new Map());
-  return propCaches.get(document);
-}
-
-export function createPlaneArt(document) {
-  const models = new Map();
-  return (c, plane, time, reduced) => {
-    const { x, y, look, boost, wobble, bank, a } = plane;
-    const angle = a + (wobble && !reduced ? Math.sin(time * 0.021) * 0.14 : 0);
-    if (!models.has(look)) models.set(look, compileStack(document, planeLayers, {
-      C: scarf(look), D: '#272c44', O: '#ffa933', M: '#c8f7ea', H: '#ffffff', Y: '#ffdc5c', K: ink,
-    }));
-    // Hard-edged pixel shadow directly beneath the aircraft on the ocean/land below.
-    oval(c, x + 14, y + 24, 22, 10, '#10243b55', angle);
-    // Pixel thruster puffs & wingtip trails.
-    if (!reduced) {
-      c.save();
-      c.translate(x, y);
-      c.rotate(angle);
-      const trail = boost ? 5 : 3;
-      for (let i = 0; i < trail; i++) {
-        const phase = ((time / 95 + i / trail) % 1);
-        const dist = 18 + phase * (boost ? 56 : 30);
-        pxRect(c, boost ? '#ffb83d' : '#ffffffaa', -dist, -2 + Math.sin(i * 3) * 2, boost ? 6 : 4, boost ? 6 : 4);
-      }
-      c.restore();
-    }
-    drawStack(c, models.get(look), x, y, { angle, scale: 3, sliceGap: Math.abs(bank) > 0.25 ? 1.15 : 0.85 });
-  };
-}
-
-// Bake a chunky Pixel Skies style voxel-stepped pixel archipelago (4px world pixels -> crisp retro look).
-export function paintSky(c, w, h) {
-  const step = 6;
-  const cols = Math.ceil(w / step), rows = Math.ceil(h / step);
-  const heights = new Float32Array(cols * rows);
-  const centers = [
-    [0.21, 0.30, 0.25], [0.15, 0.78, 0.22], [0.55, 0.63, 0.29],
-    [0.83, 0.31, 0.22], [0.87, 0.82, 0.19], [0.42, 0.22, 0.13],
-  ];
-
-  // 1. Sample stepped voxel heightmap.
-  for (let gy = 0; gy < rows; gy++) {
-    const ny = gy / rows;
-    for (let gx = 0; gx < cols; gx++) {
-      const nx = gx / cols;
-      let mound = 0;
-      for (const [cx, cy, rad] of centers) {
-        const d = Math.hypot((nx - cx) * 1.45, ny - cy) / rad;
-        if (d < 1.25) mound = Math.max(mound, Math.max(0, 1 - d * d * 0.82));
-      }
-      const n = fbm(nx * 5.2 + 2.4, ny * 3.2 + 1.7);
-      heights[gy * cols + gx] = mound * 0.82 + n * 0.42 - 0.18;
-    }
+const TAU = 2 * Math.PI;
+const ink = hex('#171b30');
+// Each occupied texel of a horizontal slice is a coloured voxel. Strip enclosed
+// texels once; the same surface model works viewed from above, behind or below.
+function stack(width, layers, material) {
+  const volume = new Uint32Array(width * width * layers);
+  const points = [];
+  for (let z = 0; z < layers; z++) for (let y = 0; y < width; y++) for (let x = 0; x < width; x++) {
+    volume[(z * width + y) * width + x] = material(x - width / 2, y - width / 2, z) || 0;
   }
-
-  // 2. Render ocean bands, turquoise shallows, beaches, terraced green hills, rocky peaks & cliff faces.
-  c.imageSmoothingEnabled = false;
-  for (let gy = 0; gy < rows; gy++) {
-    for (let gx = 0; gx < cols; gx++) {
-      const e = heights[gy * cols + gx];
-      const below = gy + 1 < rows ? heights[(gy + 1) * cols + gx] : e;
-      const cliff = e > 0.44 && e - below > 0.032;
-      let col;
-      if (e < 0.24) col = '#1d6ab5';          // deep cobalt ocean
-      else if (e < 0.33) col = '#2a82c9';     // mid royal blue ocean
-      else if (e < 0.40) col = '#44aec4';     // coastal turquoise shallow
-      else if (e < 0.44) col = '#6ad0d4';     // bright reef shallow
-      else if (e < 0.50) col = cliff ? '#bfa062' : '#ebd094'; // warm pixel sand beach
-      else if (e < 0.59) col = cliff ? '#438231' : '#7ac24c'; // bright lime meadow terrace
-      else if (e < 0.69) col = cliff ? '#2e6328' : '#58a33c'; // lush green hill
-      else if (e < 0.78) col = cliff ? '#224d22' : '#408234'; // deep forest slope
-      else if (e < 0.86) col = cliff ? '#5b6470' : '#858f9c'; // stepped slate mountain rock
-      else col = cliff ? '#7b8591' : '#b7c1cc';               // bright rocky peak
-      c.fillStyle = col;
-      c.fillRect(gx * step, gy * step, step, step);
-    }
+  for (let z = 0; z < layers; z++) for (let y = 0; y < width; y++) for (let x = 0; x < width; x++) {
+    const i = (z * width + y) * width + x, c = volume[i];
+    if (!c || (x && y && z && x < width - 1 && y < width - 1 && z < layers - 1 && volume[i-1] && volume[i+1] && volume[i-width] && volume[i+width] && volume[i-width*width] && volume[i+width*width])) continue;
+    points.push([x - width / 2, y - width / 2, z - layers / 2, c]);
   }
-
-  // 3. Crisp 1-block white ocean sparkles / wave foam flecks.
-  for (let i = 0; i < 140; i++) {
-    const gx = Math.floor(seeded(i * 11 + 3) * cols);
-    const gy = Math.floor(seeded(i * 17 + 9) * rows);
-    const e = heights[gy * cols + gx];
-    if (e < 0.43) {
-      c.fillStyle = e > 0.34 ? '#e6fbffaa' : '#b8e4ff77';
-      c.fillRect(gx * step, gy * step, step * (i % 3 === 0 ? 2 : 1), Math.max(2, step / 2));
-    }
-  }
-
-  // 4. Subtle sunlit sky haze toward the top horizon (Pixel Skies aerial perspective).
-  const haze = c.createLinearGradient(0, 0, 0, h * 0.42);
-  haze.addColorStop(0, '#c8e9ff44');
-  haze.addColorStop(1, '#c8e9ff00');
-  c.fillStyle = haze;
-  c.fillRect(0, 0, w, h * 0.42);
+  return points;
 }
-
-// Updraft thermal: crisp pixel wind rings in bright cyan/white.
-export function thermal(c, { x, y, r }, time) {
-  c.save();
-  for (let i = 0; i < 3; i++) {
-    const rad = r * (0.45 + ((time / 900 + i / 3) % 1) * 0.55);
-    c.beginPath();
-    c.ellipse(x, y, rad, rad * 0.75, 0, 0, TURN);
-    c.strokeStyle = i === 0 ? '#ffffffaa' : '#9ff5ff88';
-    c.lineWidth = 4;
-    c.stroke();
-  }
-  c.restore();
-}
-
-// Pixel Skies flat-topped white pixel clouds with pale blue-grey underside & cast shadows;
-// gust clouds render as Pixel Skies spiky dark-purple storm mines with glowing red cores!
-export function cloud(c, { x, y, r, gust }) {
-  if (gust) {
-    // Spiky dark-purple Pixel Skies storm hazard sphere with glowing red core.
-    const rad = Math.min(34, r * 0.42);
-    oval(c, x + 8, y + 14, rad * 0.9, rad * 0.65, '#10182855');
-    for (let i = 0; i < 8; i++) {
-      const a = i * TURN / 8;
-      pxRect(c, ink, x + Math.cos(a) * rad - 4, y + Math.sin(a) * rad - 4, 8, 8);
-    }
-    oval(c, x, y, rad + 3, rad + 3, ink);
-    oval(c, x, y, rad - 1, rad - 1, '#4c3463');
-    oval(c, x - 3, y - 3, rad * 0.62, rad * 0.62, '#694a85');
-    oval(c, x, y, rad * 0.36, rad * 0.36, '#ff4757');
-    pxRect(c, '#ffd6d9', x - 3, y - 3, 4, 4);
-    return;
-  }
-  // Crisp stepped flat-topped white pixel cloud sheet + dark cast shadow below.
-  const b = 8;
-  const spans = [
-    [-0.55, 0.35, -0.45],
-    [-0.85, 0.72, -0.25],
-    [-1.00, 0.92, -0.05],
-    [-0.88, 0.80, 0.15],
-    [-0.62, 0.52, 0.32],
-  ];
-  for (const [l, ri, dy] of spans) {
-    pxRect(c, '#12304d38', x + l * r + 14, y + dy * r + 24, (ri - l) * r, b * 2.2);
-  }
-  for (const [l, ri, dy] of spans) {
-    pxRect(c, '#cfe0f0', x + l * r, y + dy * r + 6, (ri - l) * r, b * 2.2);
-  }
-  for (const [l, ri, dy] of spans) {
-    pxRect(c, '#ffffff', x + l * r, y + dy * r, (ri - l) * r, b * 2.2);
-  }
-}
-
-// Ring Rally targets: Pixel Skies glowing golden pixel Sun orbs (gold = big radiant Sun, normal = crisp cyan-gold Sun).
-export function hoop(c, { x, y, gold }, time) {
-  const pulse = 1 + 0.08 * Math.sin(time / 240);
-  const rad = (gold ? 22 : 16) * pulse;
-  oval(c, x + 6, y + 12, rad * 0.9, rad * 0.6, '#14263a44');
-  oval(c, x, y, rad + 4, rad + 4, gold ? '#ffe97a55' : '#8ef0ff44');
-  oval(c, x, y, rad + 2, rad + 2, ink);
-  oval(c, x, y, rad - 1, rad - 1, gold ? '#ff9f1c' : '#35b7e8');
-  oval(c, x, y, rad * 0.74, rad * 0.74, gold ? '#ffd94a' : '#8cf0ff');
-  pxRect(c, '#fffef0', x - rad * 0.32, y - rad * 0.32, rad * 0.55, rad * 0.55);
-}
-
-const balloonColours = ['#ff5e6c', '#3ea6ff', '#b56bff', '#ffc933'];
-const balloonDark = ['#a82e3c', '#1f64a8', '#6b32a8', '#b87d14'];
-export function balloon(c, { x, y, r, pts, col }) {
-  pxRect(c, ink, x - 1, y + r * 0.6, 2, r * 0.9);
-  const doc = c.canvas?.ownerDocument;
-  if (doc) {
-    const cache = getPropCache(doc);
-    const key = `balloon-${col}`;
-    if (!cache.has(key)) {
-      cache.set(key, compileStack(doc, balloonLayers, {
-        B: balloonColours[col] ?? balloonColours[0],
-        D: balloonDark[col] ?? balloonDark[0],
-        H: '#ffffff',
-        K: ink,
-      }));
-    }
-    drawStack(c, cache.get(key), x, y + r * 0.35, { angle: 0, scale: Math.max(2, Math.round(r / 7)), sliceGap: 0.9 });
+const gold = hex('#ffaf32'), honey = hex('#ffd948'), ivory = hex('#fff8d3');
+const red = hex('#ff485d'), mint = hex('#bff9e9'), shaded = hex('#424969');
+const models = new Map();
+function model(kind, item) {
+  const variant = kind === 'plane' ? item.look : kind === 'balloon' ? item.col : 0;
+  const key = `${kind}:${variant}`;
+  if (models.has(key)) return models.get(key);
+  let points;
+  if (kind === 'plane') {
+    const body = hex((LOOKS[variant] ?? LOOKS[0]).colour);
+    points = stack(32, 16, (x, y, z) => {
+      const side = Math.abs(y);
+      if (((x-3)/7)**2 + (y/3.5)**2 + ((z-9)/6)**2 < 1 && z > 8) return z > 12 ? ivory : mint;
+      if ((x/16)**2 + (y/4)**2 + ((z-6)/6.2)**2 < 1) return z < 3 ? ink : x > 12 ? gold : z < 6 ? shaded : body;
+      const wing = 9 - side * .7 - x, tail = x < -8 && x >= -14 && side < 8;
+      if (((wing >= 0 && wing < 10 - side * .35) || tail) && z >= 5 && z <= 7) return z === 5 || wing < 1 || side >= 15 ? ink : side >= 12 ? gold : body;
+      if (x < -8 && x > -14 && side <= 1 && z < 16 && z >= 6) return z > 12 ? gold : body;
+    });
+  } else if (kind === 'cloud') {
+    points = stack(32, 5, (x,y,z) => Math.abs(x) + Math.abs(y)*2 < 20 && Math.abs(y) < 6 && (z < 3 || x < 6) ? (z < 2 ? hex('#c4dce7') : hex('#fffdf4')) : 0);
+  } else if (kind === 'crown') {
+    points = stack(16, 12, (x,y,z) => {
+      const rim = Math.max(Math.abs(x), Math.abs(y));
+      if (rim < 7 && rim >= 4 && (z < 6 || Math.min(Math.abs(x),Math.abs(y)) > z-6)) return z < 2 ? ink : z === 4 && !(x%4) ? red : z > 7 ? ivory : honey;
+    });
   } else {
-    oval(c, x, y, r * 0.86, r, balloonColours[col]);
+    const balloon = kind === 'balloon', storm = kind === 'storm';
+    const colour = balloon ? hex(['#ff677d','#54bfff','#b788ff','#ffc44b'][variant] ?? '#ff677d') : storm ? hex('#6a4586') : honey;
+    points = stack(20, 20, (x,y,z) => {
+      const dz = z - 10, r = Math.hypot(x,y,dz * (balloon ? .86 : 1));
+      if (storm && r < 10 && [Math.abs(x),Math.abs(y),Math.abs(dz)].filter(n => n <= 1).length >= 2) return ink;
+      if (balloon && z < 4 && Math.abs(x)+Math.abs(y) < 2) return ink;
+      if (r > 7) return 0;
+      if (storm && Math.abs(dz) < 2 && (Math.abs(x)<3 || Math.abs(y)<3)) return red;
+      return dz < -3 ? (storm || balloon ? ink : gold) : dz > 3 && x-y < -1 ? ivory : colour;
+    });
   }
-  for (let i = 0; i < pts; i++) pxRect(c, '#ffffff', x + (i - (pts - 1) / 2) * 6 - 2, y - r * 0.35, 4, 4);
+  models.set(key, points); return points;
 }
 
-export function crown(c, x, y, time) {
-  oval(c, x, y, 22, 18, '#ffe97a77');
-  const doc = c.canvas?.ownerDocument;
-  if (doc) {
-    const cache = getPropCache(doc);
-    if (!cache.has('crown')) {
-      cache.set('crown', compileStack(doc, crownLayers, {
-        G: '#ffd23f', D: '#b06d1a', H: '#fffbe0', R: '#ff4757', K: ink,
-      }));
+// Build the aircraft's three rotated basis vectors once, not once per voxel.
+function axes(a, pitch, roll) {
+  const c = Math.cos(a), s = Math.sin(a), cp = Math.cos(pitch), sp = Math.sin(pitch), cr = Math.cos(roll), sr = Math.sin(roll);
+  return [[c*cp,s*cp,sp],[-s*cr-c*sp*sr,c*cr-s*sp*sr,cp*sr],[s*sr-c*sp*cr,-c*sr-s*sp*cr,cp*cr]];
+}
+export function drawObject(frame, camera, kind, item, time) {
+  const { x, y, z = 32 } = item, p = camera.project(x,y,z);
+  if (camera.chase && p.q < 5) return;
+  const unit = kind === 'plane' ? .83 : kind === 'balloon' ? Math.max(.65, (item.r || 9)/9) : kind === 'sun' && item.gold ? 1.2 : 1;
+  const radius = 18 * p.scale * unit;
+  if (p.x < -radius || p.x > WIDTH + radius || p.y < -radius || p.y > HEIGHT + radius) return;
+  const basis = axes(item.a || (kind === 'crown' ? time / 1400 : 0), (item.pitch || 0)*.48 + (item.loop || 0)*TAU, (item.bank || 0)*.7 + (item.roll || 0)*TAU);
+  if (kind === 'sun') {
+    // A stepped aureole and four detached glints distinguish Suns from balloons.
+    const radius = Math.min(60, Math.ceil(10 * unit * p.scale));
+    for (let y = Math.max(0, Math.floor(p.y-radius)); y <= Math.min(HEIGHT-1,p.y+radius); y++) {
+      for (let x = Math.max(0, Math.floor(p.x-radius)); x <= Math.min(WIDTH-1,p.x+radius); x++) {
+        const dx = Math.abs(x-p.x), dy = Math.abs(y-p.y), n = y*WIDTH+x;
+        if (p.q >= frame.depth[n] || dx+dy > radius*1.35) continue;
+        const glint = Math.min(dx,dy) < Math.max(1,p.scale) && Math.max(dx,dy) > radius*.85;
+        frame.pixels[n] = glint ? ivory : ((frame.pixels[n] >>> 1) & 0x007f7f7f) + 0xff24657e;
+      }
     }
-    drawStack(c, cache.get('crown'), x, y + 6, { angle: time / 900, scale: 3, sliceGap: 1 });
-    return;
   }
-  pxRect(c, '#ffd23f', x - 10, y - 8, 20, 14);
+  // Transform local offsets to camera space, without wrapping each individual texel.
+  const [f,r,u] = basis.map(([vx,vy,vz]) => [(-vx*camera.dy+vy*camera.dx)*unit,(vx*camera.dx+vy*camera.dy)*unit,vz*unit]);
+  const size = Math.min(7, Math.max(1, Math.ceil(p.scale * unit * 1.25)));
+  for (const [i,j,k,colour] of model(kind,item)) {
+    const side = i*f[0]+j*r[0]+k*u[0], forward = i*f[1]+j*r[1]+k*u[1], up = i*f[2]+j*r[2]+k*u[2];
+    const q = p.q + forward;
+    if (camera.chase && q < 4) continue;
+    const ratio = camera.chase ? p.q/q : 1;
+    const sx = Math.floor(WIDTH/2 + (p.x-WIDTH/2 + side*p.scale)*ratio);
+    const sy = Math.floor(camera.chase ? camera.horizon + (p.y-camera.horizon + (side*camera.tilt-up)*p.scale)*ratio : p.y - forward*camera.scaleY - up*camera.scaleZ);
+    // Orthographic rays descend as they go forward; height breaks depth ties.
+    const depth = q - (camera.chase ? 0 : up*.001);
+    for (let yy = Math.max(0,sy); yy < Math.min(HEIGHT,sy+size); yy++) for (let xx = Math.max(0,sx); xx < Math.min(WIDTH,sx+size); xx++) {
+      const n = yy*WIDTH+xx;
+      if (depth <= frame.depth[n]) { frame.depth[n] = depth; frame.pixels[n] = colour; }
+    }
+  }
 }
 
-export function dart(c, { x, y, a, look }) {
-  c.save(); c.translate(x, y); c.rotate(a);
-  pxRect(c, ink, -14, -4, 24, 8);
-  pxRect(c, scarf(look), -11, -2, 16, 4);
-  pxRect(c, '#fffbe0', 2, -2, 6, 4);
-  c.restore();
+export function drawShadow(frame, camera, terrain, item, kind) {
+  const ground = Math.max(7, terrain.heights[cell(item.x,item.y)]);
+  const p = camera.project(item.x,item.y,ground);
+  if (camera.chase && p.q < 5) return;
+  const rx = Math.min(45, Math.max(2, (kind === 'cloud' ? 15 : kind === 'plane' ? 10 : 5)*p.scale));
+  const ry = Math.max(1, rx * (camera.chase ? .27 : .43));
+  for (let y = Math.max(0,Math.floor(p.y-ry)); y <= Math.min(HEIGHT-1,p.y+ry); y++) {
+    const span = rx*Math.sqrt(Math.max(0,1-((y-p.y)/ry)**2));
+    for (let x = Math.max(0,Math.ceil(p.x-span)); x <= Math.min(WIDTH-1,p.x+span); x++) {
+      const n = y*WIDTH+x;
+      if (Math.abs(frame.depth[n]-p.q) < rx/p.scale+8) frame.pixels[n] = (frame.pixels[n] >>> 1 & 0x007f7f7f) + 0xff101a26;
+    }
+  }
 }
 
-export function burst(c, event, age) {
-  if (age < 0 || age >= 480) return;
-  const t = age / 480;
-  c.globalAlpha = 1 - t;
-  const colours = { crown: '#ffd23f', ring: '#ffe97a', hit: '#ff4757', pop: scarf(event.look) };
-  for (let i = 0; i < 8; i++) {
-    const a = i * TURN / 8, radius = 8 + t * 34;
-    oval(c, event.x + Math.cos(a) * radius, event.y + Math.sin(a) * radius, 4, 4, colours[event.type] ?? '#ffffff', a);
-  }
-  c.globalAlpha = 1;
+export function pixelText(c, text, x, y, colour = '#fff8db') {
+  x = Math.round(x); y = Math.round(y);
+  c.fillStyle = '#141924'; c.fillText(text,x+1,y+1);
+  c.fillStyle = colour; c.fillText(text,x,y);
+}
+export function popup(c, camera, event, age, reduced) {
+  if (!event.text || age < 0 || age > 800) return;
+  const p = camera.project(event.x,event.y,event.z ?? 32);
+  if (!camera.chase || p.q > 4) pixelText(c,event.text,p.x,p.y-5-(reduced ? 0 : age/65),'#fff299');
 }

@@ -1,129 +1,110 @@
-import { clamp, distance, emit, recharge } from './world.mjs';
-import { pop, steal } from './modes.mjs';
+import { bearing, clamp, distance, emit, target, TAU } from './world.mjs';
+import { sampleHeight, SEA_LEVEL, wrapCoord } from './terrain.mjs';
 
-function confine(s, p) {
-  p.x = clamp(p.x, 36, s.w - 36);
-  p.y = clamp(p.y, 36, s.h - 36);
-}
-function boundaryTurn(s, p) {
-  const inward = (v, max) => (Math.max(0, 70 - v) - Math.max(0, v - max + 70)) / 34;
-  const x = inward(p.x, s.w), y = inward(p.y, s.h);
-  if (!x && !y) return 0;
-  const diff = Math.atan2(y, x) - p.a;
-  return Math.atan2(Math.sin(diff), Math.cos(diff)) * Math.min(1, Math.hypot(x, y)) * 4;
-}
-function weather(s, p) {
-  const thermal = s.thermals.find(t => distance(p, t) <= t.r)?.id ?? null;
-  if (thermal !== null && thermal !== p.thermal) { recharge(p, 28); p.liftMs = 450; }
-  p.thermal = thermal;
-  const storm = s.clouds.find(c => c.gust && distance(p, c) <= c.r)?.id ?? null;
-  if (storm !== null && storm !== p.storm) {
-    p.wobbleMs = Math.max(500, p.wobbleMs);
-    if (s.mode === 'ring-rally') p.streak = 0;
-  }
-  p.storm = storm;
-}
+const ROLL = 550, LOOP = 950;
+const countdown = (ms, dt) => Math.max(0, ms - dt);
+
 function botControl(s, p) {
-  const nearest = list => {
-    let best = null, bestD = Infinity;
-    for (const item of list) {
-      const d = distance(p, item);
-      if (d < bestD) { bestD = d; best = item; }
-    }
-    return best;
-  };
-  let target = null, shoot = false;
-  if (s.mode === 'ring-rally') {
-    target = nearest(s.rings.filter(r => r.gold)) ?? nearest(s.rings);
-  } else if (s.mode === 'balloon-pop') {
-    target = nearest(s.balloons);
-    shoot = true;
-  } else if (s.mode === 'sky-tag') {
-    if (p.crown) {
-      const chaser = nearest(s.planes.filter(o => o !== p));
-      if (chaser) target = { x: clamp(2 * p.x - chaser.x, 120, s.w - 120), y: clamp(2 * p.y - chaser.y, 120, s.h - 120) };
-    } else {
-      target = nearest(s.crowns);
-      shoot = Boolean(target?.holder);
-    }
-  }
-  if (!target) return { x: 0, y: 0, b: 0, f: 0 };
-  const diff = Math.atan2(target.y - p.y, target.x - p.x) - p.a;
-  const rel = Math.atan2(Math.sin(diff), Math.cos(diff));
-  const gap = distance(p, target);
-  return {
-    x: clamp(rel * 1.4, -1, 1),
-    y: Math.abs(rel) > 1.1 ? 0.6 : -0.3,
-    b: +(Math.abs(rel) < 0.35 && gap > 190 && p.boostCharge > 40),
-    f: +(shoot && Math.abs(rel) < 0.28 && gap < 360),
-  };
+  const goal = target(s, p);
+  if (!goal || p.crown) return { x: 0.45, y: 0, b: 0 };
+  return { x: clamp(bearing(p, goal) * 1.8, -1, 1), y: clamp((p.z - goal.z) / 8, -1, 1), b: +(p.fuel > 65) };
 }
-export function fly(s, p, dt, clockDelta) {
-  const sec = dt / 1000;
-  const { x, y, b, f } = p.ai ? botControl(s, p) : p.control;
-  for (const key of ['fireCd', 'wobbleMs', 'stealCd', 'liftMs']) p[key] = Math.max(0, p[key] - clockDelta);
-  // Add integer point-milliseconds so half-point standings round consistently.
-  if (p.crown) p.score = (Math.round(p.score * 1000) + 2 * clockDelta) / 1000;
-  weather(s, p);
-  p.boosting = b === 1 && (p.boosting ? p.boostCharge > 0 : p.boostCharge >= 10);
-  recharge(p, (p.boosting ? -40 : 15) * sec);
-  p.bank += (x - p.bank) * (1 - Math.exp(-8 * sec));
-  const wobble = p.wobbleMs > 0 ? Math.sin(s.elapsedMs / 70) : 0;
-  p.a += (p.bank * (2.4 + 0.7 * y) + wobble + boundaryTurn(s, p)) * sec;
-  p.spd = 250 - y * (y < 0 ? 50 : 55) + 145 * p.boosting + 50 * (p.liftMs > 0) - 35 * (p.wobbleMs > 0);
-  const dx = Math.cos(p.a), dy = Math.sin(p.a);
-  p.x += dx * p.spd * sec; p.y += dy * p.spd * sec;
-  confine(s, p);
-  if (f && !p.fireCd && s.darts.filter(d => d.by === p.id).length < 2) {
-    s.darts.push({ id: ++s.serial, by: p.id, look: p.look, a: p.a, x: p.x + 20 * dx, y: p.y + 20 * dy, ms: 750 });
-    p.fireCd = 450;
-  }
-}
-export function separate(s) {
-  for (const [i, p] of s.planes.entries()) for (let j = 0; j < i; j++) {
-    const q = s.planes[j], gap = distance(p, q);
-    if (gap >= 28) continue;
-    const push = (28 - gap) * 0.35;
-    const dx = gap ? (p.x - q.x) / gap : 1, dy = gap ? (p.y - q.y) / gap : 0;
-    p.x += dx * push; p.y += dy * push;
-    q.x -= dx * push; q.y -= dy * push;
-    confine(s, p); confine(s, q);
+
+function weather(s, p) {
+  for (const storm of s.storms) {
+    const d = distance(p, storm), pass = p.stormPass[storm.id];
+    if (d < 14) {
+      if (p.rollMs || p.loopMs) {
+        if (pass !== 'dodge' && pass !== 'hit') {
+          p.tricks++; p.score += 25;
+          emit(s, 'dodge', p, p.id, storm.id, '+25');
+          p.stormPass[storm.id] = 'dodge';
+        }
+      } else if (!p.wobbleMs) {
+        p.fuel = Math.max(0, p.fuel - 20); p.combo = 1; p.wobbleMs = 650;
+        emit(s, 'storm', p, p.id, storm.id);
+        p.stormPass[storm.id] = 'hit';
+      } else if (!pass) p.stormPass[storm.id] = 'hit';
+    } else if (d < 24) {
+      if (!pass) p.stormPass[storm.id] = 'near';
+    } else if (pass) {
+      // Resolve on exit: a direct hit must not also earn a close-call bonus.
+      if (pass === 'near') { p.score += 15; emit(s, 'close', p, p.id, storm.id, '+15'); }
+      delete p.stormPass[storm.id];
+    }
   }
 }
 
-// First intersection along the dart's swept segment, including a nose already inside a target.
-function impact(d, target, radius, dx, dy, travel) {
-  const x = target.x - d.x, y = target.y - d.y;
-  const along = x * dx + y * dy, across = x * dy - y * dx;
-  if (Math.abs(across) > radius) return Infinity;
-  const half = Math.sqrt(radius ** 2 - across ** 2);
-  return along + half < 0 || along - half > travel ? Infinity : Math.max(0, along - half);
+function groundContact(s, p, dt) {
+  const ground = sampleHeight(s.terrain, p.x, p.y);
+  if (!p.loopMs && p.z < ground + 3) {
+    p.z = ground + 10; p.fuel = Math.max(0, p.fuel - 18); p.combo = 1; p.wobbleMs = 600;
+    emit(s, 'crash', p, p.id);
+  }
+  if (ground <= SEA_LEVEL && p.z <= 12.5 && !p.wobbleMs) {
+    p.skimMs += dt;
+    if (p.skimMs >= 500) { p.score += 2; p.skimMs -= 500; emit(s, 'skim', p, p.id, undefined, '+2'); }
+  } else p.skimMs = 0;
 }
-export function advanceDarts(s, dt) {
-  s.darts = s.darts.filter(d => {
-    const dx = Math.cos(d.a), dy = Math.sin(d.a), travel = 560 * Math.min(dt, d.ms) / 1000;
-    let nearest = Infinity, victim = null, balloonIndex = -1;
-    for (const p of s.planes) {
-      if (p.id === d.by) continue;
-      const hit = impact(d, p, 17, dx, dy, travel);
-      if (hit < nearest) { nearest = hit; victim = p; }
-    }
-    for (const [i, bl] of s.balloons.entries()) {
-      const hit = impact(d, bl, bl.r, dx, dy, travel);
-      if (hit < nearest) { nearest = hit; balloonIndex = i; }
-    }
-    if (nearest !== Infinity) {
-      const owner = s.planes.find(p => p.id === d.by);
-      if (balloonIndex >= 0) pop(s, balloonIndex, owner);
-      else {
-        victim.wobbleMs = 550;
-        victim.x += 8 * dx; victim.y += 8 * dy; confine(s, victim);
-        emit(s, 'hit', victim, owner.id, victim.id);
-        steal(s, owner, victim);
-      }
-      return false;
-    }
-    d.x += travel * dx; d.y += travel * dy; d.ms -= dt;
-    return d.ms > 0 && d.x >= 0 && d.x <= s.w && d.y >= 0 && d.y <= s.h;
-  });
+
+// Buttons are rising-edge actions, not held commands. Latch short taps even
+// when a press and its release arrive together in the same simulation tick.
+export function inputPlane(p, input) {
+  if (input.r && !p.control.r) p.wantRoll = true;
+  if (input.l && !p.control.l) p.wantLoop = true;
+  p.control = { ...input };
+}
+
+export function fly(s, p, dt) {
+  const sec = dt / 1000, control = p.ai ? botControl(s, p) : p.control;
+  p.rollCd = countdown(p.rollCd, dt); p.loopCd = countdown(p.loopCd, dt);
+  p.wobbleMs = countdown(p.wobbleMs, dt);
+  if (s.elapsedMs - p.lastSun > 4500) p.combo = 1;
+  if (!p.stallMs && !p.rollMs && !p.loopMs) {
+    if (p.wantLoop && !p.loopCd) { p.loopMs = LOOP; p.entryZ = p.z; p.loopSun = false; }
+    else if (p.wantRoll && !p.rollCd) { p.rollMs = ROLL; p.rollDir = Math.sign(control.x || p.bank) || 1; }
+  }
+  p.wantLoop = p.wantRoll = false;
+  p.bank += (control.x - p.bank) * Math.min(1, sec * 6);
+  p.a = (p.a + p.bank * 2.4 * sec) % TAU;
+  p.boosting = !!control.b && !p.stallMs;
+  p.pitch = p.stallMs ? -0.18 : -control.y;
+  p.spd = p.stallMs ? 22 : 38 + (s.lv - 1) * 5 + (p.boosting ? 22 : 0) - p.pitch * 4;
+  let forward = p.spd * sec, side = 0;
+  if (p.loopMs) {
+    const old = 1 - p.loopMs / LOOP;
+    p.loopPhase = Math.min(1, old + dt / LOOP);
+    p.pitch = TAU * p.loopPhase;
+    forward = p.spd * LOOP / (1000 * TAU) * (Math.sin(p.pitch) - Math.sin(TAU * old));
+    p.z = p.entryZ + Math.min(10, (68 - p.entryZ) / 2) * (1 - Math.cos(p.pitch));
+  } else p.z = clamp(p.z + p.pitch * 24 * sec, 8, 68);
+  if (p.rollMs) {
+    const old = 1 - p.rollMs / ROLL;
+    p.rollPhase = Math.min(1, old + dt / ROLL);
+    p.rollAngle = p.rollDir * TAU * p.rollPhase;
+    side = p.rollDir * 9 * (Math.cos(Math.PI * old) - Math.cos(Math.PI * p.rollPhase));
+  }
+  p.x = wrapCoord(p.x + Math.cos(p.a) * forward - Math.sin(p.a) * side);
+  p.y = wrapCoord(p.y + Math.sin(p.a) * forward + Math.cos(p.a) * side);
+  if (!p.stallMs) p.fuel = Math.max(0, p.fuel - (2.4 + (s.lv - 1) * 0.5 + (p.boosting ? 4.5 : 0)) * sec);
+  groundContact(s, p, dt);
+  weather(s, p);
+  if (p.stallMs) {
+    p.stallMs = countdown(p.stallMs, dt);
+    if (!p.stallMs) { p.fuel = 55; p.combo = 1; }
+  } else if (!p.fuel) {
+    p.stallMs = 1500; p.combo = 1; p.boosting = false; emit(s, 'stall', p, p.id);
+  }
+}
+
+// Resolve trick completion after pickups so the last loop tick can earn +50.
+export function finishTricks(s, p, dt) {
+  if (p.rollMs && !(p.rollMs = countdown(p.rollMs, dt))) {
+    p.rollCd = 700; p.rollPhase = p.rollAngle = 0;
+  }
+  if (p.loopMs && !(p.loopMs = countdown(p.loopMs, dt))) {
+    const points = p.loopSun ? 50 : 30;
+    p.loopCd = 1200; p.loopPhase = p.pitch = 0; p.score += points; p.tricks++;
+    emit(s, 'loop', p, p.id, undefined, `+${points}`);
+  }
 }

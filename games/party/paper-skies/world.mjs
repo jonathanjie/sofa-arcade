@@ -1,48 +1,47 @@
-import { hashSeed, random, distance, clamp } from '../whiteout-drift/city.mjs';
+import { hashSeed, random, clamp } from '../whiteout-drift/city.mjs';
+import { buildTerrain, sampleHeight, WORLD_SIZE, wrapDelta } from './terrain.mjs';
 
-export { random, distance, clamp };
+export { random, clamp };
 export const TAU = 2 * Math.PI;
-export const recharge = (plane, amount) => { plane.boostCharge = clamp(plane.boostCharge + amount, 0, 100); };
-
-// Try a bounded number of sites. In a crowded sky, use the best clearance found.
-export function openSite(s, obstacles, clearance) {
-  let best, bestGap = -Infinity;
-  for (let i = 0; i < 24; i++) {
-    const site = { x: 110 + random(s) * (s.w - 220), y: 110 + random(s) * (s.h - 220) };
-    const gap = Math.min(...obstacles.map(o => distance(site, o) - (o.r ?? 14)));
-    if (gap >= clearance) return site;
-    if (gap > bestGap) { best = site; bestGap = gap; }
+export const distance = (a, b) => Math.hypot(wrapDelta(a.x, b.x), wrapDelta(a.y, b.y), a.z - b.z);
+export const bearing = (a, b) => {
+  const angle = Math.atan2(wrapDelta(a.y, b.y), wrapDelta(a.x, b.x)) - a.a;
+  return Math.atan2(Math.sin(angle), Math.cos(angle));
+};
+export function target(s, p) {
+  const items = s.mode === 'ring-rally' ? s.suns : s.mode === 'balloon-pop' ? s.balloons : s.crowns;
+  let nearest = null, best = Infinity;
+  for (const item of items) {
+    if (item.holder === p.id) continue;
+    const d = distance(p, item);
+    if (d < best) { nearest = item; best = d; }
   }
-  return best;
+  return nearest;
 }
-
-export function createWorld(players, seed) {
-  const s = { w: 1600, h: 960, rng: hashSeed(seed), serial: 0, elapsedMs: 0, events: [],
-    thermals: [], clouds: [], rings: [], balloons: [], crowns: [], darts: [], planes: [],
+export function site(s) {
+  const x = random(s) * s.w, y = random(s) * s.h;
+  return { x, y, z: Math.max(sampleHeight(s.terrain, x, y) + 6, 14 + random(s) * 38) };
+}
+export function emit(s, kind, at, by, targetId, text) {
+  s.events.push({ id: ++s.serial, at: s.elapsedMs, kind, x: Math.round(at.x), y: Math.round(at.y),
+    z: Math.round(at.z), by, target: targetId, text });
+}
+export function createWorld(players, seed, mode) {
+  const terrainSeed = hashSeed(seed);
+  const s = { mode, w: WORLD_SIZE, h: WORLD_SIZE, terrainSeed, terrain: buildTerrain(terrainSeed), rng: terrainSeed,
+    serial: 0, lv: 1, elapsedMs: 0, events: [], storms: [], suns: [], balloons: [], crowns: [], planes: [],
     roster: players.map(({ id }) => ({ id, score: 0 })) };
-  const phase = random(s) * TAU;
-  const entrants = players.length === 1
-    ? [
-      { id: players[0].id, look: players[0].look, ai: false },
-      ...[4, 8, 12].map((offset, i) => ({ id: `bot${i + 1}`, look: (players[0].look + offset) % 16, ai: true })),
-    ]
-    : players.map(({ id, look }) => ({ id, look, ai: false }));
-  s.planes = entrants.map(({ id, look, ai }, i) => {
-    const angle = phase + i * TAU / entrants.length;
-    return { id, look, ai, x: s.w / 2 + 520 * Math.cos(angle), y: s.h / 2 + 330 * Math.sin(angle),
-      a: angle + Math.PI, bank: 0, spd: 250, boostCharge: 100, boosting: false, fireCd: 0,
-      wobbleMs: 0, liftMs: 0, stealCd: 0, thermal: null, storm: null, score: 0, crown: false,
-      streak: 0, popped: 0, control: { x: 0, y: 0, b: 0, f: 0 } };
-  });
-  for (let i = 0; i < 7; i++) {
-    const site = openSite(s, [...s.planes, ...s.thermals, ...s.clouds], 100);
-    const zone = { id: ++s.serial, ...site, r: 78 + 17 * random(s) };
-    if (i < 3) s.thermals.push(zone);
-    else s.clouds.push({ ...zone, gust: +(i >= 5) });
+  const entrants = [...players];
+  if (players.length === 1 && mode !== 'ring-rally') {
+    for (let i = 1; i <= 3; i++) entrants.push({ id: `bot${i}`, look: (players[0].look + 4 * i) % 16, ai: true });
   }
+  const phase = random(s) * TAU;
+  s.planes = entrants.map(({ id, look, ai = false }, i) => {
+    const angle = phase + i * TAU / entrants.length;
+    return { id, look, ai, x: 256 + 150 * Math.cos(angle), y: 256 + 150 * Math.sin(angle), z: 38, a: angle + Math.PI,
+      pitch: 0, bank: 0, spd: 38, fuel: 100, boosting: false, rollMs: 0, rollCd: 0, rollPhase: 0, rollAngle: 0,
+      loopMs: 0, loopCd: 0, loopPhase: 0, loopSun: false, stallMs: 0, wobbleMs: 0, skimMs: 0, stormPass: {},
+      score: 0, tricks: 0, crown: false, combo: 1, lastSun: 0, suns: 0, popped: 0, control: { x: 0, y: 0, b: 0, r: 0, l: 0 } };
+  });
   return s;
-}
-
-export function emit(s, kind, at, by, target) {
-  s.events.push({ id: ++s.serial, at: s.elapsedMs, kind, x: Math.round(at.x), y: Math.round(at.y), by, target });
 }
