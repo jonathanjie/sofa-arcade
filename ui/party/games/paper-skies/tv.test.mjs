@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { buildTerrain, cell, createCamera } from './voxel.mjs';
+import { aircraftSurface, drawObject } from './art.mjs';
+import { WIDTH, HEIGHT, buildTerrain, cell, createCamera, createFrame } from './voxel.mjs';
 import { mountPaperSkiesTv, paperSkiesPlayHintForMode, paperSkiesResultSummary } from './tv.mjs';
 
 const hints = {
@@ -52,19 +53,51 @@ test('camera defaults and V toggle render distinct frames for each mode and play
   let round = 0;
   for (const mode of Object.keys(hints)) for (const solo of [1,0]) {
     tv.resize({ width:1920, height:1080 });
-    tv.push({ round: ++round, scene: fixture(mode,solo) }); tv.draw();
+    canvas.calls.length = 0;
+    tv.push({ round: ++round, scene: fixture(mode,solo), roster:[{id:'p0',name:'Jon'}] }); tv.draw();
     const first = buffer.hash;
     assert.equal(canvas.getContext('2d').imageSmoothingEnabled,false);
-    assert.deepEqual(canvas.calls.at(-1).slice(2),[0,0,1920,1080]);
-    assert.ok(buffer.calls.some(([op,text]) => op === 'fillText' && text === (solo ? 'SUNS 2  x3' : '1 Dots 16')));
+    assert.deepEqual(canvas.calls.findLast(([op]) => op === 'drawImage').slice(2),[0,0,1920,1080]);
+    assert.ok(!buffer.calls.some(([op]) => op === 'fillText'));
+    const labels = canvas.calls.slice(canvas.calls.findIndex(([op]) => op === 'drawImage')+1)
+      .filter(([op]) => op === 'fillText').map(([,text]) => text);
+    for (const text of ['Jon','FUEL','ALT','V · CAM','LOOP!',solo ? 'SUNS 2  LV 2  ×3' : '1 Dots']) assert.ok(labels.includes(text),text);
+    if (!solo) { assert.ok(labels.includes('4 Star')); assert.ok(!labels.includes('5 Moon')); }
     handlers.keydown({key:'V'}); tv.draw(); assert.notEqual(buffer.hash,first);
     handlers.keydown({key:'v'}); tv.draw(); assert.equal(buffer.hash,first);
     tv.resize({ width: 800, height: 480, safe:{ x:16,y:10,width:768,height:432 } }); tv.draw();
-    assert.deepEqual(canvas.calls.at(-1).slice(2),[16,10,768,432]);
-    buffer.calls.length = 0;
+    assert.deepEqual(canvas.calls.findLast(([op]) => op === 'drawImage').slice(2),[16,10,768,432]);
+    assert.deepEqual(canvas.calls.findLast(([op]) => op === 'scale'),['scale',.4,.4]);
   }
   assert.equal(frames.size,1); tv.dispose(); assert.equal(frames.size,0); assert.equal(listeners.size,0);
   const count = canvas.calls.length; tv.draw(); assert.equal(count,canvas.calls.length);
+});
+test('native popups use score and trick events; expired events leave no label', t => {
+  const {canvas} = board(t), tv = mountPaperSkiesTv(canvas,{reducedMotion:true});
+  const scene = fixture('ring-rally',1);
+  scene.events = [['sun','+10'],['sun','+20'],['loop','+30'],['dodge','+25'],['close','+15'],['skim','+2'],['crash']]
+    .map(([kind,text]) => ({...scene.planes[0],at:scene.elapsedMs,kind,text}));
+  scene.events.push({...scene.events[0],at:-900,text:'expired'});
+  tv.resize({width:1920,height:1080}); tv.update({scene}); tv.draw();
+  const text = canvas.calls.filter(([op]) => op === 'fillText').map(call => call[1]);
+  for (const label of ['+10','+20','LOOP!','DODGE!','CLOSE CALL!','SKIM!','CRASH!','+30']) assert.ok(text.includes(label));
+  assert.ok(!text.includes('expired')); tv.dispose();
+});
+test('aircraft occupies 24 slices, with separate swept fins and pilot paint', () => {
+  const points = aircraftSurface(0), levels = new Set(points.map(p => p[2]));
+  assert.equal(levels.size,24);
+  const tips = points.filter(p => p[2] === Math.max(...levels));
+  assert.ok(tips.some(p => p[1] < -3) && tips.some(p => p[1] > 3));
+  assert.notDeepEqual(points,aircraftSurface(1));
+});
+test('near Sun including rays stays within eight percent of frame height in radius', () => {
+  const frame = createFrame(); frame.depth.fill(Infinity);
+  const project = () => ({x:WIDTH/2,y:HEIGHT/2,q:6,scale:30});
+  drawObject(frame,{project,chase:true},'sun',{gold:1},300);
+  assert.ok(frame.pixels[(HEIGHT/2)*WIDTH+WIDTH/2]);
+  for (const [i,value] of frame.pixels.entries()) if (value) {
+    assert.ok(Math.max(Math.abs(i%WIDTH-WIDTH/2),Math.abs(Math.floor(i/WIDTH)-HEIGHT/2)) <= HEIGHT*.085);
+  }
 });
 test('reduced motion freezes clouds, not flight updates', t => {
   const { canvas,surfaces } = board(t), tv = mountPaperSkiesTv(canvas);
