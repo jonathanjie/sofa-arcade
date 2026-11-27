@@ -55,9 +55,9 @@ test('Whiteout Drift switches across all 4 modes over real party sockets', { tim
   }));
   await fixture.until(() => tv.view.players.length === 4 && tv.view.players.every(player => player.ready));
   assert.equal(tv.view.mode, 'getaway');
-  assert.equal(tv.view.modes.length, 4);
+  assert.equal(tv.view.modes.length, 5);
 
-  for (const [roundIndex, mode] of ['cops-and-robbers', 'freeze-tag', 'drift-king', 'getaway'].entries()) {
+  for (const [roundIndex, mode] of ['cops-and-robbers', 'freeze-tag', 'drift-king', 'car-soccer', 'getaway'].entries()) {
     tv.send({ type: 'mode', round: roundIndex, mode });
     await fixture.until(() => tv.view.mode === mode, { ticks: 10 });
     tv.send({ type: 'start', round: roundIndex });
@@ -66,7 +66,7 @@ test('Whiteout Drift switches across all 4 modes over real party sockets', { tim
     for (const phone of phones) {
       assert.equal('mode' in phone.view, false);
       assert.equal('modes' in phone.view, false);
-      assert.equal(phone.view.state.m, ['getaway', 'cops-and-robbers', 'freeze-tag', 'drift-king'].indexOf(mode));
+      assert.equal(phone.view.state.m, ['getaway', 'cops-and-robbers', 'freeze-tag', 'drift-king', 'car-soccer'].indexOf(mode));
       assert.ok(Buffer.byteLength(JSON.stringify({ type: 'snapshot', view: phone.view })) <= 320);
     }
     await fixture.until(() => tv.view.phase === 'results', {

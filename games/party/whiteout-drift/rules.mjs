@@ -1,11 +1,13 @@
-import { createCity } from './city.mjs';
-import { collide, driver, iceContacts, move, steer, streetContacts } from './physics.mjs';
-import { contact, dispatch, dropCrown, DURATION, finishPins, modes, setup, updateModes } from './modes.mjs';
+import { createArena, createCity } from './city.mjs';
+import { collide, driver, iceContacts, move, steer, stepBall, streetContacts } from './physics.mjs';
+import { contact, dispatch, dropCrown, DURATION, finishPins, modes, scoreGoal, setup, updateModes } from './modes.mjs';
 
 function createRound(players, seed, gameRound = 1, match = {}) {
   const mode = modes.find(m => m.id === match?.mode)?.id ?? 'getaway';
-  const state = { ...createCity(players.length, seed), mode, elapsedMs: 0, serial: 0, police: 0, roster: [], cars: [],
-    events: [], ice: [], pings: [], checkpoint: null, crown: null, team: null, lastAt: null, stealAt: 0, over: false };
+  const map = mode === 'car-soccer' ? createArena(players.length, seed) : createCity(players.length, seed);
+  const state = { ...map, mode, elapsedMs: 0, serial: 0, police: 0, roster: [], cars: [],
+    events: [], ice: [], pings: [], checkpoint: null, crown: null, team: null, ball: null, kickoffMs: 0,
+    lastAt: null, stealAt: 0, over: false };
   setup(state, players, gameRound);
   return state;
 }
@@ -25,14 +27,14 @@ function normalizeInput(input) {
 
 function advance(state, dt, now) {
   const age = obj => ({ ...obj, ms: Math.max(0, obj.ms - dt) });
-  return { ...state, elapsedMs: now,
-    cars: state.cars.map(c => ({ ...c, cd: Math.max(0, c.cd - dt), grace: Math.max(0, c.grace - dt),
-      boostMs: Math.max(0, c.boostMs - dt), spinMs: Math.max(0, c.spinMs - dt) })),
+  return { ...state, elapsedMs: now, kickoffMs: Math.max(0, (state.kickoffMs ?? 0) - dt),
+    cars: state.cars.map(c => ({ ...c, cd: Math.max(0, c.cd - dt), touchCd: Math.max(0, (c.touchCd ?? 0) - dt),
+      grace: Math.max(0, c.grace - dt), boostMs: Math.max(0, c.boostMs - dt), spinMs: Math.max(0, c.spinMs - dt) })),
     events: state.events.filter(e => now - e.at <= 350),
     pings: state.pings.map(age).filter(p => p.ms),
     ice: state.ice.map(p => ({ ...age(p), struck: [...p.struck] })).filter(p => p.ms),
     cones: state.cones.map(c => ({ ...c })), hydrants: state.hydrants.map(h => ({ ...h, cd: Math.max(0, h.cd - dt) })),
-    crown: state.crown && { ...state.crown }, team: state.team && { ...state.team } };
+    ball: state.ball && { ...state.ball }, crown: state.crown && { ...state.crown }, team: state.team && { ...state.team } };
 }
 
 function step(state, inputs, dt = 50, { departures = [], elapsedMs = state.elapsedMs + dt } = {}) {
@@ -53,19 +55,24 @@ function step(state, inputs, dt = 50, { departures = [], elapsedMs = state.elaps
     if (input.kind === 'dispatch') dispatch(s, c, input);
   }
   const active = s.cars.filter(c => c.role !== 2);
-  for (const c of active) { move(s, c, dt); streetContacts(s, c); }
-  const pins = new Map();
-  for (const [i, a] of active.entries()) {
-    iceContacts(s, a);
-    for (let j = 0; j < i; j++) {
-      const b = active[j];
-      if (a.role === 2 || b.role === 2) continue;
-      const speeds = collide(s, a, b);
-      if (!speeds) continue;
-      contact(s, a, b, speeds[0], pins); contact(s, b, a, speeds[1], pins);
+  const paused = s.mode === 'car-soccer' && s.kickoffMs > 0;
+  if (!paused) {
+    for (const c of active) { move(s, c, dt); streetContacts(s, c); }
+    const pins = new Map();
+    for (const [i, a] of active.entries()) {
+      iceContacts(s, a);
+      for (let j = 0; j < i; j++) {
+        const b = active[j];
+        if (a.role === 2 || b.role === 2) continue;
+        const speeds = collide(s, a, b);
+        if (!speeds) continue;
+        contact(s, a, b, speeds[0], pins); contact(s, b, a, speeds[1], pins);
+      }
     }
+    finishPins(s, pins, dt);
+    if (s.ball) stepBall(s, dt, side => scoreGoal(s, side));
   }
-  finishPins(s, pins, dt); updateModes(s, state.elapsedMs);
+  updateModes(s, state.elapsedMs);
   s.events = s.events.slice(-32);
   return s;
 }
@@ -81,6 +88,9 @@ function projectForTv(s) {
       boost: +(c.boostMs > 0), pin: Math.min(10, Math.round(c.pinMs / 100)), score: Math.round(c.score) })),
     checkpoint: s.checkpoint && { x: r1(s.checkpoint.x), y: r1(s.checkpoint.y), r: r1(s.checkpoint.r) },
     crown: s.crown && { x: r1(s.crown.x), y: r1(s.crown.y), holder: s.crown.holder },
+    goal: s.goal ?? null,
+    ball: s.ball && { x: r1(s.ball.x), y: r1(s.ball.y), r: s.ball.r, vx: r1(s.ball.vx), vy: r1(s.ball.vy), spin: r2(s.ball.spin) },
+    kickoffMs: Math.round(s.kickoffMs ?? 0),
     pings: s.pings.map(p => ({ x: r1(p.x), y: r1(p.y), ms: Math.round(p.ms) })), team: s.team, events: s.events };
 }
 

@@ -162,3 +162,40 @@ test('slow sustained police pressure against the city boundary causes a bust', (
   assert.equal(car(s, 'p2').pinMs, 50);
   s = repeat(s, 19); assert.equal(car(s, 'p2').role, 2); assert.equal(s.team.winner, 'cops');
 });
+
+
+test('car-soccer splits Gold vs Blue, kicks the ball, scores goals, resets kickoff, and keeps phone snapshots bounded', () => {
+  const roster = Array.from({ length: 16 }, (_, i) => ({ id: `p${i}`, look: i, name: '⚽'.repeat(12) }));
+  let s = game.createRound(roster, 'soccer-seed', 1, { mode: 'car-soccer' });
+  assert.equal(s.mode, 'car-soccer');
+  assert.equal(s.blocks.length, 0);
+  assert.equal(s.cars.filter(c => c.side === 'gold').length, 8);
+  assert.equal(s.cars.filter(c => c.side === 'blue').length, 8);
+  assert.ok(s.ball && s.ball.x === s.w / 2 && s.ball.y === s.h / 2);
+
+  // Position a Gold striker right behind the ball and drive east into the Blue net.
+  s.cars[0].x = s.ball.x - 30;
+  s.cars[0].y = s.ball.y;
+  s.cars[0].a = 0;
+  s.cars[0].boostMs = 400;
+  for (let i = 1; i < s.cars.length; i++) { s.cars[i].x = 40; s.cars[i].y = 40 + i * 25; }
+  for (let step = 0; step < 80 && s.team.gold === 0; step++) {
+    s = game.step(s, [{ playerId: 'p0', input: { kind: 'drive', x: 1, y: 0, d: 0 } }], 50);
+  }
+  assert.equal(s.team.gold, 1);
+  assert.ok(s.kickoffMs > 0);
+  assert.equal(s.ball.x, s.w / 2);
+
+  for (const p of roster) {
+    const view = game.projectForPhone(s, p.id);
+    assert.equal(view.m, 4);
+    assert.ok(view.r === 0 || view.r === 4);
+    const envelope = { type: 'snapshot', view: { phase: 'playing', round: 1, ms: 50000, notice: null,
+      gameId: game.id, self: { ...p, ready: true }, waiting: false, state: view, place: null } };
+    assert.ok(Buffer.byteLength(JSON.stringify(envelope)) <= 320);
+  }
+
+  s = game.step(s, [], 50, { elapsedMs: game.durationMs });
+  assert.equal(game.isRoundOver(s), true);
+  assert.equal(s.team.winner, 'gold');
+});
