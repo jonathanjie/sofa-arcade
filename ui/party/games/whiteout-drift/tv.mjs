@@ -177,14 +177,18 @@ function drawBall(c, ball, time, reduced) {
 }
 function city(c, s) {
   if (s.mode === 'car-soccer') { pitch(c, s); return; }
-  rect(c, '#354558', 0, 0, s.w, s.h);
-  for (let i = 0; i < (s.w * s.h) / 170; i++) {
-    rect(c, i % 3 ? '#869eb036' : '#17283a48', noise(i) * s.w, noise(i + 8103) * s.h, 2 + (i % 4), 1);
+  // Bright moonlit snow-covered streets so dark buildings, ice traps, headlights & sirens pop.
+  const snow = c.createLinearGradient(0, 0, 0, s.h);
+  snow.addColorStop(0, '#9eb0c4');
+  snow.addColorStop(0.5, '#b8c7d8');
+  snow.addColorStop(1, '#98aac0');
+  rect(c, snow, 0, 0, s.w, s.h);
+  for (let i = 0; i < (s.w * s.h) / 140; i++) {
+    rect(c, i % 3 ? '#e4effa66' : '#64799238', noise(i) * s.w, noise(i + 8103) * s.h, 2 + (i % 3), 2);
   }
   for (const [x, y] of s.lamps) {
-    glow(c, x, y, 44, '#ffc26775');
-    glow(c, x, y, 16, '#ffbd5d92');
-
+    glow(c, x, y, 56, '#ffd27a88');
+    glow(c, x, y, 20, '#fff0b8aa');
   }
 }
 function ring(c, x, y, r, colour, width = 2) {
@@ -224,8 +228,8 @@ function stampTracks(c, prev, scene) {
         if (i) c.lineTo(x, y);
         else c.moveTo(x, y);
       }
-      c.strokeStyle = '#152335aa';
-      c.lineWidth = 2;
+      c.strokeStyle = scene.mode === 'car-soccer' ? '#152335aa' : '#4a5f7899';
+      c.lineWidth = 2.5;
       c.stroke();
     }
   }
@@ -300,15 +304,15 @@ function drawWorld(c, s, roster, time, reduced, buildings) {
       c.fillText(name, x, y, w - 5);
     }
     if (!reduced && (car.drift || car.spin || car.pin)) {
-      for (let i = 0; i < 5; i++) {
-        const age = (time / 320 + i / 5) % 1;
+      for (let i = 0; i < 7; i++) {
+        const age = (time / 280 + i / 7) % 1;
         rect(
           c,
-          car.pin ? gold : '#ccdfef',
-          car.x - Math.cos(car.a) * (10 + age * 14),
-          car.y - Math.sin(car.a) * (10 + age * 14) + Math.sin(i * 4) * age * 10,
-          2,
-          2,
+          car.pin ? gold : i % 2 ? '#ffffff' : '#d8eeff',
+          car.x - Math.cos(car.a) * (10 + age * 22) + Math.sin(i * 4.3) * age * 11,
+          car.y - Math.sin(car.a) * (10 + age * 22) + Math.cos(i * 3.7) * age * 11,
+          2.5,
+          2.5,
         );
       }
     }

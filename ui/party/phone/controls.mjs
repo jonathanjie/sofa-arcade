@@ -116,7 +116,7 @@ export function mountTilt(root, { onInput }) {
   const sensor = view.DeviceOrientationEvent;
   mode.type = 'button';
   mode.textContent = 'Enable tilt';
-  mode.hidden = !view.isSecureContext || !sensor;
+  mode.hidden = !sensor;
   let disposed = false;
   let enabled = true;
   let listening = false;
@@ -153,6 +153,10 @@ export function mountTilt(root, { onInput }) {
     if (listening) {
       stop();
       updateMode('Enable tilt');
+      return;
+    }
+    if (!view.isSecureContext) {
+      updateMode('Tilt needs HTTPS');
       return;
     }
     asking = true;

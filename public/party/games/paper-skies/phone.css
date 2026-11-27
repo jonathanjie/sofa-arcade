@@ -120,6 +120,18 @@
 .ps-actions .ps-fire[data-cooldown] { border: 3px dashed #f5dd9e; }
 .ps-fire small { display: block; font-size: 12px; margin-top: 4px; }
 .ps-phone button:disabled { opacity: .6; }
+@media (orientation: landscape), (max-height: 500px) {
+  .party-phone[data-playing]:has(.ps-phone) { padding: 6px 12px; gap: 6px; }
+  .party-phone[data-playing]:has(.ps-phone) .party-bar,
+  .party-phone[data-playing]:has(.ps-phone) .party-phone-identity { display: none; }
+  .party-phone:has(.ps-phone) > * { width: min(100%, 760px); }
+  .party-phone[data-playing]:has(.ps-phone) .party-handset { padding: 8px; }
+  .ps-phone { gap: 6px; padding: 8px 10px; }
+  .ps-controls { grid-template-columns: 1.2fr 1fr; align-items: stretch; gap: 12px; }
+  .ps-phone .ps-steer .party-stick { height: clamp(100px, 40svh, 165px); }
+  .ps-actions { grid-template-columns: 1fr 1fr; align-items: stretch; }
+  .ps-actions button { min-height: clamp(84px, 38svh, 150px); }
+}
 @media (prefers-reduced-motion: reduce) {
   .ps-phone *, .ps-phone *::before, .ps-phone *::after { animation: none !important; transition: none !important; }
 }

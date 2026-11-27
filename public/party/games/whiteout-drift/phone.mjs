@@ -36,7 +36,7 @@ export function mountWhiteoutPhone(root, { input }) {
   const tilt = find('.wd-tilt');
   const charge = find('.wd-action progress');
   const sensor = view.DeviceOrientationEvent;
-  tilt.hidden = !view.isSecureContext || !sensor;
+  tilt.hidden = !sensor;
   let role = 0, cooldown = 0, active = false, practice = false, disposed = false;
   let current = CENTRE, held = false, lastSend = -Infinity, dirty = false;
   let pending = [], timer, pointer, radarStart, neutral, tiltSince, asking = false, pingUntil = 0;
@@ -156,6 +156,7 @@ export function mountWhiteoutPhone(root, { input }) {
   listen(tilt, 'click', async () => {
     if (tilt.disabled) return;
     if (tiltSince !== undefined) { stopTilt(); return; }
+    if (!view.isSecureContext) { tilt.textContent = 'Tilt needs HTTPS'; return; }
     asking = true;
     refresh();
     let granted = true;
