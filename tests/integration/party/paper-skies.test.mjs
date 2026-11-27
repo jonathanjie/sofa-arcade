@@ -21,8 +21,9 @@ for (const playerCount of [2, 8, 16]) {
           const x = Math.cos(index * 0.7 + tick * 0.09);
           const y = Math.sin(index * 0.5 + tick * 0.06);
           const b = tick % 24 < 8 ? 1 : 0;
-          const f = tick % 14 === 0 ? 1 : 0;
-          phone.input({ kind: 'fly', x, y, b, f });
+          const r = tick % 20 === 0 ? 1 : 0;
+          const l = tick % 36 === 0 ? 1 : 0;
+          phone.input({ kind: 'fly', x, y, b, r, l });
         }
       },
       assertResults(view, activePhones) {
@@ -74,7 +75,7 @@ test('Paper Skies switches across all 3 modes over real party sockets', { timeou
           if (!phone.view.state) continue;
           const x = Math.cos(index * 1.1 + tick * 0.1);
           const y = Math.sin(index * 0.8 + tick * 0.07);
-          phone.input({ kind: 'fly', x, y, b: tick % 20 < 6 ? 1 : 0, f: tick % 10 === 0 ? 1 : 0 });
+          phone.input({ kind: 'fly', x, y, b: tick % 20 < 6 ? 1 : 0, r: tick % 18 === 0 ? 1 : 0, l: tick % 32 === 0 ? 1 : 0 });
         }
       },
     });
