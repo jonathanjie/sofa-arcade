@@ -1,0 +1,61 @@
+.ps-phone {
+  --ps-x: 0%;
+  --ps-y: 0%;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 16px;
+  background: #e0edf2;
+  color: #203a4a;
+  touch-action: none;
+  user-select: none;
+}
+.ps-phone [hidden] { display: none !important; }
+.ps-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 14px; }
+.ps-status strong, .ps-status [data-context], .ps-status [data-wobble] { border-radius: 20px; padding: 4px 8px; background: #284c61; color: #fff; }
+.ps-status [data-context] { background: #f5dd9e; color: #3c301e; }
+.ps-status [data-wobble] { background: #914927; color: #fff; }
+.ps-fuel { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+.ps-fuel progress { flex: 1; min-width: 0; height: 12px; accent-color: #28785e; }
+.ps-controls { display: grid; grid-template-columns: minmax(110px, 3fr) minmax(64px, 2fr); align-items: start; gap: 10px; }
+.ps-steer, .ps-actions { min-width: 0; display: grid; gap: 8px; }
+.ps-phone .ps-steer .party-stick {
+  position: relative;
+  min-height: 110px;
+  height: clamp(110px, 24svh, 180px);
+  color: transparent;
+  background: #f8fbfc;
+  border: 2px solid #557888;
+  box-shadow: none;
+  translate: none;
+  overflow: hidden;
+}
+.ps-steer .party-stick::before, .ps-steer .party-stick::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  translate: -50% -50%;
+}
+.ps-steer .party-stick::before { width: 64%; aspect-ratio: 1; max-width: 106px; left: 50%; top: 50%; border: 2px dashed #91aab6; }
+.ps-steer .party-stick::after { width: 34px; aspect-ratio: 1; left: calc(50% + var(--ps-x)); top: calc(50% + var(--ps-y)); background: #284c61; border: 3px solid #d1e5ed; }
+.ps-steer .party-secondary { min-height: 44px; padding: 5px; font-size: 14px; }
+.ps-actions button {
+  min-width: 64px;
+  min-height: 64px;
+  border: 2px solid #284c61;
+  border-radius: 14px;
+  background: #284c61;
+  color: #fff;
+  font: 800 20px/1.15 system-ui, sans-serif;
+  touch-action: none;
+}
+.ps-actions .ps-boost { background: #f5dd9e; color: #3c301e; border-color: #91703b; }
+.ps-actions button[aria-pressed="true"], .ps-actions .ps-boost[data-boosting] { background: #28684f; color: #fff; box-shadow: 0 0 0 3px #a1d6b5; }
+.ps-actions .ps-fire[data-cooldown] { border: 3px dashed #f5dd9e; }
+.ps-fire small { display: block; font-size: 12px; margin-top: 4px; }
+.ps-phone button:disabled { opacity: .6; }
+@media (prefers-reduced-motion: reduce) {
+  .ps-phone *, .ps-phone *::before, .ps-phone *::after { animation: none !important; transition: none !important; }
+}
